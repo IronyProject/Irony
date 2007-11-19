@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "010.Irony", "Irony\010.Irony.csproj", "{D81F5C91-D7DB-46E5-BC99-49488FB6814C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "020.Irony.Samples", "Irony.Samples\020.Irony.Samples.csproj", "{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "030.Irony.GrammarExplorer", "Irony.GrammarExplorer\030.Irony.GrammarExplorer.csproj", "{AE1C04A8-B03D-4144-98E9-BF66C50265E7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D81F5C91-D7DB-46E5-BC99-49488FB6814C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D81F5C91-D7DB-46E5-BC99-49488FB6814C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D81F5C91-D7DB-46E5-BC99-49488FB6814C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D81F5C91-D7DB-46E5-BC99-49488FB6814C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE1C04A8-B03D-4144-98E9-BF66C50265E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE1C04A8-B03D-4144-98E9-BF66C50265E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE1C04A8-B03D-4144-98E9-BF66C50265E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE1C04A8-B03D-4144-98E9-BF66C50265E7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

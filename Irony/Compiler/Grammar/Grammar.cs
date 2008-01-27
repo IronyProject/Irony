@@ -19,11 +19,14 @@ namespace Irony.Compiler {
   #region Grammar class
   public abstract class Grammar {
 
-    #region properties: CaseSensitive, WhitespaceChars, Root, TokenFilters
+    #region properties: CaseSensitive, WhitespaceChars, ExtraTerminals, PunctuationSymbols, TokenFilters
     public bool CaseSensitive = true;
     public string WhitespaceChars = " \t\r\n\v";
+    public string Delimiters = ""; //list of chars that unambigously identify the start of new token. 
+                                   //used in scanner error recovery. 
 
-    //Terminals not reachable from the Root (Comment terminal is usually one of them)
+    //Terminals not present in grammar expressions and not reachable from the Root
+    // (Comment terminal is usually one of them)
     public readonly TerminalList ExtraTerminals = new TerminalList();
 
     //Punctuation symbols are those that are excluded from arguments of node constructors
@@ -32,6 +35,7 @@ namespace Irony.Compiler {
     //Default node type; if null then GenericNode type is used. 
     public Type DefaultNodeType;
 
+    //TODO: give this a second thought
     #region Comments
     //  If the following flag is true, the scanner removes all keyword-like terminals (those that start with a letter)
     //  from the list of terminals found in grammar rules. These symbols are treated 
@@ -71,7 +75,11 @@ namespace Irony.Compiler {
     }//method
     #endregion
 
-    #region virtual methods: CreateNode
+    #region virtual methods: TryMatch, CreateNode, GetSyntaxErrorMessage
+    //This method is called if Scanner failed to produce token
+    public virtual Token TryMatch(CompilerContext context, ISourceStream source) {
+      return null;
+    }
     // Override this method in language grammar if you want a custom node creation mechanism.
     public virtual AstNode CreateNode(CompilerContext context, ActionRecord reduceAction, 
                                       SourceLocation location, AstNodeList childNodes) {
@@ -102,6 +110,9 @@ namespace Irony.Compiler {
       }
       return node;      
     }
+    public virtual string GetSyntaxErrorMessage(CompilerContext context, KeyList expectedList) {
+      return null; //Irony then would construct default message
+    }
     #endregion
 
     #region Static utility methods used in custom grammars: Symbol(), ToElement, WithStar, WithPlus, WithQ
@@ -124,71 +135,35 @@ namespace Irony.Compiler {
     protected static BnfElement WithQ(BnfExpression expression) {
       return ToElement(expression).Q();
     }
-    public static Token CreateErrorToken(SourceLocation location, string message, params object[] args) {
+    public static Token CreateSyntaxErrorToken(SourceLocation location, string message, params object[] args) {
       if (args != null && args.Length > 0)
         message = string.Format(message, args);
-      return new Token(Grammar.Error, location, message);
+      return new Token(Grammar.SyntaxError, location, message);
     }
     #endregion
 
     #region Standard terminals: EOF, Empty, NewLine, Indent, Dedent
-    // Identifies end of file
-    // Note: do not use this symbol in grammar rules. Parser automatically add this symbol 
-    // as a lookahead to Root non-terminal
-    public readonly static Terminal Eof = new Terminal("_EOF", TokenCategory.Outline);
     // Empty object is used to identify optional element: 
     //    elem.Rule = elem1 | Empty;
-    public readonly static Terminal Empty = new Terminal("_Empty", TokenCategory.Outline);
-    public readonly static Terminal Error = new Terminal("_Error", TokenCategory.Error);
+    public readonly static BnfElement Empty = new BnfElement("EMPTY");
     // The following terminals are used in indent-sensitive languages like Python 
-    public readonly static Terminal NewLine = new Terminal("_LF", TokenCategory.Outline);
-    public readonly static Terminal Indent = new Terminal("_Indent", TokenCategory.Outline);
-    public readonly static Terminal Dedent = new Terminal("_Dedent", TokenCategory.Outline);
+    public readonly static Terminal NewLine = new Terminal("LF", TokenCategory.Outline);
+    public readonly static Terminal Indent = new Terminal("INDENT", TokenCategory.Outline);
+    public readonly static Terminal Dedent = new Terminal("UNINDENT", TokenCategory.Outline);
+    // Identifies end of file
+    // Note: using Eof in grammar rules is optional. Parser automatically adds this symbol 
+    // as a lookahead to Root non-terminal
+    public readonly static Terminal Eof = new Terminal("EOF", TokenCategory.Outline);
 
+    //End-of-Statement terminal
+    public readonly static Terminal Eos = new Terminal("EOS", TokenCategory.Outline);
     // Special terminal for ReservedWord token produced by IdentifierTerminal when lexeme matches one of reserved words. 
     // It is sometimes(not always) necessary to distinguish reserved words from free identifiers in the input stream.
     public readonly static Terminal ReservedWord = new Terminal("ReservedWord", TokenMatchMode.ByValue);
-    
+
+    public readonly static Terminal SyntaxError = new ErrorTerminal("SYNTAX_ERROR");
     #endregion
 
-
-    #region Optimization 
-    //Not sure if this is useful ----------------------------------------------
-    public void FlattenNestedORs() {
-      NonTerminalList listInProgress = new NonTerminalList();
-      FlattenNestedORs(this.Root, listInProgress);
-    }
-    private void FlattenNestedORs(NonTerminal nonTerminal, NonTerminalList listInProgress) {
-    
-      if (nonTerminal == null)
-        return;
-      if (listInProgress.Contains(nonTerminal))
-        return; //prevent endless looping due to recurrency
-      listInProgress.Add(nonTerminal);
-      //process all children
-      foreach (IBnfExpression  ichild in nonTerminal.Expression.Operands)
-        FlattenNestedORs(ichild as NonTerminal, listInProgress);
-      listInProgress.Remove(nonTerminal);
-      //See if we need to process this NonTerminal
-      if (nonTerminal.Expression.ExpressionType != BnfExpressionType.Alternative)
-        return;
-
-      //Go through children and see if we can embed grandchildren directly 
-      BnfExpressionList args = nonTerminal.Expression.Operands;
-      for (int i = 0; i < args.Count; i++) {
-        NonTerminal arg = args[i] as NonTerminal;
-        if (arg == null || arg == nonTerminal  //avoid infinite loops 
-          || arg.Expression.ExpressionType != BnfExpressionType.Alternative
-          || arg.Expression.Operands.Count == 0)
-          continue;
-        //Insert child's alternatives directly here
-        args.RemoveAt(i);
-        args.InsertRange(i, arg.Expression.Operands);
-      }//for i
-       
-    }//method
-
-    #endregion
         
   }//class
   #endregion

@@ -50,7 +50,7 @@ namespace Irony.Compiler {
       _source = source;
 
       _source.Reset();
-      while (true) {
+      while (!_source.EOF()) {
         _currentToken = ReadToken();
         if (TokenCreated != null)
           OnTokenCreated(_currentToken);
@@ -70,24 +70,43 @@ namespace Irony.Compiler {
       //Find matching terminal
       TerminalList terms = SelectTerminals(_source.CurrentChar);
       Token result = null;
+      Token errorResult = null;
       int resultEndPos = 0;
       foreach (Terminal term in terms) {
         Token token = term.TryMatch(_context, _source);
-        if (token != null && (result == null || _source.Position > resultEndPos)) {
-          result = token;
-          resultEndPos = _source.Position;
-        }
+        if (token != null) {
+          if (token.Terminal.Category == TokenCategory.Error) {
+            errorResult = token;
+            continue;
+          }  
+          if ((result == null || _source.Position > resultEndPos)) {
+            result = token;
+            resultEndPos = _source.Position;
+          }//if result == nulll ...
+        }//if token != null
         _source.Position = _source.TokenStart.Position;
       }
+      //If we don't have a token, try Grammar's method
+      if (result == null) {
+        Token token = _data.Grammar.TryMatch(_context, _source);
+        if (token != null) {
+          if (token.IsError())
+            errorResult = token;
+          else
+            result = token;
+        }
+      }//if result == null
+      //If we have normal token then return it
       if (result != null) {
-        _source.Position = resultEndPos;
-      } else {
-        result = Grammar.CreateErrorToken(_source.TokenStart, "Invalid character: '{0}'", _source.CurrentChar);
-        //Primitive error recovery - skip until whitespace.
-        while (wspace.IndexOf(_source.CurrentChar) < 0)
-          _source.Position++;
-      }
-      return result;
+        //restore position to point after the result token
+        _source.Position = _source.TokenStart.Position + result.Text.Length; 
+        return result;
+      } 
+      //we have an error: either errorResult token or no token at all
+      if (errorResult == null) //if no error  result then create it
+        errorResult = Grammar.CreateSyntaxErrorToken(_source.TokenStart, "Invalid character: '{0}'", _source.CurrentChar);
+      Recover();
+      return errorResult;
     }//method
 
     public TerminalList SelectTerminals(char current) {
@@ -95,9 +114,13 @@ namespace Irony.Compiler {
       if (_data.TerminalsLookup.TryGetValue(current, out result))
         return result;
       else
-        return _data.NoPrefixTerminals;
+        return _data.TerminalsWithoutPrefixes;
     }//Select
-    
+
+    private void Recover() {
+      while (!_source.EOF() && _data.ScannerRecoverySymbols.IndexOf(_source.CurrentChar) < 0)
+        _source.Position++;
+    }
 
     public override string ToString() {
       return _source.ToString(); //show 30 chars starting from current position

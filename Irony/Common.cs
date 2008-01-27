@@ -38,6 +38,13 @@ namespace Irony {
     public string ToString(string separator) {
       string[] arr = new string[this.Count];
       this.CopyTo(arr);
+      //Clean-up \b suffix
+      for(int i = 0; i < arr.Length; i++) {
+        string key = arr[i];
+        if(key.EndsWith("\b"))
+          arr[i] = key.Substring(0, key.Length - 1);
+      }
+
       return string.Join(separator, arr);
     }
   }//KeyList class

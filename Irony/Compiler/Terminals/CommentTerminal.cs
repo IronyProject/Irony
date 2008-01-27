@@ -61,7 +61,7 @@ namespace Irony.Compiler {
       int endPos = source.Text.IndexOf(EndSymbol, source.Position);
       if (endPos < 0) {
         source.Position = source.Text.Length;
-        return Grammar.CreateErrorToken(source.TokenStart, "Unclosed comment block");
+        return Grammar.CreateSyntaxErrorToken(source.TokenStart, "Unclosed comment block");
       }
       source.Position = endPos + EndSymbol.Length;
       string lexeme = source.GetLexeme();

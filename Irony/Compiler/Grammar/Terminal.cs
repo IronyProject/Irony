@@ -17,6 +17,7 @@ using System.Text;
 namespace Irony.Compiler {
 
   public class TerminalList : List<Terminal> { }
+  
 
   public class Terminal : BnfElement {
 
@@ -43,14 +44,15 @@ namespace Irony.Compiler {
       protected set { _category = value; }
     } TokenCategory _category = TokenCategory.Content;
 
-    protected Grammar Grammar  {
-      get {return _grammar;}
-    } Grammar  _grammar;
+
+    //Priority is used when more than one terminal matches the input. 
+    // When choosing the token, scanner would check priority, then token length. 
+    public int Priority  {
+      get {return _priority;}
+      set {_priority = value;}
+    } int  _priority; //default is 0
 
     #region virtuals
-    public virtual void Init(Grammar grammar) {
-      _grammar = grammar;
-    }
     public virtual Token TryMatch(CompilerContext context, ISourceStream source) {
       return null;
     }
@@ -61,6 +63,20 @@ namespace Irony.Compiler {
     }
     #endregion
 
+    #region static comparison methods
+    public static int ByName(Terminal x, Terminal y) {
+      return string.Compare(x.ToString(), y.ToString());
+    }
+    public static int ByPriorityReverse(Terminal x, Terminal y) {
+      if (x.Priority > y.Priority)
+        return -1;
+      if (x.Priority == y.Priority)
+        return 0;
+      return 1;
+    }
+
+
+    #endregion
   }//class
 
 

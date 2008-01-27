@@ -25,7 +25,10 @@ namespace Irony.Compiler {
     #region constructors
     public NonTerminal(string name) : base(name) { 
     }
-    public NonTerminal(string name, bool isList)  : this(name) {
+    public NonTerminal(string name, string alias) : base(name, alias) {
+    }
+    public NonTerminal(string name, bool isList)
+      : this(name) {
       _isList = isList;
     }
     public NonTerminal(string name, Type nodeType) : this(name) { 
@@ -35,24 +38,33 @@ namespace Irony.Compiler {
       _nodeType = nodeType;
     }
     public NonTerminal(string name, BnfExpression expression) : this(name) { 
-      _expression = expression;
+      _rule = expression;
     }
     public NonTerminal(string name, Type nodeType, NodeCreatorMethod nodeCreator)   : this(name, nodeType) {
       this.NodeCreator = nodeCreator;
     }
     #endregion
 
-    #region properties: NodeType, Expression, Productions, Firsts
+    #region properties: NodeType, Rule, ErrorRule, Productions, ErrorProductions, Firsts
     public Type NodeType  {
       get {return _nodeType;}
       set {_nodeType = value;}
     } Type  _nodeType;
 
-    public BnfExpression Expression {
-      get { return _expression; }
-      set {_expression = value; }
-    }  BnfExpression _expression;
+    public BnfExpression Rule {
+      get { return _rule; }
+      set {_rule = value; }
+    }  BnfExpression _rule;
 
+    //Separate property for specifying error expressions. This allows putting all such expressions in a separate section
+    // in grammar for all non-terminals. However you can still put error expressions in the main Rule property, just like
+    // in YACC
+    public BnfExpression ErrorRule  {
+      get {return _errorRule;}
+      set {_errorRule = value;}
+    } BnfExpression  _errorRule;
+
+    //The following fields are used by GrammarDataBuilder and Parser
     public readonly ProductionList Productions = new ProductionList();
     public readonly KeyList Firsts = new KeyList();
     public readonly NonTerminalList PropagateFirstsTo = new NonTerminalList();
@@ -68,7 +80,7 @@ namespace Irony.Compiler {
 
     public override string ToString() {
       if (string.IsNullOrEmpty(Name))
-        return Expression.ToString();
+        return "(unnamed)";
       else 
         return Name;
     }

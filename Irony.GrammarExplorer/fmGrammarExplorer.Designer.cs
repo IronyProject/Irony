@@ -151,11 +151,12 @@ namespace Irony.GrammarExplorer {
       this.txtSource.Location = new System.Drawing.Point(0, 30);
       this.txtSource.Multiline = true;
       this.txtSource.Name = "txtSource";
-      this.txtSource.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+      this.txtSource.ScrollBars = System.Windows.Forms.ScrollBars.Both;
       this.txtSource.Size = new System.Drawing.Size(713, 585);
       this.txtSource.TabIndex = 0;
       this.txtSource.Text = "Use Load button to load source code samples from Irony.GrammarExplorer\\SourceSamp" +
           "les folder";
+      this.txtSource.WordWrap = false;
       // 
       // lstParseTrace
       // 
@@ -179,7 +180,6 @@ namespace Irony.GrammarExplorer {
       this.lstErrors.Size = new System.Drawing.Size(276, 480);
       this.lstErrors.TabIndex = 0;
       this.lstErrors.SelectedIndexChanged += new System.EventHandler(this.lstErrors_SelectedIndexChanged);
-      this.lstErrors.Click += new System.EventHandler(this.lstErrors_Click);
       // 
       // panel3
       // 
@@ -698,7 +698,7 @@ namespace Irony.GrammarExplorer {
       this.Controls.Add(this.pnlLang);
       this.Name = "fmGrammarExplorer";
       this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-      this.Text = "Grammar Explorer";
+      this.Text = "Irony Grammar Explorer";
       this.Load += new System.EventHandler(this.fmExploreGrammar_Load);
       this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.fmExploreGrammar_FormClosing);
       this.panel1.ResumeLayout(false);

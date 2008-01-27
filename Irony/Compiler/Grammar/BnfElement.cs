@@ -20,23 +20,36 @@ namespace Irony.Compiler {
 
   public class BnfElementList : List<BnfElement> { }
 
-  //Basic Backus-Naur Form element. BNF elements may be of two kinds: Terminals and NonTerminals. 
-  public abstract class BnfElement : IBnfExpression, IComparable  {
-    public BnfElement(string name) {
+  //Basic Backus-Naur Form element. 
+  public class BnfElement : IComparable  {
+    public BnfElement(string name) : this(name, null) { }
+    public BnfElement(string name, string alias) {
       _name = name;
+      _alias = alias;
       _key = name + "\b"; //to guarantee against erroneous match of element's key with token value
                           // so Identifier terminal doesn't match 'identifier' string 
                           // in the input stream
     }
+    public virtual void Init(Grammar grammar) {
+      _grammar = grammar;
+    }
+
     public override string ToString() {
       return "[" + _name + "]";
     }
+
 
     #region properties: Name
     public string Name {
       get { return _name; }
       internal set { _name = value; }
     } string  _name;
+    
+    //Alias is used in error reporting, e.g. "Syntax error, expected <list-of-aliases>". 
+    public string Alias  {
+      get {return _alias;}
+      set {_alias = value;}
+    } string  _alias;
 
     //The Key is used in matching 
     public virtual string Key {
@@ -49,6 +62,9 @@ namespace Irony.Compiler {
       set { _nullable = value; }
     }   bool _nullable;
 
+    protected Grammar Grammar {
+      get { return _grammar; }
+    } Grammar _grammar;
     #endregion
 
     #region Kleene operators: Q(), Plus(), Star()
@@ -59,33 +75,33 @@ namespace Irony.Compiler {
     public NonTerminal Q() {
       if (_q != null) return _q;
       _q = new NonTerminal(this.Name + "?");
-      _q.Expression = this | Grammar.Empty;
+      _q.Rule = this | Grammar.Empty;
       return _q;
     }
     public NonTerminal Plus() {
       if (_plus != null) return _plus;
       _plus = new NonTerminal(this.Name + "+", true);
-      _plus.Expression = this | _plus + this;
+      _plus.Rule = this | _plus + this;
       return _plus;
     }
     public NonTerminal Star() {
       if (_star != null) return _star;
       _star = new NonTerminal(this.Name + "*", true);
-      _star.Expression = _star + this | Grammar.Empty;
+      _star.Rule = _star + this | Grammar.Empty;
       return _star;
     }
 
     public NonTerminal Plus(BnfElement delimiter) {
       if (delimiter == null) return Plus();
       NonTerminal list = new NonTerminal(this.Name + "_list", true);
-      list.Expression = this | list + delimiter + this;
+      list.Rule = this | list + delimiter + this;
       return list;
     }
 
     public NonTerminal Star(BnfElement delimiter) {
       if (delimiter == null) return Star();
       NonTerminal list = new NonTerminal(this.Name + "_list?", true);
-      list.Expression = this.Plus(delimiter).Q();
+      list.Rule = this.Plus(delimiter).Q();
       return list;
     }
     public NonTerminal Plus(string delimiter) {
@@ -96,46 +112,72 @@ namespace Irony.Compiler {
     }
     #endregion
 
-    #region static methods and operations; operators: +, |, implicit, -
-    public static BnfExpression operator +(BnfElement elem, IBnfExpression iexpr) {
-      return BnfExpression.Op_Plus(elem, iexpr);
+    #region Operators: +, |, implicit
+    public static BnfExpression operator +(BnfElement elem1, BnfElement elem2) {
+      return Op_Plus(elem1, elem2);
     }
     public static BnfExpression operator +(BnfElement elem1, string symbol2) {
-      return BnfExpression.Op_Plus(elem1, symbol2);
+      return Op_Plus(elem1, SymbolTerminal.GetSymbol(symbol2));
     }
     public static BnfExpression operator +( string symbol1, BnfElement elem2) {
-      return BnfExpression.Op_Plus(symbol1, elem2);
+      return Op_Plus(SymbolTerminal.GetSymbol(symbol1), elem2);
     }
 
     //Alternative 
-    public static BnfExpression operator |(BnfElement elem, IBnfExpression iexpr) {
-      return BnfExpression.Op_Pipe(elem, iexpr);
+    public static BnfExpression operator |(BnfElement elem1, BnfElement elem2) {
+      return Op_Pipe(elem1, elem2);
     }
     public static BnfExpression operator |(BnfElement elem1, string symbol2) {
-      return BnfExpression.Op_Pipe(elem1, symbol2);
+      return Op_Pipe(elem1, SymbolTerminal.GetSymbol(symbol2));
     }
     public static BnfExpression operator |(string symbol1, BnfElement elem2) {
-      return BnfExpression.Op_Pipe(symbol1, elem2);
-    }
-    
-    #endregion
-
-    #region ISyntacticExpression Members
-
-    BnfExpressionType IBnfExpression.ExpressionType {
-      get { return BnfExpressionType.Element; }
+      return Op_Pipe(SymbolTerminal.GetSymbol(symbol1), elem2);
     }
 
-    #endregion
+    //BNF operations implementation -----------------------
+    // Plus/sequence
+    //Note that we wouldn't allow nested sub-expressions - they are converted to NonTerminals
+    internal static BnfExpression Op_Plus(BnfElement elem1, BnfElement elem2) {
+      //Check elem1 and see if we can use it as result, simply adding elem2 as operand
+      BnfExpression expr1 = elem1 as BnfExpression;
+      if (expr1 == null || expr1.Data.Count > 1) //either not expression at all, or Pipe-type expression (count > 1)
+        expr1 = new BnfExpression(elem1);
+      if (elem2 != Grammar.Empty)
+        expr1.Data[expr1.Data.Count - 1].Add(elem2);
+      return expr1;
+    }
 
+    //Pipe/Alternative
+    internal static BnfExpression Op_Pipe(BnfElement elem1, BnfElement elem2) {
+      //Check elem1 and see if we can use it as result, simply adding elem2 as operand
+      BnfExpression expr1 = elem1 as BnfExpression;
+      if (expr1 == null) //either not expression at all, or Pipe-type expression (count > 1)
+        expr1 = new BnfExpression(elem1);
+      //Check elem2; if it is an expression and is simple sequence (Data.Count == 1) then add this sequence directly to expr1
+      BnfExpression expr2 = elem2 as BnfExpression;
+      //1. elem2 is a simple expression
+      if (expr2 != null && expr2.Data.Count == 1) { // if it is simple sequence (plus operation), add it directly
+        expr1.Data.Add(expr2.Data[0]);
+        return expr1;
+      }
+      //2. elem2 is not a simple expression
+      expr1.Data.Add(new BnfElementList()); //add a list for a new OR element (new "plus" sequence)
+      if (elem2 != Grammar.Empty)
+        expr1.Data[expr1.Data.Count - 1].Add(elem2); // and put  elem2 there if it is not Empty pseudo-element
+      return expr1;
+    }
+
+    #endregion
 
     #region IComparable Members
     // Terminals are sorted by string representation just for pretty printing only
     public int CompareTo(object obj) {
-      return string.Compare(this.ToString(), obj.ToString());
+      return string.Compare(_name, obj.ToString());
     }
 
     #endregion
+
+
   }//class
 
 

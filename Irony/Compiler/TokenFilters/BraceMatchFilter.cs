@@ -58,12 +58,12 @@ namespace Irony.Compiler {
             //it is left brace
             _stack.Add(_braces[idx + 1]);
           else if (_stack.Count == 0)
-            yield return Grammar.CreateErrorToken(token.Location, "Unexpected closing symbol - no matching opening symbol.");
+            yield return Grammar.CreateSyntaxErrorToken(token.Location, "Unexpected closing symbol - no matching opening symbol.");
           else if (_stack[_stack.Count - 1] != tokenKey) {
             //closing brace mismatch
             string expected = _stack[_stack.Count - 1];
             _stack.RemoveAt(_stack.Count - 1); //still remove "unmatched" symbol from stack
-            yield return Grammar.CreateErrorToken(token.Location, "'" + expected + "' expected.");
+            yield return Grammar.CreateSyntaxErrorToken(token.Location, "'" + expected + "' expected.");
             //yield "correct" closing symbol, to let the grammar continue.
             yield return new Token(SymbolTerminal.GetSymbol(expected), token.Location, expected);
           } else

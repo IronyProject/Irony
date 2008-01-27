@@ -45,8 +45,6 @@ namespace Irony.GrammarExplorer {
       get {return _compiler;}
     } LanguageCompiler  _compiler;
 
-    CompilerContext _context;
-
     private void btnParse_Click(object sender, EventArgs e) {
       AstNode rootNode = null;
       ResetResultPanels();
@@ -56,9 +54,8 @@ namespace Irony.GrammarExplorer {
         _tokens.Clear();
       }
       try {
-        _context = new CompilerContext();
         SourceFile source = new SourceFile(txtSource.Text, "source", 8);
-        rootNode = Compiler.Compile(_context, source);
+        rootNode = Compiler.Parse(txtSource.Text);
       } catch (Exception ex) {
         lstErrors.Items.Add(ex);
         lstErrors.Items.Add("Parser state: " + Compiler.Parser.CurrentState);
@@ -69,10 +66,10 @@ namespace Irony.GrammarExplorer {
         Compiler.Parser.ActionSelected -= Parser_ParserAction;
         Compiler.Parser.TokenReceived -= Parser_TokenReceived;
       }
-      if (_context.Errors.Count > 0) {
+      if (Compiler.Context.Errors.Count > 0) {
         if (tabResults.SelectedTab == pageResult)
           tabResults.SelectedTab = pageParseErrors;
-        foreach (SyntaxError err in _context.Errors) 
+        foreach (SyntaxError err in Compiler.Context.Errors) 
           lstErrors.Items.Add(err);
       }
       if (chkShowTrace.Checked)
@@ -101,7 +98,7 @@ namespace Irony.GrammarExplorer {
       lblStatLines.Text = Compiler.Parser.LineCount.ToString();
       lblStatTokens.Text = Compiler.Parser.TokenCount.ToString();
       lblStatTime.Text = Compiler.CompileTime.ToString();
-      lblErrCount.Text = _context.Errors.Count.ToString();
+      lblErrCount.Text = Compiler.Context.Errors.Count.ToString();
       Application.DoEvents();
       //Note: this time is "pure" compile time; actual delay after cliking "Compile" includes time to fill TreeView control 
       //  showing compiled syntax tree. 
@@ -151,14 +148,14 @@ namespace Irony.GrammarExplorer {
       txtGrammarErrors.Text = "(no errors found)";
       if (Compiler == null) return;
       GrammarData data = Compiler.Parser.Data;
-      txtTerms.Text = TerminalsToText(data.Terminals);
-      txtNonTerms.Text = NonTerminalsToText(data.NonTerminals);
+      txtTerms.Text = data.GetTerminalsAsText();
+      txtNonTerms.Text = data.GetNonTerminalsAsText();
       //Productions and LR0 items
       foreach (Production pr in data.Productions) {
         lstProds.Items.Add(pr);
       }
       //States
-      txtParserStates.Text = StatesToText(data.States);
+      txtParserStates.Text = data.GetStatesAsText();
       //Validation errors
       if (data.Errors.Count > 0)
         txtGrammarErrors.Text = data.Errors.ToString(Environment.NewLine);
@@ -184,7 +181,11 @@ namespace Irony.GrammarExplorer {
       return result;
     }
 
-    private void lstErrors_Click(object sender, EventArgs e) {
+    private void lstErrors_SelectedIndexChanged(object sender, EventArgs e) {
+      ShowError();
+    }
+
+    private void ShowError() {
       txtErrDetails.Text = "";
       if (lstErrors.SelectedItem == null) return;
       SyntaxError se = lstErrors.SelectedItem as SyntaxError;
@@ -263,62 +264,6 @@ namespace Irony.GrammarExplorer {
         MessageBox.Show(e.Message);
       }
     }
-
-    #region utilites: TerminalsToText, NonTerminalsToText
-    public string TerminalsToText(TerminalList terminals) {
-      StringBuilder sb = new StringBuilder();
-      foreach (Terminal term in terminals) {
-        sb.Append(term.ToString());
-        sb.AppendLine();
-      }
-      return sb.ToString();
-    }
-    public string NonTerminalsToText(NonTerminalList nonTerminals) {
-      StringBuilder sb = new StringBuilder();
-      foreach (NonTerminal nt in nonTerminals) {
-        sb.Append(nt.Name);
-        sb.Append(nt.Nullable ? "  (Nullable) " : "");
-        sb.AppendLine();
-        foreach (Production pr in nt.Productions) {
-          sb.Append("   ");
-          sb.AppendLine(pr.ToString());
-        }
-        sb.Append("  FIRSTS: ");
-        sb.AppendLine(nt.Firsts.ToString(" "));
-        sb.AppendLine();
-      }//foreachc nt
-      return sb.ToString();
-    }
-    public string StatesToText(ParserStateList states) {
-      StringBuilder sb = new StringBuilder();
-      foreach (ParserState state in states) {
-        sb.Append("State ");
-        sb.AppendLine(state.Name);
-        //LRItems
-        foreach (LRItem item in state.Items) {
-          sb.Append("    ");
-          sb.AppendLine(item.ToString());
-        }
-        //Transitions
-        sb.Append("     Transitions: ");
-        foreach (string key in state.Actions.Keys) {
-          ActionRecord action = state.Actions[key];
-          if (action.NewState == null) continue;
-          sb.Append(key);
-          sb.Append("->");
-          sb.Append(action.NewState.Name);
-          sb.Append("; ");
-        }
-        sb.AppendLine();
-      }//foreach
-      return sb.ToString();
-    }
-    #endregion
-
-    private void lstErrors_SelectedIndexChanged(object sender, EventArgs e) {
-
-    }
-
 
 
 

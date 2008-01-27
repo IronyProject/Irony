@@ -17,10 +17,10 @@ using System.Collections;
 
 
 namespace Irony.Compiler {
-  //Parser class implements LALR(1) parser DFM. Its behavior is controlled by a state transition graph
-  // contained in _data.States list. Each state contains a dictionary of parser actions indexed by input 
-  // element (token or non-terminal node). Parser takes input token stream and produces Abstract Syntax Tree.
-  public class Parser  {
+  //Parser class implements LALR(1) parser DFM. Its behavior is controlled by the state transition graph
+  // with root in Data.InitialState. Each state contains a dictionary of parser actions indexed by input 
+  // element (token or non-terminal node). 
+  public class Parser {
 
     #region Constructors
     public Parser(GrammarData data) {
@@ -37,6 +37,10 @@ namespace Irony.Compiler {
     public IEnumerator<Token> Input {
       get {return _input;}
     } IEnumerator<Token> _input;
+
+    public Token CurrentToken  {
+      get {return _currentToken;}
+    } Token  _currentToken;
 
     public ParserState CurrentState {
       get {return _currentState;}
@@ -59,9 +63,9 @@ namespace Irony.Compiler {
     public event EventHandler<TokenEventArgs> TokenReceived;
     TokenEventArgs _tokenArgs = new TokenEventArgs(null); //declar as field and reuse it to avoid generating garbage
 
-    protected void OnTokenReceived(Token token) {
+    protected void OnTokenReceived() {
       if (TokenReceived == null) return;
-      _tokenArgs.Token = token;
+      _tokenArgs.Token = _currentToken;
       TokenReceived(this, _tokenArgs);
     }
     #endregion
@@ -75,31 +79,21 @@ namespace Irony.Compiler {
       _context.Errors.Clear();
     }
     
-    private Token GetToken() {
-      Token token;
+    private void ReadToken() {
       while (_input.MoveNext()) {
-        token = _input.Current;
+        _currentToken = _input.Current;
         _tokenCount++;
-        _lineCount = token.Location.Line + 1;
+        _lineCount = _currentToken.Location.Line + 1;
+        if (_currentToken.Terminal.Category == TokenCategory.Comment)
+          continue; 
         if (TokenReceived != null)
-          OnTokenReceived(token);
-        //check token category
-        switch (token.Terminal.Category) {
-          case TokenCategory.Content:
-          case TokenCategory.Outline:
-            return token;
-          case TokenCategory.Comment:
-            continue;
-          case TokenCategory.Error:
-            ReportError(token);
-            Recover();
-            continue;
-        }//switch
+          OnTokenReceived();
+        return; 
       }//while
       //Normally we never get here. 
-      // It might happen if the grammar directly uses EOF token in Root definition (which is not recommended);
+      // It might happen if a grammar somehow expects more than one EOF. 
       //  in this case we keep returning EOF token, to avoid breaking the parser.
-      return new Token(Grammar.Eof, new SourceLocation(0, _lineCount - 1, 0), ""); 
+      _currentToken = new Token(Grammar.Eof, new SourceLocation(0, _lineCount - 1, 0), ""); 
     }//method
 
 
@@ -107,67 +101,154 @@ namespace Irony.Compiler {
       _context = context;
       Reset();
       _input = tokenStream.GetEnumerator();
-      Token token = GetToken();
+      ReadToken();
       while (true) {
-        if (_currentState == Data.FinalState)
-          return Stack[0].Node;
-        //Check for EOF
-        //if (token.Terminal == Grammar.Eof && Stack.Count == 0) 
-        //  yield break;
-        //Figure out whether to shift or to reduce
-        ActionRecord action = GetAction(token);
+        if (_currentState == Data.FinalState) {
+          AstNode result = Stack[0].Node;
+          Stack.Reset();
+          return result;
+        }
+        //check for scammer error
+        if (_currentToken.Terminal.Category == TokenCategory.Error) {
+          ReportScannerError();
+          if (!Recover()) 
+            return null; 
+          continue;
+        }
+        //Get action
+        ActionRecord action = GetCurrentAction();
+        if (action == null) {
+          ReportParserError();
+          if (!Recover())
+            return null; //did not recover
+          continue;
+        }//action==null
+
         if (ActionSelected != null) //just to improve performance we check it here
-          OnActionSelected(_currentState, token, action);
+          OnActionSelected(_currentState, _currentToken, action);
         if (action.HasConflict())
-          action = OnActionConflict(_currentState, token, action);
+          action = OnActionConflict(_currentState, _currentToken, action);
         switch(action.ActionType) {
           case ParserActionType.Operator:
-            if (GetActionTypeForOperation(token) == ParserActionType.Shift)
+            if (GetActionTypeForOperation(_currentToken) == ParserActionType.Shift)
               goto case ParserActionType.Shift;
             else
               goto case ParserActionType.Reduce;
 
           case ParserActionType.Shift:
-            Stack.Push(token, token.Location, _currentState);
-            _currentState = action.NewState;
-            token = GetToken();
+            ExecuteShiftAction(action);
             break;
 
           case ParserActionType.Reduce:
-            ExecuteReduceAction(action, token);
-            break;
-          
-          case ParserActionType.Error:
-            //TODO: add better error reporting here
-            if (token.Terminal == Grammar.Eof) {
-              ReportError(_input.Current.Location, "Unexpected end of file.");
-              return null;
-            } else
-              ReportError(_input.Current.Location, "Syntax error.");
-            Recover();
-            token = GetToken();
+            ExecuteReduceAction(action);
             break;
         }//switch
       }//while
     }//Parse
     #endregion
 
-    #region Error handling
+    #region Error reporting and recovery
     private void ReportError(SourceLocation location, string message, params object[] args) {
       if (args != null && args.Length > 0)
         message = string.Format(message, args);
       _context.AddError(location, message, _currentState);
     }
 
-    private void ReportError(Token errorToken) {
-      _context.AddError(errorToken.Location, errorToken.Text, _currentState);
+    private void ReportScannerError() {
+      _context.AddError(_currentToken.Location, _currentToken.Text, _currentState);
+    }
+    
+    private void ReportParserError() {
+      if (_currentToken.Terminal == Grammar.Eof) {
+        ReportError(_currentToken.Location, "Unexpected end of file.");
+        return;
+      }
+      KeyList expectedList = GetCurrentExpectedSymbols();
+      string message = this.Data.Grammar.GetSyntaxErrorMessage(_context, expectedList);
+      if (message == null) 
+        message = "Syntax error" + (expectedList.Count == 0 ? "." : ", expected: " + expectedList.ToString(" "));
+      ReportError(_currentToken.Location, message);
     }
 
-    private Token Recover() {
-      //TODO: implement REAL recovery to some consistent state.
-      Token token;
-      token = GetToken(); //simply shift to next token
-      return token;
+    #region Comment
+    //TODO: This needs more work. Currently it reports all individual symbols most of the time, in a message like
+    //  "Syntax error, expected: + - < > = ..."; the better method is to group operator symbols under one alias "operator". 
+    // The reason is that code picks expected key list at current(!) state only, 
+    // slightly tweaking it for non-terminals, without exploring Reduce roots
+    // It is quite difficult to discover grouping non-terminals like "operator" in current structure. 
+    // One possible solution would be to introduce "ExtendedLookaheads" in ParserState which would include 
+    // all NonTerminals that might follow the current position. This list would be calculated at start up, 
+    // in addition to normal lookaheads. 
+    #endregion
+    private KeyList GetCurrentExpectedSymbols() {
+      BnfElementList inputElements = new BnfElementList();
+      KeyList inputKeys = new KeyList();
+      inputKeys.AddRange(_currentState.Actions.Keys);
+      //First check all NonTerminals
+      foreach (NonTerminal nt in Data.NonTerminals) {
+        if (!inputKeys.Contains(nt.Key)) continue; 
+        //nt is one of our available inputs; check if it has an alias. If not, don't add it to element list;
+        // and we have already all its "Firsts" keys in the list. 
+        // If yes, add nt to element list and remove
+        // all its "fists" symbols from the list. These removed symbols will be represented by single nt alias. 
+        if (string.IsNullOrEmpty(nt.Alias))
+          inputKeys.Remove(nt.Key);
+        else {
+          inputElements.Add(nt);
+          foreach(string first in nt.Firsts) 
+            inputKeys.Remove(first);
+        }
+      }
+      //Now terminals
+      foreach (Terminal term in Data.Terminals) {
+        if (inputKeys.Contains(term.Key))
+          inputElements.Add(term);
+      }
+      KeyList result = new KeyList();
+      foreach(BnfElement elem in inputElements)
+        result.Add(string.IsNullOrEmpty(elem.Alias)? elem.Name : elem.Alias);
+      result.Sort();
+      return result;
+    }
+
+    //TODO: need to rewrite, looks ugly
+    private bool Recover() {
+      if (_currentToken.Category != TokenCategory.Error)
+        _currentToken = Grammar.CreateSyntaxErrorToken(_currentToken.Location, "Syntax error.");
+      //Check the current state and states in stack for error shift action - this would be recovery state.
+      ActionRecord action = GetCurrentAction();
+      if (action == null || action.ActionType == ParserActionType.Reduce) {
+        while(Stack.Count > 0) {
+          _currentState = Stack.Top.State;
+          Stack.Pop(1);
+          action = GetCurrentAction();
+          if (action != null && action.ActionType != ParserActionType.Reduce) 
+            break; //we found shift action for error token
+        }//while
+      }//if
+      if (action == null || action.ActionType == ParserActionType.Reduce) 
+        return false; //could not find shift action, cannot recover
+      //We found recovery state, and action contains ActionRecord for "error shift". Lets shift it.  
+      ExecuteShiftAction(action);//push the error token
+      // Now shift all tokens from input that can be shifted. 
+      // These are the ones that are found in error production after the error. We ignore all other tokens
+      // We stop when we find a state with reduce-only action.
+      while (_currentToken.Terminal != Grammar.Eof) {
+        //with current token, see if we can shift it. 
+        action = GetCurrentAction();
+        if (action == null) {
+          ReadToken(); //skip this token and continue reading input
+          continue; 
+        }
+        if (action.ActionType == ParserActionType.Reduce || action.ActionType == ParserActionType.Operator) {
+          //we can reduce - let's reduce and return success - we recovered.
+          ExecuteReduceAction(action);
+          return true;
+        }
+        //it is shift action, let's shift
+        ExecuteShiftAction(action);
+      }//while
+      return false; // 
     }
     #endregion
 
@@ -188,17 +269,17 @@ namespace Irony.Compiler {
     }
     #endregion
 
-    private ActionRecord GetAction(Token token) {
+    #region Misc private methods
+    private ActionRecord GetCurrentAction() {
       ActionRecord action = null;
-      if ((token.Terminal.MatchMode & TokenMatchMode.ByValue) != 0) {
-        if (_currentState.Actions.TryGetValue(token.Text, out action))
+      if ((_currentToken.Terminal.MatchMode & TokenMatchMode.ByValue) != 0 && _currentToken.Text != null) {
+        if (_currentState.Actions.TryGetValue(_currentToken.Text, out action))
           return action;
       }
-      if ((token.Terminal.MatchMode & TokenMatchMode.ByType) != 0 &&  
-        _currentState.Actions.TryGetValue(token.Terminal.Key, out action))
+      if ((_currentToken.Terminal.MatchMode & TokenMatchMode.ByType) != 0 &&  
+        _currentState.Actions.TryGetValue(_currentToken.Terminal.Key, out action))
         return action;
-      //return error action singleton
-      return ActionRecord.ErrorAction;
+      return null; //action not found
     }
     private ParserActionType GetActionTypeForOperation(Token current) {
       OperatorInfo opInfo;
@@ -208,17 +289,22 @@ namespace Irony.Compiler {
         Token tkn = Stack[i].Node as Token;
         if (tkn == null) continue;
         string prevOp = tkn.Text;
-        if (prevOp == op) //if previous operator is the same then use associativity
-          return opInfo.Associativity == Associativity.Left ? ParserActionType.Reduce : ParserActionType.Shift;
         OperatorInfo prevOpInfo;
         if (!Data.Grammar.Operators.TryGetValue(prevOp, out prevOpInfo)) continue;
-        ParserActionType result = prevOpInfo.Precedence >= opInfo.Precedence ? ParserActionType.Reduce : ParserActionType.Shift;
+        //if previous operator has the same precedence then use associativity
+        if (prevOpInfo.Precedence == opInfo.Precedence) 
+          return opInfo.Associativity == Associativity.Left ? ParserActionType.Reduce : ParserActionType.Shift;
+        ParserActionType result = prevOpInfo.Precedence > opInfo.Precedence ? ParserActionType.Reduce : ParserActionType.Shift;
         return result;
       }
       return ParserActionType.Shift;
     }
-
-    private void ExecuteReduceAction(ActionRecord action, Token current) {
+    private void ExecuteShiftAction(ActionRecord action) {
+      Stack.Push(_currentToken, _currentToken.Location, _currentState);
+      _currentState = action.NewState;
+      ReadToken();
+    }
+    private void ExecuteReduceAction(ActionRecord action) {
       ParserState oldState = _currentState;
       int popCnt = action.PopCount;
 
@@ -227,12 +313,12 @@ namespace Irony.Compiler {
       for (int i = 0; i < action.PopCount; i++) {
         AstNode child = Stack[Stack.Count - popCnt + i].Node;
         Token tkn = child as Token;
-        if (tkn != null && Data.PunctuationLookup.ContainsKey(tkn.Text))
+        if (tkn != null && tkn.Text != null && Data.PunctuationLookup.ContainsKey(tkn.Text))
           continue; //don't add this node, it is punctuation symbol
         childNodes.Add(child);
       }
       //recover state, location and pop the stack
-      SourceLocation location = current.Location;
+      SourceLocation location = _currentToken.Location;
       if (popCnt > 0) {
         location = Stack[Stack.Count - popCnt].Location;
         _currentState = Stack[Stack.Count - popCnt].State;
@@ -248,8 +334,10 @@ namespace Irony.Compiler {
         _currentState = gotoAction.NewState;
       } else 
         //should never happen
-        throw new ApplicationException( string.Format("Cannot find transition for input {0}; state: {1}, popped state: {2}", action.NonTerminal, oldState, _currentState));
+        throw new ApplicationException( string.Format("Cannot find transition for input {0}; state: {1}, popped state: {2}", 
+              action.NonTerminal, oldState, _currentState));
     }//method
+    #endregion
 
   }//class
 

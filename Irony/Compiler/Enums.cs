@@ -40,7 +40,6 @@ namespace Irony.Compiler {
     Shift,
     Reduce,
     Operator,  //shift or reduce depending on operator associativity and precedence
-    Error,
   }
 
 }

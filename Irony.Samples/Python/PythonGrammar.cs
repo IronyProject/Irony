@@ -21,13 +21,12 @@ namespace Irony.Samples.Python {
   // It is coded by manual translation of grammar rules in provided in Python_auth_svn.txt file.
   // It was tweaked in many places to resolve LALR conflicts, sometimes almost beyond recognition of original expressions.
   // See Grammar Errors tab in GrammarExplorer for remaining conflicts.
-  // Any help in building real LALR(1) grammar will be highly appreciated. 
 
   //Note that unlike Ruby sample grammar, Python grammar does not use "non-grammar" operator precedence facility 
   // to define proper parsing order of arithmetic expressions. Instead, it expresses operator precedence directly 
   // in grammar by defining multiple expression elements with different operator-combination rules. As a result, 
   // Python AST appears much more convoluted - many simple nodes are stacked into one another multiple times. 
-  // We did this purely for illustration purposes. Python grammar (and AST trees) can be easily compacted 
+  // We did this purely for illustration purposes. Python grammar (and AST trees) can be compacted 
   //  using operator precedence and associativity.
 
   public class PythonGrammar : Grammar {
@@ -41,7 +40,7 @@ namespace Irony.Samples.Python {
       StringLiteral stringLiteral2 = new StringLiteral("StringLiteralDQ3", "\"\"\"", "\"\"\"");
       StringLiteral stringLiteral3 = new StringLiteral("StringLiteralSQ", "'", "'");
       StringLiteral stringLiteral4 = new StringLiteral("StringLiteralSQ3", "'''", "'''");
-      IdentifierTerminal Identifier = new IdentifierTerminal("identifier", "_", "_");
+      IdentifierTerminal Identifier = new IdentifierTerminal("Identifier");
       Terminal Comment = new CommentTerminal("Comment", "#", "", "");
       ExtraTerminals.Add(Comment);
 
@@ -49,7 +48,7 @@ namespace Irony.Samples.Python {
       //commaQ is optional trailing comma in lists; it causes several conflicts in this grammar
       // so we get rid of it (by assigning it Empty value)
       //NonTerminal commaQ = comma.Q();  //this causes several conflicts
-      Terminal commaQ = Empty; 
+      BnfElement commaQ = Empty; 
       Terminal dot = Symbol(".", "dot");
       Terminal LBr   = Symbol("[");
       Terminal RBr   = Symbol("]");
@@ -168,127 +167,127 @@ namespace Irony.Samples.Python {
       //Set grammar root
       base.Root = file_input;
       //file_input: (NEWLINE | stmt)* ENDMARKER
-      file_input.Expression = NEWLINE.Q() + stmt.Star();// +EOF; //EOF is added by default as a lookahead
+      file_input.Rule = NEWLINE.Q() + stmt.Star();// +EOF; //EOF is added by default as a lookahead
 
       //single_input: NEWLINE | simple_stmt | compound_stmt NEWLINE
-      single_input.Expression = NEWLINE | simple_stmt | compound_stmt + NEWLINE;
+      single_input.Rule = NEWLINE | simple_stmt | compound_stmt + NEWLINE;
       //eval_input: testlist NEWLINE* ENDMARKER
-      eval_input.Expression = NEWLINE.Q() + WithStar(testlist + NEWLINE); // +EOF;  //changed this
+      eval_input.Rule = NEWLINE.Q() + WithStar(testlist + NEWLINE); // +EOF;  //changed this
 
       //decorators: decorator+
       //decorator: '@' dotted_name [ '(' [arglist] ')' ] NEWLINE
-      decorator.Expression = "@" + dotted_name + WithQ("(" + arglist.Q() + ")") + NEWLINE;
+      decorator.Rule = "@" + dotted_name + WithQ("(" + arglist.Q() + ")") + NEWLINE;
       //funcdef: [decorators] 'def' NAME parameters ':' suite
-      funcdef.Expression = decorator.Star() + "def" + NAME + parameters + ":" + suite;
+      funcdef.Rule = decorator.Star() + "def" + NAME + parameters + ":" + suite;
       // parameters: '(' [varargslist] ')'
-      parameters.Expression = "(" + varargslist.Q() + ")";
+      parameters.Rule = "(" + varargslist.Q() + ")";
 
 
       /* varargslist: ((fpdef ['=' test] ',')*
               ('*' NAME [',' '**' NAME] | '**' NAME) |
                 fpdef ['=' test] (',' fpdef ['=' test])* [','])  */
-      fpdef_ext.Expression = fpdef + WithQ("=" + test);
+      fpdef_ext.Rule = fpdef + WithQ("=" + test);
 /*      varargslist.Expression = WithStar(fpdef_ext + comma) +
                     WithQ("*" + NAME + WithQ (comma + "**" + NAME) | "**" + NAME) |
                     fpdef_ext.Plus(comma) + commaQ; */  // ambiguous
-      varargslist.Expression = vararg.Plus(comma) + commaQ;
-      vararg.Expression = fpdef_ext | "*" + NAME | "**" + NAME; // added this to grammar
+      varargslist.Rule = vararg.Plus(comma) + commaQ;
+      vararg.Rule = fpdef_ext | "*" + NAME | "**" + NAME; // added this to grammar
       // fpdef: NAME | '(' fplist ')'
-      fpdef.Expression = NAME | "(" + fplist + ")";
+      fpdef.Rule = NAME | "(" + fplist + ")";
       //fplist: fpdef (',' fpdef)* [',']
-      fplist.Expression = fpdef.Plus(comma) + commaQ;
+      fplist.Rule = fpdef.Plus(comma) + commaQ;
 
       //stmt: simple_stmt | compound_stmt
-      stmt.Expression = simple_stmt | compound_stmt;
+      stmt.Rule = simple_stmt | compound_stmt;
       //simple_stmt: small_stmt (';' small_stmt)* [';'] NEWLINE
-      simple_stmt.Expression = small_stmt.Plus(semicolon) + semicolon.Q() + NEWLINE;
+      simple_stmt.Rule = small_stmt.Plus(semicolon) + semicolon.Q() + NEWLINE;
       /* small_stmt: (expr_stmt | print_stmt  | del_stmt | pass_stmt | flow_stmt |
              import_stmt | global_stmt | exec_stmt | assert_stmt)   */      
-      small_stmt.Expression = expr_stmt | print_stmt  | del_stmt | pass_stmt | flow_stmt |
+      small_stmt.Rule = expr_stmt | print_stmt  | del_stmt | pass_stmt | flow_stmt |
                    import_stmt | global_stmt | exec_stmt | assert_stmt;
       /* expr_stmt: testlist (augassign (yield_expr|testlist) |
                      ('=' (yield_expr|testlist))*)    */
       //Note!: the following is a less strict expression, it allows augassign to appear multiple times
       //  in non-first position; the after-parse analysis should catch this
-      expr_stmt.Expression = testlist + WithStar( (augassign|"=") + yield_or_testlist);
-      yield_or_testlist.Expression = yield_expr | testlist;
+      expr_stmt.Rule = testlist + WithStar( (augassign|"=") + yield_or_testlist);
+      yield_or_testlist.Rule = yield_expr | testlist;
       /* augassign: ('+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' |
             '<<=' | '>>=' | '**=' | '//=') */
-      augassign.Expression = Symbol("+=") | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" |
+      augassign.Rule = Symbol("+=") | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" |
                   "<<=" | ">>=" | "**=" | "//=";
       //# For normal assignments, additional restrictions enforced by the interpreter
       /*  print_stmt: 'print' ( [ test (',' test)* [','] ] |
                       '>>' test [ (',' test)+ [','] ] )     */
-      print_stmt.Expression = "print" + (Empty | testlist | ">>" + testlist);  //modified slightly using testlist
+      print_stmt.Rule = "print" + (Empty | testlist | ">>" + testlist);  //modified slightly using testlist
       //del_stmt: 'del' exprlist
-      del_stmt.Expression = "del" + exprlist;
+      del_stmt.Rule = "del" + exprlist;
       //pass_stmt: 'pass'
-      pass_stmt.Expression = "pass";
+      pass_stmt.Rule = "pass";
       //flow_stmt: break_stmt | continue_stmt | return_stmt | raise_stmt | yield_stmt
-      flow_stmt.Expression = break_stmt | continue_stmt | return_stmt | raise_stmt | yield_stmt;
+      flow_stmt.Rule = break_stmt | continue_stmt | return_stmt | raise_stmt | yield_stmt;
       //break_stmt: 'break'
-      break_stmt.Expression = "break";
+      break_stmt.Rule = "break";
       // continue_stmt: 'continue'
-      continue_stmt.Expression = "continue";
+      continue_stmt.Rule = "continue";
       // return_stmt: 'return' [testlist]
-      return_stmt.Expression = "return" + testlist.Q();
+      return_stmt.Rule = "return" + testlist.Q();
       // yield_stmt: yield_expr
-      yield_stmt.Expression = yield_expr;
+      yield_stmt.Rule = yield_expr;
       // raise_stmt: 'raise' [test [',' test [',' test]]]
-      raise_stmt.Expression = "raise" + WithQ( test + WithQ("," + test + WithQ("," + test)));
+      raise_stmt.Rule = "raise" + WithQ( test + WithQ("," + test + WithQ("," + test)));
       // import_stmt: import_name | import_from
-      import_stmt.Expression = import_name | import_from;
+      import_stmt.Rule = import_name | import_from;
       // import_name: 'import' dotted_as_names
-      import_name.Expression = "import" + dotted_as_names;
+      import_name.Rule = "import" + dotted_as_names;
       // import_from: ('from' ('.'* dotted_name | '.'+)
       //        'import' ('*' | '(' import_as_names ')' | import_as_names))
       // import_from.Expression = Symbol("from") + (dot.Star() + dotted_name | dot.Plus()) +   //ambiguious
-      import_from.Expression = Symbol("from") + dot.Star() + (dotted_name | dot) +
+      import_from.Rule = Symbol("from") + dot.Star() + (dotted_name | dot) +
                     "import" + (Symbol("*") | "(" + import_as_names + ")" | import_as_names);
       // import_as_name: NAME ['as' NAME]
-      import_as_name.Expression = NAME + WithQ("as" + NAME);
+      import_as_name.Rule = NAME + WithQ("as" + NAME);
       // dotted_as_name: dotted_name ['as' NAME]
-      dotted_as_name.Expression = dotted_name + WithQ("as" + NAME);
+      dotted_as_name.Rule = dotted_name + WithQ("as" + NAME);
       // import_as_names: import_as_name (',' import_as_name)* [',']
-      import_as_names.Expression = import_as_name.Plus(comma) + commaQ;
+      import_as_names.Rule = import_as_name.Plus(comma) + commaQ;
       // dotted_as_names: dotted_as_name (',' dotted_as_name)*
-      dotted_as_names.Expression = dotted_as_name.Plus(comma);
+      dotted_as_names.Rule = dotted_as_name.Plus(comma);
       // dotted_name: NAME ('.' NAME)*
-      dotted_name.Expression = NAME.Plus(dot);
+      dotted_name.Rule = NAME.Plus(dot);
       // global_stmt: 'global' NAME (',' NAME)*
-      global_stmt.Expression = "global" + NAME.Plus(comma);
+      global_stmt.Rule = "global" + NAME.Plus(comma);
       // exec_stmt: 'exec' expr ['in' test [',' test]]
-      exec_stmt.Expression = "exec" + expr + WithQ("in" + test.Plus(comma));
+      exec_stmt.Rule = "exec" + expr + WithQ("in" + test.Plus(comma));
       // assert_stmt: 'assert' test [',' test]
-      assert_stmt.Expression = "assert" + test.Plus(comma);
+      assert_stmt.Rule = "assert" + test.Plus(comma);
 
       // compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef
-      compound_stmt.Expression = if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef;
+      compound_stmt.Rule = if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef;
       // if_stmt: 'if' test ':' suite ('elif' test ':' suite)* ['else' ':' suite]
-      if_stmt.Expression = "if" + test + ":" + suite +
+      if_stmt.Rule = "if" + test + ":" + suite +
                     WithStar("elif" + test + ":" + suite) + else_clause.Q();
-      else_clause.Expression = "else" + colon + suite;
+      else_clause.Rule = "else" + colon + suite;
       // while_stmt: 'while' test ':' suite ['else' ':' suite]
-      while_stmt.Expression = "while" + test + ":" + suite + else_clause.Q();
+      while_stmt.Rule = "while" + test + ":" + suite + else_clause.Q();
       // for_stmt: 'for' exprlist 'in' testlist ':' suite ['else' ':' suite]
-      for_stmt.Expression = "for" + exprlist + "in" + testlist + ":" + suite + else_clause.Q();
+      for_stmt.Rule = "for" + exprlist + "in" + testlist + ":" + suite + else_clause.Q();
 /* try_stmt: ('try' ':' suite
            ((except_clause ':' suite)+
 	    ['else' ':' suite]
 	    ['finally' ':' suite] |
 	   'finally' ':' suite))   */
-      try_stmt.Expression = "try" + colon + suite + 
+      try_stmt.Rule = "try" + colon + suite + 
             (  (except_clause + ":" + suite)+ else_clause.Q() + finally_block.Q() | finally_block   );
-      finally_block.Expression = "finally" + colon + suite;
+      finally_block.Rule = "finally" + colon + suite;
       // with_stmt: 'with' test [ with_var ] ':' suite
-      with_stmt.Expression = "with" + test + with_var.Q() + ":" + suite;
+      with_stmt.Rule = "with" + test + with_var.Q() + ":" + suite;
       // with_var: 'as' expr
-      with_var.Expression = "as" + expr;
+      with_var.Rule = "as" + expr;
       // NB compile.c makes sure that the default except clause is last
       // except_clause: 'except' [test [('as' | ',') test]]
-      except_clause.Expression = "except" + WithQ(test + WithQ( (Symbol("as") | ",") + test));
+      except_clause.Rule = "except" + WithQ(test + WithQ( (Symbol("as") | ",") + test));
       // suite: simple_stmt | NEWLINE INDENT stmt+ DEDENT
-      suite.Expression = simple_stmt | NEWLINE  + INDENT + stmt.Plus() + DEDENT;
+      suite.Rule = simple_stmt | NEWLINE  + INDENT + stmt.Plus() + DEDENT;
 
       //# Backward compatibility cruft to support:
       //# [ x for x in lambda: True, lambda: False if x() ]
@@ -297,120 +296,119 @@ namespace Irony.Samples.Python {
       //# (But not a mix of the two)
 
       // testlist_safe: old_test [(',' old_test)+ [',']]
-      testlist_safe.Expression = old_test.Plus(comma) + commaQ;
+      testlist_safe.Rule = old_test.Plus(comma) + commaQ;
       // old_test: or_test | old_lambdef
-      old_test.Expression = or_test | old_lambdef;
+      old_test.Rule = or_test | old_lambdef;
       // old_lambdef: 'lambda' [varargslist] ':' old_test
-      old_lambdef.Expression = "lambda" + varargslist.Q() + ":" + old_test;
+      old_lambdef.Rule = "lambda" + varargslist.Q() + ":" + old_test;
 
       // test: or_test ['if' or_test 'else' test] | lambdef
-      test.Expression = or_test + WithQ("if" + or_test + "else" + test) | lambdef;
+      test.Rule = or_test + WithQ("if" + or_test + "else" + test) | lambdef;
       // or_test: and_test ('or' and_test)*
-      or_test.Expression = and_test + WithStar("or" + and_test);
+      or_test.Rule = and_test + WithStar("or" + and_test);
       // and_test: not_test ('and' not_test)*
-      and_test.Expression = not_test + WithStar("and" + not_test);
+      and_test.Rule = not_test + WithStar("and" + not_test);
       // not_test: 'not' not_test | comparison
-      not_test.Expression = "not" + not_test | comparison;
+      not_test.Rule = "not" + not_test | comparison;
       // comparison: expr (comp_op expr)*
-      comparison.Expression = expr + WithStar(comp_op + expr);
+      comparison.Rule = expr + WithStar(comp_op + expr);
       // comp_op: '<'|'>'|'=='|'>='|'<='|'<>'|'!='|'in'|'not' 'in'|'is'|'is' 'not'
-      comp_op.Expression = Symbol("<")|">"|"=="|">="|"<="|"<>"|"!="|"in"|
+      comp_op.Rule = Symbol("<")|">"|"=="|">="|"<="|"<>"|"!="|"in"|
                            Symbol("not") + "in"|"is"|Symbol("is") + "not";
       // expr: xor_expr ('|' xor_expr)*
-      expr.Expression = xor_expr.Plus("|");
+      expr.Rule = xor_expr.Plus("|");
       // xor_expr: and_expr ('^' and_expr)*
-      xor_expr.Expression = and_expr.Plus("^");
+      xor_expr.Rule = and_expr.Plus("^");
       // and_expr: shift_expr ('&' shift_expr)*
-      and_expr.Expression = shift_expr.Plus("&");
+      and_expr.Rule = shift_expr.Plus("&");
       // shift_expr: arith_expr (('<<'|'>>') arith_expr)*
-      shift_expr.Expression = arith_expr.Plus(shift_op); // 
-      shift_op.Expression = Symbol("<<")|">>";
+      shift_expr.Rule = arith_expr.Plus(shift_op); // 
+      shift_op.Rule = Symbol("<<")|">>";
       // arith_expr: term (('+'|'-') term)*
-      arith_expr.Expression = term.Plus(sum_op);
-      sum_op.Expression = Symbol("+") | "-";
+      arith_expr.Rule = term.Plus(sum_op);
+      sum_op.Rule = Symbol("+") | "-";
       // term: factor (('*'|'/'|'%'|'//') factor)*
-      term.Expression = factor.Plus(mul_op);
-      mul_op.Expression = Symbol("*")|"/"|"%"|"//";
+      term.Rule = factor.Plus(mul_op);
+      mul_op.Rule = Symbol("*")|"/"|"%"|"//";
       // factor: ('+'|'-'|'~') factor | power
-      factor.Expression = (Symbol("+")|"-"|"~") + factor | power;
+      factor.Rule = (Symbol("+")|"-"|"~") + factor | power;
       // power: atom trailer* ['**' factor]
-      power.Expression = atom + trailer.Star() + WithQ("**" + factor);
+      power.Rule = atom + trailer.Star() + WithQ("**" + factor);
       /* atom: ('(' [yield_expr|testlist_gexp] ')' |
           '[' [listmaker] ']' |
           '{' [dictmaker] '}' |
           '`' testlist1 '`' |
           NAME | NUMBER | STRING+)  */
-      atom.Expression = "(" + WithQ(yield_expr|testlist_gexp) + ")" |
+      atom.Rule = "(" + WithQ(yield_expr|testlist_gexp) + ")" |
              "[" + listmaker.Q() + "]" |
              "{" + dictmaker.Q() + "}" |
              "`" + testlist1 + "`" |
              NAME | NUMBER | STRING; //.Plus();  //removed "+" - seems strange at least
-      STRING.Expression = stringLiteral | stringLiteral2 | stringLiteral3 | stringLiteral4; 
+      STRING.Rule = stringLiteral | stringLiteral2 | stringLiteral3 | stringLiteral4; 
       // listmaker: test ( list_for | (',' test)* [','] )
       //  listmaker.Expression = test + ( list_for | WithStar("," + test) + commaQ ); // ambigouous
 //      listmaker.Expression = test + list_for.Q() | testlist;                             // modified version
-      listmaker.Expression = test + list_for.Q() + testlist.Q() + commaQ;                             // modified version
+      listmaker.Rule = test + list_for.Q() + testlist.Q() + commaQ;                             // modified version
       // testlist_gexp: test ( gen_for | (',' test)* [','] )
       //   testlist_gexp.Expression = test + ( gen_for | test.Star(comma) + commaQ ); // ambiguous
-      testlist_gexp.Expression = test + gen_for | test.Plus(comma) + commaQ;          // modified version
+      testlist_gexp.Rule = test + gen_for | test.Plus(comma) + commaQ;          // modified version
       // lambdef: 'lambda' [varargslist] ':' test
-      lambdef.Expression = "lambda" + varargslist.Q() + ":" + test;
+      lambdef.Rule = "lambda" + varargslist.Q() + ":" + test;
       // trailer: '(' [arglist] ')' | '[' subscriptlist ']' | '.' NAME
-      trailer.Expression = "(" + arglist.Q() + ")" | "[" + subscriptlist + "]" | "." + NAME;
+      trailer.Rule = "(" + arglist.Q() + ")" | "[" + subscriptlist + "]" | "." + NAME;
       // subscriptlist: subscript (',' subscript)* [',']
-      subscriptlist.Expression = subscript.Plus(comma) + commaQ;
+      subscriptlist.Rule = subscript.Plus(comma) + commaQ;
       // subscript: '.' '.' '.' | test | [test] ':' [test] [sliceop]
-      subscript.Expression = "..." | test | test.Q() + ":" + test.Q() + sliceop.Q();
+      subscript.Rule = "..." | test | test.Q() + ":" + test.Q() + sliceop.Q();
       // sliceop: ':' [test]
-      sliceop.Expression = ":" + test.Q();
+      sliceop.Rule = ":" + test.Q();
       // exprlist: expr (',' expr)* [',']
-      exprlist.Expression = expr.Plus(comma)  + commaQ;
+      exprlist.Rule = expr.Plus(comma)  + commaQ;
       // testlist: test (',' test)* [',']
-      testlist.Expression = test.Plus(comma) + commaQ;
+      testlist.Rule = test.Plus(comma) + commaQ;
       // dictmaker: test ':' test (',' test ':' test)* [',']
-      dictmaker.Expression = dict_elem.Plus(comma) + commaQ;
-      dict_elem.Expression = test + ":" + test;
+      dictmaker.Rule = dict_elem.Plus(comma) + commaQ;
+      dict_elem.Rule = test + ":" + test;
 
       // classdef: 'class' NAME ['(' [testlist] ')'] ':' suite
-      classdef.Expression = "class" + NAME + WithQ("(" + testlist.Q() + ")") + ":" + suite;
+      classdef.Rule = "class" + NAME + WithQ("(" + testlist.Q() + ")") + ":" + suite;
 
       // arglist: (argument ',')* (argument [',']| '*' test [',' '**' test] | '**' test)
-      arglist.Expression = WithStar(argument + comma) + 
+      arglist.Rule = WithStar(argument + comma) + 
                (argument + commaQ | "*" + test + WithQ(comma + "**" + test) | "**" + test);
 
       // argument: test [gen_for] | test '=' test  # Really [keyword '='] test
-      argument.Expression = test + gen_for.Q() | test + "=" + test;  //# Really [keyword "="] test
+      argument.Rule = test + gen_for.Q() | test + "=" + test;  //# Really [keyword "="] test
 
       // list_iter: list_for | list_if
-      list_iter.Expression = list_for | list_if;
+      list_iter.Rule = list_for | list_if;
       // list_for: 'for' exprlist 'in' testlist_safe [list_iter]
-      list_for.Expression = "for" + exprlist + "in" + testlist_safe + list_iter.Q();
+      list_for.Rule = "for" + exprlist + "in" + testlist_safe + list_iter.Q();
       // list_if: 'if' old_test [list_iter]
-      list_if.Expression = "if" + old_test + list_iter.Q();
+      list_if.Rule = "if" + old_test + list_iter.Q();
 
       // gen_iter: gen_for | gen_if
-      gen_iter.Expression = gen_for | gen_if;
+      gen_iter.Rule = gen_for | gen_if;
       // gen_for: 'for' exprlist 'in' or_test [gen_iter]
-      gen_for.Expression = "for" + exprlist + "in" + or_test + gen_iter.Q();
+      gen_for.Rule = "for" + exprlist + "in" + or_test + gen_iter.Q();
       // gen_if: 'if' old_test [gen_iter]
-      gen_if.Expression = "if" + old_test + gen_iter.Q();
+      gen_if.Rule = "if" + old_test + gen_iter.Q();
 
       // testlist1: test (',' test)*
-      testlist1.Expression = test.Plus(comma);
+      testlist1.Rule = test.Plus(comma);
 
       // # not used in grammar, but may appear in "node" passed from Parser to Compiler
       // encoding_decl: NAME
-      encoding_decl.Expression = NAME;
+      encoding_decl.Rule = NAME;
 
       // yield_expr: 'yield' [testlist]
-      yield_expr.Expression = "yield" + testlist.Q();
+      yield_expr.Rule = "yield" + testlist.Q();
       #endregion
 
       PunctuationSymbols.AddRange(new string[] { "(", ")", ",", ":" });
 
       TokenFilters.Add(new CodeOutlineFilter(true));
 
-      this.FlattenNestedORs(); //- don"t do that, works incorrectly
     }//constructor
 
   }//class

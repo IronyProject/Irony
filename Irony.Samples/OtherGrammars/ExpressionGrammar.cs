@@ -17,11 +17,17 @@ using Irony.Compiler;
 
 namespace Irony.Samples {
   //Sample expression grammar - recognizes arithmetic expressions with numbers and variables
+  //
+  // Expr  -> n | v | Expr BinOp Expr | UnOp Expr | (  Expr )
+  // BinOp -> + | - | * | / | **
+  // UnOp  -> -
+  // ExprLine -> Expr EOF
+
   public class ExpressionGrammar : Irony.Compiler.Grammar {
     public ExpressionGrammar() {
       // 1. Terminals
-      Terminal n = new NumberTerminal("Number");
-      Terminal v = new IdentifierTerminal("Variable", "_", "_");
+      Terminal n = new NumberTerminal("number");
+      Terminal v = new IdentifierTerminal("variable");
 
       // 2. Non-terminals
       NonTerminal Expr = new NonTerminal("Expr");
@@ -30,18 +36,19 @@ namespace Irony.Samples {
       NonTerminal ExprLine = new NonTerminal("ExprLine");
 
       // 3. BNF rules
-      Expr.Expression = n | v | Expr + BinOp + Expr | UnOp + Expr | "(" + Expr + ")";
-      BinOp.Expression = Symbol("+") | "-" | "*" | "/" | "**";
-      UnOp.Expression = "-";
-      ExprLine.Expression = Expr; // + Eof; -- it is optional
+      Expr.Rule = n | v | Expr + BinOp + Expr | UnOp + Expr | "(" + Expr + ")";
+      BinOp.Rule = Symbol("+") | "-" | "*" | "/" | "**";
+      UnOp.Rule = "-";
+      ExprLine.Rule = Expr + Eof; //EOF it is optional
+      this.Root = ExprLine; // Set grammar root
 
       // 4. Operators precedence
-      RegisterOperators(100, Associativity.Right, "**");
-      RegisterOperators(90, "*", "/");
-      RegisterOperators(80, "+", "-");
+      RegisterOperators(1, "+", "-");
+      RegisterOperators(2, "*", "/");
+      RegisterOperators(3, Associativity.Right, "**");
 
       PunctuationSymbols.AddRange(new string[] { "(", ")" });
-      this.Root = ExprLine;
+
     }
   }
 }//namespace

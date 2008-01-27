@@ -61,11 +61,10 @@ namespace Irony.Compiler {
       get { return _fileName; }
     } string _fileName;
 
-    //TabWidth value of 1 means "ignore tabs"; for languages like Python set it to real tab width of the editor (8?).
     public int TabWidth {
       get {return _tabWidth;}
       set {_tabWidth = value;}
-    } int  _tabWidth = 1;
+    } int  _tabWidth = 8;
 
     public void Reset() {
       Position = 0;

@@ -39,7 +39,7 @@
     <Compile Include="Compiler\Enums.cs" />
     <Compile Include="Compiler\Parser\ParserStack.cs" />
     <Compile Include="Compiler\Scanner\SourceFile.cs" />
-    <Compile Include="Compiler\NonTerminals\NonTerminal.cs" />
+    <Compile Include="Compiler\Grammar\NonTerminal.cs" />
     <Compile Include="Compiler\AST\AstNode.cs" />
     <Compile Include="Compiler\Grammar\BnfExpression.cs" />
     <Compile Include="Compiler\Grammar\GrammarDataBuilder.cs" />
@@ -50,11 +50,12 @@
     <Compile Include="Compiler\Terminals\CommentTerminal.cs" />
     <Compile Include="Compiler\Terminals\ConstantSetTerminal.cs" />
     <Compile Include="Compiler\Terminals\CustomTerminal.cs" />
+    <Compile Include="Compiler\Terminals\ErrorTerminal.cs" />
     <Compile Include="Compiler\Terminals\NumberTerminal.cs" />
     <Compile Include="Compiler\Terminals\IdentifierTerminal.cs" />
     <Compile Include="Compiler\Terminals\StringLiteral.cs" />
     <Compile Include="Compiler\Terminals\SymbolTerminal.cs" />
-    <Compile Include="Compiler\Terminals\_Terminal.cs" />
+    <Compile Include="Compiler\Grammar\Terminal.cs" />
     <Compile Include="Compiler\Scanner\Token.cs" />
     <Compile Include="Compiler\Scanner\Scanner.cs" />
     <Compile Include="Compiler\Terminals\RegExBasedTerminal.cs" />

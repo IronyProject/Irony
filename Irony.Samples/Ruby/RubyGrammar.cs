@@ -21,7 +21,6 @@ namespace Irony.Samples.Ruby {
   // It is loosely based on original grammar from Matz whose purpose (as it seems) was to explain language syntax to programmers, 
   // not for directly building parsers.  
   // See Grammar Errors tab in GrammarExplorer for remaining conflicts.
-  // Any help in building real LALR(1) grammar will be highly appreciated. 
 
   public class RubyGrammar : Grammar {
 
@@ -29,16 +28,17 @@ namespace Irony.Samples.Ruby {
 
       #region Terminals
       //String Literals with single and double-quote start/end symbols
-      Terminal StringLiteralDQ = new StringLiteral("StringLiteralDQ");
-      Terminal StringLiteralSQ = new StringLiteral("StringLiteralSQ", "'", "'"); //-- implement me!
+      Terminal StringLiteralDQ = new StringLiteral("StringLiteralDQ", "string");
+      Terminal StringLiteralSQ = new StringLiteral("StringLiteralSQ", "string", "'", "'"); 
       Terminal HereDoc = new Terminal("HereDoc"); //-- implement me!
       Terminal RegExLiteral = new Terminal("RegExLiteral"); //-- implement me!
       IdentifierTerminal IDENTIFIER = new IdentifierTerminal("identifier", "_!?", "_$@");
       //                                                name     extraChars      extraFirstChars 
+      IDENTIFIER.Alias = "variable";
       //we need to isolate reserved words to avoid ambiguities in grammar 
       IDENTIFIER.AddReservedWords("do", "end", "def", "class", 
                                        "if", "case", "return", "yield", "while", "until");  //and some others...
-      Terminal Number = new NumberTerminal("Number");
+      Terminal Number = new NumberTerminal("Number", "number");
       Terminal Comment = new CommentTerminal("Comment", "#", "", "");
       ExtraTerminals.Add(Comment); //add comment explicitly to this list as it is not reachable from Root
 
@@ -59,7 +59,7 @@ namespace Irony.Samples.Ruby {
       NonTerminal COMMAND = new NonTerminal("COMMAND");
       NonTerminal FUNCTION = new NonTerminal("FUNCTION");
       NonTerminal ARG = EXPR;// new NonTerminal("ARG");
-      NonTerminal PRIMARY = new NonTerminal("PRIMARY");
+      NonTerminal PRIMARY = new NonTerminal("PRIMARY", "operand");
       NonTerminal WHEN_ARGS = new NonTerminal("WHEN_ARGS");
       NonTerminal THEN = new NonTerminal("THEN");
       NonTerminal BLOCK_BEGIN = new NonTerminal("BLOCK_BEGIN");
@@ -80,7 +80,7 @@ namespace Irony.Samples.Ruby {
       NonTerminal ASSOCS = new NonTerminal("ASSOCS");
       NonTerminal ASSOC = new NonTerminal("ASSOC");
 //      NonTerminal VARIABLE = new NonTerminal("VARIABLE");  --merged into IDENTIFIER
-      NonTerminal LITERAL = new NonTerminal("LITERAL");
+      NonTerminal LITERAL = new NonTerminal("LITERAL", "value");
       NonTerminal TERM = new NonTerminal("TERM");
       NonTerminal DO = new NonTerminal("DO");
 //      NonTerminal VARNAME = new NonTerminal("VARNAME");   // note 1
@@ -107,12 +107,12 @@ namespace Irony.Samples.Ruby {
       NonTerminal SYMBOL = new NonTerminal("SYMBOL");
       //Not in original grammar
       NonTerminal FNAME = new NonTerminal("FNAME");
-      BLOCK_BEGIN.Expression = Symbol("do") | "{";
-      BLOCK_END.Expression = Symbol("end") | "}";
+      BLOCK_BEGIN.Rule = Symbol("do") | "{";
+      BLOCK_END.Rule = Symbol("end") | "}";
       NonTerminal OPERATION = new NonTerminal("OPERATION");
       //      Terminal VARNAME = IDENTIFIER;
       NonTerminal AUG_ASGN = new NonTerminal("AUG_ASGN");
-      NonTerminal BINOP = new NonTerminal("BINOP");
+      NonTerminal BINOP = new NonTerminal("BINOP", "operator");
       NonTerminal UNOP = new NonTerminal("UNOP");
       NonTerminal DELIM = new NonTerminal("DELIM");
 
@@ -123,9 +123,9 @@ namespace Irony.Samples.Ruby {
       this.Root = PROGRAM;
 
       //PROGRAM         : COMPSTMT
-      PROGRAM.Expression = COMPSTMT; // +Grammar.Eof;
+      PROGRAM.Rule = COMPSTMT; // +Grammar.Eof;
       //COMPSTMT        : STMT (TERM EXPR)* [TERM] 
-      COMPSTMT.Expression = NewLine.Q() + STMT.Plus(TERM) + TERM.Q();   
+      COMPSTMT.Rule = NewLine.Q() + STMT.Plus(TERM) + TERM.Q();   
 
       /* STMT   : CALL do [`|' [BLOCK_VAR] `|'] COMPSTMT end
                 | undef FNAME
@@ -138,7 +138,7 @@ namespace Irony.Samples.Ruby {
                 | `"end"' `{' COMPSTMT `}'
                 | LHS `=' COMMAND [do [`|' [BLOCK_VAR] `|'] COMPSTMT end]
                 | EXPR    */
-      STMT.Expression = FUNCTION
+      STMT.Rule =     FUNCTION
                       | COMMAND + BLOCK.Q()  
                       | "undef" + FNAME | "alias" + FNAME + FNAME 
                       | STMT + (Symbol("if")|"while"|"unless"|"until") + EXPR 
@@ -148,7 +148,7 @@ namespace Irony.Samples.Ruby {
                       | LHS + "=" + EXPR  //changed this 
                       | LHS + AUG_ASGN + EXPR
                       | EXPR; 
-      BLOCK.Expression = "do" + WithQ(Pipe + BLOCK_VAR.Q() + Pipe) + COMPSTMT + "end";
+      BLOCK.Rule = "do" + WithQ(Pipe + BLOCK_VAR.Q() + Pipe) + COMPSTMT + "end";
 
       /* EXPR   : MLHS `=' MRHS
                 | return CALL_ARGS
@@ -160,7 +160,7 @@ namespace Irony.Samples.Ruby {
                 | `!' COMMAND
                 | ARG   */
       //this one is completely changed, for better or worse...
-      EXPR.Expression = //  MRHS + "=" + EXPR | //changed to EXPR   
+      EXPR.Rule = //  MRHS + "=" + EXPR | //changed to EXPR   
                      //  LHS + "=" + EXPR  //changed this 
                     // | LHS + AUG_ASGN + EXPR
                       EXPR + BINOP + EXPR   
@@ -178,11 +178,11 @@ namespace Irony.Samples.Ruby {
                 | PRIMARY `.' OPERATION CALL_ARGS
                 | PRIMARY `::' OPERATION CALL_ARGS
                 | super CALL_ARGS   */
-      COMMAND.Expression =  OPERATION + CALL_ARGS
+      COMMAND.Rule =  OPERATION + CALL_ARGS
                          | PRIMARY + DELIM + OPERATION + CALL_ARGS
                          | "super" + CALL_ARGS;
-      OPERATION.Expression =  IDENTIFIER;
-      DELIM.Expression = dot | "::";
+      OPERATION.Rule =  IDENTIFIER;
+      DELIM.Rule = dot | "::";
 
       /* FUNCTION   : OPERATION [`(' [CALL_ARGS] `)']
                 | PRIMARY `.' OPERATION `(' [CALL_ARGS] `)'
@@ -191,10 +191,10 @@ namespace Irony.Samples.Ruby {
                 | PRIMARY `::' OPERATION
                 | super `(' [CALL_ARGS] `)'
                 | super  */
-      FUNCTION.Expression = OPERATION + CALL_ARGS_P
+      FUNCTION.Rule = OPERATION + CALL_ARGS_P
                    | PRIMARY + DELIM + OPERATION + CALL_ARGS_P.Q() 
                    | "super" + CALL_ARGS_P;
-      CALL_ARGS_P.Expression = "(" + CALL_ARGS.Q() + ")";        
+      CALL_ARGS_P.Rule = "(" + CALL_ARGS.Q() + ")";        
       /*  ARG   : LHS `=' ARG
                 | LHS OP_ASGN ARG
                 | ARG `..' ARG
@@ -236,12 +236,12 @@ namespace Irony.Samples.Ruby {
                      | "defined?" + ARG
                      | PRIMARY
                      ; */
-      AUG_ASGN.Expression = Symbol("+=") | "-=" | "*=" | "/=" | "%=" | "**=" | "&=" | "|=" | "^=" | "<<=" | ">>=" | "&&=" | "||=";
+      AUG_ASGN.Rule = Symbol("+=") | "-=" | "*=" | "/=" | "%=" | "**=" | "&=" | "|=" | "^=" | "<<=" | ">>=" | "&&=" | "||=";
 
-      BINOP.Expression = Symbol("..") | "..." | "+" | "-" | "*" | "/" | "%" | "**" | "|" | "^" | "&"
+      BINOP.Rule = Symbol("..") | "..." | "+" | "-" | "*" | "/" | "%" | "**" | "|" | "^" | "&"
                          | "<=>" | ">" | ">=" | "<" | "<=" | "==" | "===" | "!=" | "=~" | "!~" | "<<" | ">>" | "&&" | "||"
                          | "and" | "or";  //added these two here
-      UNOP.Expression = Symbol("+") | "-" | "!" | "~";
+      UNOP.Rule = Symbol("+") | "-" | "!" | "~";
        /*PRIMARY:    */
       /*        `(' COMPSTMT `)'
                 | LITERAL
@@ -292,7 +292,7 @@ namespace Irony.Samples.Ruby {
                 | def SINGLETON (`.'|`::') FNAME ARGDECL
                   COMPSTMT
                   end */
-      PRIMARY.Expression = 
+      PRIMARY.Rule = 
        // "(" + COMPSTMT + ")" |   //-- removed this to fix ambiguity
         LITERAL 
         | LHS  //note 1.
@@ -302,36 +302,36 @@ namespace Irony.Samples.Ruby {
         | UNTIL_STMT | CASE_STMT | FOR_STMT | BLOCK_STMT | CLASS_DEF | MODULE | DEFFUNC_STMT | DEFSING_STMT;
          // LHS.Expression = VARIABLE | PRIMARY + "[" + ARGS.Q() + "]" | PRIMARY + "." + IDENTIFIER;                           
 
-      RETURN_STMT.Expression = "return" + EXPR;// CALL_ARGS_P.Q(); //changed this
-      YIELD_STMT.Expression = "yield" + CALL_ARGS_P.Q();
-      DEFINEDQ_STMT.Expression = Symbol("defined?") + "(" + ARG + ")";
-      FUNCTION_STMT.Expression = FUNCTION + WithQ("{" + WithQ("|" + BLOCK_VAR.Q() + "|") + COMPSTMT + "}");
-      IF_STMT.Expression = "if" + EXPR + THEN + COMPSTMT + WithStar("elsif" + EXPR + THEN + COMPSTMT) + WithQ("else" + COMPSTMT) + END;
-      UNLESS_STMT.Expression = "unless" + EXPR + THEN + COMPSTMT + "else" + COMPSTMT + END;
-      WHILE_STMT.Expression = "while" + EXPR + DO + COMPSTMT + END;
-      UNTIL_STMT.Expression = "until" + EXPR + DO + COMPSTMT + END;
-      CASE_STMT.Expression = "case" + COMPSTMT + WithPlus("when" + WHEN_ARGS + THEN + COMPSTMT) 
+      RETURN_STMT.Rule = "return" + EXPR;// CALL_ARGS_P.Q(); //changed this
+      YIELD_STMT.Rule = "yield" + CALL_ARGS_P.Q();
+      DEFINEDQ_STMT.Rule = Symbol("defined?") + "(" + ARG + ")";
+      FUNCTION_STMT.Rule = FUNCTION + WithQ("{" + WithQ("|" + BLOCK_VAR.Q() + "|") + COMPSTMT + "}");
+      IF_STMT.Rule = "if" + EXPR + THEN + COMPSTMT + WithStar("elsif" + EXPR + THEN + COMPSTMT) + WithQ("else" + COMPSTMT) + END;
+      UNLESS_STMT.Rule = "unless" + EXPR + THEN + COMPSTMT + "else" + COMPSTMT + END;
+      WHILE_STMT.Rule = "while" + EXPR + DO + COMPSTMT + END;
+      UNTIL_STMT.Rule = "until" + EXPR + DO + COMPSTMT + END;
+      CASE_STMT.Rule = "case" + COMPSTMT + WithPlus("when" + WHEN_ARGS + THEN + COMPSTMT) 
                                  + WithQ("else" + COMPSTMT) + END;
-      FOR_STMT.Expression = "for" + BLOCK_VAR + "in" + EXPR + DO + COMPSTMT + END;
-      BLOCK_STMT.Expression = "begin" + COMPSTMT + WithPlus("rescue" + ARGS.Q() + DO + COMPSTMT) 
+      FOR_STMT.Rule = "for" + BLOCK_VAR + "in" + EXPR + DO + COMPSTMT + END;
+      BLOCK_STMT.Rule = "begin" + COMPSTMT + WithPlus("rescue" + ARGS.Q() + DO + COMPSTMT) 
                                  + WithQ("else" + COMPSTMT) + WithQ("ensure" + COMPSTMT) + END;
-      CLASS_DEF.Expression = "class" + IDENTIFIER + BASE_REF.Q() + COMPSTMT + END;
-      BASE_REF.Expression = "<" + IDENTIFIER; 
-      MODULE.Expression = "module" + IDENTIFIER + COMPSTMT + END;
-      DEFFUNC_STMT.Expression = "def" + FNAME + ARGDECL.Q() + COMPSTMT + END;
-      DEFSING_STMT.Expression = "def" + SINGLETON + (dot|"::") + FNAME + ARGDECL.Q() + COMPSTMT + END;
-      END.Expression = "end"; // TERM.Q() + "end";
+      CLASS_DEF.Rule = "class" + IDENTIFIER + BASE_REF.Q() + COMPSTMT + END;
+      BASE_REF.Rule = "<" + IDENTIFIER; 
+      MODULE.Rule = "module" + IDENTIFIER + COMPSTMT + END;
+      DEFFUNC_STMT.Rule = "def" + FNAME + ARGDECL.Q() + COMPSTMT + END;
+      DEFSING_STMT.Rule = "def" + SINGLETON + (dot|"::") + FNAME + ARGDECL.Q() + COMPSTMT + END;
+      END.Rule = "end"; // TERM.Q() + "end";
       //  SINGLETON : VARIABLE | `(' EXPR `)' 
-      SINGLETON.Expression = IDENTIFIER | "(" + EXPR + ")"; 
+      SINGLETON.Rule = IDENTIFIER | "(" + EXPR + ")"; 
       // WHEN_ARGS       : ARGS [`,' `*' ARG]  | `*' ARG
-      WHEN_ARGS.Expression = ARGS + WithQ(comma + "*" + ARG) | "*" + ARG;
+      WHEN_ARGS.Rule = ARGS + WithQ(comma + "*" + ARG) | "*" + ARG;
       // THEN   : TERM | then | TERM then
-      THEN.Expression = TERM | "then" | TERM + "then";
+      THEN.Rule = TERM | "then" | TERM + "then";
       // DO     : TERM | do | TERM do
-      DO.Expression = TERM | "do" | TERM + "do";
+      DO.Rule = TERM | "do" | TERM + "do";
       //  BLOCK_VAR       : LHS | MLHS
 //      BLOCK_VAR.Expression = LHS | MLHS;   // -- ambiguous, changing to the following:
-      BLOCK_VAR.Expression = IDENTIFIER | "(" + IDENTIFIER.Plus(comma) + ")";
+      BLOCK_VAR.Rule = IDENTIFIER | "(" + IDENTIFIER.Plus(comma) + ")";
       //  MLHS  : MLHS_ITEM `,' [MLHS_ITEM (`,' MLHS_ITEM)*] [`*' [LHS]]  | `*' LHS   
 //      MLHS.Expression = MLHS_ITEM.Plus(",") + WithQ("*" + LHS.Q()) | "*" + LHS;  --ambiguous
       //MLHS.Expression = PRIMARY.Plus(",") + WithQ("*" + LHS.Q()) | "*" + LHS;
@@ -343,56 +343,60 @@ namespace Irony.Samples.Ruby {
                 | PRIMARY `[' [ARGS] `]'
                 | PRIMARY `.' IDENTIFIER  */
      // LHS.Expression = IDENTIFIER | PRIMARY + "[" + ARGS.Q() + "]" | PRIMARY + dot + IDENTIFIER;
-      LHS.Expression = OPERATION 
+      LHS.Rule = OPERATION 
                      | PRIMARY + "[" + ARGS.Q() + "]"
                      | "(" + EXPR + ")";
       //   MRHS : ARGS [`,' `*' ARG] | `*' ARG    
-      MRHS.Expression = ARGS + WithQ(comma + "*" + ARG) | "*" + ARG;
+      MRHS.Rule = ARGS + WithQ(comma + "*" + ARG) | "*" + ARG;
       /* CALL_ARGS   : ARGS
                 | ARGS [`,' ASSOCS] [`,' `*' ARG] [`,' `&' ARG]
                 | ASSOCS [`,' `*' ARG] [`,' `&' ARG]
                 | `*' ARG [`,' `&' ARG]
                 | `&' ARG
                 | COMMAND    */
-      CALL_ARGS.Expression = // ARGS |  //removed this - it is covered by next expression
+      CALL_ARGS.Rule = // ARGS |  //removed this - it is covered by next expression
                              ARGS + WithQ(comma + ASSOCS) + STAR_ARG.Q() + AMP_ARG.Q()  
                            | ASSOCS + STAR_ARG.Q() + AMP_ARG.Q()
                            | "*" + ARG + AMP_ARG.Q()
                            | "&" + ARG
                            | COMMAND; 
-      AMP_ARG.Expression = comma + "&" + ARG;
-      STAR_ARG.Expression = comma + "*" + ARG;
+      AMP_ARG.Rule = comma + "&" + ARG;
+      STAR_ARG.Rule = comma + "*" + ARG;
       //  ARGS            : ARG (`,' ARG)*
-      ARGS.Expression = ARG.Plus(comma);
+      ARGS.Rule = ARG.Plus(comma);
       // ARGDECL         : `(' ARGLIST `)'  | ARGLIST TERM 
-      ARGDECL.Expression = "(" + ARGLIST + ")" | ARGLIST + TERM;
+      ARGDECL.Rule = "(" + ARGLIST + ")" | ARGLIST + TERM;
       /*   ARGLIST         : IDENTIFIER(`,'IDENTIFIER)*[`,'`*'[IDENTIFIER]][`,'`&'IDENTIFIER]
                 | `*'IDENTIFIER[`,'`&'IDENTIFIER]
                 | [`&'IDENTIFIER]    */
-      ARGLIST.Expression = IDENTIFIER.Plus(comma) + WithQ(comma + "*" + IDENTIFIER.Q()) + WithQ(comma + "&" + IDENTIFIER)
+      ARGLIST.Rule = IDENTIFIER.Plus(comma) + WithQ(comma + "*" + IDENTIFIER.Q()) + WithQ(comma + "&" + IDENTIFIER)
                            | "*" + IDENTIFIER + WithQ(comma + "&" + IDENTIFIER)
                            | "&" + IDENTIFIER; 
       // ASSOCS : ASSOC (`,' ASSOC)*
-      ASSOCS.Expression = ASSOC.Plus(comma);
+      ASSOCS.Rule = ASSOC.Plus(comma);
       //ASSOC : ARG `=>' ARG
-      ASSOC.Expression = ARG + "=>" + ARG;
+      ASSOC.Rule = ARG + "=>" + ARG;
       //  VARIABLE : VARNAME | nil | self    -- variable is merged into IDENTIFIER
       //VARIABLE.Expression = IDENTIFIER | "nil" | "self";
       // LITERAL : numeric | SYMBOL | STRING | STRING2 | HERE_DOC | REGEXP
-      LITERAL.Expression = Number | SYMBOL | StringLiteralDQ | StringLiteralSQ | HereDoc | RegExLiteral;
-      SYMBOL.Expression = Symbol(":") + IDENTIFIER; // (FNAME | VARNAME); //note 1.
+      LITERAL.Rule = Number | SYMBOL | StringLiteralDQ | StringLiteralSQ | HereDoc | RegExLiteral;
+      SYMBOL.Rule = Symbol(":") + IDENTIFIER; // (FNAME | VARNAME); //note 1.
       /*  FNAME           : IDENTIFIER | `..' | `|' | `^' | `&'
                 | `<=>' | `==' | `===' | `=~'
                 | `>' | `>=' | `<' | `<='
                 | `+' | `-' | `*' | `/' | `%' | `**'
                 | `<<' | `>>' | `~'
                 | `+@' | `-@' | `[]' | `[]='  */
-      FNAME.Expression = IDENTIFIER | ".." | "|" | "^" | "&" | "<=>" | "==" | "===" | "=~"
+      FNAME.Rule = IDENTIFIER | ".." | "|" | "^" | "&" | "<=>" | "==" | "===" | "=~"
                 | ">" | ">=" | "<" | "<="  | "+" | "-" | "*" | "/" | "%" | "**"
                 | "<<" | ">>" | "~" | "+@" | "-@" | "[]" | "[]=";
       // TERM : `;' | `\n'
-      TERM.Expression = NewLine | ";";  //multiple newlines are compressed into one by scanner
+      TERM.Rule = NewLine | ";";  //NewLine is produced by token filter
       #endregion
+
+      //error handling
+      EXPR.ErrorRule = SyntaxError;
+      DEFFUNC_STMT.ErrorRule = "def" + SyntaxError + COMPSTMT + END;
 
       #region misc: Operators, TokenFilters, etc
       //Register operators - not sure if precedence is assigned correctly
@@ -408,7 +412,8 @@ namespace Irony.Samples.Ruby {
 
       PunctuationSymbols.AddRange(new string[] { "(", ")", "," });
 
-      TokenFilters.Add(new CodeOutlineFilter(false));
+      CodeOutlineFilter filter = new CodeOutlineFilter(false);
+      TokenFilters.Add(filter);
       #endregion
 
 

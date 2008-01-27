@@ -54,6 +54,7 @@
     <None Include="SourceSamples\99 bottles.py" />
     <None Include="SourceSamples\99 bottles.rb" />
     <None Include="SourceSamples\99 bottles.scm" />
+    <None Include="SourceSamples\99 bottles with Errors.rb" />
     <Content Include="License.txt" />
     <Content Include="Ruby\Ruby_auth.txt" />
     <Content Include="SourceSamples\_about.txt" />

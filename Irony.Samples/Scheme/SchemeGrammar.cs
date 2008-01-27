@@ -21,11 +21,6 @@ namespace Irony.Samples.Scheme {
     // Note that this is a sample grammar, not real Scheme production-quality grammar. 
     // It is loosely based on R6RS specs.  
     // See Grammar Errors tab in GrammarExplorer for remaining conflicts.
-    // Any help in building real LALR grammar will be highly appreciated. 
-    // Note about Scheme/Lisp parsing: it looks like Scheme grammar is not LALR(1):
-    // a single preview symbol is not always enough for parser to make a decision; in most cases this preview symbol is ...
-    // - you guessed it, a parenthesis. We probably need to add additional lookahead on shift, which moves parser to
-    // LALR(1.5) category. I plan to implement it in the nearest future.
     public SchemeGrammar() {
 
       #region Terminals
@@ -53,9 +48,7 @@ namespace Irony.Samples.Scheme {
       Terminal stringLiteral = new StringLiteral();
       //Identifiers. Note: added "-", just to allow IDs starting with "->" 
       IdentifierTerminal SimpleIdentifier = new IdentifierTerminal("SimpleIdentifier", "_+-*/.@?!<>=", "_!$%&*/:<=>?^~" + "+-");
-      //                                                  name         extraChars      extraFirstChars  
-      // SimpleIdentifier.AddReservedWords("define", "lambda", "if", "cond", "begin"); 
-      //            uncomment prev line when these forms are defined in grammar
+      //                                                           name                extraChars      extraFirstChars  
       Terminal Number = new NumberTerminal("Number");
       Terminal Comment = new CommentTerminal("Comment", ";", "#|", "|#");
       Terminal Byte = Number; // new NumberTerminal("Byte"); //u8 in R6RS notation
@@ -104,46 +97,46 @@ namespace Irony.Samples.Scheme {
       #region Rules
       base.Root = Module;
 
-      Module.Expression = Library.Plus() + Script | Script;
-      Script.Expression = ImportSection + Datum.Plus() | Datum.Plus();
-      LP.Expression = Symbol("(") | "[";  //R6RS allows mix & match () and []; exact match is enforced by token filter
-      RP.Expression = Symbol(")") | "]";
+      Module.Rule = Library.Plus() + Script | Script;
+      Script.Rule = ImportSection + Datum.Plus() | Datum.Plus();
+      LP.Rule = Symbol("(") | "[";  //R6RS allows mix & match () and []; exact match is enforced by token filter
+      RP.Rule = Symbol(")") | "]";
 
       //Library
-      Library.Expression = LP + "library" + LibraryName + ExportSection.Q() + ImportSection.Q() + Statement.Star() + RP;
-      LibraryName.Expression = LP + Identifier.Plus() + LibraryVersion.Q() + RP;
-      LibraryVersion.Expression = LP + Number.Star() + RP; //zero or more subversion numbers
-      ExportSection.Expression = LP + "export" + ExportSpec.Plus() + RP;
-      ImportSection.Expression = LP + "import" + ImportSpec.Plus() + RP;
-      ExportSpec.Expression = Identifier | LP + "rename"  +  LP + Identifier + Identifier + RP + RP;
-      ImportSpec.Expression = LP + Identifier + RP;   //FRI - much more complex in R6RS
+      Library.Rule = LP + "library" + LibraryName + ExportSection.Q() + ImportSection.Q() + Statement.Star() + RP;
+      LibraryName.Rule = LP + Identifier.Plus() + LibraryVersion.Q() + RP;
+      LibraryVersion.Rule = LP + Number.Star() + RP; //zero or more subversion numbers
+      ExportSection.Rule = LP + "export" + ExportSpec.Plus() + RP;
+      ImportSection.Rule = LP + "import" + ImportSpec.Plus() + RP;
+      ExportSpec.Rule = Identifier | LP + "rename"  +  LP + Identifier + Identifier + RP + RP;
+      ImportSpec.Rule = LP + Identifier + RP;   //FRI - much more complex in R6RS
 
       //Datum
-      Datum.Expression = Atom | CompoundDatum;
-      Atom.Expression = Number | Identifier | stringLiteral | Constants | charLiteral | ".";
-      CompoundDatum.Expression = Statement | Abbreviation | Vector | ByteVector;
-      Identifier.Expression = SimpleIdentifier | PeculiarIdentifier;
+      Datum.Rule = Atom | CompoundDatum;
+      Atom.Rule = Number | Identifier | stringLiteral | Constants | charLiteral | ".";
+      CompoundDatum.Rule = Statement | Abbreviation | Vector | ByteVector;
+      Identifier.Rule = SimpleIdentifier | PeculiarIdentifier;
       //TODO: create PeculiarIdentifier custom terminal instead of NonTerminal 
       // or just custom SchemeIdentifier terminal
-      PeculiarIdentifier.Expression = Symbol("+") | "-" | "..."; // |"->" + subsequent; (should be!) 
-      Abbreviation.Expression = AbbrevPrefix + Datum;
-      AbbrevPrefix.Expression = Symbol("'") | "`" | ",@" | "," | "#'" | "#`" | "#,@" | "#,";
-      Vector.Expression = "#(" + Datum.Star() + ")";
-      ByteVector.Expression = "#vu8(" + Byte.Star() + ")";
+      PeculiarIdentifier.Rule = Symbol("+") | "-" | "..."; // |"->" + subsequent; (should be!) 
+      Abbreviation.Rule = AbbrevPrefix + Datum;
+      AbbrevPrefix.Rule = Symbol("'") | "`" | ",@" | "," | "#'" | "#`" | "#,@" | "#,";
+      Vector.Rule = "#(" + Datum.Star() + ")";
+      ByteVector.Rule = "#vu8(" + Byte.Star() + ")";
 
-      Statement.Expression = FunctionCall | SpecialForm;  // LP + Datum.Star() + RP; //Star, not plus to allow ()
-      FunctionCall.Expression = LP + Identifier + Datum.Star() + RP;
-      SpecialForm.Expression = DefineForm | DefineFunForm | LambdaForm | IfForm | CondForm | BeginForm | LetForm;
-      DefineForm.Expression = LP + "define" + Identifier + Datum + RP;
-      DefineFunForm.Expression = LP + "define" + LP + Identifier + Identifier.Star() + RP + Statement.Plus() + RP;
-      LambdaForm.Expression = LP + "lambda" + LP + Identifier.Star() + RP + Statement.Plus() + RP;
-      IfForm.Expression = LP + "if" + Datum + Datum + Datum.Q() + RP;
-      CondForm.Expression = LP + "cond" + CondCase.Plus() + CondElse.Q() + RP;
-      CondCase.Expression = LP + Datum + Datum + RP;
-      CondElse.Expression = LP + "else" + Datum.Plus() + RP;
-      LetForm.Expression = LP + "let" + LP + LetPair.Plus() + RP + Datum.Plus() + RP;
-      BeginForm.Expression = LP + "begin" + Datum.Plus() + RP;
-      LetPair.Expression = LP + Identifier + Datum + RP;
+      Statement.Rule = FunctionCall | SpecialForm;
+      FunctionCall.Rule = LP + Datum.Plus() + RP; 
+      SpecialForm.Rule = DefineForm | DefineFunForm | LambdaForm | IfForm | CondForm | BeginForm | LetForm;
+      DefineForm.Rule = LP + "define" + Identifier + Datum + RP;
+      DefineFunForm.Rule = LP + "define" + LP + Identifier + Identifier.Star() + RP + Statement.Plus() + RP;
+      LambdaForm.Rule = LP + "lambda" + LP + Identifier.Star() + RP + Statement.Plus() + RP;
+      IfForm.Rule = LP + "if" + Datum + Datum + Datum.Q() + RP;
+      CondForm.Rule = LP + "cond" + CondCase.Plus() + CondElse.Q() + RP;
+      CondCase.Rule = LP + Datum + Datum + RP;
+      CondElse.Rule = LP + "else" + Datum.Plus() + RP;
+      LetForm.Rule = LP + "let" + LP + LetPair.Plus() + RP + Datum.Plus() + RP;
+      BeginForm.Rule = LP + "begin" + Datum.Plus() + RP;
+      LetPair.Rule = LP + Identifier + Datum + RP;
 
 
       #endregion 

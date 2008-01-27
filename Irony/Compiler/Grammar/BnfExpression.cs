@@ -17,129 +17,53 @@ using System.Diagnostics;
 
 namespace Irony.Compiler {
 
-  public enum BnfExpressionType {
-    Alternative,
-    Sequence,
-    Element
-  }
-  
-  public interface IBnfExpression {
-    BnfExpressionType ExpressionType { get;}
-  }
-  
-  public class BnfExpressionList : List<IBnfExpression> { }
+  //BNF expressions are represented as OR-list of Plus-lists of BNF elements
+  public class BnfExpressionData : List<BnfElementList> { }
 
+  public class BnfExpression : BnfElement {
 
-  public class BnfExpression : IBnfExpression {
-
-    public BnfExpression(BnfElement element) {
-      _expressionType = BnfExpressionType.Sequence;
-      Operands.Add(element);
-    }
-    
-    public BnfExpression(BnfExpressionType expressionType, params IBnfExpression[] operands) { 
-      _expressionType = expressionType;
-      Operands.AddRange(operands);
+    public BnfExpression(BnfElement element): base(null) {
+      Data = new BnfExpressionData();
+      Data.Add(new BnfElementList());
+      Data[0].Add(element);
     }
 
-    #region properties: ExpressionType, Operands
-    public BnfExpressionType ExpressionType  {
-      get {return _expressionType;}
-    } BnfExpressionType  _expressionType;
-
-    public BnfExpressionList Operands = new BnfExpressionList();
+    #region properties: Data
+    public BnfExpressionData Data;
     #endregion
 
-
     #region overrides: ToString()
+    private string _toString;
     public override string ToString() {
       if (_toString != null) return _toString;
       try {
-        switch (this.ExpressionType) {
-          case BnfExpressionType.Alternative: 
-            _toString = OperandsToString("|");
-            break;
-          case BnfExpressionType.Sequence:
-            _toString = OperandsToString("");
-            break;
-        }//case
+        string[] pipeArr = new string[Data.Count];
+        for (int i = 0; i < Data.Count; i++) {
+          BnfElementList seq = Data[i];
+          string[] seqArr = new string[seq.Count];
+          for (int j = 0; j < seq.Count; j++)
+            seqArr[j] = seq[j].ToString();
+          pipeArr[i] = String.Join("+", seqArr);
+        }
+        _toString = String.Join("|", pipeArr);
         return _toString; 
       } catch(Exception e) {
         return "(error: " + e.Message + ")";
       }
-    } private string _toString;
-
-    private string OperandsToString(string separator) {
-      string[] tmp = new string[Operands.Count];      for(int i = 0; i < tmp.Length; i++)
-        tmp[i] = Operands[i].ToString();
-      string result = string.Join(separator, tmp);
-      return result;
-    }
+    } 
     #endregion
 
-    #region static methods and operations; operators: +, |, implicit
-    //Sequence
-    public static BnfExpression operator +(BnfExpression expr1, IBnfExpression iexpr2) {
-      return Op_Plus(expr1, iexpr2);
-    }
-    public static BnfExpression operator +(BnfExpression expr, string symbol) {
-      return Op_Plus(expr, SymbolTerminal.GetSymbol(symbol));
-    }
-
-    //Alternative 
-    public static BnfExpression operator |(BnfExpression expr1, IBnfExpression iexpr2) {
-      return Op_Pipe(expr1, iexpr2);
-    }
-    public static BnfExpression operator |(BnfExpression expr, string symbol) {
-      return Op_Pipe(expr, SymbolTerminal.GetSymbol(symbol));
-    }
-
-    //implementations -----------------------
-    // Plus/sequence
-    public static BnfExpression Op_Plus(IBnfExpression iexpr1, IBnfExpression iexpr2) {
-      if (iexpr1.ExpressionType == BnfExpressionType.Sequence) {
-        BnfExpression expr1 = iexpr1 as BnfExpression;  
-        expr1.Operands.Add(iexpr2);
-        return expr1;
-      }
-      return new BnfExpression(BnfExpressionType.Sequence, iexpr1, iexpr2);
-    }
-
-    public static BnfExpression Op_Plus(IBnfExpression iexpr1, string symbol2) {
-      return new BnfExpression(BnfExpressionType.Sequence, iexpr1, SymbolTerminal.GetSymbol(symbol2));
-    }
-
-    public static BnfExpression Op_Plus(string symbol1, IBnfExpression iexpr2) {
-      return new BnfExpression(BnfExpressionType.Sequence, SymbolTerminal.GetSymbol(symbol1), iexpr2 );
-    }
-
-    //Pipe/Alternative
-    public static BnfExpression Op_Pipe(IBnfExpression iexpr1, IBnfExpression iexpr2) {
-      if (iexpr1.ExpressionType == BnfExpressionType.Alternative ) {
-        BnfExpression expr1 = iexpr1 as BnfExpression;
-        expr1.Operands.Add(iexpr2);
-        return expr1;
-      }
-      return new BnfExpression(BnfExpressionType.Alternative, iexpr1, iexpr2);
-    }
-
-    public static BnfExpression Op_Pipe(IBnfExpression iexpr1, string symbol2) {
-      return new BnfExpression(BnfExpressionType.Alternative, iexpr1, SymbolTerminal.GetSymbol(symbol2));
-    }
-
-    public static BnfExpression Op_Pipe(string symbol1, IBnfExpression iexpr2) {
-      return new BnfExpression(BnfExpressionType.Alternative, SymbolTerminal.GetSymbol(symbol1), iexpr2);
-    }
-
-    //Implicit conversion
+    #region Implicit cast operators
     public static implicit operator BnfExpression(string symbol) {
       return new BnfExpression(SymbolTerminal.GetSymbol(symbol));
     }
  
-    public static implicit operator BnfExpression(BnfElement elem) {
-      return new BnfExpression(elem);
+    public static implicit operator BnfExpression(Terminal term) {
+      return new BnfExpression(term);
     }
-
+    public static implicit operator BnfExpression(NonTerminal nonTerm) {
+      return new BnfExpression(nonTerm);
+    }
     #endregion
 
 

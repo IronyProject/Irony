@@ -19,6 +19,10 @@ namespace Irony.Compiler {
   //Adds newLine, indent, unindent tokes to scanner's output stream for languages like Python.
   // Scanner ignores new lines and indentations as whitespace; this filter produces these symbols based 
   // on col/line information in content tokens. 
+  // Note: this needs to be redone, to generate Grammar.Eos (end-of-statement) token instead of newLine;
+  //  also need to recognize line-continuation symbols ("\" in python, "_" in VB); or incomplete statement indicators
+  //  that signal that line continues (if line ends with operator in Ruby, it means statement continues on 
+  //  the next line).
   public class CodeOutlineFilter : TokenFilter {
     int _prevLine;
     Stack<int> _indents = new Stack<int>();
@@ -27,10 +31,10 @@ namespace Irony.Compiler {
       _trackIndents = trackIndents;
     }
 
-    public bool TrackIndents  {
-      get {return _trackIndents;}
-      set {_trackIndents = value;}
-    } bool  _trackIndents = true;
+    public bool TrackIndents {
+      get { return _trackIndents; }
+      set { _trackIndents = value; }
+    } bool _trackIndents = true;
 
     public override IEnumerable<Token> BeginFiltering(CompilerContext context, IEnumerable<Token> tokens) {
       _prevLine = 0;
@@ -40,13 +44,13 @@ namespace Irony.Compiler {
           yield return CreateNewLine(token.Location); //this is necessary, because grammar rules reference newLine terminator
           //unindent all buffered indents
           if (_trackIndents)
-            foreach(int i in _indents)
+            foreach (int i in _indents)
               yield return CreateDedent(token.Location);
           _indents.Clear();
           yield return token;
           yield break;
         }//if Eof
-        
+
         //Now deal with normal, non-EOF tokens
         //We intercept only content tokens on new lines  
         if (token.Terminal.Category != TokenCategory.Content || token.Location.Line == _prevLine) {
@@ -73,7 +77,7 @@ namespace Irony.Compiler {
             yield return CreateDedent(token.Location);
           }
           if (_indents.Peek() != currIndent) {
-            yield return Grammar.CreateErrorToken(token.Location, "Invalid dedent level, no previous matching indent found.");
+            yield return Grammar.CreateSyntaxErrorToken (token.Location, "Invalid dedent level, no previous matching indent found.");
             //TODO: add error recovery here
           }
         }//else if currIndent < prevIndent
@@ -91,6 +95,6 @@ namespace Irony.Compiler {
       return new Token(Grammar.Dedent, location, "<Dedent>");
     }
 
-    
+
   }//class
 }

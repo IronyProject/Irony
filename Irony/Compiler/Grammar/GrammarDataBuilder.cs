@@ -18,11 +18,9 @@ using System.Collections;
 namespace Irony.Compiler {
   
   // This class contains all complex logic of extracting Parser/Scanner's DFA tables and other control information
-  // from language grammar. 
+  // from the language grammar. 
   // Warning: unlike other classes in this project, understanding what's going on here requires some knowledge of 
-  // LR/LALR parsing algorithms. Sorry folks, you have to read Dragon book or other compiler books first -
-  // I recommend using more than one.
-  
+  // LR/LALR parsing algorithms. Go read the Dragon book or other compiler construction book.
   public class GrammarDataBuilder {
     class ShiftTable : Dictionary<string, LR0ItemList> { }
     private ParserStateTable _stateHash;
@@ -36,89 +34,96 @@ namespace Irony.Compiler {
       _grammar = grammar;
       _data = new GrammarData();
       _data.Grammar = grammar;
+      _data.ScannerRecoverySymbols = grammar.WhitespaceChars + grammar.Delimiters;
       SymbolTerminal.ClearSymbols();
-      _data.AugmentedRoot = new NonTerminal(grammar.Root.Name + "'", 
-        new BnfExpression(BnfExpressionType.Alternative, grammar.Root));
-      //Collect all terminals and non-terminals in controlData's collections
+      //Create the augmented root for the grammar
+      _data.AugmentedRoot = new NonTerminal(grammar.Root.Name + "'", new BnfExpression(grammar.Root));
+      //Collect all terminals and non-terminals into corresponding collections
       CollectAllElements();
+      CleanupTerminalList();
       //Punctuation - move it to dictionary for fast lookup
       BuildPunctuationLookup();
-      //Build hash table of terminals for fast lookup using next char as a key
+      //Build hash table of terminals for fast lookup by current input char
       BuildTerminalsLookupTable();
-      //Create productions (and LR0Items) in _controlData.NonTerminals
+      //Create productions and LR0Items 
       CreateProductions();
-      //Calculate nullability and Firsts collections of all non-terminals
+      //Calculate nullability, Firsts and TailFirsts collections of all non-terminals
       CalculateNullability();
       CalculateFirsts();
       CalculateTailFirsts();
       //Create parser states list, including initial and final states 
       CreateParserStates();
-      //Generate Lookaheads
+      //Propagate Lookaheads
       PropagateLookaheads();
       //now run through all states and create Reduce actions
       CreateReduceActions();
       //finally check for conflicts and detect Operator-based actions
       CheckActionConflicts();
+      //call Init on all elements in the grammar
+      InitAll();
       return _data;
     }//method
 
     #region Collecting non-terminals
+    int _unnamedCount; //internal counter for generating names for unnamed non-terminals
     private void CollectAllElements() {
       _data.NonTerminals.Clear();
       _data.Terminals.Clear();
       _data.Terminals.AddRange(_grammar.ExtraTerminals);
+      _unnamedCount = 0;
       CollectAllElementsRecursive(_data.AugmentedRoot);
-      //Cleanup terminal list
+    }
+    private void CleanupTerminalList() {
       TerminalList terms = _data.Terminals;
       for (int i = terms.Count - 1; i >= 0; i--) {
-        Terminal term = terms[i];
         // Remove pseudo terminals defined as static singletons in Grammar class (Empty, Eof, etc)
         // detect them by type - it is exactly "Terminal", not derived class. 
-        if (term.GetType() == typeof(Terminal)) 
+        if (terms[i].GetType() == typeof(Terminal))
           terms.RemoveAt(i);
-        else if (_grammar.NoKeywordTerminals && term is SymbolTerminal) {
-          //Special optimization to speedup terminals lookup
-          SymbolTerminal sterm = term as SymbolTerminal;
-          if (char.IsLetter(sterm.Symbol[0]))
-            terms.RemoveAt(i);
-        }//else if
-        term.Init(_data.Grammar);
       }
-      terms.Sort(); //for pretty listing in the form
+      terms.Sort(Terminal.ByName); //for pretty listing in the form
     }
 
-    private void CollectAllElementsRecursive(IBnfExpression current) {
-      switch(current.ExpressionType) {
-        case BnfExpressionType.Element:
-          Terminal term = current as Terminal;
-          if (term != null && !_data.Terminals.Contains(term)) {
-            _data.Terminals.Add(term);
-            return;
+    private void CollectAllElementsRecursive(BnfElement element) {
+      //Terminal
+      Terminal term = element as Terminal;
+      if (term != null && !_data.Terminals.Contains(term)) {
+        _data.Terminals.Add(term);
+        return;
+      }
+      //NonTerminal
+      NonTerminal nt = element as NonTerminal;
+      if (nt == null || _data.NonTerminals.Contains(nt))
+        return;
+      if (nt.Name == null)
+        nt.Name = "$NT" + (_unnamedCount++);
+      _data.NonTerminals.Add(nt);
+      if (nt.Rule == null) {
+        AddError("Non-terminal {0} has uninitialized Rule property.", nt.Name);
+        return;
+      }
+      //check all child elements
+      foreach(BnfElementList elemList in nt.Rule.Data)
+        for(int i = 0; i < elemList.Count; i++) {
+          BnfElement child = elemList[i];
+          //Check for nested expression - convert to non-terminal
+          BnfExpression expr = child as BnfExpression;
+          if (expr != null) {
+            child = new NonTerminal(null, expr);
+            elemList.RemoveAt(i);
+            elemList.Insert(i, child);
           }
-          NonTerminal nt = current as NonTerminal;
-          if (nt == null || _data.NonTerminals.Contains(nt)) return;
-          _data.NonTerminals.Add(nt);
-          if (nt.Expression == null) 
-            AddError("Non-terminal {0} has uninitialized Expression property.", nt.Name);
-          else 
-            CollectAllElementsRecursive(nt.Expression);
-          return;
-        case BnfExpressionType.Alternative:
-        case BnfExpressionType.Sequence:
-          BnfExpression expr = current as BnfExpression;
-          foreach(IBnfExpression ichild in expr.Operands)
-            CollectAllElementsRecursive(ichild);
-          return;
-      }//switch
+          CollectAllElementsRecursive(child);
+        }
     }//method
 
     private void BuildTerminalsLookupTable() {
       _data.TerminalsLookup.Clear();
-      _data.NoPrefixTerminals.Clear();
+      _data.TerminalsWithoutPrefixes.Clear();
       foreach (Terminal term in _data.Terminals) {
         IList<string> prefixes = term.GetPrefixes();
         if (prefixes == null || prefixes.Count == 0) {
-          _data.NoPrefixTerminals.Add(term);
+          _data.TerminalsWithoutPrefixes.Add(term);
           continue;
         }
         //Go through prefixes one-by-one
@@ -137,9 +142,13 @@ namespace Irony.Compiler {
         }
       }//foreach term
       //Now add _noPrefixTerminals to every list in table
-      if (_data.NoPrefixTerminals.Count > 0)
+      if (_data.TerminalsWithoutPrefixes.Count > 0)
         foreach (TerminalList list in _data.TerminalsLookup.Values)
-          list.AddRange(_data.NoPrefixTerminals);
+          list.AddRange(_data.TerminalsWithoutPrefixes);
+      //Sort all terminal lists by reverse priority, so that terminal with higher priority comes first in the list
+      foreach (TerminalList list in _data.TerminalsLookup.Values)
+        if (list.Count > 1)
+          list.Sort(Terminal.ByPriorityReverse);
     }//method
 
     private void BuildPunctuationLookup() {
@@ -153,92 +162,24 @@ namespace Irony.Compiler {
     #region Creating Productions
     private void CreateProductions() {
       _data.Productions.Clear();
-      //each production gets its unique ID, last assigned (max) Id is kept in static field
+      //each LR0Item gets its unique ID, last assigned (max) Id is kept in static field
       LR0Item._maxID = 0; 
-      //we add non-terminals as we go, so we have to use "for i" loop 
-      for(int i = 0; i < _data.NonTerminals.Count; i++) {
-        NonTerminal nt = _data.NonTerminals[i];
-        //create productions only once; they may be created before, in case of singletons like (NewLine?)
-        if (nt.Productions.Count == 0) 
-          CreateProductions(nt);
-        _data.Productions.AddRange(nt.Productions);
+      foreach(NonTerminal nt in _data.NonTerminals) {
+        //create productions only once; they may have been created before, in case of cached singletons like "NewLine?"
+        if (nt.Productions.Count > 0) continue;
+        //Get data (sequences) from both Rule and ErrorRule
+        BnfExpressionData allData = new BnfExpressionData();
+        allData.AddRange(nt.Rule.Data);
+        if (nt.ErrorRule != null) 
+          allData.AddRange(nt.ErrorRule.Data);
+        //actually create productions for each sequence
+        foreach (BnfElementList prodOperands in allData) {
+          bool isInitial = (nt == _data.AugmentedRoot);
+          Production prod = new Production(isInitial, nt, prodOperands);
+          nt.Productions.Add(prod);
+          _data.Productions.Add(prod);
+        }//foreach prodOperands
       }
-    }
-
-    private void CreateProductions(NonTerminal nonTerminal) {
-      nonTerminal.Productions.Clear();
-      BnfExpression expr = nonTerminal.Expression;
-      if (expr == null) return;
-      switch (expr.ExpressionType) {
-        case BnfExpressionType.Element:
-          AddProduction(nonTerminal, expr.Operands);
-          break; 
-        case BnfExpressionType.Sequence:
-          AddProduction(nonTerminal, expr.Operands);
-          break;
-        case BnfExpressionType.Alternative:
-          //each alternative becomes a production
-          foreach (IBnfExpression ioperand in expr.Operands) {
-            BnfElementList elemOperands = new BnfElementList();
-            switch (ioperand.ExpressionType) {
-              case BnfExpressionType.Element:
-                AddProduction(nonTerminal, ioperand as BnfElement);
-                break;
-              case BnfExpressionType.Sequence:
-              case BnfExpressionType.Alternative:
-                BnfExpression operExpr = ioperand as BnfExpression;
-                AddProduction(nonTerminal,  operExpr.Operands);
-                break;
-            }//switch ioperand.ExpressionType
-          }// foreach ioperand
-          break;
-      }//switch expr.ExpressionType
-    }//method
-
-    #region AddProduction overloads
-
-    private void AddProduction(NonTerminal lvalue, BnfElement rvalue) {
-      BnfExpressionList list = new BnfExpressionList();
-      list.Add(rvalue);
-      AddProduction(lvalue, list);
-    }
-    private void AddProduction(NonTerminal lvalue, BnfExpressionList expressions) {
-      BnfElementList rvalues = ExpressionListToElementList(expressions);
-      bool isInitial = (lvalue == _data.AugmentedRoot);
-      Production p = new Production(isInitial, lvalue, rvalues, null);
-      lvalue.Productions.Add(p);
-    }
-    private BnfElementList ExpressionListToElementList(BnfExpressionList expressions) {
-      BnfElementList result = new BnfElementList();
-      foreach (IBnfExpression iexpr in expressions) {
-        if (iexpr == null || iexpr == Grammar.Empty) continue;
-        if (iexpr.ExpressionType == BnfExpressionType.Element) 
-          result.Add(iexpr as BnfElement);
-        else {
-          string name = "tmp" + _data.NonTerminals.Count;
-          NonTerminal nt = new NonTerminal(name, iexpr as BnfExpression);
-          _data.NonTerminals.Add(nt);
-          result.Add(nt);
-        }
-      }//foreach
-      return result;
-    }
-    #endregion
-
-    private Production FindProduction(ProductionList productions, NonTerminal lvalue, BnfElementList rvalues) {
-      foreach (Production p in productions) {
-        if (p.LValue != lvalue) continue;
-        if (p.RValues.Count != rvalues.Count) continue;
-        bool eq = true;
-        for (int i = 0; i < rvalues.Count; i++) {
-          if (p.RValues[i] != rvalues[i]) {
-            eq = false;
-            break;
-          }
-        }//for i
-        if (eq) return p;
-      }//foreach p
-      return null;        
     }
     #endregion
 
@@ -265,8 +206,10 @@ namespace Irony.Compiler {
         }//if 
         //Go thru all elements of production and check nullability
         bool allNullable = true;
-        foreach (NonTerminal nt in prod.RValues) {
-          allNullable &= nt.Nullable ;
+        foreach (BnfElement elem in prod.RValues) {
+          NonTerminal nt = elem as NonTerminal;
+          if (nt != null)
+            allNullable &= nt.Nullable;
         }//foreach nt
         if (allNullable) {
           nonTerminal.Nullable = true;
@@ -593,6 +536,17 @@ namespace Irony.Compiler {
       foreach (Production prod in productions)
         if (prod.LValue == nonTerminal) return true;
       return false;
+    }
+    #endregion
+
+    #region Initialize elements
+    private void InitAll() {
+      foreach (Terminal term in _data.Terminals)
+        term.Init(_grammar);
+      foreach (NonTerminal nt in _data.NonTerminals)
+        nt.Init(_grammar);
+      foreach (TokenFilter filter in _grammar.TokenFilters)
+        filter.Init(_grammar);
     }
     #endregion
 

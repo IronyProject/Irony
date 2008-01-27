@@ -20,8 +20,13 @@ namespace Irony.Compiler {
   // between parser, scanner and token filters.
   // Developers can extend this class to add language-specific properties or methods.
   public class CompilerContext {
-    public SyntaxErrorList Errors = new SyntaxErrorList();
+    public readonly LanguageCompiler Compiler;
+    public readonly SyntaxErrorList Errors = new SyntaxErrorList();
+    public readonly Dictionary<string, object> Values = new Dictionary<string, object>();
 
+    public CompilerContext(LanguageCompiler compiler) {
+      this.Compiler = compiler;
+    }
     public void AddError(SourceLocation location, string message, ParserState state) {
       if (Errors.Count < 20) //just for now, 20 is max
         Errors.Add(new SyntaxError(location, message, state));
@@ -29,8 +34,7 @@ namespace Irony.Compiler {
     public void AddError(SourceLocation location, string message) {
       this.AddError(location, message, null);
     }
-
   
-  }
+  }//class
 
 }

@@ -18,18 +18,15 @@ namespace Irony.Compiler {
   //TODO: implement support for hex,oct and binary-based presentations
   // Ruby may require implementing custom Number terminal, to allow expressions like "5.times"
   public class NumberTerminal : Terminal {
-    public NumberTerminal(string name, bool allowSign, bool detectInts)  : this(name) {
-      _allowSign = allowSign;
+    public NumberTerminal(string name, bool detectInts)  : this(name) {
       _detectInts = detectInts; 
     }
     public NumberTerminal(string name) : base(name) {
       base.MatchMode = TokenMatchMode.ByType;
     }
-    public bool AllowSign {
-      get { return _allowSign; }
-      set { _allowSign = value; }
-    } bool _allowSign; // false by default
-
+    public NumberTerminal(string name, string alias) : base(name) {
+      base.Alias = alias;
+    }
     public bool DetectInts  {
       get {return _detectInts;}
       set {_detectInts = value;}
@@ -37,11 +34,9 @@ namespace Irony.Compiler {
 
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
       char ch = source.CurrentChar;
-      bool firstOk = char.IsDigit(ch) || AllowSign && (ch == '+' || ch == '-');
+      bool firstOk = char.IsDigit(ch);
       if (!firstOk) 
         return null;
-      if (_allowSign && (source.CurrentChar == '-' || source.CurrentChar == '+'))
-        source.Position++;
       bool isFloat = false, prevIsExp = false;
       const string allowedChars = "0123456789.Ee";
       while (!source.EOF()) {

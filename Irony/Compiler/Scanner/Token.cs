@@ -36,6 +36,12 @@ namespace Irony.Compiler {
     public Terminal Terminal   {
       get {return base.Element as Terminal;}
     } 
+    public TokenCategory Category  {
+      get {return Terminal.Category;}
+    }
+    public bool IsError() {
+      return Category == TokenCategory.Error;
+    }
 
     public int Length  {
       get {return _length;}
@@ -52,12 +58,10 @@ namespace Irony.Compiler {
     } object _value;
 
     public override string ToString() {
-      if (Value == null)
-        return "null";
-      string result = Value.ToString();
-      if (result != Terminal.ToString())
-        result += ", " + Terminal.ToString();
-      return result;
+      if (Terminal is SymbolTerminal)
+        return _text + " [Symbol]";
+      else 
+        return (_text==null?"" : _text + " ") + Terminal.ToString();
     }
 
   }//class

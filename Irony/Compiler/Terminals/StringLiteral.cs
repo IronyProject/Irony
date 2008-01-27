@@ -25,22 +25,30 @@ namespace Irony.Compiler {
     ChangeDoubleStartToSingle = 0x02,
     EnableEscape = 0x04,  //escape maybe disabled like in c# strings like @"abc\d"
     Default = EnableEscape | ChangeDoubleStartToSingle,
+    }
+    Other properties: 
+    prefixes; (python's u, U etc, c# @)
+     
   }*/
 
   //TODO: implement support for char escapes
   // also, it may make sense to have multiple Start/End symbol pairs, for languages like Python.
   public class StringLiteral : Terminal {
-    public StringLiteral() : this("StringLiteral") { }
-    public StringLiteral(string name, string startSymbol, string endSymbol)
-      : this(name) {
-      StartSymbol = startSymbol;
-      EndSymbol = endSymbol;
+    public StringLiteral() : this("StringLiteral", "string") { }
+    public StringLiteral(string name) : this(name, "string") { }
+    public StringLiteral(string name, string alias) : base(name) {
+      base.Alias = alias;
+      Escapes = GetDefaultEscapes();
       base.MatchMode = TokenMatchMode.ByType;
     }
-    public StringLiteral(string name)
-      : base(name) {
-      Escapes = GetDefaultEscapes();
+    public StringLiteral(string name, string startSymbol, string endSymbol) : this(name) {
+      StartSymbol = startSymbol;
+      EndSymbol = endSymbol;
     }
+    public StringLiteral(string name, string alias, string startSymbol, string endSymbol) : this(name, startSymbol, endSymbol) {
+      this.Alias = alias;
+    }
+
     #region fields
     public string StartSymbol = "\"";
     public string EndSymbol = "\"";

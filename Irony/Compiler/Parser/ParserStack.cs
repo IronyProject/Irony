@@ -31,7 +31,7 @@ namespace Irony.Compiler {
 
 
   public class ParserStack  {
-    private ParserStackElement[] _data = new ParserStackElement[100]; 
+    private ParserStackElement[] _data = new ParserStackElement[InitialSize]; 
     
     public int Count  {
       get {return _count;}
@@ -39,6 +39,9 @@ namespace Irony.Compiler {
 
     public ParserStackElement this[int index] {
       get { return _data[index]; }
+    }
+    public ParserStackElement Top {
+      get { return this[Count - 1]; }
     }
     public void Push(AstNode node, SourceLocation location, ParserState state) {
       if (_count == _data.Length) 
@@ -50,13 +53,18 @@ namespace Irony.Compiler {
       _count -= popCount;
     }
     public void Reset() {
+      //replace data array with empty array, to clear all references
+      _data = new ParserStackElement[InitialSize];
       _count = 0;
     }
     private void ExtendData() {
-      ParserStackElement[] newData = new ParserStackElement[_data.Length + 100];
+      ParserStackElement[] newData = new ParserStackElement[_data.Length + SizeIncrement];
       Array.Copy(_data, newData, _data.Length);
       _data = newData;
     }
+
+    private const int InitialSize = 100;
+    private const int SizeIncrement = 100;
   }//class
 
 

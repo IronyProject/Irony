@@ -18,18 +18,19 @@ namespace Irony.Compiler {
   //Identifier terminal. Matches alpha-numeric sequences that usually represent identifiers and keywords.
   // Note that we strongly recommend to recognize keywords as identifier tokens in scanner, and let
   // parser decide what is it exactly - unless keywords are reserved by the language, 
-  // and grammar becomes ambiguous if we don't distinguish them before parser. 
+  // and grammar becomes ambiguous if we don't distinguish them for parser. 
   // Distinguishing keywords from identifiers is a job for Parser, not Scanner!
   // In any case, don't create separate terminals/symbols for keywords, but 
   // use IdentifierTerminal's ReservedWords property.
   public class IdentifierTerminal : Terminal {
     public IdentifierTerminal(string name, string extraChars, string extraFirstChars)
-      : base(name) {
+      : this(name) {
       _extraChars = extraChars;
       _extraFirstChars = extraFirstChars;
+    }
+    public IdentifierTerminal(string name) : base(name) {
       MatchMode = TokenMatchMode.ByValueThenByType;
     }
-    public IdentifierTerminal(string name) : this(name, null, null) { }
 
     #region properties: ExtraChars, ExtraFirstChars
     public string ExtraChars {

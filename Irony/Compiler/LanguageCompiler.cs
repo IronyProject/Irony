@@ -38,7 +38,16 @@ namespace Irony.Compiler {
       get {return _compileTime;}
     } long  _compileTime;
 
-    public AstNode Compile(CompilerContext context, SourceFile source) {
+    public CompilerContext Context  {
+      get {return _context;}
+    } CompilerContext  _context;
+
+    public AstNode Parse(string source) {
+      return Parse(new CompilerContext(this), new SourceFile(source, "Source"));
+    }
+
+    public AstNode Parse(CompilerContext context, SourceFile source) {
+      _context = context;
       int start = Environment.TickCount;
       IEnumerable<Token> tokenStream = Scanner.BeginScan(context, source);
       //chain all token filters

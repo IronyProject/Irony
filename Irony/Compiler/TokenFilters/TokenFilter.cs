@@ -19,7 +19,7 @@ namespace Irony.Compiler {
   #region Comments
   //  Token filter is a token preprocessor that operates on a token stream between scanner and parser:
   //    scanner -> (token filters)-> parser
-  // Token stream from scanner output if fed into a chain of token filters that add/remove/modify tokens
+  // Token stream from scanner output is fed into a chain of token filters that add/remove/modify tokens
   // in the stream before it gets to the parser. Some tasks that come up in scanning and parsing are best
   // handled by such an intermediate processor. Examples:
   //  1. Macro expansion
@@ -42,6 +42,8 @@ namespace Irony.Compiler {
   public class TokenFilter {
     public virtual IEnumerable<Token> BeginFiltering(CompilerContext context, IEnumerable<Token> tokens) {
       yield break;
+    }
+    public virtual void Init(Grammar grammar) {
     }
   }//class
 

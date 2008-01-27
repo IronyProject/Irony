@@ -18,6 +18,7 @@ using System.CodeDom;
 namespace Irony.Compiler {
 
   public class AstNodeList : List<AstNode> {}
+  public class AttributeDictionary : Dictionary<string, object> { }
 
   //Base AST node class
   public class AstNode {
@@ -41,6 +42,14 @@ namespace Irony.Compiler {
       get {return _tag;}
       set {_tag = value;}
     } string  _tag;
+
+    public AttributeDictionary Attributes {
+      get {
+        if (_attributes == null)
+          _attributes = new AttributeDictionary();
+        return _attributes;
+      }
+    } AttributeDictionary _attributes;
 
     #endregion
 

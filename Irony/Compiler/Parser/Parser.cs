@@ -33,6 +33,7 @@ namespace Irony.Compiler {
     public readonly ParserStack Stack = new ParserStack();
 
     private CompilerContext _context;
+    private bool _caseSensitive;
 
     public IEnumerator<Token> Input {
       get {return _input;}
@@ -99,6 +100,7 @@ namespace Irony.Compiler {
 
     public AstNode Parse(CompilerContext context, IEnumerable<Token> tokenStream) {
       _context = context;
+      _caseSensitive = _context.Compiler.Grammar.CaseSensitive;
       Reset();
       _input = tokenStream.GetEnumerator();
       ReadToken();
@@ -273,7 +275,10 @@ namespace Irony.Compiler {
     private ActionRecord GetCurrentAction() {
       ActionRecord action = null;
       if ((_currentToken.Terminal.MatchMode & TokenMatchMode.ByValue) != 0 && _currentToken.Text != null) {
-        if (_currentState.Actions.TryGetValue(_currentToken.Text, out action))
+        string key = CurrentToken.Text;
+        if (!_caseSensitive)
+          key = key.ToLower();
+        if (_currentState.Actions.TryGetValue(key, out action))
           return action;
       }
       if ((_currentToken.Terminal.MatchMode & TokenMatchMode.ByType) != 0 &&  
@@ -282,21 +287,18 @@ namespace Irony.Compiler {
       return null; //action not found
     }
     private ParserActionType GetActionTypeForOperation(Token current) {
-      OperatorInfo opInfo;
-      string op = current.Text;
-      if (!Data.Grammar.Operators.TryGetValue(op, out opInfo)) return ParserActionType.Shift;
+      SymbolTerminal opSymb = current.Element as SymbolTerminal;
       for (int i = Stack.Count - 2; i >= 0; i--) {
-        Token tkn = Stack[i].Node as Token;
-        if (tkn == null) continue;
-        string prevOp = tkn.Text;
-        OperatorInfo prevOpInfo;
-        if (!Data.Grammar.Operators.TryGetValue(prevOp, out prevOpInfo)) continue;
+        BnfElement elem = Stack[i].Node.Element;
+        if (!elem.IsFlagSet(BnfFlags.IsOperator)) continue;
+        SymbolTerminal prevOpSymb = elem as SymbolTerminal;
         //if previous operator has the same precedence then use associativity
-        if (prevOpInfo.Precedence == opInfo.Precedence) 
-          return opInfo.Associativity == Associativity.Left ? ParserActionType.Reduce : ParserActionType.Shift;
-        ParserActionType result = prevOpInfo.Precedence > opInfo.Precedence ? ParserActionType.Reduce : ParserActionType.Shift;
+        if (prevOpSymb.Precedence == opSymb.Precedence) 
+          return opSymb.Associativity == Associativity.Left ? ParserActionType.Reduce : ParserActionType.Shift;
+        ParserActionType result = prevOpSymb.Precedence > opSymb.Precedence ? ParserActionType.Reduce : ParserActionType.Shift;
         return result;
       }
+      //If no operators found on the stack, do simple shift
       return ParserActionType.Shift;
     }
     private void ExecuteShiftAction(ActionRecord action) {
@@ -312,9 +314,6 @@ namespace Irony.Compiler {
       AstNodeList childNodes = new AstNodeList();
       for (int i = 0; i < action.PopCount; i++) {
         AstNode child = Stack[Stack.Count - popCnt + i].Node;
-        Token tkn = child as Token;
-        if (tkn != null && tkn.Text != null && Data.PunctuationLookup.ContainsKey(tkn.Text))
-          continue; //don't add this node, it is punctuation symbol
         childNodes.Add(child);
       }
       //recover state, location and pop the stack
@@ -325,7 +324,7 @@ namespace Irony.Compiler {
         Stack.Pop(popCnt);
       }
       //Create new node
-      AstNode node = Data.Grammar.CreateNode(_context, action, location, childNodes);
+      AstNode node = CreateNode(action, location, childNodes);
       // Push node/current state into the stack 
       Stack.Push(node, location, _currentState);
       //switch to new state
@@ -337,6 +336,61 @@ namespace Irony.Compiler {
         throw new ApplicationException( string.Format("Cannot find transition for input {0}; state: {1}, popped state: {2}", 
               action.NonTerminal, oldState, _currentState));
     }//method
+
+    private AstNode CreateNode(ActionRecord reduceAction, SourceLocation location, AstNodeList childNodes) {
+      NonTerminal nt = reduceAction.NonTerminal;
+      AstNode result;
+      Type defaultNodeType = _context.Compiler.Grammar.DefaultNodeType;
+      Type ntNodeType = nt.NodeType ?? defaultNodeType ?? typeof(AstNode);
+
+      // Check NodeCreator method attached to non-terminal
+      if (nt.NodeCreator != null) {
+        result = nt.NodeCreator(_context, reduceAction, location, childNodes);
+        if (result != null)
+          return result;
+      }
+
+      // Check for NULL node; when node is created from 0 child nodes (and it is not a list), it means that it is a node for 
+      // "optional" element in the rule, and it is represented by null value.
+      // This behavior may be overriden by custom node creator). 
+      if (childNodes.Count == 0 && !nt.IsFlagSet(BnfFlags.IsList) && nt.NodeCreator == null)
+        return null; // 
+
+      // Check if NonTerminal is a list
+      // List nodes are produced by .Plus() or .Star() methods of BnfElement
+      // In this case, we have a left-recursive list formation production:   
+      //     ntList -> ntList + delim? + ntElem
+      //  We check if we have already created the list node for ntList (in the first child); 
+      //  if yes, we use this child as a result directly, without creating new list node. 
+      //  The other incoming child - the last one - is a new list member; 
+      // we simply add it to child list of the result ntList node. Optional "delim" node is simply thrown away.
+      if (nt.IsFlagSet(BnfFlags.IsList) && childNodes.Count > 1 && childNodes[0].Element == nt) {
+        result = childNodes[0];
+        result.ChildNodes.Add(childNodes[childNodes.Count - 1]);
+        return result;
+      }
+      // Check for "node-bubbling" case. For identity productions like 
+      //   A -> B
+      // the child node B is usually a subclass of node A, 
+      // so child node B can be used directly in place of the A. So we simply return child node as a result. 
+      // TODO: probably need a grammar option to enable/disable this behavior explicitly
+      if (childNodes.Count == 1 && childNodes[0] != null) {
+        Type childNodeType = childNodes[0].Element.NodeType ?? defaultNodeType ?? typeof(AstNode);
+        if (childNodeType == ntNodeType || childNodeType.IsSubclassOf(ntNodeType))
+          return childNodes[0];
+      }
+      // Try using Grammar's CreateNode method
+      result = Data.Grammar.CreateNode(_context, reduceAction, location, childNodes);
+      if (result != null) 
+        return result;
+      //Finally create node directly. For perf reasons we try using "new" for AstNode type (faster), and
+      // activator for all custom types (slower)
+      if (ntNodeType == typeof(AstNode))
+        result = new AstNode(_context, nt, location, childNodes);
+      else
+        result = (AstNode)Activator.CreateInstance(ntNodeType, _context, nt, location, childNodes);
+      return result;
+    }
     #endregion
 
   }//class

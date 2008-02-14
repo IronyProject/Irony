@@ -57,7 +57,9 @@ namespace Irony.Compiler {
     public static implicit operator BnfExpression(string symbol) {
       return new BnfExpression(SymbolTerminal.GetSymbol(symbol));
     }
- 
+    //It seems better to define one method instead of the following two, with parameter of type BnfElement -
+    // but that's not possible - it would be a conversion from base type of BnfExpression itself, which
+    // is not allowed in c#
     public static implicit operator BnfExpression(Terminal term) {
       return new BnfExpression(term);
     }

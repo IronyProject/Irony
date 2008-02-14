@@ -18,7 +18,7 @@ using Irony.Compiler;
 namespace Irony.Samples.Scheme {
   //The following class is an example of custom AST node. Notice how child's tag appears as prefix in node caption
   // in AST view in GrammarExplorer form.
-  public class IfNode : GenericNode {
+  public class IfNode : AstNode {
     public IfNode(CompilerContext context, NonTerminal nonTerminal, SourceLocation location, AstNodeList childNodes)
            : base(context, nonTerminal, location, childNodes) {
       _condition = childNodes[2];

@@ -39,6 +39,11 @@ namespace Irony.Compiler {
       get { return false; }
       set { }
     }
+    //Node type for Terminals is Token
+    public override Type NodeType {
+      get {return typeof(Token); }
+      set {  }
+    }
     public TokenCategory Category {
       get { return _category; }
       protected set { _category = value; }

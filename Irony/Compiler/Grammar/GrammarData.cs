@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+
 namespace Irony.Compiler {
   // GrammarData is a container for all information used by Parser and Scanner in input processing.
   // The state graph entry is InitialState state; the state graph encodes information usually contained 
@@ -27,13 +28,13 @@ namespace Irony.Compiler {
     public ParserState FinalState;
     public readonly NonTerminalList NonTerminals = new NonTerminalList();
     public readonly TerminalList Terminals = new TerminalList();
-    public readonly StringDictionary PunctuationLookup = new StringDictionary(); //hash table for fast punctuation symbols lookup
     public readonly TerminalLookupTable TerminalsLookup = new TerminalLookupTable(); //hash table for fast terminal lookup by input char
     public readonly TerminalList TerminalsWithoutPrefixes = new TerminalList(); //terminals that have no explicit prefixes
     public readonly ProductionList Productions = new ProductionList();
     public readonly ParserStateList States = new ParserStateList();
     public readonly KeyList Errors = new KeyList();
     public string ScannerRecoverySymbols = "";
+    public bool AnalysisCanceled;  //True if grammar analysis was canceled due to errors
   }
 
   public class TerminalLookupTable : Dictionary<char, TerminalList> { }
@@ -222,19 +223,6 @@ namespace Irony.Compiler {
   }//LR0Item
 
   public class LR0ItemList : List<LR0Item> { }
-
-  public class OperatorInfo {
-    public readonly string Symbol;
-    public readonly int Precedence;
-    public Associativity Associativity;
-    public OperatorInfo(string symbol, int precedence, Associativity associativity) {
-      Symbol = symbol;
-      Precedence = precedence;
-      Associativity = associativity;
-    }//constructor
-  }//class
-
-  public class OperatorInfoTable : Dictionary<string, OperatorInfo> { }
 
   #region GrammarData utility methods
   //implementation of public ToString methods

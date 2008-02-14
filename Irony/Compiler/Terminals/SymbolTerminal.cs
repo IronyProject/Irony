@@ -16,7 +16,8 @@ using System.Text;
 
 namespace Irony.Compiler {
 
-  //Represents a fixed symbol. Contains static singleton dictionary, so that SymbolTerminal instances are created only once 
+  //Represents a fixed symbol. 
+  // Contains static singleton dictionary, so that SymbolTerminal instances are created only once 
   // for any symbol.
   public class SymbolTerminal : Terminal {
     private SymbolTerminal(string symbol, string name)  : base(name) {
@@ -30,8 +31,6 @@ namespace Irony.Compiler {
 
     #region overrides: TryMatch, GetPrefixes(), ToString() 
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
-      if (source.CurrentChar != Symbol[0])
-        return null; //quick test for perf improvement
       string text = source.Text;
       int symLen = _symbol.Length;
       if (source.Position + symLen > text.Length)
@@ -50,11 +49,27 @@ namespace Irony.Compiler {
     }
     #endregion
 
+    #region Operators and Brace-pair information: Precedence, Associativity, IsPairFor
+    public int Precedence   {
+      get {return _precedence;}
+      set {_precedence = value;}
+    } int  _precedence;
 
-    #region static members: operators,  _symbols table of all symbol terminals
-    public static implicit operator SymbolTerminal(string symbol) {
-      return GetSymbol(symbol);
-    }
+    public Associativity Associativity  {
+      get {return _associativity;}
+      set {_associativity = value;}
+    } Associativity  _associativity;
+
+    public SymbolTerminal IsPairFor  {
+      get {return _isPairFor;}
+      set {_isPairFor = value;}
+    } SymbolTerminal  _isPairFor;
+
+    #endregion
+
+
+    //TODO: move Symbols table to Grammar instance
+    #region static members: _symbols table of all symbol terminals
 
     private static SymbolTerminalTable _symbols = new SymbolTerminalTable();
     public static void ClearSymbols() {
@@ -73,11 +88,18 @@ namespace Irony.Compiler {
       }
       string.Intern(symbol);
       term = new SymbolTerminal(symbol, name);
+      term.SetFlag(BnfFlags.IsGrammarSymbol, true);
       _symbols[symbol] = term;
       return term;
     }
     #endregion
 
+    public override bool Equals(object obj) {
+      return base.Equals(obj);
+    }
+    public override int GetHashCode() {
+      return _symbol.GetHashCode();
+    }
   }//class
 
   public class SymbolTerminalTable : Dictionary<string, SymbolTerminal> { }

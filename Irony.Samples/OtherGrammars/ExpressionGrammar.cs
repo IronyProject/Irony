@@ -38,17 +38,27 @@ namespace Irony.Samples {
       // 3. BNF rules
       Expr.Rule = n | v | Expr + BinOp + Expr | UnOp + Expr | "(" + Expr + ")";
       BinOp.Rule = Symbol("+") | "-" | "*" | "/" | "**";
-      UnOp.Rule = "-";
-      ExprLine.Rule = Expr + Eof; //EOF it is optional
-      this.Root = ExprLine; // Set grammar root
+      UnOp.Rule = "-";            // Irony provides default conversion here
+      ExprLine.Rule = Expr + Eof; //Eof is predefined terminal
+      this.Root = ExprLine;       // Set grammar root
 
       // 4. Operators precedence
       RegisterOperators(1, "+", "-");
       RegisterOperators(2, "*", "/");
       RegisterOperators(3, Associativity.Right, "**");
 
-      PunctuationSymbols.AddRange(new string[] { "(", ")" });
+      RegisterPunctuation( "(", ")" );
 
     }
   }
 }//namespace
+
+/* example of use:
+  ExpressionGrammar grammar = new ExpressionGrammar();
+  LanguageCompiler compiler = new LanguageCompiler(grammar);
+
+  string expr = "a + b * 3.14 / (2.0 * x + y**z**2)";
+  AstNode rootNode = compiler.Parse(expr);
+  //rootNode now contains an AST node that is the root of the syntax tree.
+*/ 
+

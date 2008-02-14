@@ -25,7 +25,8 @@ namespace Irony.Compiler {
     string Text { get;} //returns entire text buffer
     //returns substring from TokenStart.Position till (Position - 1)
     string GetLexeme();
-    SourceLocation TokenStart { get;}
+    SourceLocation TokenStart { get; set;}
+    int TabWidth { get;}
     bool EOF();
   }
 
@@ -48,13 +49,12 @@ namespace Irony.Compiler {
 
   #region SourceFile class
   public class SourceFile : ISourceStream {
-    public SourceFile(string text, string fileName, int tabWidth): this(text, fileName) {
-      _tabWidth = tabWidth;
-    }
-    public SourceFile(string text, string fileName) {
+    public SourceFile(string text, string fileName, int tabWidth) {
       _text = text;
       _fileName = fileName;
-      Reset();
+      _tabWidth = tabWidth;
+    }
+    public SourceFile(string text, string fileName): this(text, fileName, 8) {
     }
 
     public string FileName {
@@ -64,13 +64,7 @@ namespace Irony.Compiler {
     public int TabWidth {
       get {return _tabWidth;}
       set {_tabWidth = value;}
-    } int  _tabWidth = 8;
-
-    public void Reset() {
-      Position = 0;
-      _tokenStart = new SourceLocation();
-      _nextNewLinePosition = _text.IndexOf('\n');
-    }
+    } int  _tabWidth; // = 8;
 
     #region ISourceFile Members
     public int Position {
@@ -107,7 +101,7 @@ namespace Irony.Compiler {
     }
     public SourceLocation TokenStart {
       get {return _tokenStart;}
-      internal set { _tokenStart = value; }
+      set { _tokenStart = value; }
     } SourceLocation  _tokenStart;
 
     #endregion
@@ -122,56 +116,6 @@ namespace Irony.Compiler {
       return result;
     }
     
-    private int _nextNewLinePosition; //private field to cache position of next \n character
-    //This is all about source scanning optimization - this seemingly strange code is aimed at improving perfomance,
-    // so keep this in mind when reading it. 
-    internal void SetNextTokenStart(string skipWhitespaceChars) {
-      while (skipWhitespaceChars.IndexOf(CurrentChar) >= 0)
-        Position++;
-      int newPosition = this.Position;
-      //currently _tokenStart field contains location (pos/line/col) of the last created token. 
-      // First, check if new position is in the same line; if so, just adjust column and return
-      //  Note that this case is not line start, so we do not need to check tab chars (and adjust column) 
-      if (newPosition <= _nextNewLinePosition || _nextNewLinePosition < 0) {
-        _tokenStart.Column += newPosition - _tokenStart.Position;
-        _tokenStart.Position = newPosition;
-        return;
-      }
-      //So new position is on new line (beyond _nextNewLinePosition)
-      //First count \n chars in the string fragment
-      int lineStart = _nextNewLinePosition;
-      int nlCount = 1; //we start after old _nextNewLinePosition, so we count one NewLine char
-      ScanTextForChar(_text, '\n', lineStart + 1, newPosition - 1, ref nlCount, ref lineStart);
-      _tokenStart.Line += nlCount;
-      //at this moment lineStart is at start of line where newPosition is located 
-      //Calc # of tab chars from lineStart to newPosition to adjust column#
-      int tabCount = 0;
-      int dummy = 0;
-      if (_tabWidth > 1)
-        ScanTextForChar(_text, '\t', lineStart, newPosition - 1, ref tabCount, ref dummy);
-
-      //adjust TokenStart with calculated information
-      _tokenStart.Position = newPosition;
-      _tokenStart.Column = newPosition - lineStart - 1;
-      if (tabCount > 0)
-        _tokenStart.Column += (_tabWidth - 1) * tabCount; // "-1" to count for tab char itself
-      
-      //finally cache new line
-      _nextNewLinePosition = _text.IndexOf('\n', newPosition);
-    }
-
-    private static void ScanTextForChar(string text, char ch, int from, int until, ref int count, ref int lastPosition) {
-      if (from > until) return;
-      while (true) {
-        int next = text.IndexOf(ch, from, until - from + 1);
-        if (next < 0) return;
-        lastPosition = next;
-        count++;
-        from = next + 1;
-      }
-
-    }
-
 
   }//class
   #endregion

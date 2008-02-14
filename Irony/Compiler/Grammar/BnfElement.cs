@@ -21,7 +21,7 @@ namespace Irony.Compiler {
   public class BnfElementList : List<BnfElement> { }
 
   //Basic Backus-Naur Form element. 
-  public class BnfElement : IComparable  {
+  public class BnfElement  {
     public BnfElement(string name) : this(name, null) { }
     public BnfElement(string name, string alias) {
       _name = name;
@@ -54,7 +54,7 @@ namespace Irony.Compiler {
     //The Key is used in matching 
     public virtual string Key {
       get {return _key; }
-      protected set { _key = value; }
+      set { _key = value; }
     } string _key;
 
     public virtual bool Nullable {
@@ -65,6 +65,30 @@ namespace Irony.Compiler {
     protected Grammar Grammar {
       get { return _grammar; }
     } Grammar _grammar;
+
+    public virtual Type NodeType {
+      get { return _nodeType; }
+      set { _nodeType = value; }
+    } Type _nodeType;
+
+    public BnfFlags Flags {
+      get { return _flags; }
+      set { _flags = value; }
+    } BnfFlags _flags;
+
+    public bool IsFlagSet(BnfFlags flag) {
+      return (_flags & flag) != 0;
+    }
+    public void SetFlag(BnfFlags flag) {
+      SetFlag(flag, true);
+    }
+    public void SetFlag(BnfFlags flag, bool value) {
+      if (value)
+        _flags |= flag;
+      else
+        _flags &= ~flag;
+    }
+
     #endregion
 
     #region Kleene operators: Q(), Plus(), Star()
@@ -80,28 +104,31 @@ namespace Irony.Compiler {
     }
     public NonTerminal Plus() {
       if (_plus != null) return _plus;
-      _plus = new NonTerminal(this.Name + "+", true);
+      _plus = new NonTerminal(this.Name + "+");
+      _plus.SetFlag(BnfFlags.IsList);
       _plus.Rule = this | _plus + this;
       return _plus;
     }
     public NonTerminal Star() {
       if (_star != null) return _star;
-      _star = new NonTerminal(this.Name + "*", true);
+      _star = new NonTerminal(this.Name + "*");
+      _star.SetFlag(BnfFlags.IsList);
       _star.Rule = _star + this | Grammar.Empty;
       return _star;
     }
 
     public NonTerminal Plus(BnfElement delimiter) {
       if (delimiter == null) return Plus();
-      NonTerminal list = new NonTerminal(this.Name + "_list", true);
+      NonTerminal list = new NonTerminal(this.Name + "_list");
+      list.SetFlag(BnfFlags.IsList);
       list.Rule = this | list + delimiter + this;
       return list;
     }
-
     public NonTerminal Star(BnfElement delimiter) {
       if (delimiter == null) return Star();
-      NonTerminal list = new NonTerminal(this.Name + "_list?", true);
-      list.Rule = this.Plus(delimiter).Q();
+      NonTerminal list = new NonTerminal(this.Name + "_list?");
+      list.SetFlag(BnfFlags.IsList);
+      list.Rule = Grammar.Empty | list + delimiter + this;
       return list;
     }
     public NonTerminal Plus(string delimiter) {
@@ -136,7 +163,6 @@ namespace Irony.Compiler {
 
     //BNF operations implementation -----------------------
     // Plus/sequence
-    //Note that we wouldn't allow nested sub-expressions - they are converted to NonTerminals
     internal static BnfExpression Op_Plus(BnfElement elem1, BnfElement elem2) {
       //Check elem1 and see if we can use it as result, simply adding elem2 as operand
       BnfExpression expr1 = elem1 as BnfExpression;
@@ -169,13 +195,6 @@ namespace Irony.Compiler {
 
     #endregion
 
-    #region IComparable Members
-    // Terminals are sorted by string representation just for pretty printing only
-    public int CompareTo(object obj) {
-      return string.Compare(_name, obj.ToString());
-    }
-
-    #endregion
 
 
   }//class

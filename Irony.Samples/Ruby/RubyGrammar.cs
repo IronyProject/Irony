@@ -410,7 +410,7 @@ namespace Irony.Samples.Ruby {
       RegisterOperators( 30, "<=>" , "==" , "===" , "!=" , "=~" , "!~");
       RegisterOperators( 20, "..", "...");
 
-      PunctuationSymbols.AddRange(new string[] { "(", ")", "," });
+      RegisterPunctuation("(", ")", "," );
 
       CodeOutlineFilter filter = new CodeOutlineFilter(false);
       TokenFilters.Add(filter);

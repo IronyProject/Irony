@@ -25,12 +25,26 @@ namespace Irony.Compiler {
     public AstNode(CompilerContext context, BnfElement element, SourceLocation location, AstNodeList childNodes) {
       Element = element;
       Location = location;
+      if (childNodes == null) return;
+      //add child nodes, skipping nulls and punctuation symbols
+      foreach (AstNode child in childNodes) {
+        if (child != null && !child.Element.IsFlagSet(BnfFlags.IsPunctuation)) {
+          ChildNodes.Add(child);
+          child.Parent = this;
+        }
+      }//foreach
     }
 
-    #region properties Element, Location, CodeDomObject, Tag
+    #region properties Element, Location, ChildNodes, Parent, CodeDomObject, Tag, Attributes
     public readonly BnfElement Element;
     public readonly SourceLocation Location;
+    public readonly AstNodeList ChildNodes = new AstNodeList();
     
+    public AstNode Parent  {
+      get {return _parent;}
+      set {_parent = value;}
+    } AstNode  _parent;
+
     public CodeObject CodeDomObject {
       get { return _codeDomObject; }
       set { _codeDomObject = value; }
@@ -52,12 +66,21 @@ namespace Irony.Compiler {
     } AttributeDictionary _attributes;
 
     #endregion
-
+    
     public override string ToString() {
       if (string.IsNullOrEmpty(_tag))
         return Element.Name;
       else
         return Tag + ":" + Element.Name;
+    }
+
+    //the first primitive Visitor facility
+    public virtual void AcceptVisitor(IAstVisitor visitor) {
+      visitor.BeginVisit(this);
+      if (ChildNodes.Count > 0)
+        foreach(AstNode node in ChildNodes)
+          node.AcceptVisitor(visitor);
+      visitor.EndVisit(this);
     }
 
   }//class

@@ -27,15 +27,11 @@ namespace Irony.Compiler {
     }
     public NonTerminal(string name, string alias) : base(name, alias) {
     }
-    public NonTerminal(string name, bool isList)
-      : this(name) {
-      _isList = isList;
-    }
     public NonTerminal(string name, Type nodeType) : this(name) { 
-      _nodeType = nodeType;
+      base.NodeType = nodeType;
     }
     public NonTerminal(Type nodeType) : this(nodeType.Name) {
-      _nodeType = nodeType;
+      base.NodeType = nodeType;
     }
     public NonTerminal(string name, BnfExpression expression) : this(name) { 
       _rule = expression;
@@ -45,12 +41,7 @@ namespace Irony.Compiler {
     }
     #endregion
 
-    #region properties: NodeType, Rule, ErrorRule, Productions, ErrorProductions, Firsts
-    public Type NodeType  {
-      get {return _nodeType;}
-      set {_nodeType = value;}
-    } Type  _nodeType;
-
+    #region properties: Rule, ErrorRule, Productions, ErrorProductions, Firsts
     public BnfExpression Rule {
       get { return _rule; }
       set {_rule = value; }
@@ -68,11 +59,6 @@ namespace Irony.Compiler {
     public readonly ProductionList Productions = new ProductionList();
     public readonly KeyList Firsts = new KeyList();
     public readonly NonTerminalList PropagateFirstsTo = new NonTerminalList();
-
-    public bool IsList {
-      get { return _isList; }
-      set { _isList = value; }
-    } bool _isList;
 
     //A custom node creation method
     public NodeCreatorMethod NodeCreator;

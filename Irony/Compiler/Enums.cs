@@ -42,4 +42,15 @@ namespace Irony.Compiler {
     Operator,  //shift or reduce depending on operator associativity and precedence
   }
 
+  public enum BnfFlags {
+    IsOperator = 0x01,
+    IsGrammarSymbol = 0x02,
+    IsOpenBrace  = 0x04,
+    IsCloseBrace = 0x08,
+    IsBrace = IsOpenBrace | IsCloseBrace,
+    IsPunctuation = 0x10,
+    IsDelimiter   = 0x20, 
+    IsList        = 0x40,
+    IsScope       = 0x80,
+  }
 }

@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Collections;
+using System.Diagnostics;
 
 namespace Irony.Compiler {
   
@@ -34,36 +35,44 @@ namespace Irony.Compiler {
       _grammar = grammar;
       _data = new GrammarData();
       _data.Grammar = grammar;
-      _data.ScannerRecoverySymbols = grammar.WhitespaceChars + grammar.Delimiters;
-      SymbolTerminal.ClearSymbols();
-      //Create the augmented root for the grammar
-      _data.AugmentedRoot = new NonTerminal(grammar.Root.Name + "'", new BnfExpression(grammar.Root));
-      //Collect all terminals and non-terminals into corresponding collections
-      CollectAllElements();
-      CleanupTerminalList();
-      //Punctuation - move it to dictionary for fast lookup
-      BuildPunctuationLookup();
-      //Build hash table of terminals for fast lookup by current input char
-      BuildTerminalsLookupTable();
-      //Create productions and LR0Items 
-      CreateProductions();
-      //Calculate nullability, Firsts and TailFirsts collections of all non-terminals
-      CalculateNullability();
-      CalculateFirsts();
-      CalculateTailFirsts();
-      //Create parser states list, including initial and final states 
-      CreateParserStates();
-      //Propagate Lookaheads
-      PropagateLookaheads();
-      //now run through all states and create Reduce actions
-      CreateReduceActions();
-      //finally check for conflicts and detect Operator-based actions
-      CheckActionConflicts();
-      //call Init on all elements in the grammar
-      InitAll();
+
+      try {
+        _data.ScannerRecoverySymbols = grammar.WhitespaceChars + grammar.Delimiters;
+        //Create the augmented root for the grammar
+        _data.AugmentedRoot = new NonTerminal(grammar.Root.Name + "'", new BnfExpression(grammar.Root));
+        //Collect all terminals and non-terminals into corresponding collections
+        CollectAllElements();
+        //Adjust case for Symbols for case-insensitive grammar (change keys to lowercase)
+        if (!_grammar.CaseSensitive)
+          AdjustCaseForSymbols();
+        //Build hash table of terminals for fast lookup by current input char
+        BuildTerminalsLookupTable();
+        //Create productions and LR0Items 
+        CreateProductions();
+        //Calculate nullability, Firsts and TailFirsts collections of all non-terminals
+        CalculateNullability();
+        CalculateFirsts();
+        CalculateTailFirsts();
+        //Create parser states list, including initial and final states 
+        CreateParserStates();
+        //Propagate Lookaheads
+        PropagateLookaheads();
+        //now run through all states and create Reduce actions
+        CreateReduceActions();
+        //finally check for conflicts and detect Operator-based actions
+        CheckActionConflicts();
+        //call Init on all elements in the grammar
+        InitAll();
+      } catch(Exception e) {
+        _data.Errors.Add(e.Message);
+        Trace.Write(e.ToString());
+      }
       return _data;
     }//method
 
+    private void Cancel() {
+      throw new ApplicationException("Grammar analysis canceled.");
+    }
     #region Collecting non-terminals
     int _unnamedCount; //internal counter for generating names for unnamed non-terminals
     private void CollectAllElements() {
@@ -72,22 +81,24 @@ namespace Irony.Compiler {
       _data.Terminals.AddRange(_grammar.ExtraTerminals);
       _unnamedCount = 0;
       CollectAllElementsRecursive(_data.AugmentedRoot);
+      if (_data.AnalysisCanceled)
+        Cancel();
     }
-    private void CleanupTerminalList() {
-      TerminalList terms = _data.Terminals;
-      for (int i = terms.Count - 1; i >= 0; i--) {
-        // Remove pseudo terminals defined as static singletons in Grammar class (Empty, Eof, etc)
-        // detect them by type - it is exactly "Terminal", not derived class. 
-        if (terms[i].GetType() == typeof(Terminal))
-          terms.RemoveAt(i);
-      }
-      terms.Sort(Terminal.ByName); //for pretty listing in the form
+
+    private void AdjustCaseForSymbols() {
+      if (_grammar.CaseSensitive) return;
+      foreach (Terminal term in _data.Terminals)
+        if (term is SymbolTerminal)
+          term.Key = term.Key.ToLower();
     }
 
     private void CollectAllElementsRecursive(BnfElement element) {
       //Terminal
       Terminal term = element as Terminal;
-      if (term != null && !_data.Terminals.Contains(term)) {
+      // Do not add pseudo terminals defined as static singletons in Grammar class (Empty, Eof, etc)
+      //  We will never see these terminals in the input stream.
+      //   Filter them by type - their type is exactly "Terminal", not derived class. 
+      if (term != null && !_data.Terminals.Contains(term) && term.GetType() != typeof(Terminal)) {
         _data.Terminals.Add(term);
         return;
       }
@@ -100,6 +111,7 @@ namespace Irony.Compiler {
       _data.NonTerminals.Add(nt);
       if (nt.Rule == null) {
         AddError("Non-terminal {0} has uninitialized Rule property.", nt.Name);
+        _data.AnalysisCanceled = true;
         return;
       }
       //check all child elements
@@ -110,8 +122,7 @@ namespace Irony.Compiler {
           BnfExpression expr = child as BnfExpression;
           if (expr != null) {
             child = new NonTerminal(null, expr);
-            elemList.RemoveAt(i);
-            elemList.Insert(i, child);
+            elemList[i] = child;
           }
           CollectAllElementsRecursive(child);
         }
@@ -131,6 +142,8 @@ namespace Irony.Compiler {
           if (string.IsNullOrEmpty(prefix)) continue;
           //Calculate hash key for the prefix
           char hashKey = prefix[0];
+          if (!_grammar.CaseSensitive)
+            hashKey = char.ToLower(hashKey);
           TerminalList currentList;
           if (!_data.TerminalsLookup.TryGetValue(hashKey, out currentList)) {
             //if list does not exist yet, create it
@@ -151,11 +164,6 @@ namespace Irony.Compiler {
           list.Sort(Terminal.ByPriorityReverse);
     }//method
 
-    private void BuildPunctuationLookup() {
-      _data.PunctuationLookup.Clear();
-      foreach (string symbol in _grammar.PunctuationSymbols)
-        _data.PunctuationLookup[symbol] = symbol;
-    }
 
     #endregion
 
@@ -335,6 +343,9 @@ namespace Irony.Compiler {
       } //for index
     }//method
 
+    private string AdjustCase(string key) {
+      return _grammar.CaseSensitive ? key : key.ToLower();
+    }
     private LRItem TryFindItem(ParserState state, LR0Item core) {
       foreach (LRItem item in state.Items)
         if (item.Core == core)
@@ -502,7 +513,8 @@ namespace Irony.Compiler {
           //3. Shift-reduce conflict
           if (action.NewState != null && action.ReduceProductions.Count > 0) {
             //it might be an operation, with resolution by precedence/associativity
-            if (_data.Grammar.Operators.ContainsKey(action.Key)) {
+            SymbolTerminal opTerm = SymbolTerminal.GetSymbol(action.Key);
+            if (opTerm != null && opTerm.IsFlagSet(BnfFlags.IsOperator)) {
               action.ActionType = ParserActionType.Operator;
             } else {
                 AddErrorForInput(errorTable, action.Key, "Shift-reduce conflict in state {0}, reduce production: {1}",

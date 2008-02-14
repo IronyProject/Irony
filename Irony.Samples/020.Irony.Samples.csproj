@@ -33,6 +33,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="OtherGrammars\ExcelGrammar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Python\PythonGrammar.cs" />
     <Compile Include="Ruby\RubyGrammar.cs" />

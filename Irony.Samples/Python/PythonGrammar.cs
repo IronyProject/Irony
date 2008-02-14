@@ -29,6 +29,8 @@ namespace Irony.Samples.Python {
   // We did this purely for illustration purposes. Python grammar (and AST trees) can be compacted 
   //  using operator precedence and associativity.
 
+  //TODO: (13 Feb 2008) - the grammar is broken, AST tree shows some "extra" symbols; this is result of some latest
+  // refactoring
   public class PythonGrammar : Grammar {
 
     public PythonGrammar() {
@@ -405,7 +407,7 @@ namespace Irony.Samples.Python {
       yield_expr.Rule = "yield" + testlist.Q();
       #endregion
 
-      PunctuationSymbols.AddRange(new string[] { "(", ")", ",", ":" });
+      RegisterPunctuation( "(", ")", ",", ":" );
 
       TokenFilters.Add(new CodeOutlineFilter(true));
 

@@ -135,9 +135,7 @@ namespace Irony.GrammarExplorer {
       TreeNode tn = (parent == null? 
         tvAstNodes.Nodes.Add(txt) : parent.Nodes.Add(txt) );
       tn.Tag = node; 
-      GenericNode genNode = node as GenericNode;
-      if (genNode == null) return;
-      foreach(AstNode child in genNode.ChildNodes)
+      foreach(AstNode child in node.ChildNodes)
         AddAstNode(tn, child);
      
     }

@@ -17,7 +17,6 @@ using System.Text;
 namespace Irony.Compiler {
 
   public class TokenList : List<Token> {}
-
   //Tokens are produced by scanner and fed to parser, possibly passing through Token filters first. 
   // Token is derived from AstNode because tokens are pushed into Parser stack (like non-terminal nodes),
   // and then they can be included as sub-nodes into AST tree. So Token is a kind of AstNode. 
@@ -35,7 +34,10 @@ namespace Irony.Compiler {
     
     public Terminal Terminal   {
       get {return base.Element as Terminal;}
-    } 
+    }
+    public SymbolTerminal Symbol {
+      get { return base.Element as SymbolTerminal; }
+    }
     public TokenCategory Category  {
       get {return Terminal.Category;}
     }

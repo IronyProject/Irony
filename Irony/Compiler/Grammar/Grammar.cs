@@ -29,27 +29,8 @@ namespace Irony.Compiler {
     // (Comment terminal is usually one of them)
     public readonly TerminalList ExtraTerminals = new TerminalList();
 
-    //Punctuation symbols are those that are excluded from arguments of node constructors
-    public readonly KeyList PunctuationSymbols = new KeyList();
-
     //Default node type; if null then GenericNode type is used. 
-    public Type DefaultNodeType;
-
-    //TODO: give this a second thought
-    #region Comments
-    //  If the following flag is true, the scanner removes all keyword-like terminals (those that start with a letter)
-    //  from the list of terminals found in grammar rules. These symbols are treated 
-    //  as something else in the input stream  and the grammar should include a terminal (usuall Identifier)
-    //  that would match these keywords. 
-    //  For ex., if there is a symbol "begin" used somewhere in grammar rules, it will not be included 
-    //  into final list of terminals, and word "begin" in input stream will be represented by the Identifier token.  
-    //  The parser will match it to the "begin" symbol specified in the expression 
-    //   thus recognizing it as a keyword. 
-    //  This is a pure optimization option, to improve scanner performance (terminal lookup by char returns less terminals). 
-    //  It is recommended to set it to true for most languages. 
-    //  For some languages like PHP that has all variable IDs start with "$" it should be set to false.
-    #endregion
-    public bool NoKeywordTerminals = true;
+    public Type DefaultNodeType = typeof(AstNode);
 
     public NonTerminal Root  {
       get {return _root;}
@@ -57,22 +38,39 @@ namespace Irony.Compiler {
     } NonTerminal _root;
 
     public TokenFilterList TokenFilters = new TokenFilterList();
-
     #endregion 
 
-    #region Operators handling
-    public readonly OperatorInfoTable Operators = new OperatorInfoTable();
+    #region RegisterXXX methods
+    public void RegisterPunctuation(params string[] symbols) {
+      foreach (string symbol in symbols) {
+        SymbolTerminal term = SymbolTerminal.GetSymbol(symbol);
+        term.SetFlag(BnfFlags.IsPunctuation);
+      }
+    }
+    public void RegisterPunctuation(params BnfElement[] elements) {
+      foreach (BnfElement elem in elements) 
+        elem.SetFlag(BnfFlags.IsPunctuation);
+    }
 
     public void RegisterOperators(int precedence, params string[] opSymbols) {
       RegisterOperators(precedence, Associativity.Left, opSymbols);
     }
     public void RegisterOperators(int precedence, Associativity associativity, params string[] opSymbols) {
       foreach (string op in opSymbols) {
-        if (Operators.ContainsKey(op))
-          throw new ApplicationException("Operator '" + op + "' is registered more than once.");
-        Operators[op] = new OperatorInfo(op, precedence, associativity);
+        SymbolTerminal opSymbol = SymbolTerminal.GetSymbol(op);
+        opSymbol.SetFlag(BnfFlags.IsOperator, true);
+        opSymbol.Precedence = precedence;
+        opSymbol.Associativity = associativity;
       }
     }//method
+    public void RegisterBracePair(string openBrace, string closeBrace) {
+      SymbolTerminal openS = SymbolTerminal.GetSymbol(openBrace);
+      SymbolTerminal closeS = SymbolTerminal.GetSymbol(closeBrace);
+      openS.SetFlag(BnfFlags.IsOpenBrace);
+      openS.IsPairFor = closeS;
+      closeS.SetFlag(BnfFlags.IsCloseBrace);
+      closeS.IsPairFor = openS;
+    }
     #endregion
 
     #region virtual methods: TryMatch, CreateNode, GetSyntaxErrorMessage
@@ -83,32 +81,7 @@ namespace Irony.Compiler {
     // Override this method in language grammar if you want a custom node creation mechanism.
     public virtual AstNode CreateNode(CompilerContext context, ActionRecord reduceAction, 
                                       SourceLocation location, AstNodeList childNodes) {
-      AstNode node;
-      //First check and try custom NodeCreator method attached to non-terminal
-      if (reduceAction.NonTerminal.NodeCreator != null) {
-        node = reduceAction.NonTerminal.NodeCreator(context, reduceAction, location, childNodes);
-        if (node != null) return node;
-      }
-      //General node-creation path
-      Type nodeType = reduceAction.NonTerminal.NodeType ?? this.DefaultNodeType;
-      if (childNodes.Count == 0) {
-        //Create NULL node
-        node = null; // new AstNode(reduceAction.NonTerminal, location, true);
-      } else if (nodeType == null || nodeType == typeof(GenericNode)) {
-        //GenericNode
-        if (childNodes.Count == 1) 
-          //Node bubbling. For the default case, if no node type is specified (meaning "use GenericNode"),
-          // and new node has just one child node (meaning reduce on identity-like production A->B),
-          // then we do not create new node but simply return the child node itself. So nodes "bubble-up" to higher
-          // levels. This simplifies the default syntax tree. 
-          node = childNodes[0];
-        else
-          node = new GenericNode(context, reduceAction.NonTerminal, location, childNodes);
-      } else {
-        //Custom node type
-        node = (AstNode)Activator.CreateInstance(nodeType, context, reduceAction.NonTerminal, location, childNodes);
-      }
-      return node;      
+      return null;      
     }
     public virtual string GetSyntaxErrorMessage(CompilerContext context, KeyList expectedList) {
       return null; //Irony then would construct default message
@@ -146,10 +119,11 @@ namespace Irony.Compiler {
     // Empty object is used to identify optional element: 
     //    elem.Rule = elem1 | Empty;
     public readonly static BnfElement Empty = new BnfElement("EMPTY");
-    // The following terminals are used in indent-sensitive languages like Python 
+    // The following terminals are used in indent-sensitive languages like Python;
+    // they are not produced by scanner but are produced by CodeOutlineFilter after scanning
     public readonly static Terminal NewLine = new Terminal("LF", TokenCategory.Outline);
     public readonly static Terminal Indent = new Terminal("INDENT", TokenCategory.Outline);
-    public readonly static Terminal Dedent = new Terminal("UNINDENT", TokenCategory.Outline);
+    public readonly static Terminal Dedent = new Terminal("DEDENT", TokenCategory.Outline);
     // Identifies end of file
     // Note: using Eof in grammar rules is optional. Parser automatically adds this symbol 
     // as a lookahead to Root non-terminal
@@ -159,6 +133,8 @@ namespace Irony.Compiler {
     public readonly static Terminal Eos = new Terminal("EOS", TokenCategory.Outline);
     // Special terminal for ReservedWord token produced by IdentifierTerminal when lexeme matches one of reserved words. 
     // It is sometimes(not always) necessary to distinguish reserved words from free identifiers in the input stream.
+    // The main distinction from Identifier is that ReservedWord can be matched only by Value (keyword itself), 
+    //  not by Terminal type.
     public readonly static Terminal ReservedWord = new Terminal("ReservedWord", TokenMatchMode.ByValue);
 
     public readonly static Terminal SyntaxError = new ErrorTerminal("SYNTAX_ERROR");

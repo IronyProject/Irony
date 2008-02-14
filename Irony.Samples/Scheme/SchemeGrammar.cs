@@ -141,13 +141,19 @@ namespace Irony.Samples.Scheme {
 
       #endregion 
 
+      //Register brace  pairs
+      RegisterBracePair("(", ")");
+      RegisterBracePair("[", "]");
+
       //Filters and other stuff
       BraceMatchFilter filter = new BraceMatchFilter();
-      filter.AddPair("(", ")");
-      filter.AddPair("[", "]");
       TokenFilters.Add(filter);
 
-      PunctuationSymbols.AddRange(new string[] { "(", ")", "[", "]" });
+      //RegisterPunctuation( LP, RP); -- we could do this, but doesn't work because raw symbols ()[] get "bubbled up" -
+      // see Parser.CreateNode method
+      RegisterPunctuation("(", ")", "[", "]");
+
+      //this.CaseSensitive = false; -- just for testing case-insensitive parser
 
     }//constructor
 

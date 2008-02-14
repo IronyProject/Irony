@@ -38,43 +38,61 @@ namespace Irony.Compiler {
   // Don't use this filter to validate "normal" pairs that never interchange - this validation 
   //  should be embedded into normal parsing process.
   #endregion
-  //TODO: This must be refactored. (_stack implementation is ugly)
+
+  public class BracePair {
+    public readonly Token Open;
+    public readonly Token Close;
+    public BracePair(Token open, Token close) {
+      this.Open = open;
+      this.Close = close;
+    }
+  }
+  public class BracePairList : List<BracePair> { }
+
+
   public class BraceMatchFilter : TokenFilter {
     StringList _stack = new StringList();
     //We don't use dictionaries as number of symbols would be small - two or four at most,
     // so hashtables/dictionaries give no advantage
-    StringList _braces = new StringList();
+    private Stack<Token> _braces = new Stack<Token>();
+    public BracePairList BracePairs = new BracePairList();
+    public bool BuildPairsList = false; //do not build pairs list
 
-    public void AddPair(string left, string right) {
-      _braces.Add(left);
-      _braces.Add(right);
-    }
+
     public override IEnumerable<Token> BeginFiltering(CompilerContext context, IEnumerable<Token> tokens) {
       foreach (Token token in tokens) {
-        string tokenKey = token.Terminal.Key;
-        int idx = _braces.IndexOf(tokenKey);
-        if (idx >= 0) {
-          if (idx % 2 == 0)
-            //it is left brace
-            _stack.Add(_braces[idx + 1]);
-          else if (_stack.Count == 0)
-            yield return Grammar.CreateSyntaxErrorToken(token.Location, "Unexpected closing symbol - no matching opening symbol.");
-          else if (_stack[_stack.Count - 1] != tokenKey) {
-            //closing brace mismatch
-            string expected = _stack[_stack.Count - 1];
-            _stack.RemoveAt(_stack.Count - 1); //still remove "unmatched" symbol from stack
-            yield return Grammar.CreateSyntaxErrorToken(token.Location, "'" + expected + "' expected.");
+        if (!token.Element.IsFlagSet(BnfFlags.IsBrace)) {
+          yield return token;
+          continue;
+        }
+        //open brace symbol
+        if (token.Element.IsFlagSet(BnfFlags.IsOpenBrace)) {
+          _braces.Push(token);
+          yield return token;
+          continue;
+        }
+        if (token.Element.IsFlagSet(BnfFlags.IsCloseBrace)) {
+          Token lastOpen = _braces.Peek();
+          if (_braces.Count > 0 && lastOpen.Symbol.IsPairFor == token.Symbol) { 
+            //everything is ok, there's matching brace on top of the stack
+            if (BuildPairsList)
+              BracePairs.Add(new BracePair(lastOpen, token));
+            _braces.Pop();
+            yield return token; //return this token
+          } else {
+            yield return Grammar.CreateSyntaxErrorToken(token.Location, 
+                "Unmatched closing brace '{0}' - expected '{1}'", token.Text, lastOpen.Symbol.IsPairFor.Symbol);
+            //TODO: add some error recovery here
+            // some old code:
+            //yield return Grammar.CreateSyntaxErrorToken(token.Location, "'" + expected + "' expected.");
             //yield "correct" closing symbol, to let the grammar continue.
-            yield return new Token(SymbolTerminal.GetSymbol(expected), token.Location, expected);
-          } else
-            _stack.RemoveAt(_stack.Count - 1);
-        }// if idx >= 0 ...
-        //finally yield token
-        yield return token;
+            //yield return new Token(SymbolTerminal.GetSymbol(expected), token.Location, expected);
+
+          }//else
+        }//if token IsCloseBrace
       }//foreach token
       yield break;
-    }
-
+    }//method
 
   }//class
 }

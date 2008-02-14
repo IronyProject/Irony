@@ -49,7 +49,8 @@ namespace Irony.Compiler {
     public AstNode Parse(CompilerContext context, SourceFile source) {
       _context = context;
       int start = Environment.TickCount;
-      IEnumerable<Token> tokenStream = Scanner.BeginScan(context, source);
+      Scanner.Prepare(context, source);
+      IEnumerable<Token> tokenStream = Scanner.BeginScan();
       //chain all token filters
       foreach (TokenFilter filter in Grammar.TokenFilters) {
         tokenStream = filter.BeginFiltering(context, tokenStream);

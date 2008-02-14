@@ -34,7 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common.cs" />
-    <Compile Include="Compiler\AST\GenericNode.cs" />
+    <Compile Include="Compiler\AST\AstVisitor.cs" />
     <Compile Include="Compiler\CompilerContext.cs" />
     <Compile Include="Compiler\Enums.cs" />
     <Compile Include="Compiler\Parser\ParserStack.cs" />

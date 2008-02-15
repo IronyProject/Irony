@@ -289,6 +289,7 @@ namespace Irony.Compiler {
     private ParserActionType GetActionTypeForOperation(Token current) {
       SymbolTerminal opSymb = current.Element as SymbolTerminal;
       for (int i = Stack.Count - 2; i >= 0; i--) {
+        if (Stack[i].Node == null) continue;
         BnfElement elem = Stack[i].Node.Element;
         if (!elem.IsFlagSet(BnfFlags.IsOperator)) continue;
         SymbolTerminal prevOpSymb = elem as SymbolTerminal;

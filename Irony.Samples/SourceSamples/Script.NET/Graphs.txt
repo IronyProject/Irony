@@ -1,0 +1,48 @@
+//1
+//  2
+//   3
+//  4
+//  5
+
+u = [ 1, 2 , 3 , 4 , 5];
+v = [ [1,2], [2,3], [1,4], [1,5] ];
+
+g = [ 
+      vertexes -> u,
+      edges    -> v
+    ];
+
+function IsTree(g)
+{
+ vert = new ArrayList ();
+ 
+ foreach (edge in g.edges)
+ {
+   if (!vert.Contains(edge[1]))
+        vert.Add(edge[1]);
+   else
+        return false;
+ } 
+
+ if  ( vert.Count == g.vertexes.Length-1 )
+ {
+   foreach (root in g.vertexes)
+    if ( ! vert.Contains(root))
+    {
+       g.root =  root;
+       break;
+     }
+
+   return true;
+ }
+ else
+    return false;
+}
+
+IsTree(g);
+
+root = g.root;
+
+s = '';
+foreach (x in v)
+ s = s + x[0]+'->' + x[1] + ', ';

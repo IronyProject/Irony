@@ -24,7 +24,7 @@ namespace Irony.Samples.Scheme {
     public SchemeGrammar() {
 
       #region Terminals
-      ConstantSetTerminal Constants = new ConstantSetTerminal("Constants");
+      ConstantTerminal Constants = new ConstantTerminal("Constants");
       Constants.Add("#T", true);
       Constants.Add("#t", true);
       Constants.Add("#F", false);
@@ -44,15 +44,19 @@ namespace Irony.Samples.Scheme {
 
       // the following probably doesn't work correctly
       // TODO: build SchemeCharLiteral
-      Terminal charLiteral = new CharLiteral("CharLiteral", @"#\", string.Empty); 
-      Terminal stringLiteral = new StringLiteral();
+      StringLiteral charLiteral = new StringLiteral("Char", "'", StringOptions.IsChar); // this is nonsense, just for now
+      Terminal stringLiteral = new StringLiteral("String", "\"",StringOptions.None);
       //Identifiers. Note: added "-", just to allow IDs starting with "->" 
       IdentifierTerminal SimpleIdentifier = new IdentifierTerminal("SimpleIdentifier", "_+-*/.@?!<>=", "_!$%&*/:<=>?^~" + "+-");
       //                                                           name                extraChars      extraFirstChars  
       Terminal Number = new NumberTerminal("Number");
-      Terminal Comment = new CommentTerminal("Comment", ";", "#|", "|#");
       Terminal Byte = Number; // new NumberTerminal("Byte"); //u8 in R6RS notation
-      ExtraTerminals.Add(Comment); //add comment explicitly to this list as it is not reachable from Root
+
+      //Comments
+      Terminal Comment = new CommentTerminal("Comment", "#|", "|#");
+      Terminal LineComment = new CommentTerminal("LineComment", ";", "\n");
+      ExtraTerminals.Add(Comment); //add comments explicitly to this list as it is not reachable from Root
+      ExtraTerminals.Add(LineComment);
       #endregion
 
       #region NonTerminals

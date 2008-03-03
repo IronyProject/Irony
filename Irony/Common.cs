@@ -47,6 +47,15 @@ namespace Irony {
 
       return string.Join(separator, arr);
     }
+
+    //Used in sorting suffixes and prefixes; longer strings must come first in sort order
+    public static int LongerFirst(string x, string y) {
+      try {//in case any of them is null
+        if (x.Length > y.Length) return -1;
+      } catch { }
+      return 0;
+    }
+
   }//KeyList class
 
 

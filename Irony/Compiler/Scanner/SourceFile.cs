@@ -69,19 +69,19 @@ namespace Irony.Compiler {
     #region ISourceFile Members
     public int Position {
       get {return _position; }
-      set {
-        _position = value;
-        try {  _currentChar = _text[_position]; } 
-          catch { _currentChar = '\0'; }
-      }
+      set {_position = value;}
     } int _position;
 
     public bool EOF() {
       return _position >= Text.Length;
     }
     public char CurrentChar {
-      get { return _currentChar; }
-    } char _currentChar;
+      get {
+        try {
+          return _text[_position];
+        } catch { return '\0'; }
+      }
+    }
 
     public char NextChar {
       get {

@@ -4,11 +4,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}</ProjectGuid>
+    <ProjectGuid>{304939D4-6373-46E4-A18C-A4BD04BA6BAE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Irony.Samples</RootNamespace>
-    <AssemblyName>Irony.Samples</AssemblyName>
+    <RootNamespace>Irony.Tests</RootNamespace>
+    <AssemblyName>Irony.Tests</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -28,38 +28,26 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="nunit.framework, Version=2.4.3.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Lib\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Script.NET\ScriptDotNetGrammar.cs" />
+    <Compile Include="CommentTerminalTests.cs" />
+    <Compile Include="NumberTerminalTests.cs" />
+    <Compile Include="_TerminalTestBase.cs" />
+    <Compile Include="StringLiteralTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Python\PythonGrammar.cs" />
-    <Compile Include="Ruby\RubyGrammar.cs" />
-    <Compile Include="Scheme\SampleAstNodes.cs" />
-    <Compile Include="Scheme\SchemeGrammar.cs" />
-    <None Include="OtherGrammars\GrammarEx434.cs" />
-    <None Include="OtherGrammars\GrammarEx446.cs" />
-    <None Include="OtherGrammars\GrammarExL514.cs" />
-    <Compile Include="OtherGrammars\ExpressionGrammar.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Irony\010.Irony.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
       <Name>010.Irony</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Python\Python_auth_svn.txt" />
-    <None Include="SourceSamples\99 bottles.py" />
-    <None Include="SourceSamples\99 bottles.rb" />
-    <None Include="SourceSamples\99 bottles.scm" />
-    <None Include="SourceSamples\99 bottles with Errors.rb" />
-    <Content Include="License.txt" />
-    <Content Include="Ruby\Ruby_auth.txt" />
-    <Content Include="SourceSamples\_about.txt" />
-    <Content Include="SourceSamples\ExprSample.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

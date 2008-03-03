@@ -1,0 +1,16 @@
+v = new int[10];
+for(i=0; i<v.Length; i++)
+ v[i] = i;
+
+s = ''; 
+foreach(i in v)
+  s = s + i + ' ';
+
+
+a = new List<string>[10];
+
+a[0] = new List<string>();
+a[0].Add('Hello');
+
+b = a[0].ToArray();
+c = b[0];

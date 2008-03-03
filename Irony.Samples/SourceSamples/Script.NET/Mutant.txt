@@ -1,0 +1,16 @@
+//Mutants
+a = [ Text -> 'Hello' ];
+a.Top = 0;
+
+form := a;
+//or::
+
+//a.AssignTo( form );
+
+a = [ x->1, y->2, m->[ x->1, y->[ x->1, y->2, z -> 3], z -> 3],  z -> 3, Top->0];
+z = [z->15, x->3, Text->'Hallo!'];
+a.CaptureFields(z);
+
+a.Mutate(form);
+
+MessageBox.Show(a.FriendlyString());

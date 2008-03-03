@@ -17,7 +17,7 @@ using System.Text;
 namespace Irony.Compiler {
 
   #region Grammar class
-  public abstract class Grammar {
+  public class Grammar {
 
     #region properties: CaseSensitive, WhitespaceChars, ExtraTerminals, PunctuationSymbols, TokenFilters
     public bool CaseSensitive = true;
@@ -118,7 +118,7 @@ namespace Irony.Compiler {
     #region Standard terminals: EOF, Empty, NewLine, Indent, Dedent
     // Empty object is used to identify optional element: 
     //    elem.Rule = elem1 | Empty;
-    public readonly static BnfElement Empty = new BnfElement("EMPTY");
+    public readonly static Terminal Empty = new Terminal("EMPTY");
     // The following terminals are used in indent-sensitive languages like Python;
     // they are not produced by scanner but are produced by CodeOutlineFilter after scanning
     public readonly static Terminal NewLine = new Terminal("LF", TokenCategory.Outline);
@@ -137,7 +137,7 @@ namespace Irony.Compiler {
     //  not by Terminal type.
     public readonly static Terminal ReservedWord = new Terminal("ReservedWord", TokenMatchMode.ByValue);
 
-    public readonly static Terminal SyntaxError = new ErrorTerminal("SYNTAX_ERROR");
+    public readonly static Terminal SyntaxError = new Terminal("SYNTAX_ERROR", TokenCategory.Error);
     #endregion
 
         

@@ -38,6 +38,10 @@ namespace Irony.Compiler {
 
       try {
         _data.ScannerRecoverySymbols = grammar.WhitespaceChars + grammar.Delimiters;
+        if (grammar.Root == null) {
+          AddError("Root property of the grammar is not set.");
+          Cancel();
+        }
         //Create the augmented root for the grammar
         _data.AugmentedRoot = new NonTerminal(grammar.Root.Name + "'", new BnfExpression(grammar.Root));
         //Collect all terminals and non-terminals into corresponding collections
@@ -64,13 +68,15 @@ namespace Irony.Compiler {
         //call Init on all elements in the grammar
         InitAll();
       } catch(Exception e) {
-        _data.Errors.Add(e.Message);
+        _data.Errors.Add(e.ToString());
         Trace.Write(e.ToString());
+        //throw;// Cancel();
       }
       return _data;
     }//method
 
     private void Cancel() {
+      _data.AnalysisCanceled = true; 
       throw new ApplicationException("Grammar analysis canceled.");
     }
     #region Collecting non-terminals
@@ -81,15 +87,9 @@ namespace Irony.Compiler {
       _data.Terminals.AddRange(_grammar.ExtraTerminals);
       _unnamedCount = 0;
       CollectAllElementsRecursive(_data.AugmentedRoot);
+      _data.Terminals.Sort(Terminal.ByName);
       if (_data.AnalysisCanceled)
         Cancel();
-    }
-
-    private void AdjustCaseForSymbols() {
-      if (_grammar.CaseSensitive) return;
-      foreach (Terminal term in _data.Terminals)
-        if (term is SymbolTerminal)
-          term.Key = term.Key.ToLower();
     }
 
     private void CollectAllElementsRecursive(BnfElement element) {
@@ -128,11 +128,18 @@ namespace Irony.Compiler {
         }
     }//method
 
+    private void AdjustCaseForSymbols() {
+      if (_grammar.CaseSensitive) return;
+      foreach (Terminal term in _data.Terminals)
+        if (term is SymbolTerminal)
+          term.Key = term.Key.ToLower();
+    }
+
     private void BuildTerminalsLookupTable() {
       _data.TerminalsLookup.Clear();
       _data.TerminalsWithoutPrefixes.Clear();
       foreach (Terminal term in _data.Terminals) {
-        IList<string> prefixes = term.GetPrefixes();
+        IList<string> prefixes = term.GetStartSymbols();
         if (prefixes == null || prefixes.Count == 0) {
           _data.TerminalsWithoutPrefixes.Add(term);
           continue;

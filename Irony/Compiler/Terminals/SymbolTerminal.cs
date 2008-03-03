@@ -35,13 +35,13 @@ namespace Irony.Compiler {
       int symLen = _symbol.Length;
       if (source.Position + symLen > text.Length)
         return null; 
-      if (string.Compare(text, source.TokenStart.Position, _symbol, 0, symLen, !Grammar.CaseSensitive) != 0)
+      if (string.Compare(text, source.Position, _symbol, 0, symLen, !Grammar.CaseSensitive) != 0)
         return null;
       source.Position += symLen;
       Token tkn = new Token(this, source.TokenStart, Symbol);
       return tkn;
     }
-    public override IList<string> GetPrefixes() {
+    public override IList<string> GetStartSymbols() {
       return new string[] { _symbol };
     }
     public override string ToString() {

@@ -682,7 +682,8 @@ namespace Irony.GrammarExplorer {
             "ExpressionGrammar",
             "Scheme",
             "Python",
-            "Ruby"});
+            "Ruby",
+            "Script.NET"});
       this.cboLanguage.Location = new System.Drawing.Point(90, 3);
       this.cboLanguage.Name = "cboLanguage";
       this.cboLanguage.Size = new System.Drawing.Size(189, 21);

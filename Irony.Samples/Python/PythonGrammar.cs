@@ -35,15 +35,11 @@ namespace Irony.Samples.Python {
 
     public PythonGrammar() {
       #region Declare Terminals 
-      ConstantSetTerminal Constants = new ConstantSetTerminal("Constants");
+      ConstantTerminal Constants = new ConstantTerminal("Constants");
       Constants.Add("True", true);
       Constants.Add("False", false);
-      StringLiteral stringLiteral = new StringLiteral("StringLiteralDQ");
-      StringLiteral stringLiteral2 = new StringLiteral("StringLiteralDQ3", "\"\"\"", "\"\"\"");
-      StringLiteral stringLiteral3 = new StringLiteral("StringLiteralSQ", "'", "'");
-      StringLiteral stringLiteral4 = new StringLiteral("StringLiteralSQ3", "'''", "'''");
       IdentifierTerminal Identifier = new IdentifierTerminal("Identifier");
-      Terminal Comment = new CommentTerminal("Comment", "#", "", "");
+      Terminal Comment = new CommentTerminal("Comment", "#", "\n");
       ExtraTerminals.Add(Comment);
 
       Terminal comma = Symbol(",", "comma");
@@ -67,6 +63,7 @@ namespace Irony.Samples.Python {
       #endregion
 
       #region Declare NonTerminals
+      StringLiteral STRING = TerminalFactory.CreatePythonString("String");
       NonTerminal single_input = new NonTerminal("single_input");
       NonTerminal file_input = new NonTerminal("file_input");
       NonTerminal eval_input = new NonTerminal("eval_input");
@@ -160,7 +157,6 @@ namespace Irony.Samples.Python {
       NonTerminal gen_if = new NonTerminal("gen_if");
       NonTerminal encoding_decl = new NonTerminal("encoding_decl");
       NonTerminal yield_expr = new NonTerminal("yield_expr");
-      NonTerminal STRING = new NonTerminal("STRING");
       #endregion
 
       #region RULES
@@ -346,7 +342,6 @@ namespace Irony.Samples.Python {
              "{" + dictmaker.Q() + "}" |
              "`" + testlist1 + "`" |
              NAME | NUMBER | STRING; //.Plus();  //removed "+" - seems strange at least
-      STRING.Rule = stringLiteral | stringLiteral2 | stringLiteral3 | stringLiteral4; 
       // listmaker: test ( list_for | (',' test)* [','] )
       //  listmaker.Expression = test + ( list_for | WithStar("," + test) + commaQ ); // ambigouous
 //      listmaker.Expression = test + list_for.Q() | testlist;                             // modified version

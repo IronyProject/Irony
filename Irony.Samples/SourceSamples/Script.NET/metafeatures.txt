@@ -1,0 +1,13 @@
+///Meta Features
+rez = eval('<[ x=1; MessageBox.Show(x); ]>');
+rez.Execute(Context);
+
+//M1
+Replace( <[ x = 1; ]> );
+MessageBox.Show (prog.Code () );
+
+//M2
+Append ( <[ if (y > 2) x=4; else x = 1;]>);
+Replace( <[ y = 3; ]>);
+form.Out ( prog.Code() );
+form.Out(prog.ConcreteSyntaxTree());

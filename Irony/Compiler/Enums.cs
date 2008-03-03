@@ -43,14 +43,25 @@ namespace Irony.Compiler {
   }
 
   public enum BnfFlags {
+    None = 0,
     IsOperator = 0x01,
     IsGrammarSymbol = 0x02,
     IsOpenBrace  = 0x04,
     IsCloseBrace = 0x08,
     IsBrace = IsOpenBrace | IsCloseBrace,
-    IsPunctuation = 0x10,
-    IsDelimiter   = 0x20, 
-    IsList        = 0x40,
-    IsScope       = 0x80,
+    IsConstant    = 0x10,
+    IsPunctuation = 0x20,
+    IsDelimiter   = 0x40, 
+    IsList        = 0x80,
+    
+    //Number flags 
+    NumberAllowBigInts = 0x0100,   // python
+    NumberUseFloatOnIntOverflow = 0x0200,
+    NumberIgnoreCase = 0x0400,     //Ignore case in suffixes and prefixes
+
+    StringIgnoreCase = 0x0400,     //Ignore case in suffixes and prefixes
+
+ 
+
   }
 }

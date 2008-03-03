@@ -16,29 +16,30 @@ using System.Text;
 
 namespace Irony.Compiler {
   //This terminal allows to declare a set of constants in the input language
+  // It should be used when constant symbols do not look like normal identifiers; e.g. in Scheme, #t, #f are true/false
+  // constants, and they don't fit into Scheme identifier pattern.
   public class ConstantsTable : Dictionary<string, object> { }
-  public class ConstantSetTerminal : Terminal {
-    public ConstantSetTerminal() : this("Constants") { }
-    public ConstantSetTerminal(string name)
-      : base(name) {
+  public class ConstantTerminal : Terminal {
+    public ConstantTerminal(string name)     : base(name) {
+      base.SetFlag(BnfFlags.IsConstant);
     }
     public readonly ConstantsTable Table = new ConstantsTable();
     public void Add(string lexeme, object value) {
       this.Table[lexeme] = value;
     }
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
-      int start = source.Position;
-      string buffer = source.Text;
-      foreach (string symbol in Table.Keys) {
-        if (start + symbol.Length > buffer.Length) continue;
-        if (buffer.IndexOf(symbol, start, symbol.Length) != start) continue;
-        Token tkn = new Token(this, source.TokenStart, symbol, Table[symbol]);
-        source.Position += symbol.Length;
+      string text = source.Text;
+      foreach (string lexeme in Table.Keys) {
+        if (source.Position + lexeme.Length > text.Length) continue;
+        if (string.Compare(text, source.Position, lexeme, 0, lexeme.Length, !Grammar.CaseSensitive) != 0)
+          continue;
+        Token tkn = new Token(this, source.TokenStart, lexeme, Table[lexeme]);
+        source.Position += lexeme.Length;
         return tkn;
       }
       return null;
     }
-    public override IList<string> GetPrefixes() {
+    public override IList<string> GetStartSymbols() {
       string[] array = new string[Table.Count];
       Table.Keys.CopyTo(array, 0);
       return array;

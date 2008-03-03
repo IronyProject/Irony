@@ -1,0 +1,27 @@
+//Initialize UIAutomation Libraries
+u1 = Assembly.Load('UIAutomationClient, version=3.0.0.0, Culture=neutral , PublicKeyToken=31bf3856ad364e35');
+u2 = Assembly.Load('UIAutomationClientSideProviders, version=3.0.0.0, Culture=neutral , PublicKeyToken=31bf3856ad364e35');
+u3 = Assembly.Load('UIAutomationProvider, version=3.0.0.0, Culture=neutral , PublicKeyToken=31bf3856ad364e35');
+u4 = Assembly.Load('UIAutomationTypes, version=3.0.0.0, Culture=neutral , PublicKeyToken=31bf3856ad364e35');
+
+//Initalize Variables
+TrueCondition = Context.GetStaticValue('System.Windows.Automation.Condition.TrueCondition');
+Children = Context.GetStaticValue('System.Windows.Automation.TreeScope.Children');
+
+function FindChilds( RootElement, Recursively )
+{
+  col = RootElement.FindAll(Children, TrueCondition);
+  foreach (el in col)
+  {                     
+     if (el.Current.Name != '')
+     MessageBox.Show(el.Current.Name);
+  
+     if (Recursively) FindChilds(el, Recursively);
+  }
+}
+
+mouse_point = new System.Windows.Point(Cursor.Position.X, Cursor.Position.Y);
+currentElement = AutomationElement.FromPoint(mouse_point);
+
+FindChilds(AutomationElement.RootElement, true);
+

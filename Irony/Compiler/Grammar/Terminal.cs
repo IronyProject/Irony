@@ -63,7 +63,7 @@ namespace Irony.Compiler {
     }
     //Prefixes are used for quick search for possible matching terminal(s) using current character in the input stream.
     // A terminal might declare no prefixes. In this case, the terminal is tried for match for any current input character. 
-    public virtual IList<string> GetPrefixes() {
+    public virtual IList<string> GetStartSymbols() {
       return null;
     }
     #endregion

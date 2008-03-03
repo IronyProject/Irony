@@ -52,5 +52,11 @@ namespace Irony.Compiler {
     }
   }//class
 
+  public class NumberScanEventArgs : EventArgs {
+    public NumberScanEventArgs(NumberTerminal.NumberScanInfo info) {
+      this.Info = info;
+    }
+    public readonly NumberTerminal.NumberScanInfo Info;
+  }//class
 
 }//namespace

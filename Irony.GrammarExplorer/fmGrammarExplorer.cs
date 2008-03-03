@@ -155,8 +155,10 @@ namespace Irony.GrammarExplorer {
       //States
       txtParserStates.Text = data.GetStatesAsText();
       //Validation errors
-      if (data.Errors.Count > 0)
+      if (data.Errors.Count > 0) {
         txtGrammarErrors.Text = data.Errors.ToString(Environment.NewLine);
+        tabGrammar.SelectedTab = pageGrErrors;
+      }
       lblInitTime.Text = Compiler.InitTime.ToString();
     }//methold
 
@@ -238,11 +240,14 @@ namespace Irony.GrammarExplorer {
         case 3: //Ruby
           grammar = new Irony.Samples.Ruby.RubyGrammar();
           break;
+        case 4: //Script.NET
+          grammar = new Irony.Samples.ScriptNET.ScriptdotnetGrammar();
+          break;
       }//switch
       try {
         _compiler = new LanguageCompiler(grammar);
       } finally {
-      RefreshGrammarInfo();
+        RefreshGrammarInfo();
       }//finally
     }
 

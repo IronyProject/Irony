@@ -72,7 +72,7 @@ namespace Irony.Compiler {
     }//method
 
     private const string AllLetters = "abcdefghijklmnopqrstuvwxyz";
-    public override IList<string> GetPrefixes() {
+    public override IList<string> GetStartSymbols() {
       string tmp = AllLetters + AllLetters.ToUpper() + ExtraFirstChars;
       char[] chars = tmp.ToCharArray();
       KeyList list = new KeyList();

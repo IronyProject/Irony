@@ -28,8 +28,9 @@ namespace Irony.Samples.Ruby {
 
       #region Terminals
       //String Literals with single and double-quote start/end symbols
-      Terminal StringLiteralDQ = new StringLiteral("StringLiteralDQ", "string");
-      Terminal StringLiteralSQ = new StringLiteral("StringLiteralSQ", "string", "'", "'"); 
+      StringLiteral STRING = new StringLiteral("STRING", BnfFlags.StringIgnoreCase);
+      STRING.StartEndSymbolTable.Add("\"", StringOptions.None);
+      STRING.StartEndSymbolTable.Add("'", StringOptions.None);
       Terminal HereDoc = new Terminal("HereDoc"); //-- implement me!
       Terminal RegExLiteral = new Terminal("RegExLiteral"); //-- implement me!
       IdentifierTerminal IDENTIFIER = new IdentifierTerminal("identifier", "_!?", "_$@");
@@ -39,7 +40,7 @@ namespace Irony.Samples.Ruby {
       IDENTIFIER.AddReservedWords("do", "end", "def", "class", 
                                        "if", "case", "return", "yield", "while", "until");  //and some others...
       Terminal Number = new NumberTerminal("Number", "number");
-      Terminal Comment = new CommentTerminal("Comment", "#", "", "");
+      Terminal Comment = new CommentTerminal("Comment", "#", "\n");
       ExtraTerminals.Add(Comment); //add comment explicitly to this list as it is not reachable from Root
 
       //some conveniency variables
@@ -379,7 +380,7 @@ namespace Irony.Samples.Ruby {
       //  VARIABLE : VARNAME | nil | self    -- variable is merged into IDENTIFIER
       //VARIABLE.Expression = IDENTIFIER | "nil" | "self";
       // LITERAL : numeric | SYMBOL | STRING | STRING2 | HERE_DOC | REGEXP
-      LITERAL.Rule = Number | SYMBOL | StringLiteralDQ | StringLiteralSQ | HereDoc | RegExLiteral;
+      LITERAL.Rule = Number | SYMBOL | STRING | HereDoc | RegExLiteral;
       SYMBOL.Rule = Symbol(":") + IDENTIFIER; // (FNAME | VARNAME); //note 1.
       /*  FNAME           : IDENTIFIER | `..' | `|' | `^' | `&'
                 | `<=>' | `==' | `===' | `=~'

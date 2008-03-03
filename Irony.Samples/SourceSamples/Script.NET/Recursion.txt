@@ -1,0 +1,11 @@
+          function fib(n){
+           if (n==1) return 1;
+           else if (n==2) return 2;
+           else return fib(n-1)+fib(n-2);
+          }
+
+          function fac(n){
+           if (n==1) return 1;
+           else return n*fac(n-1);
+          }
+          MessageBox.Show('Rez=' + (fac(5) + fib(3)));

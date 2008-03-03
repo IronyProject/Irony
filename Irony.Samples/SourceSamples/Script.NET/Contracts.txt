@@ -1,0 +1,37 @@
+
+function time_now(o,e)
+[
+ pre ( o != null );
+ post( o > 3);
+ invariant( e == 3);
+]
+{
+ o = o + 2;
+}
+
+time_now(2,3);
+
+function Push(item)
+[
+ pre(me.Count < 10 );
+ post();
+ invariant();
+]
+{
+}
+
+function Pop()
+[
+ pre(me.Count > 0);
+ post();
+ invariant();
+]
+{
+}
+
+s = new Stack<int>();
+m = [ Push -> Push, Pop -> Pop ];
+m.Mutate(s);
+m.Push(15);
+v = m.Pop();
+m.Pop();

@@ -28,9 +28,9 @@ namespace Irony.Samples.Ruby {
 
       #region Terminals
       //String Literals with single and double-quote start/end symbols
-      StringLiteral STRING = new StringLiteral("STRING", BnfFlags.StringIgnoreCase);
-      STRING.StartEndSymbolTable.Add("\"", StringOptions.None);
-      STRING.StartEndSymbolTable.Add("'", StringOptions.None);
+      StringLiteral STRING = new StringLiteral("STRING", TermOptions.SpecialIgnoreCase);
+      STRING.AddStartEnd("\"", ScanFlags.None);
+      STRING.AddStartEnd("'", ScanFlags.None);
       Terminal HereDoc = new Terminal("HereDoc"); //-- implement me!
       Terminal RegExLiteral = new Terminal("RegExLiteral"); //-- implement me!
       IdentifierTerminal IDENTIFIER = new IdentifierTerminal("identifier", "_!?", "_$@");
@@ -39,7 +39,7 @@ namespace Irony.Samples.Ruby {
       //we need to isolate reserved words to avoid ambiguities in grammar 
       IDENTIFIER.AddReservedWords("do", "end", "def", "class", 
                                        "if", "case", "return", "yield", "while", "until");  //and some others...
-      Terminal Number = new NumberTerminal("Number", "number");
+      Terminal Number = new NumberLiteral("Number");
       Terminal Comment = new CommentTerminal("Comment", "#", "\n");
       ExtraTerminals.Add(Comment); //add comment explicitly to this list as it is not reachable from Root
 

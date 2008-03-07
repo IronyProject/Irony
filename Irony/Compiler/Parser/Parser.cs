@@ -36,24 +36,29 @@ namespace Irony.Compiler {
     private bool _caseSensitive;
 
     public IEnumerator<Token> Input {
-      get {return _input;}
+      [System.Diagnostics.DebuggerStepThrough]
+      get { return _input; }
     } IEnumerator<Token> _input;
 
     public Token CurrentToken  {
-      get {return _currentToken;}
+      [System.Diagnostics.DebuggerStepThrough]
+      get { return _currentToken; }
     } Token  _currentToken;
 
     public ParserState CurrentState {
-      get {return _currentState;}
+      [System.Diagnostics.DebuggerStepThrough]
+      get { return _currentState; }
     } ParserState  _currentState;
 
 
     public int LineCount {
-      get {return _lineCount;}
+      [System.Diagnostics.DebuggerStepThrough]
+      get { return _lineCount; }
     } int  _lineCount;
 
     public int TokenCount  {
-      get {return _tokenCount;}
+      [System.Diagnostics.DebuggerStepThrough]
+      get { return _tokenCount; }
     } int  _tokenCount;
 
     #endregion
@@ -183,7 +188,7 @@ namespace Irony.Compiler {
     // in addition to normal lookaheads. 
     #endregion
     private KeyList GetCurrentExpectedSymbols() {
-      BnfElementList inputElements = new BnfElementList();
+      BnfTermList inputElements = new BnfTermList();
       KeyList inputKeys = new KeyList();
       inputKeys.AddRange(_currentState.Actions.Keys);
       //First check all NonTerminals
@@ -207,8 +212,8 @@ namespace Irony.Compiler {
           inputElements.Add(term);
       }
       KeyList result = new KeyList();
-      foreach(BnfElement elem in inputElements)
-        result.Add(string.IsNullOrEmpty(elem.Alias)? elem.Name : elem.Alias);
+      foreach(BnfTerm term in inputElements)
+        result.Add(string.IsNullOrEmpty(term.Alias)? term.Name : term.Alias);
       result.Sort();
       return result;
     }
@@ -287,12 +292,12 @@ namespace Irony.Compiler {
       return null; //action not found
     }
     private ParserActionType GetActionTypeForOperation(Token current) {
-      SymbolTerminal opSymb = current.Element as SymbolTerminal;
+      SymbolTerminal opSymb = current.Term as SymbolTerminal;
       for (int i = Stack.Count - 2; i >= 0; i--) {
         if (Stack[i].Node == null) continue;
-        BnfElement elem = Stack[i].Node.Element;
-        if (!elem.IsFlagSet(BnfFlags.IsOperator)) continue;
-        SymbolTerminal prevOpSymb = elem as SymbolTerminal;
+        BnfTerm term = Stack[i].Node.Term;
+        if (!term.IsSet(TermOptions.IsOperator)) continue;
+        SymbolTerminal prevOpSymb = term as SymbolTerminal;
         //if previous operator has the same precedence then use associativity
         if (prevOpSymb.Precedence == opSymb.Precedence) 
           return opSymb.Associativity == Associativity.Left ? ParserActionType.Reduce : ParserActionType.Shift;
@@ -340,21 +345,18 @@ namespace Irony.Compiler {
 
     private AstNode CreateNode(ActionRecord reduceAction, SourceLocation location, AstNodeList childNodes) {
       NonTerminal nt = reduceAction.NonTerminal;
-      AstNode result;
+      AstNode result = nt.OnNodeCreating(_context, _currentState, reduceAction, location, childNodes);
+      if (result != null) 
+        return result;
+
       Type defaultNodeType = _context.Compiler.Grammar.DefaultNodeType;
       Type ntNodeType = nt.NodeType ?? defaultNodeType ?? typeof(AstNode);
-
-      // Check NodeCreator method attached to non-terminal
-      if (nt.NodeCreator != null) {
-        result = nt.NodeCreator(_context, reduceAction, location, childNodes);
-        if (result != null)
-          return result;
-      }
 
       // Check for NULL node; when node is created from 0 child nodes (and it is not a list), it means that it is a node for 
       // "optional" element in the rule, and it is represented by null value.
       // This behavior may be overriden by custom node creator). 
-      if (childNodes.Count == 0 && !nt.IsFlagSet(BnfFlags.IsList) && nt.NodeCreator == null)
+      //TODO: give it a second thought
+      if (childNodes.Count == 0 && !nt.IsSet(TermOptions.IsList))
         return null; // 
 
       // Check if NonTerminal is a list
@@ -365,7 +367,7 @@ namespace Irony.Compiler {
       //  if yes, we use this child as a result directly, without creating new list node. 
       //  The other incoming child - the last one - is a new list member; 
       // we simply add it to child list of the result ntList node. Optional "delim" node is simply thrown away.
-      if (nt.IsFlagSet(BnfFlags.IsList) && childNodes.Count > 1 && childNodes[0].Element == nt) {
+      if (nt.IsSet(TermOptions.IsList) && childNodes.Count > 1 && childNodes[0].Term == nt) {
         result = childNodes[0];
         result.ChildNodes.Add(childNodes[childNodes.Count - 1]);
         return result;
@@ -376,20 +378,22 @@ namespace Irony.Compiler {
       // so child node B can be used directly in place of the A. So we simply return child node as a result. 
       // TODO: probably need a grammar option to enable/disable this behavior explicitly
       if (childNodes.Count == 1 && childNodes[0] != null) {
-        Type childNodeType = childNodes[0].Element.NodeType ?? defaultNodeType ?? typeof(AstNode);
+        Type childNodeType = childNodes[0].Term.NodeType ?? defaultNodeType ?? typeof(AstNode);
         if (childNodeType == ntNodeType || childNodeType.IsSubclassOf(ntNodeType))
           return childNodes[0];
       }
       // Try using Grammar's CreateNode method
       result = Data.Grammar.CreateNode(_context, reduceAction, location, childNodes);
-      if (result != null) 
-        return result;
-      //Finally create node directly. For perf reasons we try using "new" for AstNode type (faster), and
-      // activator for all custom types (slower)
-      if (ntNodeType == typeof(AstNode))
-        result = new AstNode(_context, nt, location, childNodes);
-      else
-        result = (AstNode)Activator.CreateInstance(ntNodeType, _context, nt, location, childNodes);
+      if (result == null) {
+        //Finally create node directly. For perf reasons we try using "new" for AstNode type (faster), and
+        // activator for all custom types (slower)
+        if (ntNodeType == typeof(AstNode))
+          result = new AstNode(_context, nt, location, childNodes);
+        else
+          result = (AstNode)Activator.CreateInstance(ntNodeType, _context, nt, location, childNodes);
+      }
+      if (result != null)
+        nt.OnNodeCreated(result);
       return result;
     }
     #endregion

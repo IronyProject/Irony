@@ -44,12 +44,13 @@ namespace Irony.Samples.Scheme {
 
       // the following probably doesn't work correctly
       // TODO: build SchemeCharLiteral
-      StringLiteral charLiteral = new StringLiteral("Char", "'", StringOptions.IsChar); // this is nonsense, just for now
-      Terminal stringLiteral = new StringLiteral("String", "\"",StringOptions.None);
+      // the following is nonsense, just to put something there
+      StringLiteral charLiteral = new StringLiteral("Char", "'", ScanFlags.None); 
+      Terminal stringLiteral = new StringLiteral("String", "\"", ScanFlags.AllowAllEscapes);
       //Identifiers. Note: added "-", just to allow IDs starting with "->" 
       IdentifierTerminal SimpleIdentifier = new IdentifierTerminal("SimpleIdentifier", "_+-*/.@?!<>=", "_!$%&*/:<=>?^~" + "+-");
       //                                                           name                extraChars      extraFirstChars  
-      Terminal Number = new NumberTerminal("Number");
+      Terminal Number = new NumberLiteral("Number");
       Terminal Byte = Number; // new NumberTerminal("Byte"); //u8 in R6RS notation
 
       //Comments

@@ -49,8 +49,6 @@ namespace Irony.Compiler {
         //Adjust case for Symbols for case-insensitive grammar (change keys to lowercase)
         if (!_grammar.CaseSensitive)
           AdjustCaseForSymbols();
-        //Build hash table of terminals for fast lookup by current input char
-        BuildTerminalsLookupTable();
         //Create productions and LR0Items 
         CreateProductions();
         //Calculate nullability, Firsts and TailFirsts collections of all non-terminals
@@ -67,7 +65,9 @@ namespace Irony.Compiler {
         CheckActionConflicts();
         //call Init on all elements in the grammar
         InitAll();
-      } catch(Exception e) {
+        //Build hash table of terminals for fast lookup by current input char; note that this must be run after Init
+        BuildTerminalsLookupTable();
+      } catch (Exception e) {
         _data.Errors.Add(e.ToString());
         Trace.Write(e.ToString());
         //throw;// Cancel();
@@ -92,7 +92,7 @@ namespace Irony.Compiler {
         Cancel();
     }
 
-    private void CollectAllElementsRecursive(BnfElement element) {
+    private void CollectAllElementsRecursive(BnfTerm element) {
       //Terminal
       Terminal term = element as Terminal;
       // Do not add pseudo terminals defined as static singletons in Grammar class (Empty, Eof, etc)
@@ -115,9 +115,9 @@ namespace Irony.Compiler {
         return;
       }
       //check all child elements
-      foreach(BnfElementList elemList in nt.Rule.Data)
+      foreach(BnfTermList elemList in nt.Rule.Data)
         for(int i = 0; i < elemList.Count; i++) {
-          BnfElement child = elemList[i];
+          BnfTerm child = elemList[i];
           //Check for nested expression - convert to non-terminal
           BnfExpression expr = child as BnfExpression;
           if (expr != null) {
@@ -139,7 +139,7 @@ namespace Irony.Compiler {
       _data.TerminalsLookup.Clear();
       _data.TerminalsWithoutPrefixes.Clear();
       foreach (Terminal term in _data.Terminals) {
-        IList<string> prefixes = term.GetStartSymbols();
+        IList<string> prefixes = term.GetFirsts();
         if (prefixes == null || prefixes.Count == 0) {
           _data.TerminalsWithoutPrefixes.Add(term);
           continue;
@@ -188,7 +188,7 @@ namespace Irony.Compiler {
         if (nt.ErrorRule != null) 
           allData.AddRange(nt.ErrorRule.Data);
         //actually create productions for each sequence
-        foreach (BnfElementList prodOperands in allData) {
+        foreach (BnfTermList prodOperands in allData) {
           bool isInitial = (nt == _data.AugmentedRoot);
           Production prod = new Production(isInitial, nt, prodOperands);
           nt.Productions.Add(prod);
@@ -221,8 +221,8 @@ namespace Irony.Compiler {
         }//if 
         //Go thru all elements of production and check nullability
         bool allNullable = true;
-        foreach (BnfElement elem in prod.RValues) {
-          NonTerminal nt = elem as NonTerminal;
+        foreach (BnfTerm term in prod.RValues) {
+          NonTerminal nt = term as NonTerminal;
           if (nt != null)
             allNullable &= nt.Nullable;
         }//foreach nt
@@ -239,7 +239,7 @@ namespace Irony.Compiler {
     private void CalculateFirsts() {
       //1. Calculate PropagateTo lists and put initial terminals into Firsts lists
       foreach (Production prod in _data.Productions) {
-        foreach (BnfElement oper in prod.RValues) {
+        foreach (BnfTerm oper in prod.RValues) {
           NonTerminal ntOper = oper as NonTerminal;
           if (ntOper == null) { //it is terminal, so add it to Firsts and that's all with this production
             prod.LValue.Firsts.Add(oper.Key); // Add terminal to Firsts (note: Add ignores repetitions)
@@ -285,16 +285,16 @@ namespace Irony.Compiler {
             item.TailFirsts.Clear();
             continue;
           }
-          BnfElement elem = prod.RValues[item.Position + 1];  //Element after-after-dot
-          NonTerminal ntElem = elem as NonTerminal;
-          if (ntElem == null || !ntElem.Nullable) { //elem is a terminal or non-nullable NonTerminal
-            //Elem is not nullable, so we clear all old firsts and add this elem
+          BnfTerm term = prod.RValues[item.Position + 1];  //Element after-after-dot
+          NonTerminal ntElem = term as NonTerminal;
+          if (ntElem == null || !ntElem.Nullable) { //term is a terminal or non-nullable NonTerminal
+            //term is not nullable, so we clear all old firsts and add this term
             accumulatedFirsts.Clear();
             allNullable = false;
             item.TailIsNullable = false;   
             if (ntElem == null) {
-              item.TailFirsts.Add(elem.Key);//elem is terminal so add its key
-              accumulatedFirsts.Add(elem.Key);
+              item.TailFirsts.Add(term.Key);//term is terminal so add its key
+              accumulatedFirsts.Add(term.Key);
             } else {
               item.TailFirsts.AddRange(ntElem.Firsts); //nonterminal
               accumulatedFirsts.AddRange(ntElem.Firsts);
@@ -373,11 +373,11 @@ namespace Irony.Compiler {
       ShiftTable shifts = new ShiftTable();
       LR0ItemList list;
       foreach (LRItem item in state.Items) {
-        BnfElement elem = item.Core.NextElement;
-        if (elem == null)  continue;
+        BnfTerm term = item.Core.NextElement;
+        if (term == null)  continue;
         LR0Item shiftedItem = item.Core.Production.LR0Items[item.Core.Position + 1];
-        if (!shifts.TryGetValue(elem.Key, out list))
-          shifts[elem.Key] = list = new LR0ItemList();
+        if (!shifts.TryGetValue(term.Key, out list))
+          shifts[term.Key] = list = new LR0ItemList();
         list.Add(shiftedItem);
       }//foreach
       return shifts;
@@ -521,7 +521,7 @@ namespace Irony.Compiler {
           if (action.NewState != null && action.ReduceProductions.Count > 0) {
             //it might be an operation, with resolution by precedence/associativity
             SymbolTerminal opTerm = SymbolTerminal.GetSymbol(action.Key);
-            if (opTerm != null && opTerm.IsFlagSet(BnfFlags.IsOperator)) {
+            if (opTerm != null && opTerm.IsSet(TermOptions.IsOperator)) {
               action.ActionType = ParserActionType.Operator;
             } else {
                 AddErrorForInput(errorTable, action.Key, "Shift-reduce conflict in state {0}, reduce production: {1}",

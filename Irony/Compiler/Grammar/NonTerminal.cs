@@ -16,11 +16,10 @@ using System.Text;
 
 namespace Irony.Compiler {
 
-  //Node creator method delegate. A non-terminal may have a custom node-creation method associated with it. 
-  public delegate AstNode NodeCreatorMethod(CompilerContext context, ActionRecord reduceAction,
-                                      SourceLocation location, AstNodeList childNodes); 
+  public class NonTerminalList : List<NonTerminal> { }
+
   //Class representing Non-Terminal syntactic element in BNF forms. 
-  public class NonTerminal : BnfElement {
+  public class NonTerminal : BnfTerm {
 
     #region constructors
     public NonTerminal(string name) : base(name) { 
@@ -36,13 +35,11 @@ namespace Irony.Compiler {
     public NonTerminal(string name, BnfExpression expression) : this(name) { 
       _rule = expression;
     }
-    public NonTerminal(string name, Type nodeType, NodeCreatorMethod nodeCreator)   : this(name, nodeType) {
-      this.NodeCreator = nodeCreator;
-    }
     #endregion
 
     #region properties: Rule, ErrorRule, Productions, ErrorProductions, Firsts
     public BnfExpression Rule {
+      [System.Diagnostics.DebuggerStepThrough]
       get { return _rule; }
       set {_rule = value; }
     }  BnfExpression _rule;
@@ -50,8 +47,9 @@ namespace Irony.Compiler {
     //Separate property for specifying error expressions. This allows putting all such expressions in a separate section
     // in grammar for all non-terminals. However you can still put error expressions in the main Rule property, just like
     // in YACC
-    public BnfExpression ErrorRule  {
-      get {return _errorRule;}
+    public BnfExpression ErrorRule {
+      [System.Diagnostics.DebuggerStepThrough]
+      get { return _errorRule; }
       set {_errorRule = value;}
     } BnfExpression  _errorRule;
 
@@ -60,19 +58,36 @@ namespace Irony.Compiler {
     public readonly KeyList Firsts = new KeyList();
     public readonly NonTerminalList PropagateFirstsTo = new NonTerminalList();
 
-    //A custom node creation method
-    public NodeCreatorMethod NodeCreator;
     #endregion
 
+    #region events: NodeCreating, NodeCreated
+    public event EventHandler<NodeCreatingEventArgs> NodeCreating;
+    public event EventHandler<NodeCreatedEventArgs> NodeCreated;
+
+    protected internal AstNode OnNodeCreating(CompilerContext context, ParserState state, ActionRecord action,
+                                      SourceLocation location, AstNodeList childNodes  ) {
+      if (NodeCreating == null) return null;
+      NodeCreatingEventArgs args = new NodeCreatingEventArgs(context, state, location, action, childNodes);
+      NodeCreating(this, args);
+      return args.NewNode;
+    }
+    protected internal void OnNodeCreated(AstNode node) {
+      if (NodeCreated == null) return;
+      NodeCreatedEventArgs args = new NodeCreatedEventArgs(node);
+      NodeCreated(this, args);
+    }
+    #endregion
+
+    #region overrids: ToString
     public override string ToString() {
       if (string.IsNullOrEmpty(Name))
         return "(unnamed)";
       else 
         return Name;
     }
+    #endregion
 
   }//class
 
-  public class NonTerminalList : List<NonTerminal> { }
 
 }//namespace

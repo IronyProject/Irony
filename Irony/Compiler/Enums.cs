@@ -42,7 +42,7 @@ namespace Irony.Compiler {
     Operator,  //shift or reduce depending on operator associativity and precedence
   }
 
-  public enum BnfFlags {
+  public enum TermOptions {
     None = 0,
     IsOperator = 0x01,
     IsGrammarSymbol = 0x02,
@@ -55,13 +55,56 @@ namespace Irony.Compiler {
     IsList        = 0x80,
     
     //Number flags 
-    NumberAllowBigInts = 0x0100,   // python
-    NumberUseFloatOnIntOverflow = 0x0200,
-    NumberIgnoreCase = 0x0400,     //Ignore case in suffixes and prefixes
-
-    StringIgnoreCase = 0x0400,     //Ignore case in suffixes and prefixes
-
- 
-
+    NumberAllowBigInts = 0x0100,          // python
+    NumberUseFloatOnIntOverflow = 0x0200, // javascript
+    SpecialIgnoreCase = 0x0400,           //Ignore case in suffixes and prefixes
   }
+
+  public enum ScanFlags {
+    None = 0,
+
+    //Number flags
+    Octal = Bit0,
+    Hex = Bit1,
+    HasDot = Bit2,
+    HasExp = Bit3,
+    HasDotOrExp = HasDot | HasExp,
+
+    //String flags
+    IsChar = Bit0,
+    AllowDoubledQuote = Bit1, //Convert doubled start/end symbol to a single symbol; for ex. in SQL, '' -> '
+    AllowLineBreak = Bit2,
+    LineBreakEscaped = Bit3,
+    DisableEscapes = Bit4, //also used by IdentifierTerminal
+    AllowUEscapes = Bit5, //also used by IdentifierTerminal
+    AllowXEscapes = Bit6,
+    AllowOctalEscapes = Bit7,
+    AllowAllEscapes = AllowUEscapes | AllowXEscapes | AllowOctalEscapes,
+    HasEscapes = Bit8, //also used by IdentifierTerminal
+
+    //Identifier
+    IncludePrefix = Bit0,
+    IsNotKeyword = Bit1,
+
+    Bit0 = 0x01,
+    Bit1 = 0x02,
+    Bit2 = 0x04,
+    Bit3 = 0x08,
+    Bit4 = 0x10,
+    Bit5 = 0x20,
+    Bit6 = 0x40,
+    Bit7 = 0x80,
+
+    Bit8 = 0x0100,
+    Bit9 = 0x0200,
+    Bit10 = 0x0400,
+    Bit11 = 0x0800,
+    Bit12 = 0x1000,
+    Bit13 = 0x2000,
+    Bit14 = 0x4000,
+    Bit15 = 0x8000,
+
+  }//enum
+
+
 }

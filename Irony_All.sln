@@ -10,7 +10,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{64EF478E-7535-46A8-9047-5EBA5EFBF13E}"
 	ProjectSection(SolutionItems) = preProject
 		ReadMe.txt = ReadMe.txt
-		Irony.Samples\Scheme\SchemeGrammar.cs = Irony.Samples\Scheme\SchemeGrammar.cs
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "040.Irony.Tests", "Irony.Tests\040.Irony.Tests.csproj", "{304939D4-6373-46E4-A18C-A4BD04BA6BAE}"

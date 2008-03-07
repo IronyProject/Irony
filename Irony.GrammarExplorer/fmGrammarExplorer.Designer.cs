@@ -77,6 +77,10 @@ namespace Irony.GrammarExplorer {
       this.label2 = new System.Windows.Forms.Label();
       this.cboLanguage = new System.Windows.Forms.ComboBox();
       this.dlgOpenFile = new System.Windows.Forms.OpenFileDialog();
+      this.SearchLabel = new System.Windows.Forms.Label();
+      this.btnSearch = new System.Windows.Forms.Button();
+      this.txtSearch = new System.Windows.Forms.TextBox();
+      this.lblSearchError = new System.Windows.Forms.Label();
       this.panel1.SuspendLayout();
       this.panel3.SuspendLayout();
       this.tabGrammar.SuspendLayout();
@@ -657,6 +661,10 @@ namespace Irony.GrammarExplorer {
       // 
       // pnlLang
       // 
+      this.pnlLang.Controls.Add(this.lblSearchError);
+      this.pnlLang.Controls.Add(this.SearchLabel);
+      this.pnlLang.Controls.Add(this.btnSearch);
+      this.pnlLang.Controls.Add(this.txtSearch);
       this.pnlLang.Controls.Add(this.label2);
       this.pnlLang.Controls.Add(this.cboLanguage);
       this.pnlLang.Dock = System.Windows.Forms.DockStyle.Top;
@@ -689,6 +697,49 @@ namespace Irony.GrammarExplorer {
       this.cboLanguage.Size = new System.Drawing.Size(189, 21);
       this.cboLanguage.TabIndex = 3;
       this.cboLanguage.SelectedIndexChanged += new System.EventHandler(this.cboLanguage_SelectedIndexChanged);
+      // 
+      // SearchLabel
+      // 
+      this.SearchLabel.AutoSize = true;
+      this.SearchLabel.Location = new System.Drawing.Point(429, 6);
+      this.SearchLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+      this.SearchLabel.Name = "SearchLabel";
+      this.SearchLabel.Size = new System.Drawing.Size(79, 13);
+      this.SearchLabel.TabIndex = 9;
+      this.SearchLabel.Text = "Search (regex):";
+      // 
+      // btnSearch
+      // 
+      this.btnSearch.Location = new System.Drawing.Point(604, 2);
+      this.btnSearch.Margin = new System.Windows.Forms.Padding(2);
+      this.btnSearch.Name = "btnSearch";
+      this.btnSearch.Size = new System.Drawing.Size(71, 24);
+      this.btnSearch.TabIndex = 10;
+      this.btnSearch.Text = "&Search";
+      this.btnSearch.UseVisualStyleBackColor = true;
+      this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
+      // 
+      // txtSearch
+      // 
+      this.txtSearch.AcceptsReturn = true;
+      this.txtSearch.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::Irony.GrammarExplorer.Properties.Settings.Default, "SearchPattern", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+      this.txtSearch.Location = new System.Drawing.Point(512, 3);
+      this.txtSearch.Margin = new System.Windows.Forms.Padding(2);
+      this.txtSearch.Name = "txtSearch";
+      this.txtSearch.Size = new System.Drawing.Size(88, 20);
+      this.txtSearch.TabIndex = 8;
+      this.txtSearch.Text = global::Irony.GrammarExplorer.Properties.Settings.Default.SearchPattern;
+      this.txtSearch.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtSearch_KeyPress);
+      // 
+      // lblSearchError
+      // 
+      this.lblSearchError.AutoSize = true;
+      this.lblSearchError.ForeColor = System.Drawing.Color.Red;
+      this.lblSearchError.Location = new System.Drawing.Point(679, 6);
+      this.lblSearchError.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+      this.lblSearchError.Name = "lblSearchError";
+      this.lblSearchError.Size = new System.Drawing.Size(0, 13);
+      this.lblSearchError.TabIndex = 11;
       // 
       // fmGrammarExplorer
       // 
@@ -792,6 +843,10 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.Label label6;
     private System.Windows.Forms.Label lblInitTime;
     private System.Windows.Forms.Label label7;
+    private System.Windows.Forms.Label SearchLabel;
+    private System.Windows.Forms.Button btnSearch;
+    private System.Windows.Forms.TextBox txtSearch;
+    private System.Windows.Forms.Label lblSearchError;
 
   }
 }

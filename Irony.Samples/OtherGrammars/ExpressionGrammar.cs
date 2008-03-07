@@ -26,7 +26,7 @@ namespace Irony.Samples {
   public class ExpressionGrammar : Irony.Compiler.Grammar {
     public ExpressionGrammar() {
       // 1. Terminals
-      Terminal n = new NumberTerminal("number");
+      Terminal n = new NumberLiteral("number");
       Terminal v = new IdentifierTerminal("variable");
 
       // 2. Non-terminals

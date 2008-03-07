@@ -22,21 +22,21 @@ namespace Irony.Compiler {
 
   //Base AST node class
   public class AstNode {
-    public AstNode(CompilerContext context, BnfElement element, SourceLocation location, AstNodeList childNodes) {
-      Element = element;
+    public AstNode(CompilerContext context, BnfTerm term, SourceLocation location, AstNodeList childNodes) {
+      Term = term;
       Location = location;
       if (childNodes == null) return;
       //add child nodes, skipping nulls and punctuation symbols
       foreach (AstNode child in childNodes) {
-        if (child != null && !child.Element.IsFlagSet(BnfFlags.IsPunctuation)) {
+        if (child != null && !child.Term.IsSet(TermOptions.IsPunctuation)) {
           ChildNodes.Add(child);
           child.Parent = this;
         }
       }//foreach
     }
 
-    #region properties Element, Location, ChildNodes, Parent, CodeDomObject, Tag, Attributes
-    public readonly BnfElement Element;
+    #region properties Term, Location, ChildNodes, Parent, CodeDomObject, Tag, Attributes
+    public readonly BnfTerm Term;
     public readonly SourceLocation Location;
     public readonly AstNodeList ChildNodes = new AstNodeList();
     
@@ -69,9 +69,9 @@ namespace Irony.Compiler {
     
     public override string ToString() {
       if (string.IsNullOrEmpty(_tag))
-        return Element.Name;
+        return Term.Name;
       else
-        return Tag + ":" + Element.Name;
+        return Tag + ":" + Term.Name;
     }
 
     //the first primitive Visitor facility

@@ -16,14 +16,14 @@ using System.Text;
 
 namespace Irony.Compiler {
 
-  #region Grammar class
   public class Grammar {
 
-    #region properties: CaseSensitive, WhitespaceChars, ExtraTerminals, PunctuationSymbols, TokenFilters
+    #region properties: CaseSensitive, WhitespaceChars, Delimiters ExtraTerminals, Root, TokenFilters
     public bool CaseSensitive = true;
     public string WhitespaceChars = " \t\r\n\v";
-    public string Delimiters = ""; //list of chars that unambigously identify the start of new token. 
-                                   //used in scanner error recovery. 
+    //List of chars that unambigously identify the start of new token. 
+    //used in scanner error recovery, and in quick parse path in Number literals 
+    public string Delimiters = ",;[](){}"; 
 
     //Terminals not present in grammar expressions and not reachable from the Root
     // (Comment terminal is usually one of them)
@@ -33,42 +33,46 @@ namespace Irony.Compiler {
     public Type DefaultNodeType = typeof(AstNode);
 
     public NonTerminal Root  {
-      get {return _root;}
+      [System.Diagnostics.DebuggerStepThrough]
+      get { return _root; }
       set { _root = value;  }
     } NonTerminal _root;
 
     public TokenFilterList TokenFilters = new TokenFilterList();
     #endregion 
 
-    #region RegisterXXX methods
+    #region Register methods
     public void RegisterPunctuation(params string[] symbols) {
       foreach (string symbol in symbols) {
         SymbolTerminal term = SymbolTerminal.GetSymbol(symbol);
-        term.SetFlag(BnfFlags.IsPunctuation);
+        term.SetOption(TermOptions.IsPunctuation);
       }
     }
-    public void RegisterPunctuation(params BnfElement[] elements) {
-      foreach (BnfElement elem in elements) 
-        elem.SetFlag(BnfFlags.IsPunctuation);
+    
+    public void RegisterPunctuation(params BnfTerm[] elements) {
+      foreach (BnfTerm term in elements) 
+        term.SetOption(TermOptions.IsPunctuation);
     }
 
     public void RegisterOperators(int precedence, params string[] opSymbols) {
       RegisterOperators(precedence, Associativity.Left, opSymbols);
     }
+
     public void RegisterOperators(int precedence, Associativity associativity, params string[] opSymbols) {
       foreach (string op in opSymbols) {
         SymbolTerminal opSymbol = SymbolTerminal.GetSymbol(op);
-        opSymbol.SetFlag(BnfFlags.IsOperator, true);
+        opSymbol.SetOption(TermOptions.IsOperator, true);
         opSymbol.Precedence = precedence;
         opSymbol.Associativity = associativity;
       }
     }//method
+
     public void RegisterBracePair(string openBrace, string closeBrace) {
       SymbolTerminal openS = SymbolTerminal.GetSymbol(openBrace);
       SymbolTerminal closeS = SymbolTerminal.GetSymbol(closeBrace);
-      openS.SetFlag(BnfFlags.IsOpenBrace);
+      openS.SetOption(TermOptions.IsOpenBrace);
       openS.IsPairFor = closeS;
-      closeS.SetFlag(BnfFlags.IsCloseBrace);
+      closeS.SetOption(TermOptions.IsCloseBrace);
       closeS.IsPairFor = openS;
     }
     #endregion
@@ -95,17 +99,17 @@ namespace Irony.Compiler {
     protected static SymbolTerminal Symbol(string symbol, string name) {
       return SymbolTerminal.GetSymbol(symbol, name);
     }
-    protected static BnfElement ToElement(BnfExpression expression) {
+    protected static BnfTerm ToElement(BnfExpression expression) {
       string name = expression.ToString();
       return new NonTerminal(name, expression);
     }
-    protected static BnfElement WithStar(BnfExpression expression) {
+    protected static BnfTerm WithStar(BnfExpression expression) {
       return ToElement(expression).Star();
     }
-    protected static BnfElement WithPlus(BnfExpression expression) {
+    protected static BnfTerm WithPlus(BnfExpression expression) {
       return ToElement(expression).Plus();
     }
-    protected static BnfElement WithQ(BnfExpression expression) {
+    protected static BnfTerm WithQ(BnfExpression expression) {
       return ToElement(expression).Q();
     }
     public static Token CreateSyntaxErrorToken(SourceLocation location, string message, params object[] args) {
@@ -117,7 +121,7 @@ namespace Irony.Compiler {
 
     #region Standard terminals: EOF, Empty, NewLine, Indent, Dedent
     // Empty object is used to identify optional element: 
-    //    elem.Rule = elem1 | Empty;
+    //    term.Rule = term1 | Empty;
     public readonly static Terminal Empty = new Terminal("EMPTY");
     // The following terminals are used in indent-sensitive languages like Python;
     // they are not produced by scanner but are produced by CodeOutlineFilter after scanning
@@ -142,7 +146,5 @@ namespace Irony.Compiler {
 
         
   }//class
-  #endregion
-
 
 }//namespace

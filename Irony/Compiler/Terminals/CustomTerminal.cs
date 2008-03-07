@@ -27,13 +27,15 @@ namespace Irony.Compiler {
     public readonly KeyList Prefixes = new KeyList();
 
     public MatchHandler Handler   {
+      [System.Diagnostics.DebuggerStepThrough]
       get {return _handler;}
     } MatchHandler  _handler;
 
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
       return _handler(this, context, source);
     }
-    public override IList<string> GetStartSymbols() {
+    [System.Diagnostics.DebuggerStepThrough]
+    public override IList<string> GetFirsts() {
       return Prefixes;
     }
   }//class

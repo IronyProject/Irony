@@ -13,7 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.Compiler;
+using System.Diagnostics;
 
 namespace Irony.Compiler {
   //Root compiler class
@@ -35,11 +35,13 @@ namespace Irony.Compiler {
     public readonly long InitTime;
 
     public long CompileTime  {
+      [DebuggerStepThrough]
       get {return _compileTime;}
     } long  _compileTime;
 
     public CompilerContext Context  {
-      get {return _context;}
+      [DebuggerStepThrough]
+      get { return _context; }
     } CompilerContext  _context;
 
     public AstNode Parse(string source) {

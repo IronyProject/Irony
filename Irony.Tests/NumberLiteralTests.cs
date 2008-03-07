@@ -9,11 +9,11 @@ using Irony.Compiler;
 namespace Irony.Tests {
 
   [TestFixture]
-  public class NumberTerminalTests : TerminalTestsBase {
+  public class NumberLiteralTests : TerminalTestsBase {
 
     [Test]
     public void GeneralTest() {
-      _terminal = new NumberTerminal("Number", BnfFlags.NumberAllowBigInts);
+      _terminal = new NumberLiteral("Number", TermOptions.NumberAllowBigInts);
       _terminal.Init(_grammar);
       TryMatch("123");
       Assert.That((int)_token.Value == 123, "Failed to read int value");
@@ -26,7 +26,7 @@ namespace Irony.Tests {
     }//method
 
     [Test]
-    public void TestCSharpTerminal() {
+    public void TestCSharpNumber() {
       double eps = 0.0001;
       _terminal = TerminalFactory.CreateCSharpNumber("Number");
       _terminal.Init(_grammar);
@@ -36,7 +36,7 @@ namespace Irony.Tests {
       CheckType(typeof(int));
       //Check that NumberScanInfo record is present in Attributes. The only case it's not there is for single-digit integers, when system
       // uses a quick parse method
-      Assert.That(_token.Attributes.ContainsKey(NumberTerminal.ScanInfoKey), "Failed to retrieve ScanInfo record from token Attributes.");
+      Assert.That(_token.Details != null, "ScanDetails object not found in token.");
       Assert.That((int)_token.Value == 123, "Failed to read int value");
       
       TryMatch("123U ");
@@ -94,15 +94,15 @@ namespace Irony.Tests {
       Assert.That(Math.Abs((decimal)_token.Value - 123.4m) < Convert.ToDecimal(eps), "Failed to read decimal value");
 
       //Quick parse
-      TryMatch("1,");
+      TryMatch("1 ");
       CheckType(typeof(int));
       //When going through quick parse path (for one-digit numbers), the NumberScanInfo record is not created and hence is absent in Attributes
-      Assert.That(!_token.Attributes.ContainsKey(NumberTerminal.ScanInfoKey), "Quick parse test failed: NumberScanInfo record is found in Attributes.");
+      Assert.That(_token.Details == null, "Quick parse test failed: ScanDetails object is found in token - quick parse path should not produce this object.");
       Assert.That((int)_token.Value == 1, "Failed to read quick-parse value");
     }
 
     [Test]
-    public void TestVBTerminal() {
+    public void TestVBNumber() {
       double eps = 0.0001;
       _terminal = TerminalFactory.CreateVbNumber("Number");
       _terminal.Init(_grammar);
@@ -110,7 +110,7 @@ namespace Irony.Tests {
       //Simple integer
       TryMatch("123 ");
       CheckType(typeof(int));
-      Assert.That(_token.Attributes.ContainsKey(NumberTerminal.ScanInfoKey), "Failed to retrieve ScanInfo record from token Attributes.");
+      Assert.That(_token.Details != null, "ScanDetails object not found in token.");
       Assert.That((int)_token.Value == 123, "Failed to read int value");
 
       //Test all suffixes
@@ -205,16 +205,16 @@ namespace Irony.Tests {
       Assert.That(Math.Abs((decimal)_token.Value - 123.4m) < Convert.ToDecimal(eps), "Failed to read decimal value");
 
       //Quick parse
-      TryMatch("1,");
+      TryMatch("1 ");
       CheckType(typeof(int));
       //When going through quick parse path (for one-digit numbers), the NumberScanInfo record is not created and hence is absent in Attributes
-      Assert.That(!_token.Attributes.ContainsKey(NumberTerminal.ScanInfoKey), "Quick parse test failed: NumberScanInfo record is found in Attributes.");
+      Assert.That(_token.Details == null, "Quick parse test failed: ScanDetails object is found in token - quick parse path should not produce this object.");
       Assert.That((int)_token.Value == 1, "Failed to read quick-parse value");
     }
 
 
     [Test]
-    public void TestPythonTerminal() {
+    public void TestPythonNumber() {
       double eps = 0.0001;
       _terminal = TerminalFactory.CreatePythonNumber("Number");
       _terminal.Init(_grammar);
@@ -222,7 +222,7 @@ namespace Irony.Tests {
       //Simple integers and suffixes
       TryMatch("123 ");
       CheckType(typeof(int));
-      Assert.That(_token.Attributes.ContainsKey(NumberTerminal.ScanInfoKey), "Failed to retrieve ScanInfo record from token Attributes.");
+      Assert.That(_token.Details != null, "ScanDetails object not found in token.");
       Assert.That((int)_token.Value == 123, "Failed to read int value");
 
       TryMatch("123L ");
@@ -263,7 +263,7 @@ namespace Irony.Tests {
       //Quick parse
       TryMatch("1,");
       CheckType(typeof(int));
-      Assert.That(!_token.Attributes.ContainsKey(NumberTerminal.ScanInfoKey), "Quick parse test failed: NumberScanInfo record is found in Attributes.");
+      Assert.That(_token.Details == null, "Quick parse test failed: ScanDetails object is found in token - quick parse path should not produce this object.");
       Assert.That((int)_token.Value == 1, "Failed to read quick-parse value");
 
     }

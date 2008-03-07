@@ -29,34 +29,53 @@ namespace Irony.Compiler {
 
   public class ParserActionEventArgs : EventArgs {
     public ParserActionEventArgs(ParserState state, Token input, ActionRecord action) {
-      _state = state;
-      _input = input;
-      _action = action;
+      State = state;
+      Input = input;
+      Action = action;
     }
 
-    public ParserState State  {
-      get {return _state;}
-    } ParserState  _state;
-
-    public Token Input  {
-      get {return _input;}
-    } Token  _input;
-
-    public ActionRecord Action  {
-      get {return _action;}
-      set {_action = value;}
-    } ActionRecord  _action;
+    public readonly ParserState State;
+    public readonly Token Input;
+    public ActionRecord Action;
 
     public override string ToString() {
-      return _state + "/" + _input + ": " + _action;
+      return State + "/" + Input + ": " + Action;
     }
   }//class
 
-  public class NumberScanEventArgs : EventArgs {
-    public NumberScanEventArgs(NumberTerminal.NumberScanInfo info) {
-      this.Info = info;
+  public class ScannerConvertingValueEventArgs : EventArgs {
+    public ScannerConvertingValueEventArgs(ScanDetails details) {
+      this.Details = details;
     }
-    public readonly NumberTerminal.NumberScanInfo Info;
+    public readonly ScanDetails Details;
+    public object Value;
   }//class
+
+  public class NodeCreatingEventArgs : EventArgs {
+    public NodeCreatingEventArgs(CompilerContext context, ParserState state, SourceLocation location, ActionRecord action, AstNodeList childNodes) {
+      Context = context;
+      State = state;
+      Location = location;
+      Action = action;
+      ChildNodes = childNodes;
+    }
+    public readonly CompilerContext Context;
+    public readonly ParserState State;
+    public readonly SourceLocation Location;
+    public readonly ActionRecord Action;
+    public readonly AstNodeList ChildNodes;
+    public AstNode NewNode; 
+
+    public override string ToString() {
+      return State + ": " + Action;
+    }
+  }//class
+
+  public class NodeCreatedEventArgs : EventArgs {
+    public NodeCreatedEventArgs(AstNode node) {
+      Node = node;
+    }
+    public readonly AstNode Node;
+  }
 
 }//namespace

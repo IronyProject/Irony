@@ -46,7 +46,7 @@ namespace Irony.Samples.Python {
       //commaQ is optional trailing comma in lists; it causes several conflicts in this grammar
       // so we get rid of it (by assigning it Empty value)
       //NonTerminal commaQ = comma.Q();  //this causes several conflicts
-      BnfElement commaQ = Empty; 
+      BnfTerm commaQ = Empty; 
       Terminal dot = Symbol(".", "dot");
       Terminal LBr   = Symbol("[");
       Terminal RBr   = Symbol("]");
@@ -59,7 +59,7 @@ namespace Irony.Samples.Python {
       Terminal DEDENT = Grammar.Dedent;
       Terminal semicolon = Symbol(";");
       Terminal EOF = Grammar.Eof;
-      Terminal NUMBER = new NumberTerminal("NUMBER");
+      Terminal NUMBER = TerminalFactory.CreatePythonNumber("NUMBER");
       #endregion
 
       #region Declare NonTerminals

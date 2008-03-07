@@ -19,7 +19,7 @@ namespace Irony.Compiler {
   public class TerminalList : List<Terminal> { }
   
 
-  public class Terminal : BnfElement {
+  public class Terminal : BnfTerm {
 
     public Terminal(string name)  : base(name) {
     }
@@ -29,22 +29,29 @@ namespace Irony.Compiler {
     public Terminal(string name, TokenMatchMode matchMode) : this(name) {
       this.MatchMode = matchMode;
     }
+
+
+
     public TokenMatchMode MatchMode {
+      [System.Diagnostics.DebuggerStepThrough]
       get { return _matchMode; }
       set { _matchMode = value; }
     } TokenMatchMode _matchMode = TokenMatchMode.ByValueThenByType;
 
     //Terminals are not nullable
     public override bool Nullable {
+      [System.Diagnostics.DebuggerStepThrough]
       get { return false; }
       set { }
     }
     //Node type for Terminals is Token
     public override Type NodeType {
-      get {return typeof(Token); }
+      [System.Diagnostics.DebuggerStepThrough]
+      get { return typeof(Token); }
       set {  }
     }
     public TokenCategory Category {
+      [System.Diagnostics.DebuggerStepThrough]
       get { return _category; }
       protected set { _category = value; }
     } TokenCategory _category = TokenCategory.Content;
@@ -53,7 +60,8 @@ namespace Irony.Compiler {
     //Priority is used when more than one terminal matches the input. 
     // When choosing the token, scanner would check priority, then token length. 
     public int Priority  {
-      get {return _priority;}
+      [System.Diagnostics.DebuggerStepThrough]
+      get { return _priority; }
       set {_priority = value;}
     } int  _priority; //default is 0
 
@@ -61,9 +69,9 @@ namespace Irony.Compiler {
     public virtual Token TryMatch(CompilerContext context, ISourceStream source) {
       return null;
     }
-    //Prefixes are used for quick search for possible matching terminal(s) using current character in the input stream.
-    // A terminal might declare no prefixes. In this case, the terminal is tried for match for any current input character. 
-    public virtual IList<string> GetStartSymbols() {
+    //"Firsts" (chars) collections are used for quick search for possible matching terminal(s) using current character in the input stream.
+    // A terminal might declare no firsts. In this case, the terminal is tried for match for any current input character. 
+    public virtual IList<string> GetFirsts() {
       return null;
     }
     #endregion
@@ -79,9 +87,8 @@ namespace Irony.Compiler {
         return 0;
       return 1;
     }
-
-
     #endregion
+
   }//class
 
 

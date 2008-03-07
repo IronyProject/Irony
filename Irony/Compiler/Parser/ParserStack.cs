@@ -31,16 +31,19 @@ namespace Irony.Compiler {
 
 
   public class ParserStack  {
-    private ParserStackElement[] _data = new ParserStackElement[InitialSize]; 
-    
-    public int Count  {
-      get {return _count;}
+    private ParserStackElement[] _data = new ParserStackElement[InitialSize];
+
+    public int Count {
+      [System.Diagnostics.DebuggerStepThrough]
+      get { return _count; }
     } int  _count; //actual count of elements currently in stack
 
     public ParserStackElement this[int index] {
+      [System.Diagnostics.DebuggerStepThrough]
       get { return _data[index]; }
     }
     public ParserStackElement Top {
+      [System.Diagnostics.DebuggerStepThrough]
       get { return this[Count - 1]; }
     }
     public void Push(AstNode node, SourceLocation location, ParserState state) {

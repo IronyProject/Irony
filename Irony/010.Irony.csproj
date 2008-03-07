@@ -48,9 +48,10 @@
     <Compile Include="Compiler\SyntaxError.cs" />
     <Compile Include="Compiler\Terminals\CommentTerminal.cs" />
     <Compile Include="Compiler\Terminals\ConstantTerminal.cs" />
+    <Compile Include="Compiler\Terminals\CompoundTerminalBase.cs" />
+    <Compile Include="Compiler\Terminals\NumberLiteral.cs" />
     <Compile Include="Compiler\Terminals\StringLiteral.cs" />
     <Compile Include="Compiler\Terminals\CustomTerminal.cs" />
-    <Compile Include="Compiler\Terminals\NumberTerminal.cs" />
     <Compile Include="Compiler\Terminals\IdentifierTerminal.cs" />
     <Compile Include="Compiler\Terminals\SymbolTerminal.cs" />
     <Compile Include="Compiler\Grammar\Terminal.cs" />
@@ -58,9 +59,10 @@
     <Compile Include="Compiler\Scanner\Scanner.cs" />
     <Compile Include="Compiler\Terminals\RegExBasedTerminal.cs" />
     <Compile Include="Compiler\EventArgs.cs" />
-    <Compile Include="Compiler\Grammar\BnfElement.cs" />
+    <Compile Include="Compiler\Grammar\BnfTerm.cs" />
     <Compile Include="Compiler\Grammar\Grammar.cs" />
     <Compile Include="Compiler\Terminals\TerminalFactory.cs" />
+    <Compile Include="Compiler\TextUtils.cs" />
     <Compile Include="Compiler\TokenFilters\BraceMatchFilter.cs" />
     <Compile Include="Compiler\TokenFilters\CodeOutlineFilter.cs" />
     <Compile Include="Compiler\TokenFilters\TokenFilter.cs" />

@@ -21,7 +21,7 @@ namespace Irony.Compiler {
   public class ConstantsTable : Dictionary<string, object> { }
   public class ConstantTerminal : Terminal {
     public ConstantTerminal(string name)     : base(name) {
-      base.SetFlag(BnfFlags.IsConstant);
+      base.SetOption(TermOptions.IsConstant);
     }
     public readonly ConstantsTable Table = new ConstantsTable();
     public void Add(string lexeme, object value) {
@@ -31,15 +31,14 @@ namespace Irony.Compiler {
       string text = source.Text;
       foreach (string lexeme in Table.Keys) {
         if (source.Position + lexeme.Length > text.Length) continue;
-        if (string.Compare(text, source.Position, lexeme, 0, lexeme.Length, !Grammar.CaseSensitive) != 0)
-          continue;
+        if (!source.MatchSymbol(lexeme, !Grammar.CaseSensitive)) continue; 
         Token tkn = new Token(this, source.TokenStart, lexeme, Table[lexeme]);
         source.Position += lexeme.Length;
         return tkn;
       }
       return null;
     }
-    public override IList<string> GetStartSymbols() {
+    public override IList<string> GetFirsts() {
       string[] array = new string[Table.Count];
       Table.Keys.CopyTo(array, 0);
       return array;

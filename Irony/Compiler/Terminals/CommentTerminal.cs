@@ -29,8 +29,7 @@ namespace Irony.Compiler {
     #region overrides
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
       //Check starting symbol
-      if (string.Compare(source.Text, source.Position, StartSymbol, 0,  StartSymbol.Length, !Grammar.CaseSensitive) != 0)
-        return null;
+      if (!source.MatchSymbol(StartSymbol, !Grammar.CaseSensitive)) return null;
       //Find end symbol
       int endPos = source.Text.IndexOf(EndSymbol, source.Position);
       if (endPos < 0) {
@@ -41,7 +40,7 @@ namespace Irony.Compiler {
       string lexeme = source.GetLexeme();
       return new Token(this, source.TokenStart, lexeme);
     }
-    public override IList<string> GetStartSymbols() {
+    public override IList<string> GetFirsts() {
       return new string[] { StartSymbol };
     }
     #endregion

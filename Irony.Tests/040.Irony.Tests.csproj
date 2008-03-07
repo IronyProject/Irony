@@ -38,7 +38,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommentTerminalTests.cs" />
-    <Compile Include="NumberTerminalTests.cs" />
+    <Compile Include="IdentifierTerminalTests.cs" />
+    <Compile Include="NumberLiteralTests.cs" />
     <Compile Include="_TerminalTestBase.cs" />
     <Compile Include="StringLiteralTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

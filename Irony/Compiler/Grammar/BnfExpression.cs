@@ -17,14 +17,14 @@ using System.Diagnostics;
 
 namespace Irony.Compiler {
 
-  //BNF expressions are represented as OR-list of Plus-lists of BNF elements
-  public class BnfExpressionData : List<BnfElementList> { }
+  //BNF expressions are represented as OR-list of Plus-lists of BNF terms
+  public class BnfExpressionData : List<BnfTermList> { }
 
-  public class BnfExpression : BnfElement {
+  public class BnfExpression : BnfTerm {
 
-    public BnfExpression(BnfElement element): base(null) {
+    public BnfExpression(BnfTerm element): base(null) {
       Data = new BnfExpressionData();
-      Data.Add(new BnfElementList());
+      Data.Add(new BnfTermList());
       Data[0].Add(element);
     }
 
@@ -39,7 +39,7 @@ namespace Irony.Compiler {
       try {
         string[] pipeArr = new string[Data.Count];
         for (int i = 0; i < Data.Count; i++) {
-          BnfElementList seq = Data[i];
+          BnfTermList seq = Data[i];
           string[] seqArr = new string[seq.Count];
           for (int j = 0; j < seq.Count; j++)
             seqArr[j] = seq[j].ToString();

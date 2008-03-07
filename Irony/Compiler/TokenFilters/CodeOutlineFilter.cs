@@ -32,6 +32,7 @@ namespace Irony.Compiler {
     }
 
     public bool TrackIndents {
+      [System.Diagnostics.DebuggerStepThrough]
       get { return _trackIndents; }
       set { _trackIndents = value; }
     } bool _trackIndents = true;
@@ -85,12 +86,15 @@ namespace Irony.Compiler {
       } //foreach token
     }//method
 
+    [System.Diagnostics.DebuggerStepThrough]
     private Token CreateNewLine(SourceLocation location) {
       return new Token(Grammar.NewLine, location, "<LF>");
     }
+    [System.Diagnostics.DebuggerStepThrough]
     private Token CreateIndent(SourceLocation location) {
       return new Token(Grammar.Indent, location, "<Indent>");
     }
+    [System.Diagnostics.DebuggerStepThrough]
     private Token CreateDedent(SourceLocation location) {
       return new Token(Grammar.Dedent, location, "<Dedent>");
     }

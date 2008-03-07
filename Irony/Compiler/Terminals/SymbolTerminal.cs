@@ -16,6 +16,8 @@ using System.Text;
 
 namespace Irony.Compiler {
 
+  public class SymbolTerminalTable : Dictionary<string, SymbolTerminal> { }
+
   //Represents a fixed symbol. 
   // Contains static singleton dictionary, so that SymbolTerminal instances are created only once 
   // for any symbol.
@@ -26,22 +28,19 @@ namespace Irony.Compiler {
     }
 
     public string Symbol {
+      [System.Diagnostics.DebuggerStepThrough]
       get { return _symbol; }
     }  string _symbol;
 
     #region overrides: TryMatch, GetPrefixes(), ToString() 
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
-      string text = source.Text;
-      int symLen = _symbol.Length;
-      if (source.Position + symLen > text.Length)
-        return null; 
-      if (string.Compare(text, source.Position, _symbol, 0, symLen, !Grammar.CaseSensitive) != 0)
+      if (!source.MatchSymbol(_symbol, !Grammar.CaseSensitive))
         return null;
-      source.Position += symLen;
+      source.Position += _symbol.Length;
       Token tkn = new Token(this, source.TokenStart, Symbol);
       return tkn;
     }
-    public override IList<string> GetStartSymbols() {
+    public override IList<string> GetFirsts() {
       return new string[] { _symbol };
     }
     public override string ToString() {
@@ -51,17 +50,20 @@ namespace Irony.Compiler {
 
     #region Operators and Brace-pair information: Precedence, Associativity, IsPairFor
     public int Precedence   {
-      get {return _precedence;}
+      [System.Diagnostics.DebuggerStepThrough]
+      get { return _precedence; }
       set {_precedence = value;}
     } int  _precedence;
 
     public Associativity Associativity  {
-      get {return _associativity;}
+      [System.Diagnostics.DebuggerStepThrough]
+      get { return _associativity; }
       set {_associativity = value;}
     } Associativity  _associativity;
 
     public SymbolTerminal IsPairFor  {
-      get {return _isPairFor;}
+      [System.Diagnostics.DebuggerStepThrough]
+      get { return _isPairFor; }
       set {_isPairFor = value;}
     } SymbolTerminal  _isPairFor;
 
@@ -88,20 +90,23 @@ namespace Irony.Compiler {
       }
       string.Intern(symbol);
       term = new SymbolTerminal(symbol, name);
-      term.SetFlag(BnfFlags.IsGrammarSymbol, true);
+      term.SetOption(TermOptions.IsGrammarSymbol, true);
       _symbols[symbol] = term;
       return term;
     }
     #endregion
 
+    [System.Diagnostics.DebuggerStepThrough]
     public override bool Equals(object obj) {
       return base.Equals(obj);
     }
+
+    [System.Diagnostics.DebuggerStepThrough]
     public override int GetHashCode() {
       return _symbol.GetHashCode();
     }
+
   }//class
 
-  public class SymbolTerminalTable : Dictionary<string, SymbolTerminal> { }
 
 }

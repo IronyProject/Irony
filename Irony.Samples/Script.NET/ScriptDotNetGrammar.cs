@@ -20,8 +20,7 @@ namespace Irony.Samples.ScriptNET
     public ScriptdotnetGrammar()
     {
       #region 1. Terminals
-      NumberTerminal n = new NumberTerminal("number", BnfFlags.NumberIgnoreCase);
-      n.AddPrefix("0x", 16);
+      NumberLiteral n = TerminalFactory.CreateCSharpNumber("number");
 
       IdentifierTerminal v = new IdentifierTerminal("Identifier");
  /*     v.AddReservedWords("true", "false", "null", "if", "else",
@@ -30,7 +29,8 @@ namespace Irony.Samples.ScriptNET
                          "continue", "return", "function", "is",
                          "pre", "post", "invariant", "new"); */
 
-      Terminal s = new StringLiteral("String", "'", StringOptions.DoubleStartEndAsSingle);
+      StringLiteral s = new StringLiteral("String", TermOptions.None);
+      s.AddStartEnd("'", ScanFlags.AllowDoubledQuote);
 
       Terminal dot = Symbol(".", "dot");
       Terminal less = Symbol("<");

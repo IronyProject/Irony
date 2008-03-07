@@ -121,17 +121,17 @@ namespace Irony.Compiler {
     public readonly bool HasTerminals;
     public readonly bool IsError;                                  //means contains Error terminal
     public readonly NonTerminal LValue;                            // left-side element
-    public readonly BnfElementList RValues = new BnfElementList(); //the right-side elements sequence
+    public readonly BnfTermList RValues = new BnfTermList(); //the right-side elements sequence
     public readonly LR0ItemList LR0Items = new LR0ItemList();      //LR0 items based on this production 
-    public Production(bool isInitial, NonTerminal lvalue, BnfElementList rvalues) {
+    public Production(bool isInitial, NonTerminal lvalue, BnfTermList rvalues) {
       LValue = lvalue;
       RValues = rvalues;
       //Calculate flags
-      foreach (BnfElement elem in rvalues) {
-        Terminal term = elem as Terminal;
-        if (term == null) continue;
+      foreach (BnfTerm term in rvalues) {
+        Terminal terminal = term as Terminal;
+        if (terminal == null) continue;
         HasTerminals = true;
-        if (term.Category == TokenCategory.Error) IsError = true;
+        if (terminal.Category == TokenCategory.Error) IsError = true;
       }//foreach
       //Note that we add an extra LR0Item with p = RValues.Count
       for (int p = 0; p <= RValues.Count; p++)
@@ -198,7 +198,7 @@ namespace Irony.Compiler {
       ID = _maxID++;
       _toString = Production.ToString(Position);
     }
-    public BnfElement NextElement {
+    public BnfTerm NextElement {
       get {
         if (Position < Production.RValues.Count)
           return Production.RValues[Position];

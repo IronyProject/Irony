@@ -19,6 +19,7 @@ namespace Irony {
 
   public class StringList : List<string> { }
   public class StringDictionary : Dictionary<string, string> { }
+  public class CharList : List<char> { }
 
   //string list with no duplicates
   public class KeyList : List<string> {
@@ -57,6 +58,5 @@ namespace Irony {
     }
 
   }//KeyList class
-
 
 }

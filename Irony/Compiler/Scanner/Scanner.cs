@@ -75,10 +75,13 @@ namespace Irony.Compiler {
     }
 
     private Token ReadToken() {
-      SkipWhitespace();
+      //1. Skip whitespace. We don't need to check for EOF: at EOF we start getting 0-char, so we'll get out automatically
+      while (_data.Grammar.WhitespaceChars.IndexOf(_source.CurrentChar) >= 0)
+        _source.Position++;
+      //That's the token start, calc location (line and column)
       SetTokenStartLocation();
       //Check for EOF
-      if (_source.EOF()) 
+      if (_source.EOF())
         return new Token(Grammar.Eof, _source.TokenStart, string.Empty, Grammar.Eof.Name);
       //Find matching terminal
       TerminalList terms = SelectTerminals(_source.CurrentChar);
@@ -151,12 +154,6 @@ namespace Irony.Compiler {
       _source.Position = 0;
       _source.TokenStart = new SourceLocation();
       _nextNewLinePosition = _source.Text.IndexOf('\n');
-    }
-    private void SkipWhitespace() {
-      //skip whitespace
-      string wspace = _data.Grammar.WhitespaceChars;
-      while (!_source.EOF() && wspace.IndexOf(_source.CurrentChar) >= 0)
-        _source.Position++;
     }
 
     //This is all about source scanning optimization - this seemingly strange code is aimed at improving perfomance,

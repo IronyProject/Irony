@@ -25,9 +25,9 @@ namespace Irony.Tests {
     public void TryMatch(string input) {
       SourceFile source = new SourceFile(input, "test");
       _token = _terminal.TryMatch(_context, source);
-      Assert.IsNotNull(_token, "TryMatch returned null, while token was expected.");
     }
     public void CheckType(Type type) {
+      Assert.IsNotNull(_token, "TryMatch returned null, while token was expected.");
       Assert.That(_token.Value.GetType() == type, "Invalid target type, expected " + type.ToString() + ".");
     }
 

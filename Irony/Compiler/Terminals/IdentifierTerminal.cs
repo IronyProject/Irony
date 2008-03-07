@@ -13,73 +13,151 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Globalization;
 
 namespace Irony.Compiler {
+  #region notes
   //Identifier terminal. Matches alpha-numeric sequences that usually represent identifiers and keywords.
-  // Note that we strongly recommend to recognize keywords as identifier tokens in scanner, and let
-  // parser decide what is it exactly - unless keywords are reserved by the language, 
-  // and grammar becomes ambiguous if we don't distinguish them for parser. 
-  // Distinguishing keywords from identifiers is a job for Parser, not Scanner!
-  // In any case, don't create separate terminals/symbols for keywords, but 
-  // use IdentifierTerminal's ReservedWords property.
-  public class IdentifierTerminal : Terminal {
-    public IdentifierTerminal(string name, string extraChars, string extraFirstChars)
-      : this(name) {
-      _extraChars = extraChars;
-      _extraFirstChars = extraFirstChars;
-    }
-    public IdentifierTerminal(string name) : base(name) {
+  // c#: @ prefix signals to not interpret as a keyword; allows \u escapes
+  // 
+
+  #endregion
+  
+  public class UnicodeCategoryList : List<UnicodeCategory> { }
+
+  public class IdentifierTerminal : CompoundTerminalBase {
+
+    //Note that extraChars, extraFirstChars are used to form AllFirstChars and AllChars fields, which in turn 
+    // are used in QuickParse. Only if QuickParse fails, the process switches to full version with checking every
+    // char's category
+    public IdentifierTerminal(string name, string extraChars, string extraFirstChars)  : base(name) {
+      AllFirstChars = TextUtils.AllLatinLetters + extraFirstChars;
+      AllChars = TextUtils.AllLatinLetters + TextUtils.DecimalDigits + extraChars;
       MatchMode = TokenMatchMode.ByValueThenByType;
     }
+    public IdentifierTerminal(string name)  : this(name, "_", "_") {  }
 
     #region properties: ExtraChars, ExtraFirstChars
-    public string ExtraChars {
-      get { return _extraChars; }
-      set { _extraChars = value; }
-    }  string _extraChars = "_";
-
-    public string ExtraFirstChars {
-      get { return _extraFirstChars; }
-      set { _extraFirstChars = value; }
-    } string _extraFirstChars = "_";
+    //Used in QuickParse only!
+    public string AllChars;
+    public string AllFirstChars;
+    private string _terminators;
 
     public readonly KeyList ReservedWords = new KeyList();
+    public readonly UnicodeCategoryList StartCharCategories = new UnicodeCategoryList(); //categories of first char
+    public readonly UnicodeCategoryList CharCategories = new UnicodeCategoryList();      //categories of all other chars
+    public readonly UnicodeCategoryList CharsToRemoveCategories = new UnicodeCategoryList(); //categories of chars to remove from final id, usually formatting category
     #endregion
 
     public void AddReservedWords(params string[] words) {
       ReservedWords.AddRange(words);
     }
 
-    private bool CharOk(char ch) {
-      bool ok = char.IsLetterOrDigit(ch) ||
-        _extraChars != null && _extraChars.IndexOf(ch) >= 0;
-      return ok;
+    #region overrides
+    public override void Init(Grammar grammar) {
+      base.Init(grammar);
+      _terminators = grammar.WhitespaceChars + grammar.Delimiters;
     }
-    private bool FirstCharOk(char ch) {
-      bool ok = char.IsLetter(ch) ||
-        _extraFirstChars != null && _extraFirstChars.IndexOf(ch) >= 0;
-      return ok;
-    }
-    public override Token TryMatch(CompilerContext context, ISourceStream source) {
-      if (!FirstCharOk(source.CurrentChar))
+
+    protected override Token QuickParse(ISourceStream source) {
+      if (AllFirstChars.IndexOf(source.CurrentChar) < 0) 
         return null;
       source.Position++;
-      while (CharOk(source.CurrentChar))
+      while (AllChars.IndexOf(source.CurrentChar) >= 0 && !source.EOF())
         source.Position++;
+      //if it is not a terminator then cancel; we need to go through full algorithm
+      if (_terminators.IndexOf(source.CurrentChar) < 0) return null; 
       string text = source.GetLexeme();
       Terminal term = (ReservedWords.Contains(text) ? Grammar.ReservedWord : this);
       return new Token(term, source.TokenStart, text);
-    }//method
+    }
 
-    private const string AllLetters = "abcdefghijklmnopqrstuvwxyz";
-    public override IList<string> GetStartSymbols() {
-      string tmp = AllLetters + AllLetters.ToUpper() + ExtraFirstChars;
-      char[] chars = tmp.ToCharArray();
+    protected override bool ReadBody(ISourceStream source, ScanDetails details) {
+      int start = source.Position;
+      bool allowEscapes = !details.IsSet(ScanFlags.DisableEscapes);
+      CharList outputChars = new CharList();
+      while (!source.EOF()) {
+        char current = source.CurrentChar;
+        if (_terminators.IndexOf(current) >= 0) break;
+        if (allowEscapes && current == this.EscapeChar) {
+          current = ReadUnicodeEscape(source, details);
+          //We  need to back off the position. ReadUnicodeEscape sets the position to symbol right after escape digits.  
+          //This is the char that we should process in next iteration, so we must backup one char, to pretend the escaped
+          // char is at position of last digit of escape sequence. 
+          source.Position--; 
+          if (details.HasError()) 
+            return false;
+        }
+        //Check if current character is OK
+        if (!CharOk(current, source.Position == start)) 
+          break; 
+        //Check if we need to skip this char
+        UnicodeCategory currCat = char.GetUnicodeCategory(current); //I know, it suxx, we do it twice, fix it later
+        if (!this.CharsToRemoveCategories.Contains(currCat))
+          outputChars.Add(current); //add it to output (identifier)
+        source.Position++;
+      }//while
+      if (outputChars.Count == 0)
+        return false;
+      //Convert collected chars to string
+      details.Body =  new string(outputChars.ToArray());
+      return !string.IsNullOrEmpty(details.Body); 
+    }
+
+    private bool CharOk(char ch, bool first) {
+      //first check char lists, then categories
+      string all = first? AllFirstChars : AllChars;
+      if(all.IndexOf(ch) >= 0) return true; 
+      //check categories
+      UnicodeCategory chCat = char.GetUnicodeCategory(ch);
+      UnicodeCategoryList catList = first ? StartCharCategories : CharCategories;
+      if (catList.Contains(chCat)) return true;
+      return false; 
+    }
+
+    private char ReadUnicodeEscape(ISourceStream source, ScanDetails details) {
+      //Position is currently at "\" symbol
+      source.Position++; //move to U/u char
+      int len;
+      switch (source.CurrentChar) {
+        case 'u': len = 4; break;
+        case 'U': len = 8; break; 
+        default:
+          details.Error = "Invalid escape symbol, expected 'u' or 'U' only.";
+          return '\0'; 
+      }
+      if (source.Position + len > source.Text.Length) {
+        details.Error = "Invalid escape symbol";
+        return '\0';
+      }
+      source.Position++; //move to the first digit
+      string digits = source.Text.Substring(source.Position, len);
+      char result = (char)Convert.ToUInt32(digits, 16);
+      source.Position += len;
+      details.Flags |= ScanFlags.HasEscapes;
+      return result;
+    }
+
+    protected override object ConvertValue(ScanDetails details) {
+      if (details.IsSet(ScanFlags.IncludePrefix))
+        return details.Prefix + details.Body;
+      else
+        return details.Body;
+    }
+
+    //TODO: put into account non-Ascii aplhabets specified by means of Unicode categories!
+    public override IList<string> GetFirsts() {
       KeyList list = new KeyList();
+      list.AddRange(Prefixes);
+      if (string.IsNullOrEmpty(AllFirstChars)) 
+        return list;
+      char[] chars = AllFirstChars.ToCharArray();
       foreach (char ch in chars)
         list.Add(ch.ToString());
       return list;
     }
+    #endregion 
+
   }//class
 
 

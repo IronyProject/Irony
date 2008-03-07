@@ -61,17 +61,17 @@ namespace Irony.Compiler {
 
     public override IEnumerable<Token> BeginFiltering(CompilerContext context, IEnumerable<Token> tokens) {
       foreach (Token token in tokens) {
-        if (!token.Element.IsFlagSet(BnfFlags.IsBrace)) {
+        if (!token.Term.IsSet(TermOptions.IsBrace)) {
           yield return token;
           continue;
         }
         //open brace symbol
-        if (token.Element.IsFlagSet(BnfFlags.IsOpenBrace)) {
+        if (token.Term.IsSet(TermOptions.IsOpenBrace)) {
           _braces.Push(token);
           yield return token;
           continue;
         }
-        if (token.Element.IsFlagSet(BnfFlags.IsCloseBrace)) {
+        if (token.Term.IsSet(TermOptions.IsCloseBrace)) {
           Token lastOpen = _braces.Peek();
           if (_braces.Count > 0 && lastOpen.Symbol.IsPairFor == token.Symbol) { 
             //everything is ok, there's matching brace on top of the stack
@@ -83,11 +83,6 @@ namespace Irony.Compiler {
             yield return Grammar.CreateSyntaxErrorToken(token.Location, 
                 "Unmatched closing brace '{0}' - expected '{1}'", token.Text, lastOpen.Symbol.IsPairFor.Symbol);
             //TODO: add some error recovery here
-            // some old code:
-            //yield return Grammar.CreateSyntaxErrorToken(token.Location, "'" + expected + "' expected.");
-            //yield "correct" closing symbol, to let the grammar continue.
-            //yield return new Token(SymbolTerminal.GetSymbol(expected), token.Location, expected);
-
           }//else
         }//if token IsCloseBrace
       }//foreach token

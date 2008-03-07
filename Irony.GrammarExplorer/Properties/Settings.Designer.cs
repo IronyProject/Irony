@@ -46,5 +46,17 @@ namespace Irony.GrammarExplorer.Properties {
                 this["LanguageIndex"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SearchPattern {
+            get {
+                return ((string)(this["SearchPattern"]));
+            }
+            set {
+                this["SearchPattern"] = value;
+            }
+        }
     }
 }

@@ -8,8 +8,8 @@
  * MIT License.
  * You must not remove this notice from this software.
  * **********************************************************************************/
+//with contributions by Andrew Bradnan
 #endregion
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,6 +19,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.IO;
 using System.Configuration;
+using System.Text.RegularExpressions;
 using Irony.Compiler;
 using Irony.GrammarExplorer.Properties;
 
@@ -31,11 +32,13 @@ namespace Irony.GrammarExplorer {
       try {
         cboLanguage.SelectedIndex = Settings.Default.LanguageIndex;
         txtSource.Text = Settings.Default.SourceSample;
+        txtSearch.Text = Settings.Default.SearchPattern; 
       } catch { }
     }
     private void fmExploreGrammar_FormClosing(object sender, FormClosingEventArgs e) {
       Settings.Default.SourceSample = txtSource.Text;
       Settings.Default.LanguageIndex = cboLanguage.SelectedIndex;
+      Settings.Default.SearchPattern = txtSearch.Text;
       Settings.Default.Save();
     }//method
 
@@ -267,6 +270,69 @@ namespace Irony.GrammarExplorer {
         MessageBox.Show(e.Message);
       }
     }
+
+
+    #region Search
+    //The following methods are contributed by Andrew Bradnan; pasted here with minor changes
+    private void btnSearch_Click(object sender, EventArgs e) {
+      DoSearch();
+    }//method
+
+    private void txtSearch_KeyPress(object sender, KeyPressEventArgs e) {
+      if (e.KeyChar == '\r')  // <Enter> key
+        DoSearch();
+    }
+
+    private void DoSearch() {
+      lblSearchError.Text = "";
+      TextBox cur = GetSearchContentBox();
+      if (cur == null) return;
+
+      int idxStart = cur.SelectionStart + cur.SelectionLength;
+      // Compile the regular expression.
+      Regex r = new Regex(txtSearch.Text, RegexOptions.IgnoreCase);
+      // Match the regular expression pattern against a text string.
+      Match m = r.Match(cur.Text.Substring(idxStart));
+
+      if (m.Success) {
+        int i = 0;
+        Group g = m.Groups[i];
+        CaptureCollection cc = g.Captures;
+        Capture c = cc[0];
+
+        cur.SelectionStart = c.Index + idxStart + 100;
+        cur.ScrollToCaret();
+        cur.SelectionStart = c.Index + idxStart;
+        cur.SelectionLength = c.Length;
+        cur.Focus();
+        return;
+      } else
+        lblSearchError.Text = "Not found.";
+
+        
+    }
+
+    public TextBox GetSearchContentBox()		{
+      switch (tabGrammar.SelectedIndex) {
+        case 0:
+          return txtTerms;
+        case 1:
+          return txtNonTerms;
+        //case 2:
+        //this.pageProds);
+        case 3:
+          return txtParserStates;
+        case 4:
+          return txtGrammarErrors;
+        case 5:
+          return txtSource;
+        default:
+          return null;
+      }//switch
+	  }
+
+    #endregion
+
 
 
 

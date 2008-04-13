@@ -18,14 +18,12 @@ namespace Irony.Compiler {
   public struct ParserStackElement {
     public readonly AstNode Node;
     public readonly ParserState State;
-    public readonly SourceLocation Location;
-    public ParserStackElement(AstNode node,  SourceLocation location, ParserState state) {
+    public ParserStackElement(AstNode node,  ParserState state) {
       Node = node;
-      Location = location;
       State = state;
     }
     public override string ToString() {
-      return State.Name + " " + Node.ToString();
+      return State.Name + " " + Node;
     }
   }
 
@@ -46,10 +44,10 @@ namespace Irony.Compiler {
       [System.Diagnostics.DebuggerStepThrough]
       get { return this[Count - 1]; }
     }
-    public void Push(AstNode node, SourceLocation location, ParserState state) {
+    public void Push(AstNode node, ParserState state) {
       if (_count == _data.Length) 
         ExtendData();
-      _data[_count] = new ParserStackElement(node, location, state);
+      _data[_count] = new ParserStackElement(node, state);
       _count++;
     }
     public void Pop(int popCount) {

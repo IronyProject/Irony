@@ -47,7 +47,7 @@ namespace Irony.Compiler {
     #region overrides: Init, GetFirsts, ReadBody, etc...
     public override void Init(Grammar grammar) {
       base.Init(grammar);
-      //collect all start-end symbols, suffixes, prefixes in lists and create strings of first chars for both
+      //collect all start-end symbols in lists and create strings of first chars for both
       _startEndSymbols.Clear();
       _startEndSymbols.AddRange(StartEndSymbolTable.Keys);
       _startEndSymbols.Sort(KeyList.LongerFirst);
@@ -131,8 +131,7 @@ namespace Irony.Compiler {
 
 
     //Extract the string content from lexeme, adjusts the escaped and double-end symbols
-    //TODO: add support for unicode, hex and octal escapes
-    protected override object ConvertValue(ScanDetails details) {
+    protected override bool ConvertValue(ScanDetails details) {
       string value = details.Body;
       bool escapeEnabled = !details.IsSet(ScanFlags.DisableEscapes);
       //Fix all escapes
@@ -171,15 +170,15 @@ namespace Irony.Compiler {
         value = value.Replace(startS + startS, startS);
 
       if (details.IsSet(ScanFlags.IsChar))
-        details.TypeCode = TypeCode.Char;
+				details.TypeCodes = new TypeCode[] { TypeCode.Char };
       //Check char length - must be exactly 1
-      if (details.TypeCode == TypeCode.Char && value.Length != 1) {
+      if (details.TypeCodes[0] == TypeCode.Char && value.Length != 1) {
         details.Error = "Invalid length of char literal - should be 1.";
-        return value;
+        return false;
       }
 
-      object result = (details.TypeCode == TypeCode.Char ? (object) value[0] : value);
-      return result; 
+      details.Value = (details.TypeCodes[0] == TypeCode.Char ? (object) value[0] : value);
+      return true; 
       
       //TODO: Investigate unescaped linebreak, with  Flags == BnfFlags.StringAllowLineBreak | BnfFlags.StringLineBreakEscaped
       //      also investigate what happens in this case in Windows where default linebreak is "\r\n", not "\n"

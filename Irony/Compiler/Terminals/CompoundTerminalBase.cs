@@ -24,7 +24,7 @@ namespace Irony.Compiler {
    1. c# numbers, may have 0x prefix for hex representation, and suffixes specifying 
      the exact data type of the literal (f, l, m, etc)
    2. c# string may have "@" prefix which disables escaping inside the string
-   3. c# numbers may have "@" prefix and escape sequences inside - just like strings
+   3. c# identifiers may have "@" prefix and escape sequences inside - just like strings
    4. Python string may have "u" and "r" prefixes, "r" working the same way as @ in c# strings
    5. VB string literals may have "c" suffix identifying that the literal is a character, not a string
    6. VB number literals and identifiers may have suffixes identifying data type
@@ -44,8 +44,9 @@ namespace Irony.Compiler {
     public string Suffix;
     public ScanFlags Flags;
     public string Error;
-    public TypeCode TypeCode;     //
+    public TypeCode[] TypeCodes;  
     public string ControlSymbol;  //used in different ways: Exp symbol for numbers; quote symbol for strings; 
+    public object Value; 
     public bool IsSet(ScanFlags flag) {
       return (Flags & flag) != 0;
     }//method
@@ -58,7 +59,7 @@ namespace Irony.Compiler {
 
     #region Nested classes
     public class ScanFlagTable : Dictionary<string, ScanFlags> { }
-    public class TypeCodeTable : Dictionary<string, TypeCode> { }
+    public class TypeCodeTable : Dictionary<string, TypeCode[]> { }
     #endregion 
 
     #region constructors and initialization
@@ -72,17 +73,17 @@ namespace Irony.Compiler {
       PrefixFlags.Add(prefix, flags);
       Prefixes.Add(prefix);
     }
-    public void AddSuffixCode(string suffix, TypeCode code) {
-      SuffixTypeCodes.Add(suffix, code);
-      Suffixes.Add(suffix);
-    }
+		public void AddSuffixCodes(string suffix, params TypeCode[] codes) {
+			SuffixTypeCodes.Add(suffix, codes);
+			Suffixes.Add(suffix);
+		}
     #endregion
 
     #region public Properties/Fields
     public Char EscapeChar = '\\';
     public EscapeTable Escapes = new EscapeTable();
-    public ScanFlags DefaultFlags;
-    public TypeCode DefaultTypeCode;
+    public ScanFlags DefaultFlags = ScanFlags.None;
+    public TypeCode DefaultType;
     #endregion
 
 
@@ -93,11 +94,18 @@ namespace Irony.Compiler {
     protected KeyList Suffixes = new KeyList();
     string _prefixesFirsts; //first chars of all prefixes, for fast prefix detection
     string _suffixesFirsts; //first chars of all suffixes, for fast suffix detection
+    private TypeCode[] _defaultTypes;
     #endregion
+
+    #region events: ConvertingValue
+    public event EventHandler<ScannerConvertingValueEventArgs> ConvertingValue;
+    #endregion
+
 
     #region overrides: Init, TryMatch
     public override void Init(Grammar grammar) {
       base.Init(grammar);
+      _defaultTypes = new TypeCode[] { DefaultType };
       //collect all suffixes, prefixes in lists and create strings of first chars for both
       Prefixes.Sort(KeyList.LongerFirst);
       _prefixesFirsts = string.Empty;
@@ -120,32 +128,39 @@ namespace Irony.Compiler {
     }
 
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
-      Token token = QuickParse(source);
-      if (token != null) return token;
+      Token token = null;
+      if (IsSet(TermOptions.EnableQuickParse)) {
+        token = QuickParse(context, source);
+        if (token != null) return token;
+      }
 
       source.Position = source.TokenStart.Position;
       ScanDetails details = new ScanDetails();
       details.Flags = DefaultFlags;
-      details.TypeCode = DefaultTypeCode;
+			details.TypeCodes = _defaultTypes;
 
       ReadPrefix(source, details);
       if (!ReadBody(source, details))
         return null;
       if (details.Error != null) 
-        return Grammar.CreateSyntaxErrorToken(source.TokenStart, details.Error);
+        return Grammar.CreateSyntaxErrorToken(context, source.TokenStart, details.Error);
       ReadSuffix(source, details);
 
-      object value = ConvertValue(details);
-      if (details.Error != null)
-        return Grammar.CreateSyntaxErrorToken(source.TokenStart, details.Error);
-      //create and return the token
-      string lexeme = source.GetLexeme();
-      token = new Token(this, source.TokenStart, lexeme, value);
-      token.Details = details;
+      if (!ConvertValue(details))
+        return Grammar.CreateSyntaxErrorToken(context, source.TokenStart, "Failed to convert the value: " + details.Error);
+
+      token = CreateToken(context, source, details);
       return token; 
     }
 
-    protected virtual Token QuickParse(ISourceStream source) {
+    protected virtual Token CreateToken(CompilerContext context, ISourceStream source, ScanDetails details) {
+      string lexeme = source.GetLexeme();
+      Token token = Token.Create(this, context, source.TokenStart, lexeme, details.Value);
+      token.Details = details;
+      return token;
+    }
+
+    protected virtual Token QuickParse(CompilerContext context, ISourceStream source) {
       return null;
     }
 
@@ -175,9 +190,9 @@ namespace Irony.Compiler {
         details.Suffix = sfx;
         source.Position += sfx.Length;
         //Set TypeCode from suffix
-        TypeCode code;
-        if (!string.IsNullOrEmpty(details.Suffix) && SuffixTypeCodes.TryGetValue(details.Suffix, out code))
-          details.TypeCode = code;
+        TypeCode[] codes;
+        if (!string.IsNullOrEmpty(details.Suffix) && SuffixTypeCodes.TryGetValue(details.Suffix, out codes))
+          details.TypeCodes = codes;
         return;
       }//foreach
     }//method
@@ -186,10 +201,22 @@ namespace Irony.Compiler {
       return false;
     }
 
-    //Extract the string content from lexeme, adjusts the escaped and double-end symbols
-    protected virtual object ConvertValue(ScanDetails details) {
-      return null;
+    protected virtual bool ConvertValue(ScanDetails details) {
+      details.Value = details.Body;
+      //Fire event and give a chance to custom code to convert the value
+      if (ConvertingValue != null) {
+        bool result = OnConvertingValue(details);
+        return result; 
+      }
+      return false; 
     }
+    protected virtual bool OnConvertingValue(ScanDetails details) {
+      if (ConvertingValue == null) return false;
+      ScannerConvertingValueEventArgs args = new ScannerConvertingValueEventArgs(details);
+      ConvertingValue(this, args);
+      return args.Converted;
+    }
+
 
     #endregion
 

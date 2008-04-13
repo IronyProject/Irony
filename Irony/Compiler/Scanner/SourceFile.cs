@@ -32,7 +32,7 @@ namespace Irony.Compiler {
   }
 
 
-  #region SourceLocation struct
+  #region SourceLocation, SourceSpan structs
   public struct SourceLocation {
     public int Position;
     public int Line;
@@ -46,6 +46,18 @@ namespace Irony.Compiler {
       return "L" + Line + ":" + "C" + Column;
     }
   }//SourceLocation
+
+  public struct SourceSpan {
+    public readonly SourceLocation Start;
+    public readonly int Length;
+    public SourceSpan(SourceLocation start, int length) {
+      Start = start;
+      Length = length;
+    }
+    public int EndPos {
+      get { return Start.Position + Length; }
+    }
+  }
   #endregion
 
   #region SourceFile class

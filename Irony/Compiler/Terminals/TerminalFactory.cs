@@ -1,3 +1,15 @@
+#region License
+/* **********************************************************************************
+ * This source code is subject to terms and conditions of the MIT License
+ * for Irony. A copy of the license can be found in the License.txt file
+ * at the root of this distribution. 
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * MIT License.
+ * You must not remove this notice from this software.
+ * **********************************************************************************/
+#endregion
+//Authors: Roman Ivantsov, Philipp Serr
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -21,8 +33,8 @@ namespace Irony.Compiler {
     public static StringLiteral CreateVbString(string name) {
       StringLiteral term = new StringLiteral(name, TermOptions.SpecialIgnoreCase);
       term.AddStartEnd("\"", ScanFlags.DisableEscapes | ScanFlags.AllowDoubledQuote);
-      term.AddSuffixCode("$", TypeCode.String);
-      term.AddSuffixCode("c", TypeCode.Char);
+      term.AddSuffixCodes("$", TypeCode.String);
+      term.AddSuffixCodes("c", TypeCode.Char);
       return term;
     }
 
@@ -40,47 +52,61 @@ namespace Irony.Compiler {
       return term;
     }
 
+		//http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-334.pdf section 9.4.4
     public static NumberLiteral CreateCSharpNumber(string name) {
-      //NumberTerminal term = new NumberTerminal(name, BnfFlags.SpecialIgnoreCase);
-      NumberLiteral term = new NumberLiteral(name, TermOptions.SpecialIgnoreCase);
+      NumberLiteral term = new NumberLiteral(name, TermOptions.EnableQuickParse | TermOptions.SpecialIgnoreCase);
+      term.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.UInt32, TypeCode.Int64, TypeCode.UInt64 };
+      term.DefaultFloatType = TypeCode.Double;
       term.AddPrefixFlag("0x", ScanFlags.Hex);
-      term.AddSuffixCode("u", TypeCode.UInt32);
-      term.AddSuffixCode("l", TypeCode.Int64);
-      term.AddSuffixCode("ul", TypeCode.UInt64);
-      term.AddSuffixCode("f", TypeCode.Single);
-      term.AddSuffixCode("m", TypeCode.Decimal);
+      term.AddSuffixCodes("u", TypeCode.UInt32, TypeCode.UInt64);
+      term.AddSuffixCodes("l", TypeCode.Int64, TypeCode.UInt64);
+      term.AddSuffixCodes("ul", TypeCode.UInt64);
+      term.AddSuffixCodes("f", TypeCode.Single);
+			term.AddSuffixCodes("d", TypeCode.Double);
+      term.AddSuffixCodes("m", TypeCode.Decimal);
       return term;
     }
+    //http://www.microsoft.com/downloads/details.aspx?FamilyId=6D50D709-EAA4-44D7-8AF3-E14280403E6E&displaylang=en section 2
     public static NumberLiteral CreateVbNumber(string name) {
-      NumberLiteral term = new NumberLiteral(name, TermOptions.SpecialIgnoreCase);
+      NumberLiteral term = new NumberLiteral(name, TermOptions.EnableQuickParse | TermOptions.SpecialIgnoreCase);
+      term.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.Int64 };
+      //term.DefaultFloatType = TypeCode.Double; it is default
       term.AddPrefixFlag("&H", ScanFlags.Hex);
       term.AddPrefixFlag("&O", ScanFlags.Octal);
-      term.AddSuffixCode("S", TypeCode.Int16);
-      term.AddSuffixCode("I", TypeCode.Int32);
-      term.AddSuffixCode("%", TypeCode.Int32);
-      term.AddSuffixCode("L", TypeCode.Int64);
-      term.AddSuffixCode("&", TypeCode.Int64);
-      term.AddSuffixCode("D", TypeCode.Decimal);
-      term.AddSuffixCode("@", TypeCode.Decimal);
-      term.AddSuffixCode("F", TypeCode.Single);
-      term.AddSuffixCode("!", TypeCode.Single);
-      term.AddSuffixCode("R", TypeCode.Double);
-      term.AddSuffixCode("#", TypeCode.Double);
-      term.AddSuffixCode("US", TypeCode.UInt16);
-      term.AddSuffixCode("UI", TypeCode.UInt32);
-      term.AddSuffixCode("UL", TypeCode.UInt64);
+      term.AddSuffixCodes("S", TypeCode.Int16);
+      term.AddSuffixCodes("I", TypeCode.Int32);
+      term.AddSuffixCodes("%", TypeCode.Int32);
+      term.AddSuffixCodes("L", TypeCode.Int64);
+      term.AddSuffixCodes("&", TypeCode.Int64);
+      term.AddSuffixCodes("D", TypeCode.Decimal);
+      term.AddSuffixCodes("@", TypeCode.Decimal);
+      term.AddSuffixCodes("F", TypeCode.Single);
+      term.AddSuffixCodes("!", TypeCode.Single);
+      term.AddSuffixCodes("R", TypeCode.Double);
+      term.AddSuffixCodes("#", TypeCode.Double);
+      term.AddSuffixCodes("US", TypeCode.UInt16);
+      term.AddSuffixCodes("UI", TypeCode.UInt32);
+      term.AddSuffixCodes("UL", TypeCode.UInt64);
       return term;
     }
+    //http://docs.python.org/ref/numbers.html
     public static NumberLiteral CreatePythonNumber(string name) {
-      NumberLiteral term = new NumberLiteral(name, TermOptions.NumberAllowBigInts | TermOptions.SpecialIgnoreCase);
+      NumberLiteral term = new NumberLiteral(name, TermOptions.EnableQuickParse | TermOptions.SpecialIgnoreCase | TermOptions.NumberAllowStartEndDot);
+      //default int types are Integer (32bit) -> LongInteger (BigInt); Try Int64 before BigInt: Better performance?
+      term.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.Int64, NumberLiteral.TypeCodeBigInt };
+      // term.DefaultFloatType = TypeCode.Double; -- it is default
+      //float type is implementation specific, thus try decimal first (higher precision)
+      //term.DefaultFloatTypes = new TypeCode[] { TypeCode.Decimal, TypeCode.Double };
       term.AddPrefixFlag("0x", ScanFlags.Hex);
       term.AddPrefixFlag("0", ScanFlags.Octal);
-      term.AddSuffixCode("L", TypeCode.Int64);
+      term.AddSuffixCodes("L", TypeCode.Int64, NumberLiteral.TypeCodeBigInt);
+      term.AddSuffixCodes("J", NumberLiteral.TypeCodeImaginary);
       return term;
     }
 
     public static IdentifierTerminal CreateCSharpIdentifier(string name) {
       IdentifierTerminal id = new IdentifierTerminal(name);
+      id.SetOption(TermOptions.CanStartWithEscape);
       string strKeywords =
             "abstract as base bool break byte case catch char checked " +
             "class	const	continue decimal default delegate  do double else enum event explicit extern false finally " +
@@ -89,13 +115,9 @@ namespace Irony.Compiler {
             "readonly ref return sbyte sealed short sizeof stackalloc static string " +
             "struct switch this throw true try typeof uint ulong unchecked unsafe ushort using virtual void " +
             "volatile while";
-      string[] arrKeywords = strKeywords.Split(' ');
-      foreach (string keyw in arrKeywords) {
-        string kw = keyw.Trim();
-        if (!string.IsNullOrEmpty(kw))
-          id.ReservedWords.Add(keyw.Trim());
-      }
-      id.AddPrefixFlag("@", ScanFlags.IsNotKeyword | ScanFlags.DisableEscapes );
+      id.AddKeywordList(strKeywords);
+
+      id.AddPrefixFlag("@", ScanFlags.IsNotKeyword | ScanFlags.DisableEscapes);
       //From spec:
       //Start char is "_" or letter-character, which is a Unicode character of classes Lu, Ll, Lt, Lm, Lo, or Nl 
       id.StartCharCategories.AddRange(new UnicodeCategory[] {
@@ -124,6 +146,14 @@ namespace Irony.Compiler {
       return id;
     }
 
+    public static IdentifierTerminal CreatePythonIdentifier(string name) {
+      IdentifierTerminal id = new IdentifierTerminal("Identifier"); //defaults are OK
+      id.AddKeywords("and", "del", "from", "not", "while", "as", "elif", "global", "or", "with",
+                                  "assert", "else", "if", "pass", "yield", "break", "except", "import", "print",
+                                  "class", "exec", "in", "raise", "continue", "finally", "is", "return",
+                                  "def", "for", "lambda", "try");
+      return id;
+    }
 
   }//class
 }//namespace

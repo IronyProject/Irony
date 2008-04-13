@@ -33,6 +33,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CSharp\CSharpGrammar.cs" />
     <Compile Include="Script.NET\ScriptDotNetGrammar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Python\PythonGrammar.cs" />
@@ -56,6 +57,7 @@
     <None Include="SourceSamples\99 bottles.rb" />
     <None Include="SourceSamples\99 bottles.scm" />
     <None Include="SourceSamples\99 bottles with Errors.rb" />
+    <Content Include="CSharp\Notes.txt" />
     <Content Include="License.txt" />
     <Content Include="Ruby\Ruby_auth.txt" />
     <Content Include="SourceSamples\_about.txt" />

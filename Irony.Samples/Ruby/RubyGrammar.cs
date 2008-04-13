@@ -35,9 +35,9 @@ namespace Irony.Samples.Ruby {
       Terminal RegExLiteral = new Terminal("RegExLiteral"); //-- implement me!
       IdentifierTerminal IDENTIFIER = new IdentifierTerminal("identifier", "_!?", "_$@");
       //                                                name     extraChars      extraFirstChars 
-      IDENTIFIER.Alias = "variable";
+      IDENTIFIER.DisplayName = "variable";
       //we need to isolate reserved words to avoid ambiguities in grammar 
-      IDENTIFIER.AddReservedWords("do", "end", "def", "class", 
+      IDENTIFIER.AddKeywords("do", "end", "def", "class", 
                                        "if", "case", "return", "yield", "while", "until");  //and some others...
       Terminal Number = new NumberLiteral("Number");
       Terminal Comment = new CommentTerminal("Comment", "#", "\n");

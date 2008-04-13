@@ -20,14 +20,24 @@ namespace Irony.Compiler {
 
     #region properties: CaseSensitive, WhitespaceChars, Delimiters ExtraTerminals, Root, TokenFilters
     public bool CaseSensitive = true;
-    public string WhitespaceChars = " \t\r\n\v";
     //List of chars that unambigously identify the start of new token. 
     //used in scanner error recovery, and in quick parse path in Number literals 
-    public string Delimiters = ",;[](){}"; 
+    public string Delimiters = ",;[](){}";
+
+    public string WhitespaceChars = " \t\r\n\v";
+    public string LineTerminators = "\n\r\v";
 
     //Terminals not present in grammar expressions and not reachable from the Root
     // (Comment terminal is usually one of them)
     public readonly TerminalList ExtraTerminals = new TerminalList();
+
+    //Terminals that either don't have explicitly declared Firsts symbols, or can start with chars not covered by these Firsts 
+    // For ex., identifier in c# can start with a Unicode char in one of several Unicode classes, not necessarily latin letter.
+    //  Whenever terminals with explicit Firsts() cannot produce a token, the Scanner would call terminals from this fallback 
+    // collection to see if they can produce it. 
+    // Note that IdentifierTerminal automatically add itself to this collection if its StartCharCategories list is not empty, 
+    // so programmer does not need to do this explicitly
+    public readonly TerminalList FallbackTerminals = new TerminalList();
 
     //Default node type; if null then GenericNode type is used. 
     public Type DefaultNodeType = typeof(AstNode);
@@ -84,11 +94,16 @@ namespace Irony.Compiler {
     }
     // Override this method in language grammar if you want a custom node creation mechanism.
     public virtual AstNode CreateNode(CompilerContext context, ActionRecord reduceAction, 
-                                      SourceLocation location, AstNodeList childNodes) {
+                                      SourceSpan sourceSpan, AstNodeList childNodes) {
       return null;      
     }
     public virtual string GetSyntaxErrorMessage(CompilerContext context, KeyList expectedList) {
       return null; //Irony then would construct default message
+    }
+    public virtual void OnActionSelected(Parser parser, Token input, ActionRecord action) {
+    }
+    public virtual ActionRecord OnActionConflict(Parser parser, Token input, ActionRecord action) {
+      return action;
     }
     #endregion
 
@@ -112,12 +127,28 @@ namespace Irony.Compiler {
     protected static BnfTerm WithQ(BnfExpression expression) {
       return ToElement(expression).Q();
     }
-    public static Token CreateSyntaxErrorToken(SourceLocation location, string message, params object[] args) {
+    public static Token CreateSyntaxErrorToken(CompilerContext context, SourceLocation location, string message, params object[] args) {
       if (args != null && args.Length > 0)
         message = string.Format(message, args);
-      return new Token(Grammar.SyntaxError, location, message);
+      return Token.Create(Grammar.SyntaxError, context, location, message);
     }
     #endregion
+
+
+    public BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember) {
+      listNonTerminal.SetOption(TermOptions.IsList);
+      if (delimiter == null)
+        listNonTerminal.Rule = listMember | listNonTerminal + listMember;
+      else
+        listNonTerminal.Rule = listMember | listNonTerminal + delimiter + listMember;
+      return listNonTerminal.Rule;
+    }
+    public BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember) {
+      NonTerminal tmp = new NonTerminal(listMember.Name + "+");
+      MakePlusRule(tmp, delimiter, listMember);
+      listNonTerminal.Rule = Empty | tmp;
+      return listNonTerminal.Rule;
+    }
 
     #region Standard terminals: EOF, Empty, NewLine, Indent, Dedent
     // Empty object is used to identify optional element: 
@@ -135,11 +166,6 @@ namespace Irony.Compiler {
 
     //End-of-Statement terminal
     public readonly static Terminal Eos = new Terminal("EOS", TokenCategory.Outline);
-    // Special terminal for ReservedWord token produced by IdentifierTerminal when lexeme matches one of reserved words. 
-    // It is sometimes(not always) necessary to distinguish reserved words from free identifiers in the input stream.
-    // The main distinction from Identifier is that ReservedWord can be matched only by Value (keyword itself), 
-    //  not by Terminal type.
-    public readonly static Terminal ReservedWord = new Terminal("ReservedWord", TokenMatchMode.ByValue);
 
     public readonly static Terminal SyntaxError = new Terminal("SYNTAX_ERROR", TokenCategory.Error);
     #endregion

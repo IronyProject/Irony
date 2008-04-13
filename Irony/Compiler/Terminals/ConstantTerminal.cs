@@ -32,7 +32,7 @@ namespace Irony.Compiler {
       foreach (string lexeme in Table.Keys) {
         if (source.Position + lexeme.Length > text.Length) continue;
         if (!source.MatchSymbol(lexeme, !Grammar.CaseSensitive)) continue; 
-        Token tkn = new Token(this, source.TokenStart, lexeme, Table[lexeme]);
+        Token tkn = Token.Create(this, context, source.TokenStart, lexeme, Table[lexeme]);
         source.Position += lexeme.Length;
         return tkn;
       }

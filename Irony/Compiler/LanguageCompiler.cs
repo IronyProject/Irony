@@ -21,11 +21,26 @@ namespace Irony.Compiler {
     public LanguageCompiler(Grammar grammar) {
       Grammar = grammar;
       long startTime = Environment.TickCount;
-      GrammarDataBuilder bld = new GrammarDataBuilder();
-      Data = bld.Build(grammar);
+      GrammarDataBuilder bld = new GrammarDataBuilder(grammar);
+      bld.Build();
+      InitTime = Environment.TickCount - startTime;
+      Data = bld.Data;
       Parser = new Parser(Data); 
       Scanner = new Scanner(Data);
-      InitTime = Environment.TickCount - startTime;
+    }
+    public LanguageCompiler(GrammarData data) {
+      Data = data;
+      Grammar = data.Grammar;
+      Parser = new Parser(Data);
+      Scanner = new Scanner(Data);
+    }
+
+    //Used in unit tests
+    public static LanguageCompiler CreateDummy() {
+      GrammarData data = new GrammarData();
+      data.Grammar = new Grammar();
+      LanguageCompiler compiler = new LanguageCompiler(data);
+      return compiler;
     }
 
     public readonly Grammar Grammar;

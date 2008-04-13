@@ -27,6 +27,9 @@ namespace Irony.Compiler {
 
   public class IdentifierTerminal : CompoundTerminalBase {
 
+    //TODO: c# allows unicode escapes in identifiers, even in the first char; thus the "\" symbol should 
+    // be included in GetFirsts() list. IdentifierTerminal must provide for this!
+
     //Note that extraChars, extraFirstChars are used to form AllFirstChars and AllChars fields, which in turn 
     // are used in QuickParse. Only if QuickParse fails, the process switches to full version with checking every
     // char's category
@@ -42,24 +45,62 @@ namespace Irony.Compiler {
     public string AllChars;
     public string AllFirstChars;
     private string _terminators;
+    private StringDictionary _keywordHash;
 
-    public readonly KeyList ReservedWords = new KeyList();
+    //The following list must include only words that are reserved and are not general identifiers (variables)
+    public readonly KeyList Keywords = new KeyList();
     public readonly UnicodeCategoryList StartCharCategories = new UnicodeCategoryList(); //categories of first char
     public readonly UnicodeCategoryList CharCategories = new UnicodeCategoryList();      //categories of all other chars
     public readonly UnicodeCategoryList CharsToRemoveCategories = new UnicodeCategoryList(); //categories of chars to remove from final id, usually formatting category
     #endregion
 
-    public void AddReservedWords(params string[] words) {
-      ReservedWords.AddRange(words);
+    public void AddKeywords(params string[] keywords) {
+      Keywords.AddRange(keywords);
+    }
+
+    public void AddKeywordList(string keywordList) {
+      string[] arr = keywordList.Split(' ', ',', ';', '\n', '\r', '\t');
+      foreach (string kw in arr) {
+        string trimmed = kw.Trim();
+        if (!string.IsNullOrEmpty(trimmed))
+          Keywords.Add(trimmed);
+
+      }
     }
 
     #region overrides
     public override void Init(Grammar grammar) {
       base.Init(grammar);
       _terminators = grammar.WhitespaceChars + grammar.Delimiters;
+      //build a hash table of keywords
+      _keywordHash = new StringDictionary();
+      foreach (string keyw in Keywords) {
+        if (grammar.CaseSensitive) 
+          _keywordHash.Add(keyw, string.Empty);
+        else 
+          _keywordHash.Add(keyw.ToLower(), string.Empty);
+      }//foreach
+      if (this.StartCharCategories.Count > 0 && !grammar.FallbackTerminals.Contains(this))
+        grammar.FallbackTerminals.Add(this);
     }
 
-    protected override Token QuickParse(ISourceStream source) {
+    //Override to assign IsKeyword flag to keyword tokens
+    protected override Token CreateToken(CompilerContext context, ISourceStream source, ScanDetails details) {
+      if (details.IsSet(ScanFlags.IncludePrefix) && !string.IsNullOrEmpty(details.Prefix))
+        details.Value = details.Prefix + details.Body;
+      Token token = base.CreateToken(context, source, details); 
+      if (details.IsSet(ScanFlags.IsNotKeyword))
+        return token;
+      //check if it is keyword
+      string text = token.Text;
+      if (!Grammar.CaseSensitive)
+        text = text.ToLower();
+      if (_keywordHash.ContainsKey(text))
+        token.IsKeyword = true;
+      return token; 
+    }
+
+    protected override Token QuickParse(CompilerContext context, ISourceStream source) {
       if (AllFirstChars.IndexOf(source.CurrentChar) < 0) 
         return null;
       source.Position++;
@@ -68,8 +109,7 @@ namespace Irony.Compiler {
       //if it is not a terminator then cancel; we need to go through full algorithm
       if (_terminators.IndexOf(source.CurrentChar) < 0) return null; 
       string text = source.GetLexeme();
-      Terminal term = (ReservedWords.Contains(text) ? Grammar.ReservedWord : this);
-      return new Token(term, source.TokenStart, text);
+      return Token.Create(this, context, source.TokenStart, text);
     }
 
     protected override bool ReadBody(ISourceStream source, ScanDetails details) {
@@ -138,11 +178,12 @@ namespace Irony.Compiler {
       return result;
     }
 
-    protected override object ConvertValue(ScanDetails details) {
+    protected override bool ConvertValue(ScanDetails details) {
       if (details.IsSet(ScanFlags.IncludePrefix))
-        return details.Prefix + details.Body;
+        details.Value = details.Prefix + details.Body;
       else
-        return details.Body;
+        details.Value = details.Body;
+      return true; 
     }
 
     //TODO: put into account non-Ascii aplhabets specified by means of Unicode categories!
@@ -154,6 +195,8 @@ namespace Irony.Compiler {
       char[] chars = AllFirstChars.ToCharArray();
       foreach (char ch in chars)
         list.Add(ch.ToString());
+      if (IsSet(TermOptions.CanStartWithEscape))
+        list.Add(this.EscapeChar.ToString());
       return list;
     }
     #endregion 

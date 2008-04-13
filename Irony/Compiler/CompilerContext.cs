@@ -34,7 +34,12 @@ namespace Irony.Compiler {
     public void AddError(SourceLocation location, string message) {
       this.AddError(location, message, null);
     }
-  
+
+    //Used in unit tests
+    public static CompilerContext CreateDummy() {
+      CompilerContext ctx = new CompilerContext(LanguageCompiler.CreateDummy());
+      return ctx; 
+    }
   }//class
 
 }

@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.CodeDom;
+using Irony.Runtime;
 
 namespace Irony.Compiler {
 
@@ -22,12 +23,12 @@ namespace Irony.Compiler {
 
   //Base AST node class
   public class AstNode {
-    public AstNode(CompilerContext context, BnfTerm term, SourceLocation location, AstNodeList childNodes) {
-      Term = term;
-      Location = location;
-      if (childNodes == null) return;
+    public AstNode(AstNodeArgs args) {
+      Term = args.Term;
+      Span = args.Span;
+      if (args.ChildNodes == null || args.ChildNodes.Count == 0) return;
       //add child nodes, skipping nulls and punctuation symbols
-      foreach (AstNode child in childNodes) {
+      foreach (AstNode child in args.ChildNodes) {
         if (child != null && !child.Term.IsSet(TermOptions.IsPunctuation)) {
           ChildNodes.Add(child);
           child.Parent = this;
@@ -37,9 +38,12 @@ namespace Irony.Compiler {
 
     #region properties Term, Location, ChildNodes, Parent, CodeDomObject, Tag, Attributes
     public readonly BnfTerm Term;
-    public readonly SourceLocation Location;
+    public readonly SourceSpan Span;
     public readonly AstNodeList ChildNodes = new AstNodeList();
-    
+
+    public SourceLocation Location {
+      get { return Span.Start; }
+    }
     public AstNode Parent  {
       get {return _parent;}
       set {_parent = value;}
@@ -68,10 +72,14 @@ namespace Irony.Compiler {
     #endregion
     
     public override string ToString() {
-      if (string.IsNullOrEmpty(_tag))
-        return Term.Name;
-      else
-        return Tag + ":" + Term.Name;
+      string result = string.Empty; 
+      if (!string.IsNullOrEmpty(_tag))
+        result = Tag + ": ";
+      result += Term.Name;
+      if (ChildNodes.Count == 0)
+        result += "(Empty)";
+      return result; 
+
     }
 
     //the first primitive Visitor facility
@@ -81,6 +89,10 @@ namespace Irony.Compiler {
         foreach(AstNode node in ChildNodes)
           node.AcceptVisitor(visitor);
       visitor.EndVisit(this);
+    }
+
+    public virtual object Evaluate(EvaluationContext context) {
+      return null;
     }
 
   }//class

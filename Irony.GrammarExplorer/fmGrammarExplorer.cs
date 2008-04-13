@@ -149,17 +149,18 @@ namespace Irony.GrammarExplorer {
       txtGrammarErrors.Text = "(no errors found)";
       if (Compiler == null) return;
       GrammarData data = Compiler.Parser.Data;
-      txtTerms.Text = data.GetTerminalsAsText();
-      txtNonTerms.Text = data.GetNonTerminalsAsText();
+      txtTerms.Text = TextUtils.TerminalsToText(data.Terminals);
+      txtNonTerms.Text = TextUtils.NonTerminalsToText(data.NonTerminals);
       //Productions and LR0 items
       foreach (Production pr in data.Productions) {
         lstProds.Items.Add(pr);
       }
       //States
-      txtParserStates.Text = data.GetStatesAsText();
+      txtParserStates.Text = TextUtils.StateListToText(data.States);
       //Validation errors
       if (data.Errors.Count > 0) {
         txtGrammarErrors.Text = data.Errors.ToString(Environment.NewLine);
+        txtGrammarErrors.Text += "\r\n\r\nTotal errors: " + data.Errors.Count;
         tabGrammar.SelectedTab = pageGrErrors;
       }
       lblInitTime.Text = Compiler.InitTime.ToString();
@@ -229,6 +230,7 @@ namespace Irony.GrammarExplorer {
     }
 
     private void cboLanguage_SelectedIndexChanged(object sender, EventArgs e) {
+      SymbolTerminal.ClearSymbols();
       Grammar grammar = null; 
       switch (cboLanguage.SelectedIndex) {
         case 0: //ExpressionGrammar
@@ -244,7 +246,10 @@ namespace Irony.GrammarExplorer {
           grammar = new Irony.Samples.Ruby.RubyGrammar();
           break;
         case 4: //Script.NET
-          grammar = new Irony.Samples.ScriptNET.ScriptdotnetGrammar();
+          grammar = new  Irony.Samples.ScriptNET.ScriptdotnetGrammar();
+          break;
+        case 5: //c#
+          grammar = new Irony.Samples.CSharp.CSharpGrammar();
           break;
       }//switch
       try {
@@ -284,7 +289,7 @@ namespace Irony.GrammarExplorer {
     }
 
     private void DoSearch() {
-      lblSearchError.Text = "";
+      lblSearchError.Visible = false; 
       TextBox cur = GetSearchContentBox();
       if (cur == null) return;
 
@@ -306,8 +311,10 @@ namespace Irony.GrammarExplorer {
         cur.SelectionLength = c.Length;
         cur.Focus();
         return;
-      } else
+      } else {
         lblSearchError.Text = "Not found.";
+        lblSearchError.Visible = true; 
+      }
 
         
     }

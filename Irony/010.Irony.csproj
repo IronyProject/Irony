@@ -34,6 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common.cs" />
+    <Compile Include="Compiler\AST\AstNodeArgs.cs" />
     <Compile Include="Compiler\AST\AstVisitor.cs" />
     <Compile Include="Compiler\CompilerContext.cs" />
     <Compile Include="Compiler\Enums.cs" />
@@ -67,6 +68,8 @@
     <Compile Include="Compiler\TokenFilters\CodeOutlineFilter.cs" />
     <Compile Include="Compiler\TokenFilters\TokenFilter.cs" />
     <Compile Include="Compiler\LanguageCompiler.cs" />
+    <Compile Include="Exceptions.cs" />
+    <Compile Include="Microsoft\Complex64.cs" />
     <Compile Include="Microsoft\MathResources.Designer.cs">
       <DependentUpon>MathResources.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -74,6 +77,8 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Microsoft\BigInteger.cs" />
+    <Compile Include="Runtime\EvaluationContext.cs" />
+    <Compile Include="Runtime\Scope.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="License.txt" />

@@ -34,7 +34,7 @@ namespace Irony.Compiler {
         return null;
       source.Position += m.Length + 1;
       string text = source.GetLexeme();
-      return new Token(this, source.TokenStart, text);
+      return Token.Create(this, context, source.TokenStart, text);
     }
 
   }//class

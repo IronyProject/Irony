@@ -21,7 +21,7 @@ namespace Irony.Compiler {
   // in what is known in literature as transiton/goto tables.
   // The graph is built from the language grammar by GrammarDataBuilder instance. 
   // See Dragon book or other book on compilers on details of LALR parsing and parsing tables construction. 
-  public partial class GrammarData {
+  public class GrammarData {
     public Grammar Grammar;
     public NonTerminal AugmentedRoot;
     public ParserState InitialState;
@@ -29,7 +29,7 @@ namespace Irony.Compiler {
     public readonly NonTerminalList NonTerminals = new NonTerminalList();
     public readonly TerminalList Terminals = new TerminalList();
     public readonly TerminalLookupTable TerminalsLookup = new TerminalLookupTable(); //hash table for fast terminal lookup by input char
-    public readonly TerminalList TerminalsWithoutPrefixes = new TerminalList(); //terminals that have no explicit prefixes
+    public readonly TerminalList FallbackTerminals = new TerminalList(); //terminals that have no explicit prefixes
     public readonly ProductionList Productions = new ProductionList();
     public readonly ParserStateList States = new ParserStateList();
     public readonly KeyList Errors = new KeyList();
@@ -51,7 +51,7 @@ namespace Irony.Compiler {
     public ParserState(string name, LR0ItemList coreItems) {
       Name = name;
       foreach (LR0Item coreItem in coreItems)
-        Items.Add(new LRItem(coreItem));
+        Items.Add(new LRItem(this, coreItem));
     }
     public override string ToString() {
       return Name;
@@ -68,21 +68,30 @@ namespace Irony.Compiler {
     public ParserState NewState;
     public ProductionList ReduceProductions = new ProductionList(); //may be more than one, in case of conflict
 
-    public ActionRecord() { }
-    public ActionRecord(string key, ParserState newState) {
+/*    //used for shift actions
+    internal ActionRecord(string key, ParserState newState) {
       //Input = input;
       Key = key; // input.Key;
       NewState = newState;
       ActionType = ParserActionType.Shift;
     }
-    public ActionRecord(string key, Production reduceProduction) {
+    //used for reduce actions
+    internal ActionRecord(string key, Production reduceProduction) {
       //Input = input;
       Key = key; // input.Key;
       ReduceProductions.Add(reduceProduction);
       ActionType = ParserActionType.Reduce;
     }
-    public ActionRecord(ParserActionType type) {
-      ActionType = type;
+ */ 
+    internal ActionRecord(string key, ParserActionType type, ParserState newState, Production reduceProduction) {
+      this.Key = key;
+      this.ActionType = type;
+      this.NewState = newState; 
+      if (reduceProduction != null)
+        ReduceProductions.Add(reduceProduction);
+    }
+    public ActionRecord CreateDerived(ParserActionType type, Production reduceProduction) {
+      return new ActionRecord(this.Key, type, this.NewState, reduceProduction);
     }
 
     public Production Production { 
@@ -101,7 +110,7 @@ namespace Irony.Compiler {
         case ParserActionType.Reduce:
           return ReduceProductions.Count > 1;
         case ParserActionType.Operator:
-          return false;
+          return true;
       }//switch
       return false;
     }
@@ -125,9 +134,12 @@ namespace Irony.Compiler {
     public readonly LR0ItemList LR0Items = new LR0ItemList();      //LR0 items based on this production 
     public Production(bool isInitial, NonTerminal lvalue, BnfTermList rvalues) {
       LValue = lvalue;
-      RValues = rvalues;
+      //copy RValues skipping Empty pseudo-terminal
+      foreach (BnfTerm rv in rvalues)
+        if (rv != Grammar.Empty)
+          RValues.Add(rv);
       //Calculate flags
-      foreach (BnfTerm term in rvalues) {
+      foreach (BnfTerm term in RValues) {
         Terminal terminal = term as Terminal;
         if (terminal == null) continue;
         HasTerminals = true;
@@ -168,10 +180,13 @@ namespace Irony.Compiler {
   public class ProductionList : List<Production> { }
 
   public class LRItem {
+    public readonly ParserState State;
     public readonly LR0Item Core;
     public readonly LRItemList PropagateTargets = new LRItemList(); //used for lookaheads propagation
     public readonly KeyList Lookaheads = new KeyList();
-    public LRItem(LR0Item core) {
+    public readonly KeyList NewLookaheads = new KeyList();
+    public LRItem(ParserState state, LR0Item core) {
+      State = state;
       Core = core;
     }
     public override string ToString() {
@@ -181,7 +196,7 @@ namespace Irony.Compiler {
 
   public class LRItemList : List<LRItem> { }
 
-  public partial class LR0Item : IComparable<LR0Item> {
+  public partial class LR0Item {
     public readonly Production Production;
     public readonly int Position;
     public readonly KeyList TailFirsts = new KeyList(); //tail is a set of elements after the "after-dot-element"
@@ -212,72 +227,9 @@ namespace Irony.Compiler {
     public override string ToString() {
       return _toString;
     }
-    #region IComparable<LR0Item> Members
-    public int CompareTo(LR0Item other) {
-      if (this.ID == other.ID)
-        return 0;
-      return (this.ID < other.ID ? -1 : 1);
-    }
-    #endregion
-
   }//LR0Item
 
   public class LR0ItemList : List<LR0Item> { }
 
-  #region GrammarData utility methods
-  //implementation of public ToString methods
-  public partial class GrammarData {
-    public string GetTerminalsAsText() {
-      StringBuilder sb = new StringBuilder();
-      foreach (Terminal term in this.Terminals) {
-        sb.Append(term.ToString());
-        sb.AppendLine();
-      }
-      return sb.ToString();
-    }
-    public string GetNonTerminalsAsText() {
-      StringBuilder sb = new StringBuilder();
-      foreach (NonTerminal nt in this.NonTerminals) {
-        sb.Append(nt.Name);
-        sb.Append(nt.Nullable ? "  (Nullable) " : "");
-        sb.AppendLine();
-        foreach (Production pr in nt.Productions) {
-          sb.Append("   ");
-          sb.AppendLine(pr.ToString());
-        }
-        sb.Append("  FIRSTS: ");
-        sb.AppendLine(nt.Firsts.ToString(" "));
-        sb.AppendLine();
-      }//foreachc nt
-      return sb.ToString();
-    }
-    public string GetStatesAsText() {
-      StringBuilder sb = new StringBuilder();
-      foreach (ParserState state in this.States) {
-        sb.Append("State ");
-        sb.AppendLine(state.Name);
-        //LRItems
-        foreach (LRItem item in state.Items) {
-          sb.Append("    ");
-          sb.AppendLine(item.ToString());
-        }
-        //Transitions
-        sb.Append("      TRANSITIONS: ");
-        foreach (string key in state.Actions.Keys) {
-          ActionRecord action = state.Actions[key];
-          if (action.NewState == null) continue; //may be null in malformed grammars
-          string displayKey = key.EndsWith("\b") ? key.Substring(0, key.Length - 1) : key;
-          sb.Append(displayKey);
-          sb.Append("->");
-          sb.Append(action.NewState.Name);
-          sb.Append("; ");
-        }
-        sb.AppendLine();
-        sb.AppendLine();
-      }//foreach
-      return sb.ToString();
-    }
-  }
-  #endregion
 
 }//namespace

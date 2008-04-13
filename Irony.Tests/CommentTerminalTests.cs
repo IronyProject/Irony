@@ -14,12 +14,12 @@ namespace Irony.Tests {
     [Test]
     public void TestCommentTerminal() {
       _terminal = new CommentTerminal("Comment", "/*", "*/");
-      _terminal.Init(_grammar);
+      InitTerminal();
       TryMatch("/* abc  */");
       Assert.That(_token.Category == TokenCategory.Comment, "Failed to read comment");
 
       _terminal = new CommentTerminal("Comment", "//", "\n");
-      _terminal.Init(_grammar);
+      InitTerminal();
       TryMatch("// abc  \n   ");
       Assert.That(_token.Category == TokenCategory.Comment, "Failed to read line comment");
 

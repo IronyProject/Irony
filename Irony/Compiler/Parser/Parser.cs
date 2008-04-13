@@ -17,7 +17,7 @@ using System.Collections;
 
 
 namespace Irony.Compiler {
-  //Parser class implements LALR(1) parser DFM. Its behavior is controlled by the state transition graph
+  // Parser class implements LALR(1) parser DFM. Its behavior is controlled by the state transition graph
   // with root in Data.InitialState. Each state contains a dictionary of parser actions indexed by input 
   // element (token or non-terminal node). 
   public class Parser {
@@ -53,8 +53,8 @@ namespace Irony.Compiler {
 
     public int LineCount {
       [System.Diagnostics.DebuggerStepThrough]
-      get { return _lineCount; }
-    } int  _lineCount;
+      get { return _currentLine; }
+    } int  _currentLine;
 
     public int TokenCount  {
       [System.Diagnostics.DebuggerStepThrough]
@@ -65,13 +65,12 @@ namespace Irony.Compiler {
 
     #region Events: ParserAction, TokenReceived
     public event EventHandler<ParserActionEventArgs> ActionSelected;
-    public event EventHandler<ParserActionEventArgs> ActionConflict;
     public event EventHandler<TokenEventArgs> TokenReceived;
-    TokenEventArgs _tokenArgs = new TokenEventArgs(null); //declar as field and reuse it to avoid generating garbage
+    TokenEventArgs _tokenArgs = new TokenEventArgs(null); //declare as field and reuse it to avoid generating garbage
 
-    protected void OnTokenReceived() {
+    protected void OnTokenReceived(Token token) {
       if (TokenReceived == null) return;
-      _tokenArgs.Token = _currentToken;
+      _tokenArgs.Token = token;
       TokenReceived(this, _tokenArgs);
     }
     #endregion
@@ -80,35 +79,60 @@ namespace Irony.Compiler {
     private void Reset() {
       Stack.Reset();
       _currentState = Data.InitialState;
-      _lineCount = 0;
+      _currentLine = 0;
       _tokenCount = 0;
       _context.Errors.Clear();
     }
-    
-    private void ReadToken() {
+
+
+    TokenList _previewBuffer = new TokenList();
+    private Token ReadToken() {
       while (_input.MoveNext()) {
-        _currentToken = _input.Current;
+        Token result = _input.Current;
         _tokenCount++;
-        _lineCount = _currentToken.Location.Line + 1;
-        if (_currentToken.Terminal.Category == TokenCategory.Comment)
-          continue; 
+        _currentLine = result.Span.Start.Line + 1;
         if (TokenReceived != null)
-          OnTokenReceived();
-        return; 
+          OnTokenReceived(result);
+        if (result.Terminal.Category == TokenCategory.Comment)
+          continue;
+        return result;
       }//while
-      //Normally we never get here. 
-      // It might happen if a grammar somehow expects more than one EOF. 
-      //  in this case we keep returning EOF token, to avoid breaking the parser.
-      _currentToken = new Token(Grammar.Eof, new SourceLocation(0, _lineCount - 1, 0), ""); 
+      //Return EOF
+      return null; 
+    }
+
+    private void NextToken() {
+      if (_previewBuffer.Count > 0) {
+        _currentToken = _previewBuffer[0];
+        _previewBuffer.RemoveAt(0);
+        return; 
+      }
+      _currentToken = ReadToken();
+      //  if null, we reached end of file; return EOF token.
+      if (_currentToken == null) 
+        _currentToken = Token.Create(Grammar.Eof, _context, new SourceLocation(0, _currentLine - 1, 0), string.Empty); 
     }//method
 
+    public Token PreviewSymbols(KeyList symbols) {
+      //First check the preview buffer
+      foreach (Token token in _previewBuffer) {
+        if (symbols.Contains(token.Text)) return token; 
+      }
+      //Now read from input while saving all tokens in preview buffer
+      Token tkn;
+      while((tkn = ReadToken()) != null) {
+        _previewBuffer.Add(tkn);
+        if (symbols.Contains(tkn.Text)) return tkn; 
+      } 
+      return null;
+    }//method
 
     public AstNode Parse(CompilerContext context, IEnumerable<Token> tokenStream) {
       _context = context;
       _caseSensitive = _context.Compiler.Grammar.CaseSensitive;
       Reset();
       _input = tokenStream.GetEnumerator();
-      ReadToken();
+      NextToken();
       while (true) {
         if (_currentState == Data.FinalState) {
           AstNode result = Stack[0].Node;
@@ -131,11 +155,10 @@ namespace Irony.Compiler {
           continue;
         }//action==null
 
-        if (ActionSelected != null) //just to improve performance we check it here
-          OnActionSelected(_currentState, _currentToken, action);
         if (action.HasConflict())
-          action = OnActionConflict(_currentState, _currentToken, action);
-        switch(action.ActionType) {
+          action = Data.Grammar.OnActionConflict(this, _currentToken, action);
+        this.OnActionSelected(_currentToken, action);
+        switch (action.ActionType) {
           case ParserActionType.Operator:
             if (GetActionTypeForOperation(_currentToken) == ParserActionType.Shift)
               goto case ParserActionType.Shift;
@@ -198,7 +221,7 @@ namespace Irony.Compiler {
         // and we have already all its "Firsts" keys in the list. 
         // If yes, add nt to element list and remove
         // all its "fists" symbols from the list. These removed symbols will be represented by single nt alias. 
-        if (string.IsNullOrEmpty(nt.Alias))
+        if (string.IsNullOrEmpty(nt.DisplayName))
           inputKeys.Remove(nt.Key);
         else {
           inputElements.Add(nt);
@@ -213,7 +236,7 @@ namespace Irony.Compiler {
       }
       KeyList result = new KeyList();
       foreach(BnfTerm term in inputElements)
-        result.Add(string.IsNullOrEmpty(term.Alias)? term.Name : term.Alias);
+        result.Add(string.IsNullOrEmpty(term.DisplayName)? term.Name : term.DisplayName);
       result.Sort();
       return result;
     }
@@ -221,7 +244,7 @@ namespace Irony.Compiler {
     //TODO: need to rewrite, looks ugly
     private bool Recover() {
       if (_currentToken.Category != TokenCategory.Error)
-        _currentToken = Grammar.CreateSyntaxErrorToken(_currentToken.Location, "Syntax error.");
+        _currentToken = Grammar.CreateSyntaxErrorToken(_context, _currentToken.Location, "Syntax error.");
       //Check the current state and states in stack for error shift action - this would be recovery state.
       ActionRecord action = GetCurrentAction();
       if (action == null || action.ActionType == ParserActionType.Reduce) {
@@ -244,7 +267,7 @@ namespace Irony.Compiler {
         //with current token, see if we can shift it. 
         action = GetCurrentAction();
         if (action == null) {
-          ReadToken(); //skip this token and continue reading input
+          NextToken(); //skip this token and continue reading input
           continue; 
         }
         if (action.ActionType == ParserActionType.Reduce || action.ActionType == ParserActionType.Operator) {
@@ -259,58 +282,48 @@ namespace Irony.Compiler {
     }
     #endregion
 
-    #region event handling
-    protected void OnActionSelected(ParserState state, Token input, ActionRecord action) {
+    protected void OnActionSelected(Token input, ActionRecord action) {
+      Data.Grammar.OnActionSelected(this, _currentToken, action);
       if (ActionSelected != null) {
-        ParserActionEventArgs args = new ParserActionEventArgs(state, input, action);
+        ParserActionEventArgs args = new ParserActionEventArgs(this.CurrentState, input, action);
         ActionSelected(this, args);
       }
     }
-    protected ActionRecord OnActionConflict(ParserState state, Token input, ActionRecord action) {
-      if (ActionConflict != null) {
-        ParserActionEventArgs args = new ParserActionEventArgs(state, input, action);
-        ActionConflict(this, args);
-        return args.Action;
-      }
-      return action;
-    }
-    #endregion
 
     #region Misc private methods
     private ActionRecord GetCurrentAction() {
       ActionRecord action = null;
-      if ((_currentToken.Terminal.MatchMode & TokenMatchMode.ByValue) != 0 && _currentToken.Text != null) {
+      if (_currentToken.MatchByValue) {
         string key = CurrentToken.Text;
         if (!_caseSensitive)
           key = key.ToLower();
         if (_currentState.Actions.TryGetValue(key, out action))
           return action;
       }
-      if ((_currentToken.Terminal.MatchMode & TokenMatchMode.ByType) != 0 &&  
-        _currentState.Actions.TryGetValue(_currentToken.Terminal.Key, out action))
+      if (_currentToken.MatchByType && _currentState.Actions.TryGetValue(_currentToken.Terminal.Key, out action))
         return action;
       return null; //action not found
     }
     private ParserActionType GetActionTypeForOperation(Token current) {
-      SymbolTerminal opSymb = current.Term as SymbolTerminal;
+      Terminal thisTerm = current.Terminal;
       for (int i = Stack.Count - 2; i >= 0; i--) {
         if (Stack[i].Node == null) continue;
         BnfTerm term = Stack[i].Node.Term;
         if (!term.IsSet(TermOptions.IsOperator)) continue;
-        SymbolTerminal prevOpSymb = term as SymbolTerminal;
+        Terminal prevTerm = term as Terminal;
         //if previous operator has the same precedence then use associativity
-        if (prevOpSymb.Precedence == opSymb.Precedence) 
-          return opSymb.Associativity == Associativity.Left ? ParserActionType.Reduce : ParserActionType.Shift;
-        ParserActionType result = prevOpSymb.Precedence > opSymb.Precedence ? ParserActionType.Reduce : ParserActionType.Shift;
+        if (prevTerm.Precedence == thisTerm.Precedence) 
+          return thisTerm.Associativity == Associativity.Left ? ParserActionType.Reduce : ParserActionType.Shift;
+        ParserActionType result = prevTerm.Precedence > thisTerm.Precedence ? ParserActionType.Reduce : ParserActionType.Shift;
         return result;
       }
       //If no operators found on the stack, do simple shift
       return ParserActionType.Shift;
     }
     private void ExecuteShiftAction(ActionRecord action) {
-      Stack.Push(_currentToken, _currentToken.Location, _currentState);
+      Stack.Push(_currentToken, _currentState);
       _currentState = action.NewState;
-      ReadToken();
+      NextToken();
     }
     private void ExecuteReduceAction(ActionRecord action) {
       ParserState oldState = _currentState;
@@ -323,41 +336,38 @@ namespace Irony.Compiler {
         childNodes.Add(child);
       }
       //recover state, location and pop the stack
-      SourceLocation location = _currentToken.Location;
-      if (popCnt > 0) {
-        location = Stack[Stack.Count - popCnt].Location;
+      SourceSpan newNodeSpan;
+      if (popCnt == 0) {
+        newNodeSpan = new SourceSpan(_currentToken.Location, 0);
+      } else {
+        SourceLocation firstPopLoc = Stack[Stack.Count - popCnt].Node.Location;
+        int lastPopEndPos = Stack[Stack.Count - 1].Node.Span.EndPos;
+        newNodeSpan = new SourceSpan(firstPopLoc, lastPopEndPos - firstPopLoc.Position);
         _currentState = Stack[Stack.Count - popCnt].State;
         Stack.Pop(popCnt);
       }
       //Create new node
-      AstNode node = CreateNode(action, location, childNodes);
+      AstNode node = CreateNode(action, newNodeSpan, childNodes);
       // Push node/current state into the stack 
-      Stack.Push(node, location, _currentState);
+      Stack.Push(node, _currentState);
       //switch to new state
       ActionRecord gotoAction;
       if (_currentState.Actions.TryGetValue(action.NonTerminal.Key, out gotoAction)) {
         _currentState = gotoAction.NewState;
       } else 
         //should never happen
-        throw new ApplicationException( string.Format("Cannot find transition for input {0}; state: {1}, popped state: {2}", 
+        throw new IronyException( string.Format("Cannot find transition for input {0}; state: {1}, popped state: {2}", 
               action.NonTerminal, oldState, _currentState));
     }//method
 
-    private AstNode CreateNode(ActionRecord reduceAction, SourceLocation location, AstNodeList childNodes) {
+    private AstNode CreateNode(ActionRecord reduceAction, SourceSpan sourceSpan, AstNodeList childNodes) {
       NonTerminal nt = reduceAction.NonTerminal;
-      AstNode result = nt.OnNodeCreating(_context, _currentState, reduceAction, location, childNodes);
+      AstNode result = nt.OnNodeCreating(_context, _currentState, reduceAction, sourceSpan, childNodes);
       if (result != null) 
         return result;
 
       Type defaultNodeType = _context.Compiler.Grammar.DefaultNodeType;
       Type ntNodeType = nt.NodeType ?? defaultNodeType ?? typeof(AstNode);
-
-      // Check for NULL node; when node is created from 0 child nodes (and it is not a list), it means that it is a node for 
-      // "optional" element in the rule, and it is represented by null value.
-      // This behavior may be overriden by custom node creator). 
-      //TODO: give it a second thought
-      if (childNodes.Count == 0 && !nt.IsSet(TermOptions.IsList))
-        return null; // 
 
       // Check if NonTerminal is a list
       // List nodes are produced by .Plus() or .Star() methods of BnfElement
@@ -369,7 +379,9 @@ namespace Irony.Compiler {
       // we simply add it to child list of the result ntList node. Optional "delim" node is simply thrown away.
       if (nt.IsSet(TermOptions.IsList) && childNodes.Count > 1 && childNodes[0].Term == nt) {
         result = childNodes[0];
-        result.ChildNodes.Add(childNodes[childNodes.Count - 1]);
+        AstNode newChild = childNodes[childNodes.Count - 1];
+        newChild.Parent = result; 
+        result.ChildNodes.Add(newChild);
         return result;
       }
       // Check for "node-bubbling" case. For identity productions like 
@@ -383,14 +395,15 @@ namespace Irony.Compiler {
           return childNodes[0];
       }
       // Try using Grammar's CreateNode method
-      result = Data.Grammar.CreateNode(_context, reduceAction, location, childNodes);
+      result = Data.Grammar.CreateNode(_context, reduceAction, sourceSpan, childNodes);
       if (result == null) {
         //Finally create node directly. For perf reasons we try using "new" for AstNode type (faster), and
         // activator for all custom types (slower)
+        AstNodeArgs args = new AstNodeArgs(nt, _context, sourceSpan, childNodes);
         if (ntNodeType == typeof(AstNode))
-          result = new AstNode(_context, nt, location, childNodes);
+          result = new AstNode(args);
         else
-          result = (AstNode)Activator.CreateInstance(ntNodeType, _context, nt, location, childNodes);
+          result = (AstNode)Activator.CreateInstance(ntNodeType, args);
       }
       if (result != null)
         nt.OnNodeCreated(result);

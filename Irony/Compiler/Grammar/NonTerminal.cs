@@ -65,9 +65,9 @@ namespace Irony.Compiler {
     public event EventHandler<NodeCreatedEventArgs> NodeCreated;
 
     protected internal AstNode OnNodeCreating(CompilerContext context, ParserState state, ActionRecord action,
-                                      SourceLocation location, AstNodeList childNodes  ) {
+                                      SourceSpan span, AstNodeList childNodes  ) {
       if (NodeCreating == null) return null;
-      NodeCreatingEventArgs args = new NodeCreatingEventArgs(context, state, location, action, childNodes);
+      NodeCreatingEventArgs args = new NodeCreatingEventArgs(context, state, span, action, childNodes);
       NodeCreating(this, args);
       return args.NewNode;
     }
@@ -80,10 +80,10 @@ namespace Irony.Compiler {
 
     #region overrids: ToString
     public override string ToString() {
+      string result = Name;
       if (string.IsNullOrEmpty(Name))
-        return "(unnamed)";
-      else 
-        return Name;
+        result = "(unnamed)";
+      return result; 
     }
     #endregion
 

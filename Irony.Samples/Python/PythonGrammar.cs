@@ -314,11 +314,11 @@ namespace Irony.Samples.Python {
       comp_op.Rule = Symbol("<")|">"|"=="|">="|"<="|"<>"|"!="|"in"|
                            Symbol("not") + "in"|"is"|Symbol("is") + "not";
       // expr: xor_expr ('|' xor_expr)*
-      expr.Rule = xor_expr.Plus("|");
+      expr.Rule = xor_expr.Plus(Symbol("|"));
       // xor_expr: and_expr ('^' and_expr)*
-      xor_expr.Rule = and_expr.Plus("^");
+      xor_expr.Rule = and_expr.Plus(Symbol("^"));
       // and_expr: shift_expr ('&' shift_expr)*
-      and_expr.Rule = shift_expr.Plus("&");
+      and_expr.Rule = shift_expr.Plus(Symbol("&"));
       // shift_expr: arith_expr (('<<'|'>>') arith_expr)*
       shift_expr.Rule = arith_expr.Plus(shift_op); // 
       shift_op.Rule = Symbol("<<")|">>";

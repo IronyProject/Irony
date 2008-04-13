@@ -64,7 +64,7 @@ namespace Irony.Samples.ScriptNET
 
       #region 2.2 QualifiedName
       //Expression List:  expr1, expr2, expr3, ..
-      NonTerminal ExprList = new NonTerminal("ExprList");
+      NonTerminal ExprList = Expr.Plus("ExprList", comma);
 
       //A name in form: a.b.c().d[1,2].e ....
       NonTerminal NewStmt = new NonTerminal("NewStmt");
@@ -79,7 +79,7 @@ namespace Irony.Samples.ScriptNET
       NonTerminal Condition = new NonTerminal("Condition");
 
       NonTerminal Statement = new NonTerminal("Statement");
-      NonTerminal Statements = new NonTerminal("Statements");
+      NonTerminal Statements = Statement.Star("Statements");
 
       //Block
       NonTerminal CompoundStatement = new NonTerminal("CompoundStatement");
@@ -90,7 +90,7 @@ namespace Irony.Samples.ScriptNET
       NonTerminal Element = new NonTerminal("Element");
       NonTerminal FuncDef = new NonTerminal("FuncDef");
       NonTerminal FuncContract = new NonTerminal("FuncContract");
-      NonTerminal ParameterList = new NonTerminal("ParamaterList");
+      NonTerminal ParameterList = v.Plus("ParamaterList", comma);
       NonTerminal SwitchStatements = new NonTerminal("SwitchStatements");
       #endregion
 
@@ -146,7 +146,7 @@ namespace Irony.Samples.ScriptNET
 
       GenericsPostfix.Rule = less + QualifiedName + greater;
 
-      ExprList.Rule = Expr.Plus(comma);
+      //ExprList.Rule = Expr.Plus(comma);
       #endregion
 
       #region 3.3 Statement
@@ -165,7 +165,6 @@ namespace Irony.Samples.ScriptNET
                       | "continue" + semicolon
                       | "return" + Expr + semicolon;
 
-      Statements.Rule = Statement.Star();
       CompoundStatement.Rule = LFb + Statements + RFb;
 
 
@@ -175,8 +174,6 @@ namespace Irony.Samples.ScriptNET
       #endregion
 
       #region 3.4 Prog
-      ParameterList.Rule = v.Plus(comma);
-
       Prog.Rule = Element.Star() + Eof;
       FuncContract.Rule = LSb +
                         "pre" + LCb + ExprList.Q() + RCb + semicolon +

@@ -14,7 +14,7 @@ namespace Irony.Tests {
     [Test]
     public void TestCSharpIdentifier() {
       _terminal = TerminalFactory.CreateCSharpIdentifier("Identifier");
-      _terminal.Init(_grammar);
+      InitTerminal();
       TryMatch("x ");
       Assert.That(_token.Term.Name == "Identifier", "Failed to parse identifier");
       Assert.That((string)_token.Value == "x", "Failed to parse identifier");

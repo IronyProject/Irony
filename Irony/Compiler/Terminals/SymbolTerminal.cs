@@ -24,7 +24,12 @@ namespace Irony.Compiler {
   public class SymbolTerminal : Terminal {
     private SymbolTerminal(string symbol, string name)  : base(name) {
       _symbol = symbol;
-      Key = symbol.Trim();  //Symbols are matched by value, not by element name
+      Key = symbol.Trim();  //Overwrite base class assignment: symbols are matched by value (symbol itself), not by element name
+      //Symbols found in grammar by default have lowest priority to allow other terminals (like identifiers)
+      // to check input first.
+      // Additionally, longer symbols have higher priority, so symbols like "+=" has higher priority than "+" symbol. 
+      // As a result, Scanner would first try to match "+=", longer symbol, and if it fails, it will try "+". 
+      base.Priority = -1000 + symbol.Length;
     }
 
     public string Symbol {
@@ -37,7 +42,7 @@ namespace Irony.Compiler {
       if (!source.MatchSymbol(_symbol, !Grammar.CaseSensitive))
         return null;
       source.Position += _symbol.Length;
-      Token tkn = new Token(this, source.TokenStart, Symbol);
+      Token tkn = Token.Create(this, context, source.TokenStart, Symbol);
       return tkn;
     }
     public override IList<string> GetFirsts() {
@@ -46,27 +51,6 @@ namespace Irony.Compiler {
     public override string ToString() {
       return _symbol;
     }
-    #endregion
-
-    #region Operators and Brace-pair information: Precedence, Associativity, IsPairFor
-    public int Precedence   {
-      [System.Diagnostics.DebuggerStepThrough]
-      get { return _precedence; }
-      set {_precedence = value;}
-    } int  _precedence;
-
-    public Associativity Associativity  {
-      [System.Diagnostics.DebuggerStepThrough]
-      get { return _associativity; }
-      set {_associativity = value;}
-    } Associativity  _associativity;
-
-    public SymbolTerminal IsPairFor  {
-      [System.Diagnostics.DebuggerStepThrough]
-      get { return _isPairFor; }
-      set {_isPairFor = value;}
-    } SymbolTerminal  _isPairFor;
-
     #endregion
 
 

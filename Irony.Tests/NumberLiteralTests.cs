@@ -1,3 +1,15 @@
+#region License
+/* **********************************************************************************
+ * This source code is subject to terms and conditions of the MIT License
+ * for Irony. A copy of the license can be found in the License.txt file
+ * at the root of this distribution. 
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * MIT License.
+ * You must not remove this notice from this software.
+ * **********************************************************************************/
+#endregion
+//Authors: Roman Ivantsov, Philipp Serr
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,12 +25,15 @@ namespace Irony.Tests {
 
     [Test]
     public void GeneralTest() {
-      _terminal = new NumberLiteral("Number", TermOptions.NumberAllowBigInts);
-      _terminal.Init(_grammar);
+      NumberLiteral number = new NumberLiteral("Number");
+      number.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.Int64, NumberLiteral.TypeCodeBigInt };
+      _terminal = number;
+      InitTerminal();
       TryMatch("123");
+      CheckType(typeof(int));
       Assert.That((int)_token.Value == 123, "Failed to read int value");
       TryMatch("123.4");
-      Assert.That(Math.Abs((double)_token.Value - 123.4) < 0.000001, "Failed to read float value");
+      Assert.That(Math.Abs(Convert.ToDouble(_token.Value) - 123.4) < 0.000001, "Failed to read float value");
       //100 digits
       string sbig = "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
       TryMatch(sbig);
@@ -29,7 +44,7 @@ namespace Irony.Tests {
     public void TestCSharpNumber() {
       double eps = 0.0001;
       _terminal = TerminalFactory.CreateCSharpNumber("Number");
-      _terminal.Init(_grammar);
+      InitTerminal();
 
       //Simple integers and suffixes
       TryMatch("123 ");
@@ -38,10 +53,18 @@ namespace Irony.Tests {
       // uses a quick parse method
       Assert.That(_token.Details != null, "ScanDetails object not found in token.");
       Assert.That((int)_token.Value == 123, "Failed to read int value");
-      
+
+      TryMatch(Int32.MaxValue.ToString());
+      CheckType(typeof(int));
+      Assert.That((int)_token.Value == Int32.MaxValue, "Failed to read Int32.MaxValue.");
+
+      TryMatch(UInt64.MaxValue.ToString());
+      CheckType(typeof(ulong));
+      Assert.That((ulong)_token.Value == UInt64.MaxValue, "Failed to read int value");
+
       TryMatch("123U ");
-      CheckType(typeof(uint));
-      Assert.That((uint)_token.Value == 123, "Failed to read uint value");
+      CheckType(typeof(UInt32));
+      Assert.That((UInt32)_token.Value == 123, "Failed to read uint value");
 
       TryMatch("123L ");
       CheckType(typeof(long));
@@ -53,12 +76,12 @@ namespace Irony.Tests {
 
       //Hex representation
       TryMatch("0x012 ");
-      CheckType(typeof(int));
-      Assert.That((int)_token.Value == 0x012, "Failed to read hex int value");
+      CheckType(typeof(Int32));
+      Assert.That((Int32)_token.Value == 0x012, "Failed to read hex int value");
 
       TryMatch("0x12U ");
-      CheckType(typeof(uint));
-      Assert.That((uint)_token.Value == 0x012, "Failed to read hex uint value");
+      CheckType(typeof(UInt32));
+      Assert.That((UInt32)_token.Value == 0x012, "Failed to read hex uint value");
 
       TryMatch("0x012L ");
       CheckType(typeof(long));
@@ -93,6 +116,10 @@ namespace Irony.Tests {
       CheckType(typeof(decimal));
       Assert.That(Math.Abs((decimal)_token.Value - 123.4m) < Convert.ToDecimal(eps), "Failed to read decimal value");
 
+      TryMatch("123. "); //should ignore dot and read number as int. compare it to python numbers - see below
+      CheckType(typeof(int));
+      Assert.That((int)_token.Value == 123, "Failed to read int value with trailing dot");
+
       //Quick parse
       TryMatch("1 ");
       CheckType(typeof(int));
@@ -105,7 +132,7 @@ namespace Irony.Tests {
     public void TestVBNumber() {
       double eps = 0.0001;
       _terminal = TerminalFactory.CreateVbNumber("Number");
-      _terminal.Init(_grammar);
+      InitTerminal();
 
       //Simple integer
       TryMatch("123 ");
@@ -115,32 +142,32 @@ namespace Irony.Tests {
 
       //Test all suffixes
       TryMatch("123S ");
-      CheckType(typeof(short));
-      Assert.That((short)_token.Value == 123, "Failed to read short value");
+      CheckType(typeof(Int16));
+      Assert.That((Int16)_token.Value == 123, "Failed to read short value");
 
       TryMatch("123I ");
-      CheckType(typeof(int));
-      Assert.That((int)_token.Value == 123, "Failed to read int value");
+      CheckType(typeof(Int32));
+      Assert.That((Int32)_token.Value == 123, "Failed to read int value");
 
       TryMatch("123% ");
-      CheckType(typeof(int));
-      Assert.That((int)_token.Value == 123, "Failed to read int value");
+      CheckType(typeof(Int32));
+      Assert.That((Int32)_token.Value == 123, "Failed to read int value");
 
       TryMatch("123L ");
       CheckType(typeof(long));
       Assert.That((long)_token.Value == 123, "Failed to read long value");
 
       TryMatch("123& ");
-      CheckType(typeof(long));
-      Assert.That((long)_token.Value == 123, "Failed to read long value");
+      CheckType(typeof(Int64));
+      Assert.That((Int64)_token.Value == 123, "Failed to read long value");
 
       TryMatch("123us ");
-      CheckType(typeof(ushort));
-      Assert.That((ushort)_token.Value == 123, "Failed to read ushort value");
+      CheckType(typeof(UInt16));
+      Assert.That((UInt16)_token.Value == 123, "Failed to read ushort value");
 
       TryMatch("123ui ");
-      CheckType(typeof(uint));
-      Assert.That((uint)_token.Value == 123, "Failed to read uint value");
+      CheckType(typeof(UInt32));
+      Assert.That((UInt32)_token.Value == 123, "Failed to read uint value");
 
       TryMatch("123ul ");
       CheckType(typeof(ulong));
@@ -157,11 +184,11 @@ namespace Irony.Tests {
 
       TryMatch("&O012 ");
       CheckType(typeof(int));
-      Assert.That((int)_token.Value == 10, "Failed to read hex int value"); //12(oct) = 10(dec)
+      Assert.That((int)_token.Value == 10, "Failed to read octal int value"); //12(oct) = 10(dec)
 
       TryMatch("&o012L ");
       CheckType(typeof(long));
-      Assert.That((long)_token.Value == 10, "Failed to read hex long value");
+      Assert.That((long)_token.Value == 10, "Failed to read octal long value");
 
       //Floating point types
       TryMatch("123.4 ");
@@ -217,7 +244,7 @@ namespace Irony.Tests {
     public void TestPythonNumber() {
       double eps = 0.0001;
       _terminal = TerminalFactory.CreatePythonNumber("Number");
-      _terminal.Init(_grammar);
+      InitTerminal();
 
       //Simple integers and suffixes
       TryMatch("123 ");
@@ -254,6 +281,14 @@ namespace Irony.Tests {
       TryMatch("0.1234E3 ");
       CheckType(typeof(double));
       Assert.That(Math.Abs((double)_token.Value - 123.4) < eps, "Failed to read double value  #4");
+
+      TryMatch(".1234 ");
+      CheckType(typeof(double));
+      Assert.That(Math.Abs((double)_token.Value - 0.1234) < eps, "Failed to read double value with leading dot");
+
+      TryMatch("123. ");
+      CheckType(typeof(double));
+      Assert.That(Math.Abs((double)_token.Value - 123.0) < eps, "Failed to read double value with trailing dot");
 
       //Big integer
       string sbig = "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"; //100 digits

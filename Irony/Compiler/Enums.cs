@@ -53,21 +53,26 @@ namespace Irony.Compiler {
     IsPunctuation = 0x20,
     IsDelimiter   = 0x40, 
     IsList        = 0x80,
+    IsTransient   = 0x0100,
     
     //Number flags 
-    NumberAllowBigInts = 0x0100,          // python
-    NumberUseFloatOnIntOverflow = 0x0200, // javascript
-    SpecialIgnoreCase = 0x0400,           //Ignore case in suffixes and prefixes
+    SpecialIgnoreCase = 0x010000,         //Ignore case in suffixes and prefixes
+		NumberAllowStartEndDot = 0x020000,     //python : http://docs.python.org/ref/floating.html
+    EnableQuickParse = 0x040000,
+    CanStartWithEscape = 0x080000,
   }
 
   public enum ScanFlags {
     None = 0,
 
     //Number flags
-    Octal = Bit0,
-    Hex = Bit1,
-    HasDot = Bit2,
-    HasExp = Bit3,
+		Binary = Bit0, //e.g. GNU GCC C Extension supports binary number literals
+    Octal = Bit1,
+		//Decimal = Bit2,
+    Hex = Bit3,
+    NonDecimal = Bit0 | Bit1 | Bit3, 
+    HasDot = Bit4,
+    HasExp = Bit5,
     HasDotOrExp = HasDot | HasExp,
 
     //String flags

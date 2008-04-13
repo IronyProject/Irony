@@ -42,11 +42,11 @@ namespace Irony.Compiler {
       _indents.Clear();
       foreach (Token token in tokens) {
         if (token.Terminal == Grammar.Eof) {
-          yield return CreateNewLine(token.Location); //this is necessary, because grammar rules reference newLine terminator
+          yield return CreateSpecialToken(Grammar.NewLine, context, token.Location); //this is necessary, because grammar rules reference newLine terminator
           //unindent all buffered indents
           if (_trackIndents)
             foreach (int i in _indents)
-              yield return CreateDedent(token.Location);
+              yield return CreateSpecialToken(Grammar.Dedent, context, token.Location); 
           _indents.Clear();
           yield return token;
           yield break;
@@ -59,7 +59,7 @@ namespace Irony.Compiler {
           continue;
         }
         //if we are here, we have content token on new line; produce newLine token and possibly indents 
-        yield return CreateNewLine(token.Location);
+        yield return CreateSpecialToken(Grammar.NewLine, context, token.Location);
         _prevLine = token.Location.Line;
         if (!_trackIndents) {
           yield return token;
@@ -70,15 +70,16 @@ namespace Irony.Compiler {
         int prevIndent = _indents.Count == 0 ? 0 : _indents.Peek();
         if (currIndent > prevIndent) {
           _indents.Push(currIndent);
-          yield return CreateIndent(token.Location);
+          yield return CreateSpecialToken(Grammar.Indent, context, token.Location);
         } else if (currIndent < prevIndent) {
           //produce one or more dedent tokens while popping indents from stack
           while (_indents.Peek() > currIndent) {
             _indents.Pop();
-            yield return CreateDedent(token.Location);
+            yield return CreateSpecialToken(Grammar.Dedent, context, token.Location);
           }
           if (_indents.Peek() != currIndent) {
-            yield return Grammar.CreateSyntaxErrorToken (token.Location, "Invalid dedent level, no previous matching indent found.");
+            yield return Grammar.CreateSyntaxErrorToken (context, token.Location, 
+                        "Invalid dedent level, no previous matching indent found.");
             //TODO: add error recovery here
           }
         }//else if currIndent < prevIndent
@@ -86,19 +87,9 @@ namespace Irony.Compiler {
       } //foreach token
     }//method
 
-    [System.Diagnostics.DebuggerStepThrough]
-    private Token CreateNewLine(SourceLocation location) {
-      return new Token(Grammar.NewLine, location, "<LF>");
+    private Token CreateSpecialToken(Terminal term, CompilerContext context, SourceLocation location) {
+      return Token.Create(term, context, location, string.Empty);
     }
-    [System.Diagnostics.DebuggerStepThrough]
-    private Token CreateIndent(SourceLocation location) {
-      return new Token(Grammar.Indent, location, "<Indent>");
-    }
-    [System.Diagnostics.DebuggerStepThrough]
-    private Token CreateDedent(SourceLocation location) {
-      return new Token(Grammar.Dedent, location, "<Dedent>");
-    }
-
 
   }//class
 }

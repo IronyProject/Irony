@@ -80,8 +80,8 @@ namespace Irony.Compiler {
             _braces.Pop();
             yield return token; //return this token
           } else {
-            yield return Grammar.CreateSyntaxErrorToken(token.Location, 
-                "Unmatched closing brace '{0}' - expected '{1}'", token.Text, lastOpen.Symbol.IsPairFor.Symbol);
+            yield return Grammar.CreateSyntaxErrorToken(context, token.Span.Start, 
+                "Unmatched closing brace '{0}' - expected '{1}'", token.Text, lastOpen.Symbol.IsPairFor.Name);
             //TODO: add some error recovery here
           }//else
         }//if token IsCloseBrace

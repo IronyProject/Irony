@@ -22,48 +22,27 @@ namespace Irony.Compiler {
   public class Terminal : BnfTerm {
 
     public Terminal(string name)  : base(name) {
+      Nullable = false; 
+      this.NodeType = typeof(Token);
     }
     public Terminal(string name, TokenCategory category)  : this(name) {
-      _category = category;
+      Category = category;
     }
     public Terminal(string name, TokenMatchMode matchMode) : this(name) {
       this.MatchMode = matchMode;
     }
 
-
-
-    public TokenMatchMode MatchMode {
-      [System.Diagnostics.DebuggerStepThrough]
-      get { return _matchMode; }
-      set { _matchMode = value; }
-    } TokenMatchMode _matchMode = TokenMatchMode.ByValueThenByType;
-
-    //Terminals are not nullable
-    public override bool Nullable {
-      [System.Diagnostics.DebuggerStepThrough]
-      get { return false; }
-      set { }
-    }
-    //Node type for Terminals is Token
-    public override Type NodeType {
-      [System.Diagnostics.DebuggerStepThrough]
-      get { return typeof(Token); }
-      set {  }
-    }
-    public TokenCategory Category {
-      [System.Diagnostics.DebuggerStepThrough]
-      get { return _category; }
-      protected set { _category = value; }
-    } TokenCategory _category = TokenCategory.Content;
-
-
+    #region fields and properties
+    public TokenMatchMode MatchMode = TokenMatchMode.ByValueThenByType;
+    public TokenCategory Category = TokenCategory.Content;
+    public int Precedence = int.MaxValue;
+    public Associativity Associativity = Associativity.Neutral;
+    public Terminal IsPairFor;
     //Priority is used when more than one terminal matches the input. 
     // When choosing the token, scanner would check priority, then token length. 
-    public int Priority  {
-      [System.Diagnostics.DebuggerStepThrough]
-      get { return _priority; }
-      set {_priority = value;}
-    } int  _priority; //default is 0
+    public int Priority; //default is 0
+
+    #endregion
 
     #region virtuals
     public virtual Token TryMatch(CompilerContext context, ISourceStream source) {

@@ -49,19 +49,20 @@ namespace Irony.Compiler {
     }
     public readonly ScanDetails Details;
     public object Value;
+    public bool Converted;
   }//class
 
   public class NodeCreatingEventArgs : EventArgs {
-    public NodeCreatingEventArgs(CompilerContext context, ParserState state, SourceLocation location, ActionRecord action, AstNodeList childNodes) {
+    public NodeCreatingEventArgs(CompilerContext context, ParserState state, SourceSpan span, ActionRecord action, AstNodeList childNodes) {
       Context = context;
       State = state;
-      Location = location;
+      Span = span;
       Action = action;
       ChildNodes = childNodes;
     }
     public readonly CompilerContext Context;
     public readonly ParserState State;
-    public readonly SourceLocation Location;
+    public readonly SourceSpan Span;
     public readonly ActionRecord Action;
     public readonly AstNodeList ChildNodes;
     public AstNode NewNode; 

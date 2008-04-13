@@ -23,15 +23,30 @@ namespace Irony {
 
   //string list with no duplicates
   public class KeyList : List<string> {
+    Dictionary<string, byte> _hash = new Dictionary<string, byte>();
+
+    public KeyList() { }
+    public KeyList(params string[] keys) {
+      this.AddRange(keys);
+    }
     //overwrite Add and AddRange to disallow repetitions
     public new void Add(string key) {
-      if (!Contains(key))
+      if (!Contains(key)) {
         base.Add(key);
+        _hash.Add(key, 1);
+      }
     }
 
     public new void AddRange(IEnumerable<string> keys) {
       foreach (string key in keys)
         this.Add(key);
+    }
+    public new void Remove(string key) {
+      base.Remove(key);
+      _hash.Remove(key);
+    }
+    public new bool Contains(string key) {
+      return _hash.ContainsKey(key);
     }
     public override string ToString() {
       return ToString(" ");
@@ -45,8 +60,11 @@ namespace Irony {
         if(key.EndsWith("\b"))
           arr[i] = key.Substring(0, key.Length - 1);
       }
-
       return string.Join(separator, arr);
+    }
+    public new void Clear() {
+      base.Clear();
+      _hash.Clear();
     }
 
     //Used in sorting suffixes and prefixes; longer strings must come first in sort order

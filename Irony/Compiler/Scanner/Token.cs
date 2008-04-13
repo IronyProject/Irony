@@ -21,16 +21,7 @@ namespace Irony.Compiler {
   // Token is derived from AstNode because tokens are pushed into Parser stack (like non-terminal nodes),
   // and they can be included as nodes into AST tree. So Token is a primitive AstNode. 
   public class Token : AstNode  {
-    public Token(Terminal terminal, SourceLocation location, string text, object value)
-      : this(terminal, location, text){
-      _value = value;
-    }
-    public Token(Terminal terminal, SourceLocation location, string text)   : base (null, terminal, location, null){
-      _text = text;
-      _value = text;
-      if (text != null)
-        _length = text.Length;
-    }
+    protected Token(AstNodeArgs args)  : base(args){   }
     
     public Terminal Terminal   {
       [System.Diagnostics.DebuggerStepThrough]
@@ -44,16 +35,6 @@ namespace Irony.Compiler {
       [System.Diagnostics.DebuggerStepThrough]
       get { return Terminal.Category; }
     }
-    [System.Diagnostics.DebuggerStepThrough]
-    public bool IsError() {
-      return Category == TokenCategory.Error;
-    }
-
-    public int Length  {
-      [System.Diagnostics.DebuggerStepThrough]
-      get { return _length; }
-    } int  _length;
-
     public string Text  {
       [System.Diagnostics.DebuggerStepThrough]
       get { return _text; }
@@ -63,19 +44,83 @@ namespace Irony.Compiler {
     public object Value {
       [System.Diagnostics.DebuggerStepThrough]
       get { return _value; }
-      set { _value = value; }
+      set { 
+        _value = value;
+        _valueString = (_value == null ? string.Empty : _value.ToString());
+      }
     } object _value;
 
+    public string ValueString {
+      get { return _valueString;}
+    } string _valueString;
+ 
     //Details of scanning; optional
     public ScanDetails Details;
+
+    [System.Diagnostics.DebuggerStepThrough]
+    public bool IsError() {
+      return Category == TokenCategory.Error;
+    }
+    [System.Diagnostics.DebuggerStepThrough]
+    public bool IsMultiToken() {
+      return ChildNodes.Count > 0;
+    }
+
+    public int Length {
+      [System.Diagnostics.DebuggerStepThrough]
+      get { return _text == null ? 0 : _text.Length; }
+    }
+
+    public bool IsKeyword;
+
+    public bool MatchByValue {
+      get {
+        if (IsKeyword) return true;
+        if (Text == null) return false;
+        return (Terminal.MatchMode & TokenMatchMode.ByValue) != 0;
+      }
+    }
+    public bool MatchByType {
+      get {
+        if (IsKeyword) return false;
+        return (Terminal.MatchMode & TokenMatchMode.ByType) != 0;
+      }
+    }
+
+    public override object Evaluate(Irony.Runtime.EvaluationContext context) {
+      return this.Value;
+    }
 
     [System.Diagnostics.DebuggerStepThrough]
     public override string ToString() {
       if (Terminal is SymbolTerminal)
         return _text + " [Symbol]";
-      else 
-        return (_text==null? string.Empty : _text + " ") + Terminal.ToString();
+      if (IsKeyword)
+        return _text + " " + "[Keyword]";
+      return ValueString + " " + Terminal.ToString();
     }
+
+    public static Token Create(Terminal term, CompilerContext context, SourceLocation location, string text) {
+      return Create(term, context, location, text, text);
+    }
+    public static Token Create(Terminal term, CompilerContext context, SourceLocation location, string text, object value) {
+      int textLen = text == null ? 0 : text.Length;
+      SourceSpan span = new SourceSpan(location, textLen);
+      AstNodeArgs args = new AstNodeArgs(term, context, span, null);
+      Token token = new Token(args);
+      token.Text = text;
+      token.Value = value;
+      return token;
+    }
+
+    public static Token CreateMultiToken(Terminal term, CompilerContext context, TokenList tokens) {
+      SourceSpan span = new SourceSpan();
+      AstNodeArgs args = new AstNodeArgs(term, context, span, null);
+      Token token = new Token(args);
+      token.ChildNodes.AddRange(tokens.ToArray());
+      return token; 
+    }
+
 
   }//class
 

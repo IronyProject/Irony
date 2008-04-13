@@ -105,13 +105,8 @@ namespace Irony.Compiler {
       NonTerminal nt = element as NonTerminal;
       if (nt == null || Data.NonTerminals.Contains(nt))
         return;
-
-      if (nt.Name == null) {
-        if (nt.Rule != null && !string.IsNullOrEmpty(nt.Rule.Name))
-          nt.Name = nt.Rule.Name;
-        else 
-          nt.Name = "NT" + (_unnamedCount++);
-      }
+      if (nt.Name == null)
+        nt.Name = "NT" + (_unnamedCount++);
       Data.NonTerminals.Add(nt);
       if (nt.Rule == null) {
         AddError("Non-terminal {0} has uninitialized Rule property.", nt.Name);
@@ -145,13 +140,12 @@ namespace Irony.Compiler {
 
     private void BuildTerminalsLookupTable() {
       Data.TerminalsLookup.Clear();
-      Data.FallbackTerminals.AddRange(Data.Grammar.FallbackTerminals);
+      Data.TerminalsWithoutPrefixes.Clear();
       foreach (Terminal term in Data.Terminals) {
         IList<string> prefixes = term.GetFirsts();
         if (prefixes == null || prefixes.Count == 0) {
-          if (!Data.FallbackTerminals.Contains(term))
-            Data.FallbackTerminals.Add(term);
-          continue; //foreach term
+          Data.TerminalsWithoutPrefixes.Add(term);
+          continue;
         }
         //Go through prefixes one-by-one
         foreach (string prefix in prefixes) {
@@ -170,6 +164,10 @@ namespace Irony.Compiler {
           currentList.Add(term);
         }
       }//foreach term
+      //Now add _noPrefixTerminals to every list in table
+      if (Data.TerminalsWithoutPrefixes.Count > 0)
+        foreach (TerminalList list in Data.TerminalsLookup.Values)
+          list.AddRange(Data.TerminalsWithoutPrefixes);
       //Sort all terminal lists by reverse priority, so that terminal with higher priority comes first in the list
       foreach (TerminalList list in Data.TerminalsLookup.Values)
         if (list.Count > 1)
@@ -412,7 +410,7 @@ namespace Irony.Compiler {
           LR0Item core = prod.LR0Items[0]; //item at zero index is the one that starts with dot
           LRItem newItem = TryFindItem(state, core);
           if (newItem == null) {
-            newItem = new LRItem(state, core);
+            newItem = new LRItem(core);
             state.Items.Add(newItem);
             result = true;
           }
@@ -485,9 +483,9 @@ namespace Irony.Compiler {
         LRItemList newList = new LRItemList();
         foreach (LRItem item in currentList) {
           if (item.NewLookaheads.Count == 0) continue;
-          int oldCount = item.Lookaheads.Count;
-          item.Lookaheads.AddRange(item.NewLookaheads);
-          if (item.Lookaheads.Count != oldCount) {
+          int oldCount = item.Lookaheads_.Count;
+          item.Lookaheads_.AddRange(item.NewLookaheads);
+          if (item.Lookaheads_.Count != oldCount) {
             foreach (LRItem targetItem in item.PropagateTargets) {
               targetItem.NewLookaheads.AddRange(item.NewLookaheads);
               newList.Add(targetItem);
@@ -506,7 +504,7 @@ namespace Irony.Compiler {
         foreach (LRItem item in state.Items) {
           //we are interested only in "dot  at the end" items
           if (item.Core.NextElement != null)   continue;
-          foreach (string lookahead in item.Lookaheads) {
+          foreach (string lookahead in item.Lookaheads_) {
             ActionRecord action;
             if (state.Actions.TryGetValue(lookahead, out action)) 
               action.ReduceProductions.Add(item.Core.Production);

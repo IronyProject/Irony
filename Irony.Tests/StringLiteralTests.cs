@@ -20,7 +20,7 @@ namespace Irony.Tests {
     [Test]
     public void TestPythonString() {
       _terminal = TerminalFactory.CreatePythonString("String");
-      _terminal.Init(_grammar);
+      InitTerminal();
       //1. Single quotes
       TryMatch(@"'00\a\b\t\n\v\f\r\'\\00'  ");
       Assert.That((string)_token.Value == "00\a\b\t\n\v\f\r\'\\00", "Failed to process escaped characters.");
@@ -49,7 +49,7 @@ namespace Irony.Tests {
     [Test]
     public void TestCSharpString() {
       _terminal = TerminalFactory.CreateCSharpString("String");
-      _terminal.Init(_grammar);
+      InitTerminal();
       //with Escapes
       TryMatchDoubles(@"'00\a\b\t\n\v\f\r\'\\00'  ");
       Assert.That((string)_token.Value == "00\a\b\t\n\v\f\r\"\\00", "Failed to process escaped characters.");
@@ -85,7 +85,7 @@ namespace Irony.Tests {
     [Test]
     public void TestCSharpChar() {
       _terminal = TerminalFactory.CreateCSharpChar("Char");
-      _terminal.Init(_grammar);
+      InitTerminal();
       TryMatch("'a'  ");
       Assert.That((char)_token.Value == 'a', "Failed to process char.");
       TryMatch(@"'\n'  ");
@@ -100,7 +100,7 @@ namespace Irony.Tests {
     [Test]
     public void TestVbString() {
       _terminal = TerminalFactory.CreateVbString("String");
-      _terminal.Init(_grammar);
+      InitTerminal();
       //VB has no escapes - so make sure term doesn't catch any escapes
       TryMatchDoubles(@"'00\a\b\t\n\v\f\r\\00'  ");
       Assert.That((string)_token.Value == @"00\a\b\t\n\v\f\r\\00", "Failed to process string with \\ characters.");

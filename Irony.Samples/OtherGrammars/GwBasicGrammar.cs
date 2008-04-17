@@ -38,7 +38,6 @@ namespace Irony.Samples
 
 			// Define the non-terminals
       NonTerminal PROGRAM = new NonTerminal("PROGRAM");
-      NonTerminal LINES = new NonTerminal("LINES");
 			NonTerminal LINE = new NonTerminal("LINE");
 			NonTerminal STATEMENT_LIST = new NonTerminal("STATEMENT_LIST");
 			NonTerminal STATEMENT = new NonTerminal("STATEMENT");
@@ -70,17 +69,17 @@ namespace Irony.Samples
       NonTerminal COMMENT_STMT = new NonTerminal("COMMENT_STMT");
       NonTerminal GLOBAL_VAR_EXPR = new NonTerminal("GLOBAL_VAR_EXPR");
 
-			// set the LINES to be the root node of BASIC programs.
-      // A program is a bunch of lines
+			// set the PROGRAM to be the root node of BASIC programs.
       this.Root = PROGRAM;
 
 			#endregion
 
 			#region Grammar declaration
-      PROGRAM.Rule = LINES + Eof;
+      // A program is a bunch of lines
+      PROGRAM.Rule = MakePlusRule(PROGRAM, null, LINE);
 
 			// "Lines" is recursively defined as "Lines" followed by a line, or just a single line.
-			LINES.Rule = MakePlusRule(LINES, null, LINE);
+			//LINES.Rule = MakePlusRule(LINES, null, LINE);
 
 			// A line can be an empty line, or it's a number followed by a statement list ended by a new-line.
 			LINE.Rule = NewLine  | number + NewLine | number + STATEMENT_LIST + NewLine;

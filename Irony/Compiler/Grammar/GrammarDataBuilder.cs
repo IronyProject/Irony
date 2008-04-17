@@ -320,22 +320,34 @@ namespace Irony.Compiler {
     #endregion
 
     #region Creating parser states
-    private void CreateParserStates() {
-      Data.States.Clear();
-      _stateHash = new ParserStateTable();
-      //Create initial state
-      //there is always just one initial production Root' -> Root + LF, and we're interested in LR item at 0 index
+    private void CreateInitialAndFinalStates() {
+      //there is always just one initial production "Root' -> .Root", and we're interested in LR item at 0 index
       LR0ItemList itemList = new LR0ItemList();
       itemList.Add(Data.AugmentedRoot.Productions[0].LR0Items[0]);
       Data.InitialState = FindOrCreateState(itemList); //it is actually create
       Data.InitialState.Items[0].NewLookaheads.Add(Grammar.Eof.Key);
-      //create final state - we need to create it explicitly to assign to _data.FinalState property
-      // final state is based on the same initial production, but different LRItem - the one with dot AFTER the root nonterminal.
-      // it is item at index 1. 
-      itemList = new LR0ItemList();
+      //Create final state - because of the way state building works, it doesn't create the final state automatically. 
+      // We need to create it explicitly and assign it to _data.FinalState property
+      // The final executed reduction is "Root' -> Root.". This jump is executed as follows: 
+      //   1. parser creates Root' node 
+      //   2. Parser pops the state from stack - that would be initial state
+      //   3. Finally, parser tries to find the transition in state.Actions table by the key of [Root'] element. 
+      // We must create the final state, and create the entry in transition table
+      // The final state is based on the same initial production, but different LRItem - the one with dot AFTER the root nonterminal.
+      // it is item at index 1.
+      itemList.Clear();
       itemList.Add(Data.AugmentedRoot.Productions[0].LR0Items[1]);
-      Data.FinalState = FindOrCreateState(itemList);
+      Data.FinalState = FindOrCreateState(itemList); //it is actually create
+      //Create shift transition from initial to final state
+      Data.InitialState.Actions[Data.AugmentedRoot.Key] =
+        new ActionRecord(Data.AugmentedRoot.Key, ParserActionType.Shift, Data.FinalState, null);
+    }
+    private void CreateParserStates() {
+      Data.States.Clear();
+      _stateHash = new ParserStateTable();
+      CreateInitialAndFinalStates();
 
+      string augmRootKey = Data.AugmentedRoot.Key;
       // Iterate through states (while new ones are created) and create shift transitions and new states 
       for (int index = 0; index < Data.States.Count; index++) {
         ParserState state = Data.States[index];
@@ -357,6 +369,7 @@ namespace Irony.Compiler {
           }//foreach coreItem
         }//foreach input
       } //for index
+      Data.FinalState = Data.InitialState.Actions[Data.AugmentedRoot.Key].NewState;
     }//method
 
     private string AdjustCase(string key) {

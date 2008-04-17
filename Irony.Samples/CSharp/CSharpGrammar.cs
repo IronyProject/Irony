@@ -8,20 +8,20 @@ namespace Irony.Samples.CSharp {
   //Full c# 3.0 grammar; all but 2 features are not implemented:
   //  - preprocessor directives (currently treated as comment lines)
   //  - LINQ query expressions.
+
+  #region current conflicts explanations
+  /*  
+      Shift-reduce conflict in state S88, reduce production: using_directives_opt ->  on inputs: extern 
+           - the cause is double-use of "extern" keyword - in "extern alias someName;" and as modifier of class members
+             prefering shift is a default and correct behavior
+      Shift-reduce conflict in state S518, reduce production: else_clause_opt ->  on inputs: else 
+           - "dangling ELSE conflict" well described in textbooks; preferring shift is a correct behavior
+       */
+  #endregion
+
   public class CSharpGrammar : Grammar {
 
     public CSharpGrammar() {
-
-      #region current conflicts
-/*  
-      Shift-reduce conflict in state S3, reduce production: extern_alias_directives_opt -> extern_alias_directive+  on inputs: extern 
-      Shift-reduce conflict in state S83, reduce production: extern_alias_directives_opt ->  on inputs: extern 
-           - the cause is double-use of "extern" keyword - in "extern alias someName;" and as modifier of class members
-             prefering shift is a default and correct behavior
-      Shift-reduce conflict in state S541, reduce production: else_clause_opt ->  on inputs: else 
-           - "dangling ELSE conflict" well described in textbooks; preferring shift is a correct behavior
-*/
-      #endregion
 
       #region Lexical structure
       StringLiteral StringLiteral = TerminalFactory.CreateCSharpString("StringLiteral");
@@ -31,11 +31,11 @@ namespace Irony.Samples.CSharp {
 
       CommentTerminal SingleLineComment = new CommentTerminal("SingleLineComment", "//", "\r", "\n", "\u2085", "\u2028", "\u2029");
       CommentTerminal DelimitedComment = new CommentTerminal("DelimitedComment", "/*", "*/");
-      ExtraTerminals.Add(SingleLineComment);
-      ExtraTerminals.Add(DelimitedComment);
+      NonGrammarTerminals.Add(SingleLineComment);
+      NonGrammarTerminals.Add(DelimitedComment);
       //Temporarily, treat preprocessor instructions like comments
       CommentTerminal ppInstruction = new CommentTerminal("ppInstruction", "#", "\n");
-      ExtraTerminals.Add(ppInstruction);
+      NonGrammarTerminals.Add(ppInstruction);
 
       //Symbols
       SymbolTerminal colon = Symbol(":", "colon");

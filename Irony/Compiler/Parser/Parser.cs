@@ -93,7 +93,7 @@ namespace Irony.Compiler {
         _currentLine = result.Span.Start.Line + 1;
         if (TokenReceived != null)
           OnTokenReceived(result);
-        if (result.Terminal.Category == TokenCategory.Comment)
+        if (result.Terminal.IsSet(TermOptions.IsNonGrammar))
           continue;
         return result;
       }//while
@@ -377,7 +377,8 @@ namespace Irony.Compiler {
       //  if yes, we use this child as a result directly, without creating new list node. 
       //  The other incoming child - the last one - is a new list member; 
       // we simply add it to child list of the result ntList node. Optional "delim" node is simply thrown away.
-      if (nt.IsSet(TermOptions.IsList) && childNodes.Count > 1 && childNodes[0].Term == nt) {
+      bool isList = nt.IsSet(TermOptions.IsList);
+      if (isList && childNodes.Count > 1 && childNodes[0].Term == nt) {
         result = childNodes[0];
         AstNode newChild = childNodes[childNodes.Count - 1];
         newChild.Parent = result; 
@@ -389,7 +390,7 @@ namespace Irony.Compiler {
       // the child node B is usually a subclass of node A, 
       // so child node B can be used directly in place of the A. So we simply return child node as a result. 
       // TODO: probably need a grammar option to enable/disable this behavior explicitly
-      if (childNodes.Count == 1 && childNodes[0] != null) {
+      if (!isList && childNodes.Count == 1 && childNodes[0] != null) {
         Type childNodeType = childNodes[0].Term.NodeType ?? defaultNodeType ?? typeof(AstNode);
         if (childNodeType == ntNodeType || childNodeType.IsSubclassOf(ntNodeType))
           return childNodes[0];

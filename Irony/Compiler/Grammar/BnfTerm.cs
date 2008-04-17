@@ -80,7 +80,7 @@ namespace Irony.Compiler {
     }
     public NonTerminal Plus(string name) {
       NonTerminal list = new NonTerminal(name);
-      list.SetOption(TermOptions.IsList | TermOptions.IsTransient);
+      list.SetOption(TermOptions.IsList);
       list.Rule = this | list + this;
       return list;
     }
@@ -89,7 +89,7 @@ namespace Irony.Compiler {
     }
     public NonTerminal Plus(string name, BnfTerm delimiter) {
       NonTerminal list = new NonTerminal(name);
-      list.SetOption(TermOptions.IsList | TermOptions.IsTransient);
+      list.SetOption(TermOptions.IsList);
       list.Rule = this | list + delimiter + this;
       return list;
     }
@@ -98,7 +98,7 @@ namespace Irony.Compiler {
     }
     public NonTerminal Star(string name) {
       NonTerminal list = new NonTerminal(name);
-      list.SetOption(TermOptions.IsList | TermOptions.IsTransient);
+      list.SetOption(TermOptions.IsList);
       list.Rule = Grammar.Empty | list + this;
       return list;
     }

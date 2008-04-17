@@ -116,7 +116,8 @@ namespace Irony.Compiler {
       int start = source.Position;
       //Figure out digits set
       string digits = GetDigits(details);
-      bool isDecimal = (digits == TextUtils.DecimalDigits);
+      bool isDecimal = !details.IsSet(ScanFlags.NonDecimal);
+      bool allowFloat = !IsSet(TermOptions.NumberIntOnly);
 
       while (!source.EOF()) {
         char current = source.CurrentChar;
@@ -126,7 +127,7 @@ namespace Irony.Compiler {
           continue;
         }
         //2. Check if it is a dot
-        if (current == DecimalSeparator) {
+        if (current == DecimalSeparator && allowFloat) {
           //If we had seen already a dot or exponent, don't accept this one;
           //In python number literals (NumberAllowPointFloat) a point can be the first and last character,
           //otherwise we accept dot only if it is followed by a digit
@@ -137,7 +138,7 @@ namespace Irony.Compiler {
           continue;
         }
         //3. Only for decimals - check if it is (the first) exponent symbol
-        if ((isDecimal) && (details.ControlSymbol == null) && (ExponentSymbols.IndexOf(current) >= 0)) {
+        if (allowFloat && isDecimal && (details.ControlSymbol == null) && (ExponentSymbols.IndexOf(current) >= 0)) {
           char next = source.NextChar;
           bool nextIsSign = next == '-' || next == '+';
           bool nextIsDigit = digits.IndexOf(next) >= 0;

@@ -41,7 +41,7 @@ namespace Irony.Samples.Ruby {
                                        "if", "case", "return", "yield", "while", "until");  //and some others...
       Terminal Number = new NumberLiteral("Number");
       Terminal Comment = new CommentTerminal("Comment", "#", "\n");
-      ExtraTerminals.Add(Comment); //add comment explicitly to this list as it is not reachable from Root
+      NonGrammarTerminals.Add(Comment); //add comment explicitly to this list as it is not reachable from Root
 
       //some conveniency variables
       Terminal Pipe = Symbol("|");

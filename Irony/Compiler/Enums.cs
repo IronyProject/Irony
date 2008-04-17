@@ -18,7 +18,7 @@ namespace Irony.Compiler {
 
   public enum TokenCategory {
     Content,
-    Outline, //newLine, indent, unindent
+    Outline, //newLine, indent, dedent
     Comment,
     Error,
   }
@@ -53,13 +53,14 @@ namespace Irony.Compiler {
     IsPunctuation = 0x20,
     IsDelimiter   = 0x40, 
     IsList        = 0x80,
-    IsTransient   = 0x0100,
+    IsNonGrammar  = 0x0100,  // if set, parser would eliminate the token from the input stream; terms in Grammar.NonGrammarTerminals have this flag set
     
     //Number flags 
     SpecialIgnoreCase = 0x010000,         //Ignore case in suffixes and prefixes
-		NumberAllowStartEndDot = 0x020000,     //python : http://docs.python.org/ref/floating.html
-    EnableQuickParse = 0x040000,
-    CanStartWithEscape = 0x080000,
+    EnableQuickParse = 0x020000,
+    CanStartWithEscape = 0x040000,
+    NumberAllowStartEndDot = 0x100000,     //python : http://docs.python.org/ref/floating.html
+    NumberIntOnly = 0x200000,
   }
 
   public enum ScanFlags {

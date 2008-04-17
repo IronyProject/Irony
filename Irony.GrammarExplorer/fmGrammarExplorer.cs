@@ -251,6 +251,9 @@ namespace Irony.GrammarExplorer {
         case 5: //c#
           grammar = new Irony.Samples.CSharp.CSharpGrammar();
           break;
+        case 6: //GwBasic
+          grammar = new Irony.Samples.GWBasicGrammar();
+          break;
       }//switch
       try {
         _compiler = new LanguageCompiler(grammar);
@@ -265,15 +268,20 @@ namespace Irony.GrammarExplorer {
       
     }
     private void LoadSourceFile(string path) {
+      StreamReader reader = null;
       try {
-        StreamReader rdr = new StreamReader(path);
-        string src = rdr.ReadToEnd();
+        reader = new StreamReader(path);
+        string src = reader.ReadToEnd();
         string[] lines = src.Split(new string[] { "\r\n" }, StringSplitOptions.None);
         txtSource.Lines = lines;
         txtSource.Select(0, 0);
       } catch (Exception e) {
         MessageBox.Show(e.Message);
+      } finally {
+        if (reader != null)
+          reader.Close();
       }
+      
     }
 
 

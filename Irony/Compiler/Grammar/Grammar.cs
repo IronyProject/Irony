@@ -29,7 +29,8 @@ namespace Irony.Compiler {
 
     //Terminals not present in grammar expressions and not reachable from the Root
     // (Comment terminal is usually one of them)
-    public readonly TerminalList ExtraTerminals = new TerminalList();
+    // Tokens produced by these terminals will be ignored by parser input. 
+    public readonly TerminalList NonGrammarTerminals = new TerminalList();
 
     //Terminals that either don't have explicitly declared Firsts symbols, or can start with chars not covered by these Firsts 
     // For ex., identifier in c# can start with a Unicode char in one of several Unicode classes, not necessarily latin letter.
@@ -144,6 +145,12 @@ namespace Irony.Compiler {
       return listNonTerminal.Rule;
     }
     public BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember) {
+      if (delimiter == null) {
+        //it is much simpler case
+        listNonTerminal.SetOption(TermOptions.IsList);
+        listNonTerminal.Rule = Empty | listNonTerminal + listMember;
+        return listNonTerminal.Rule;
+      }
       NonTerminal tmp = new NonTerminal(listMember.Name + "+");
       MakePlusRule(tmp, delimiter, listMember);
       listNonTerminal.Rule = Empty | tmp;

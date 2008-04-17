@@ -186,9 +186,9 @@ namespace Irony.Samples.ScriptNET
       Element.Rule = Statement | FuncDef;
 
       Terminal Comment = new CommentTerminal("Comment", "/*", "*/");
-      ExtraTerminals.Add(Comment);
+      NonGrammarTerminals.Add(Comment);
       Terminal LineComment = new CommentTerminal("LineComment", "//", "\n");
-      ExtraTerminals.Add(LineComment);
+      NonGrammarTerminals.Add(LineComment);
       #endregion
       #endregion
 

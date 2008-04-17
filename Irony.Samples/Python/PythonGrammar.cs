@@ -40,7 +40,7 @@ namespace Irony.Samples.Python {
       Constants.Add("False", false);
       IdentifierTerminal Identifier = new IdentifierTerminal("Identifier");
       Terminal Comment = new CommentTerminal("Comment", "#", "\n");
-      ExtraTerminals.Add(Comment);
+      NonGrammarTerminals.Add(Comment);
 
       Terminal comma = Symbol(",", "comma");
       //commaQ is optional trailing comma in lists; it causes several conflicts in this grammar

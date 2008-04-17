@@ -61,7 +61,9 @@ namespace Irony.Compiler {
 
     //Use this method in real compiler, in iterator-connected pipeline
     public IEnumerable<Token> BeginScan() {
-      while (!_source.EOF()) {
+      //We don't do "while(!_source.EOF())... because on EOF() we need to continue and produce EOF token 
+      //  and then do "yield break" - see below
+      while (true) {  
         _currentToken = ReadToken();
         if (TokenCreated != null)
           OnTokenCreated(_currentToken);

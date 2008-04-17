@@ -48,6 +48,7 @@ namespace Irony.Compiler {
             foreach (int i in _indents)
               yield return CreateSpecialToken(Grammar.Dedent, context, token.Location); 
           _indents.Clear();
+          //return EOF token
           yield return token;
           yield break;
         }//if Eof

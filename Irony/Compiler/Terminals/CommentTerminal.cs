@@ -26,6 +26,7 @@ namespace Irony.Compiler {
     public string StartSymbol;
     public StringList EndSymbols;
     private char[] _endSymbolsFirsts;
+    private bool _isLineComment; //true if NewLine is one of EndSymbols; if yes, EOF is also considered a valid end symbol
 
 
     #region overrides
@@ -33,8 +34,11 @@ namespace Irony.Compiler {
       base.Init(grammar);
       //_endSymbolsFirsts char array is used for fast search for end symbols using String's method IndexOfAny(...)
       _endSymbolsFirsts = new char[EndSymbols.Count];
-      for (int i = 0; i < EndSymbols.Count; i++)
-        _endSymbolsFirsts[i] = EndSymbols[i][0];
+      for (int i = 0; i < EndSymbols.Count; i++) {
+        string sym = EndSymbols[i];
+        _endSymbolsFirsts[i] = sym[0];
+        _isLineComment |= sym.Contains("\n");
+      }
     }
 
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
@@ -52,7 +56,10 @@ namespace Irony.Compiler {
           firstCharPos = source.Text.IndexOfAny(_endSymbolsFirsts, source.Position);
         if (firstCharPos < 0) {
           source.Position = source.Text.Length;
-          return Grammar.CreateSyntaxErrorToken(context, source.TokenStart, "Unclosed comment block");
+          if (_isLineComment) //if it is LineComment, it is ok to hit EOF without final line-break; just return all until end.
+            return Token.Create(this, context, source.TokenStart, source.GetLexeme());
+          else 
+            return Grammar.CreateSyntaxErrorToken(context, source.TokenStart, "Unclosed comment block");
         }
         //We found a character that might start an end symbol; let's see if it is true.
         source.Position = firstCharPos;

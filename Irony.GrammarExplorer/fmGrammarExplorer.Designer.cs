@@ -728,7 +728,8 @@ namespace Irony.GrammarExplorer {
             "Python",
             "Ruby",
             "Script.NET",
-            "c# 3.0"});
+            "c# 3.0",
+            "GW Basic"});
       this.cboLanguage.Location = new System.Drawing.Point(90, 3);
       this.cboLanguage.Name = "cboLanguage";
       this.cboLanguage.Size = new System.Drawing.Size(189, 21);

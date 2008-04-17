@@ -49,8 +49,6 @@ namespace Irony.Tests {
       //Simple integers and suffixes
       TryMatch("123 ");
       CheckType(typeof(int));
-      //Check that NumberScanInfo record is present in Attributes. The only case it's not there is for single-digit integers, when system
-      // uses a quick parse method
       Assert.That(_token.Details != null, "ScanDetails object not found in token.");
       Assert.That((int)_token.Value == 123, "Failed to read int value");
 

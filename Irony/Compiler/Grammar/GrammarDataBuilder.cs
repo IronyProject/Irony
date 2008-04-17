@@ -83,7 +83,11 @@ namespace Irony.Compiler {
     private void CollectAllElements() {
       Data.NonTerminals.Clear();
       Data.Terminals.Clear();
-      Data.Terminals.AddRange(_grammar.ExtraTerminals);
+      //set IsNonGrammar flag in all NonGrammarTerminals and add them to Terminals collection
+      foreach (Terminal t in _grammar.NonGrammarTerminals) {
+        t.SetOption(TermOptions.IsNonGrammar);
+        Data.Terminals.Add(t);
+      }
       _unnamedCount = 0;
       CollectAllElementsRecursive(Data.AugmentedRoot);
       Data.Terminals.Sort(Terminal.ByName);

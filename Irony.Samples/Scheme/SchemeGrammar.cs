@@ -56,8 +56,8 @@ namespace Irony.Samples.Scheme {
       //Comments
       Terminal Comment = new CommentTerminal("Comment", "#|", "|#");
       Terminal LineComment = new CommentTerminal("LineComment", ";", "\n");
-      ExtraTerminals.Add(Comment); //add comments explicitly to this list as it is not reachable from Root
-      ExtraTerminals.Add(LineComment);
+      NonGrammarTerminals.Add(Comment); //add comments explicitly to this list as it is not reachable from Root
+      NonGrammarTerminals.Add(LineComment);
       #endregion
 
       #region NonTerminals

@@ -333,7 +333,8 @@ namespace Irony.Compiler {
       AstNodeList childNodes = new AstNodeList();
       for (int i = 0; i < action.PopCount; i++) {
         AstNode child = Stack[Stack.Count - popCnt + i].Node;
-        childNodes.Add(child);
+        if (!child.Term.IsSet(TermOptions.IsPunctuation)) 
+          childNodes.Add(child);
       }
       //recover state, location and pop the stack
       SourceSpan newNodeSpan;

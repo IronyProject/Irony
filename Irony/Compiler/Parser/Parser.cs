@@ -194,7 +194,7 @@ namespace Irony.Compiler {
         return;
       }
       KeyList expectedList = GetCurrentExpectedSymbols();
-      string message = this.Data.Grammar.GetSyntaxErrorMessage(_context, expectedList);
+      string message = this.Data.Grammar.GetSyntaxErrorMessage(_context, expectedList); 
       if (message == null) 
         message = "Syntax error" + (expectedList.Count == 0 ? "." : ", expected: " + expectedList.ToString(" "));
       ReportError(_currentToken.Location, message);
@@ -357,15 +357,17 @@ namespace Irony.Compiler {
         _currentState = gotoAction.NewState;
       } else 
         //should never happen
-        throw new IronyException( string.Format("Cannot find transition for input {0}; state: {1}, popped state: {2}", 
+        throw new CompilerException( string.Format("Cannot find transition for input {0}; state: {1}, popped state: {2}", 
               action.NonTerminal, oldState, _currentState));
     }//method
 
     private AstNode CreateNode(ActionRecord reduceAction, SourceSpan sourceSpan, AstNodeList childNodes) {
       NonTerminal nt = reduceAction.NonTerminal;
-      AstNode result = nt.OnNodeCreating(_context, _currentState, reduceAction, sourceSpan, childNodes);
-      if (result != null) 
-        return result;
+      AstNode result;
+
+      AstNodeArgs args = new AstNodeArgs(nt, _context, sourceSpan, childNodes);
+      result = nt.InvokeNodeCreator(args);
+      if (result != null) return result;
 
       Type defaultNodeType = _context.Compiler.Grammar.DefaultNodeType;
       Type ntNodeType = nt.NodeType ?? defaultNodeType ?? typeof(AstNode);
@@ -386,12 +388,17 @@ namespace Irony.Compiler {
         result.ChildNodes.Add(newChild);
         return result;
       }
+      //Check for StarList produced by MakeStarList; in this case the production is:  ntList -> Empty | Elem+
+      // where Elem+ is non-empty list of elements. The child list we are actually interested in is one-level lower
+      if (nt.IsSet(TermOptions.IsStarList) && childNodes.Count == 1) {
+        childNodes = childNodes[0].ChildNodes;
+      }
       // Check for "node-bubbling" case. For identity productions like 
       //   A -> B
       // the child node B is usually a subclass of node A, 
       // so child node B can be used directly in place of the A. So we simply return child node as a result. 
       // TODO: probably need a grammar option to enable/disable this behavior explicitly
-      if (!isList && childNodes.Count == 1 && childNodes[0] != null) {
+      if (!isList && !nt.IsSet(TermOptions.IsPunctuation) && childNodes.Count == 1) {
         Type childNodeType = childNodes[0].Term.NodeType ?? defaultNodeType ?? typeof(AstNode);
         if (childNodeType == ntNodeType || childNodeType.IsSubclassOf(ntNodeType))
           return childNodes[0];
@@ -401,7 +408,6 @@ namespace Irony.Compiler {
       if (result == null) {
         //Finally create node directly. For perf reasons we try using "new" for AstNode type (faster), and
         // activator for all custom types (slower)
-        AstNodeArgs args = new AstNodeArgs(nt, _context, sourceSpan, childNodes);
         if (ntNodeType == typeof(AstNode))
           result = new AstNode(args);
         else

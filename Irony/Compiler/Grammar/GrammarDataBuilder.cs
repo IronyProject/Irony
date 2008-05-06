@@ -388,7 +388,7 @@ namespace Irony.Compiler {
           return item;
       string msg = string.Format("Failed to find an LRItem in state {0} by production [{1}] and position {2}. ",
         state, production.ToString(), position.ToString());
-      throw new IronyException(msg);
+      throw new CompilerException(msg);
     }//method
 
     private ShiftTable GetStateShifts(ParserState state) {

@@ -17,41 +17,38 @@ using Irony.Compiler;
 
 namespace Irony.Samples.Scheme {
   public class SchemeGrammar : Grammar {
-
-    // Note that this is a sample grammar, not real Scheme production-quality grammar. 
     // It is loosely based on R6RS specs.  
     // See Grammar Errors tab in GrammarExplorer for remaining conflicts.
     public SchemeGrammar() {
 
       #region Terminals
-      ConstantTerminal Constants = new ConstantTerminal("Constants");
-      Constants.Add("#T", true);
-      Constants.Add("#t", true);
-      Constants.Add("#F", false);
-      Constants.Add("#f", false);
-      Constants.Add(@"#\nul", '\u0000');
-      Constants.Add(@"#\alarm", '\u0007');
-      Constants.Add(@"#\backspace", '\b');
-      Constants.Add(@"#\tab", '\t');
-      Constants.Add(@"#\linefeed", '\n');
-      Constants.Add(@"#\vtab", '\v');
-      Constants.Add(@"#\page", '\f');
-      Constants.Add(@"#\return", '\r');
-      Constants.Add(@"#\esc", '\u001B');
-      Constants.Add(@"#\space", ' ');
-      Constants.Add(@"#\delete", '\u007F');
-      Constants.Add("'()", null);
+      ConstantTerminal Constant = new ConstantTerminal("Constant");
+      Constant.Add("#T", true);
+      Constant.Add("#t", true);
+      Constant.Add("#F", false);
+      Constant.Add("#f", false);
+      Constant.Add(@"#\nul", '\u0000');
+      Constant.Add(@"#\alarm", '\u0007');
+      Constant.Add(@"#\backspace", '\b');
+      Constant.Add(@"#\tab", '\t');
+      Constant.Add(@"#\linefeed", '\n');
+      Constant.Add(@"#\vtab", '\v');
+      Constant.Add(@"#\page", '\f');
+      Constant.Add(@"#\return", '\r');
+      Constant.Add(@"#\esc", '\u001B');
+      Constant.Add(@"#\space", ' ');
+      Constant.Add(@"#\delete", '\u007F');
+      Constant.Add("'()", null);
 
-      // the following probably doesn't work correctly
       // TODO: build SchemeCharLiteral
       // the following is nonsense, just to put something there
       StringLiteral charLiteral = new StringLiteral("Char", "'", ScanFlags.None); 
       Terminal stringLiteral = new StringLiteral("String", "\"", ScanFlags.AllowAllEscapes);
       //Identifiers. Note: added "-", just to allow IDs starting with "->" 
-      IdentifierTerminal SimpleIdentifier = new IdentifierTerminal("SimpleIdentifier", "_+-*/.@?!<>=", "_!$%&*/:<=>?^~" + "+-");
+      IdentifierTerminal SimpleIdentifier = new IdentifierTerminal("SimpleIdentifier", "_+-*/.@?!<>=", "_+-*/.@?!<>=$%&:^~");
       //                                                           name                extraChars      extraFirstChars  
       Terminal Number = new NumberLiteral("Number");
-      Terminal Byte = Number; // new NumberTerminal("Byte"); //u8 in R6RS notation
+      Terminal Byte = Number; 
 
       //Comments
       Terminal Comment = new CommentTerminal("Comment", "#|", "|#");
@@ -69,6 +66,8 @@ namespace Irony.Samples.Scheme {
       NonTerminal Vector = new NonTerminal("Vector");
       NonTerminal ByteVector = new NonTerminal("ByteVector");
       NonTerminal Datum = new NonTerminal("Datum"); //Datum in R6RS terms
+      NonTerminal DatumList = new NonTerminal("Datum+", typeof(DatumListNode));
+      NonTerminal DatumListOpt = new NonTerminal("Datum*", typeof(DatumListNode));
       NonTerminal Statement = new NonTerminal("Statement");
       NonTerminal Atom = new NonTerminal("Atom");
       NonTerminal CompoundDatum = new NonTerminal("CompoundDatum");
@@ -81,21 +80,25 @@ namespace Irony.Samples.Scheme {
       NonTerminal ExportSpec = new NonTerminal("ExportSpec");
       NonTerminal LP = new NonTerminal("LP"); //actually is "(" or "["
       NonTerminal RP = new NonTerminal("RP"); // ")" or "]"
-      NonTerminal Identifier = new NonTerminal("Identifier");
+      NonTerminal Identifier = new NonTerminal("Identifier", typeof(IdentifierNode));
+      NonTerminal IdentifierList = new NonTerminal("IdentifierList");
+      NonTerminal IdentifierListOpt = new NonTerminal("IdentifierListOpt");
       NonTerminal PeculiarIdentifier = new NonTerminal("PeculiarIdentifier");
       NonTerminal LibraryVersion = new NonTerminal("LibraryVersion");
 
-      NonTerminal FunctionCall = new NonTerminal("FunctionCall");
+      NonTerminal FunctionCall = new NonTerminal("FunctionCall", CreateFunctionCallNode);
+      NonTerminal FunctionRef = new NonTerminal("FunctionRef");
       NonTerminal SpecialForm = new NonTerminal("SpecialForm");
-      NonTerminal DefineForm = new NonTerminal("DefineForm");
-      NonTerminal DefineFunForm = new NonTerminal("DefineFunForm");
-      NonTerminal LambdaForm = new NonTerminal("LambdaForm");
-      NonTerminal IfForm = new NonTerminal("IfForm", typeof(IfNode));
-      NonTerminal CondForm = new NonTerminal("CondForm");
-      NonTerminal CondCase = new NonTerminal("CondCase");
+      NonTerminal DefineVarForm = new NonTerminal("DefineVarForm", CreateDefineVarNode);
+      NonTerminal DefineFunForm = new NonTerminal("DefineFunForm", CreateDefineFunNode);
+      NonTerminal LambdaForm = new NonTerminal("LambdaForm", CreateLambdaNode);
+      NonTerminal IfForm = new NonTerminal("IfForm", CreateIfThenElseNode);
+      NonTerminal CondForm = new NonTerminal("CondForm", CreateCondFormNode);
+      NonTerminal CondClause = new NonTerminal("CondClause", CreateCondClauseNode);
       NonTerminal CondElse = new NonTerminal("CondElse");
-      NonTerminal BeginForm = new NonTerminal("BeginForm");
-      NonTerminal LetForm = new NonTerminal("LetForm");
+      NonTerminal BeginForm = new NonTerminal("BeginForm", CreateBeginNode);
+      NonTerminal LetForm = new NonTerminal("LetForm"); //not implemented
+      NonTerminal LetRecForm = new NonTerminal("LetRecForm"); //not implemented
       NonTerminal LetPair = new NonTerminal("LetPair");
       #endregion
 
@@ -103,13 +106,13 @@ namespace Irony.Samples.Scheme {
       base.Root = Module;
 
       Module.Rule = Library.Plus() + Script | Script;
-      Script.Rule = ImportSection + Datum.Plus() | Datum.Plus();
-      LP.Rule = Symbol("(") | "[";  //R6RS allows mix & match () and []; exact match is enforced by token filter
+      Script.Rule = ImportSection + DatumList | DatumList;
+      LP.Rule = Symbol("(") | "[";  //R6RS allows mix & match () and []
       RP.Rule = Symbol(")") | "]";
 
       //Library
-      Library.Rule = LP + "library" + LibraryName + ExportSection.Q() + ImportSection.Q() + Statement.Star() + RP;
-      LibraryName.Rule = LP + Identifier.Plus() + LibraryVersion.Q() + RP;
+      Library.Rule = LP + "library" + LibraryName + ExportSection.Q() + ImportSection.Q() + DatumListOpt + RP;
+      LibraryName.Rule = LP + IdentifierList + LibraryVersion.Q() + RP;
       LibraryVersion.Rule = LP + Number.Star() + RP; //zero or more subversion numbers
       ExportSection.Rule = LP + "export" + ExportSpec.Plus() + RP;
       ImportSection.Rule = LP + "import" + ImportSpec.Plus() + RP;
@@ -118,29 +121,38 @@ namespace Irony.Samples.Scheme {
 
       //Datum
       Datum.Rule = Atom | CompoundDatum;
-      Atom.Rule = Number | Identifier | stringLiteral | Constants | charLiteral | ".";
+      DatumList.Rule = MakePlusRule(DatumList, null, Datum);
+      DatumListOpt.Rule = MakeStarRule(DatumListOpt, null, Datum);
+      Atom.Rule = Number | Identifier | stringLiteral | Constant | charLiteral | ".";
       CompoundDatum.Rule = Statement | Abbreviation | Vector | ByteVector;
       Identifier.Rule = SimpleIdentifier | PeculiarIdentifier;
+      IdentifierList.Rule = MakePlusRule(IdentifierList, null, Identifier);
+      IdentifierListOpt.Rule = MakeStarRule(IdentifierListOpt, null, Identifier);
+
       //TODO: create PeculiarIdentifier custom terminal instead of NonTerminal 
       // or just custom SchemeIdentifier terminal
       PeculiarIdentifier.Rule = Symbol("+") | "-" | "..."; // |"->" + subsequent; (should be!) 
       Abbreviation.Rule = AbbrevPrefix + Datum;
       AbbrevPrefix.Rule = Symbol("'") | "`" | ",@" | "," | "#'" | "#`" | "#,@" | "#,";
-      Vector.Rule = "#(" + Datum.Star() + ")";
+      Vector.Rule = "#(" + DatumListOpt + ")";
       ByteVector.Rule = "#vu8(" + Byte.Star() + ")";
 
       Statement.Rule = FunctionCall | SpecialForm;
-      FunctionCall.Rule = LP + Datum.Plus() + RP; 
-      SpecialForm.Rule = DefineForm | DefineFunForm | LambdaForm | IfForm | CondForm | BeginForm | LetForm;
-      DefineForm.Rule = LP + "define" + Identifier + Datum + RP;
-      DefineFunForm.Rule = LP + "define" + LP + Identifier + Identifier.Star() + RP + Statement.Plus() + RP;
-      LambdaForm.Rule = LP + "lambda" + LP + Identifier.Star() + RP + Statement.Plus() + RP;
+
+      FunctionCall.Rule = LP + FunctionRef + DatumListOpt + RP;
+      FunctionRef.Rule = Identifier | Statement;
+
+      SpecialForm.Rule = DefineVarForm | DefineFunForm | LambdaForm | IfForm | CondForm | BeginForm | LetForm | LetRecForm;
+      DefineVarForm.Rule = LP + "define" + Identifier + Datum + RP;
+      DefineFunForm.Rule = LP + "define" + LP + Identifier + IdentifierListOpt + RP + DatumList + RP;
+      LambdaForm.Rule = LP + "lambda" + LP + IdentifierListOpt + RP + DatumList + RP;
       IfForm.Rule = LP + "if" + Datum + Datum + Datum.Q() + RP;
-      CondForm.Rule = LP + "cond" + CondCase.Plus() + CondElse.Q() + RP;
-      CondCase.Rule = LP + Datum + Datum + RP;
-      CondElse.Rule = LP + "else" + Datum.Plus() + RP;
-      LetForm.Rule = LP + "let" + LP + LetPair.Plus() + RP + Datum.Plus() + RP;
-      BeginForm.Rule = LP + "begin" + Datum.Plus() + RP;
+      CondForm.Rule = LP + "cond" + CondClause.Plus() + CondElse.Q() + RP;
+      CondClause.Rule = LP + Datum + DatumList + RP;
+      CondElse.Rule = LP + "else" + DatumList + RP;
+      LetForm.Rule = LP + "let" + LP + LetPair.Plus() + RP + DatumList + RP;
+      LetRecForm.Rule = LP + "letrec" + LP + LetPair.Plus() + RP + DatumList + RP;
+      BeginForm.Rule = LP + "begin" + DatumList + RP;
       LetPair.Rule = LP + Identifier + Datum + RP;
 
 
@@ -154,14 +166,56 @@ namespace Irony.Samples.Scheme {
       BraceMatchFilter filter = new BraceMatchFilter();
       TokenFilters.Add(filter);
 
-      //RegisterPunctuation( LP, RP); -- we could do this, but doesn't work because raw symbols ()[] get "bubbled up" -
-      // see Parser.CreateNode method
-      RegisterPunctuation("(", ")", "[", "]");
+      RegisterPunctuation(LP, RP);
 
-      //this.CaseSensitive = false; -- just for testing case-insensitive parser
+      base.Ops = new SchemeOps();
 
     }//constructor
 
+    private AstNode CreateFunctionCallNode(AstNodeArgs args) {
+      string name = args.GetContent(0);
+      AstNodeList funArgs = args.ChildNodes[1].ChildNodes;
+      return new FunctionCallNode(args, name, funArgs); 
+    }
+    private AstNode CreateDefineVarNode(AstNodeArgs args) {
+      //we skip the "define" keyword so the indexes are 1,2 - compare to CreateLetPairNode
+      return new SetVarNode(args, args.ChildNodes[1] as IdentifierNode, args.ChildNodes[2]);
+    }
+    private AstNode CreateDefineFunNode(AstNodeArgs args) {
+      //"define" keyword is at index 0
+      IdentifierNode funName = args.ChildNodes[1] as IdentifierNode; 
+      AstNode funParams = args.ChildNodes[2]; 
+      AstNode funBody = args.ChildNodes[3];
+      AstNode fun = new FunctionDefNode(args, funName, funParams, funBody);
+      return fun;
+    }
+    private AstNode CreateLambdaNode(AstNodeArgs args) {
+      AstNode funParams = args.ChildNodes[1];
+      AstNode funBody = args.ChildNodes[2];
+      return new AnonFunctionNode(args, funParams, funBody); 
+    }
+    private AstNode CreateIfThenElseNode(AstNodeArgs args) {
+      AstNode test = args.ChildNodes[1];
+      AstNode ifTrue = args.ChildNodes[2];
+      AstNode ifFalse = args.ChildNodes[3];
+      return new IfThenElseNode(args,test, ifTrue, ifFalse);
+    }
+    
+    private AstNode CreateCondFormNode(AstNodeArgs args) {
+      AstNodeList condClauses = args.ChildNodes[1].ChildNodes;
+      AstNode elseNode = args.ChildNodes[2];
+      AstNode elseCommands = (elseNode.IsEmpty()? null : elseNode.ChildNodes[1]);
+      return new CondFormNode(args, condClauses, elseCommands);
+    }
+    private AstNode CreateCondClauseNode(AstNodeArgs args) {
+      AstNode test = args.ChildNodes[0];
+      DatumListNode command = args.ChildNodes[1] as DatumListNode;
+      return new CondClauseNode(args, test, command);
+    }
+
+    private AstNode CreateBeginNode(AstNodeArgs args) {
+      return new DatumListNode(args, args.ChildNodes[1].ChildNodes);
+    }
 
   }//class
 

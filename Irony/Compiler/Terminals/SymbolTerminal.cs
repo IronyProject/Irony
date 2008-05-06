@@ -27,7 +27,7 @@ namespace Irony.Compiler {
       Key = symbol.Trim();  //Overwrite base class assignment: symbols are matched by value (symbol itself), not by element name
       //Symbols found in grammar by default have lowest priority to allow other terminals (like identifiers)
       // to check input first.
-      // Additionally, longer symbols have higher priority, so symbols like "+=" has higher priority than "+" symbol. 
+      // Additionally, longer symbols have higher priority, so symbols like "+=" should have higher priority value than "+" symbol. 
       // As a result, Scanner would first try to match "+=", longer symbol, and if it fails, it will try "+". 
       base.Priority = -1000 + symbol.Length;
     }

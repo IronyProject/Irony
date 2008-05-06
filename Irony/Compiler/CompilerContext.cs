@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Irony.Runtime;
 
 namespace Irony.Compiler {
 
@@ -23,9 +24,11 @@ namespace Irony.Compiler {
     public readonly LanguageCompiler Compiler;
     public readonly SyntaxErrorList Errors = new SyntaxErrorList();
     public readonly Dictionary<string, object> Values = new Dictionary<string, object>();
+    public readonly LanguageOps Ops;
 
     public CompilerContext(LanguageCompiler compiler) {
       this.Compiler = compiler;
+      Ops = compiler.Grammar.Ops; 
     }
     public void AddError(SourceLocation location, string message, ParserState state) {
       if (Errors.Count < 20) //just for now, 20 is max

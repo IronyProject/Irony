@@ -53,7 +53,8 @@ namespace Irony.Compiler {
     IsPunctuation = 0x20,
     IsDelimiter   = 0x40, 
     IsList        = 0x80,
-    IsNonGrammar  = 0x0100,  // if set, parser would eliminate the token from the input stream; terms in Grammar.NonGrammarTerminals have this flag set
+    IsStarList =   0x100,   //Special case of list with 0 or more elements separated by delimiters. Produced by MakeStarRule method
+    IsNonGrammar = 0x0200,  // if set, parser would eliminate the token from the input stream; terms in Grammar.NonGrammarTerminals have this flag set
     
     //Number flags 
     SpecialIgnoreCase = 0x010000,         //Ignore case in suffixes and prefixes
@@ -61,6 +62,8 @@ namespace Irony.Compiler {
     CanStartWithEscape = 0x040000,
     NumberAllowStartEndDot = 0x100000,     //python : http://docs.python.org/ref/floating.html
     NumberIntOnly = 0x200000,
+
+
   }
 
   public enum ScanFlags {
@@ -112,5 +115,13 @@ namespace Irony.Compiler {
 
   }//enum
 
+
+  public enum AstNodeFlags {
+    None = 0x0,
+    DefinesScope = 0x01,
+    /*    IsNameDef = 0x02,
+        IsNameRef = 0x04,
+    */
+  }
 
 }

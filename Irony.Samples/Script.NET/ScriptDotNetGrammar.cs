@@ -64,8 +64,7 @@ namespace Irony.Samples.ScriptNET
 
       #region 2.2 QualifiedName
       //Expression List:  expr1, expr2, expr3, ..
-      NonTerminal ExprList = Expr.Plus("ExprList", comma);
-
+      NonTerminal ExprList = new NonTerminal("ExprList");
       //A name in form: a.b.c().d[1,2].e ....
       NonTerminal NewStmt = new NonTerminal("NewStmt");
       NonTerminal NewArrStmt = new NonTerminal("NewArrStmt");
@@ -79,7 +78,7 @@ namespace Irony.Samples.ScriptNET
       NonTerminal Condition = new NonTerminal("Condition");
 
       NonTerminal Statement = new NonTerminal("Statement");
-      NonTerminal Statements = Statement.Star("Statements");
+      NonTerminal Statements = new NonTerminal("Statements");
 
       //Block
       NonTerminal CompoundStatement = new NonTerminal("CompoundStatement");
@@ -90,7 +89,7 @@ namespace Irony.Samples.ScriptNET
       NonTerminal Element = new NonTerminal("Element");
       NonTerminal FuncDef = new NonTerminal("FuncDef");
       NonTerminal FuncContract = new NonTerminal("FuncContract");
-      NonTerminal ParameterList = v.Plus("ParamaterList", comma);
+      NonTerminal ParameterListOpt = new NonTerminal("ParamaterListOpt");
       NonTerminal SwitchStatements = new NonTerminal("SwitchStatements");
       #endregion
 
@@ -120,7 +119,7 @@ namespace Irony.Samples.ScriptNET
                   | LMb + Element.Star() + RMb
                   | LCb + Expr + RCb
                   ;
-
+      ExprList.Rule = MakePlusRule(ExprList, comma, Expr);
       NewStmt.Rule = "new" + QualifiedName + GenericsPostfix.Q() + LCb + ExprList.Q() + RCb;
       NewArrStmt.Rule = "new" + QualifiedName + GenericsPostfix.Q() + LSb + ExprList.Q() + RSb;
       BinOp.Rule = Symbol("+") | "-" | "*" | "/" | "%" | "^" | "&" | "|"
@@ -164,7 +163,7 @@ namespace Irony.Samples.ScriptNET
                       | "break" + semicolon
                       | "continue" + semicolon
                       | "return" + Expr + semicolon;
-
+      Statements.Rule = MakeStarRule(Statements, null, Statement);
       CompoundStatement.Rule = LFb + Statements + RFb;
 
 
@@ -181,7 +180,8 @@ namespace Irony.Samples.ScriptNET
                         "invariant" + LCb + ExprList.Q() + RCb + semicolon +
                       RSb;
 
-      FuncDef.Rule = "function" + v + LCb + ParameterList.Q() + RCb + FuncContract.Q() + CompoundStatement;
+      ParameterListOpt.Rule = MakeStarRule(ParameterListOpt, comma, v);
+      FuncDef.Rule = "function" + v + LCb + ParameterListOpt.Q() + RCb + FuncContract.Q() + CompoundStatement;
 
       Element.Rule = Statement | FuncDef;
 

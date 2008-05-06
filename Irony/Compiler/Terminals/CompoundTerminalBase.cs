@@ -142,7 +142,7 @@ namespace Irony.Compiler {
       ReadPrefix(source, details);
       if (!ReadBody(source, details))
         return null;
-      if (details.Error != null) 
+      if (details.HasError()) 
         return Grammar.CreateSyntaxErrorToken(context, source.TokenStart, details.Error);
       ReadSuffix(source, details);
 

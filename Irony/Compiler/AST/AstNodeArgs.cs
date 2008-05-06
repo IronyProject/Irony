@@ -23,6 +23,12 @@ namespace Irony.Compiler {
     public Terminal Terminal { 
       get { return Term as Terminal; } 
     }
+    public Token AsToken(int index) {
+      return ChildNodes[index] as Token; 
+    }
+    public string GetContent(int index) {
+      return ChildNodes[index].GetContent();
+    }
   }//struct
 
 }//namespace

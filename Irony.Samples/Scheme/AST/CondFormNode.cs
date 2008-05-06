@@ -24,7 +24,20 @@ namespace Irony.Samples.Scheme {
       ReplaceChildNodes(Clauses);
       AddChild(ElseClause);
     }
-    
+
+    public override void OnAstProcessing(CompilerContext context, AstProcessingPhase phase) {
+      base.OnAstProcessing(context, phase);
+      switch (phase) {
+        case AstProcessingPhase.MarkTailCalls:
+          if (IsSet(AstNodeFlags.IsTail)) {
+            foreach (CondClauseNode clause in Clauses)
+              clause.Flags |= AstNodeFlags.IsTail;
+            ElseClause.Flags |= AstNodeFlags.IsTail;
+          }
+          break;
+      }
+    }
+
     public override void Evaluate(EvaluationContext context) {
       foreach (CondClauseNode clause in Clauses) {
         clause.Test.Evaluate(context);

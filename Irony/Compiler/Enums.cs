@@ -118,10 +118,7 @@ namespace Irony.Compiler {
 
   public enum AstNodeFlags {
     None = 0x0,
-    DefinesScope = 0x01,
-    /*    IsNameDef = 0x02,
-        IsNameRef = 0x04,
-    */
+    IsTail = 0x01,
   }
 
 }

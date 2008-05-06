@@ -13,7 +13,6 @@ namespace Irony.Samples.Scheme {
     public AstNodeList Arguments;
 
     public LexicalAddress Address;
-    public bool IsTail; //not used yet, but will be
     //might be a global function, or local function that does not use external variables, so it does not need closure
     public IInvokeTarget FixedTarget; 
 
@@ -36,7 +35,7 @@ namespace Irony.Samples.Scheme {
         case AstProcessingPhase.Linking:
           Address = Scope.GetAddress(Name);
           if (Address.IsEmpty()) {
-            FixedTarget = context.Ops.GetGlobalFunction(Name);
+            FixedTarget = context.Ops.GetGlobalFunction(Name, Arguments);
             if (FixedTarget == null)
               ReportError(context, "Method not found: {0}", Name);
           }
@@ -65,7 +64,7 @@ namespace Irony.Samples.Scheme {
         } 
         IInvokeTarget target = context.CurrentFrame.GetValue(Address) as IInvokeTarget;
         //Check for tail call
-        if (IsTail) {
+        if (IsSet(AstNodeFlags.IsTail)) {
           context.Tail = target;
           context.TailArgs = values;
           return;
@@ -73,8 +72,11 @@ namespace Irony.Samples.Scheme {
           context.Tail = null;
           target.Invoke(context, values);
           //check for remaining tail
-          while (context.Tail != null)
-            context.Tail.Invoke(context, values);
+          while (context.Tail != null) {
+            target = context.Tail;
+            context.Tail = null;
+            target.Invoke(context, context.TailArgs);
+          }
           context.TailArgs = null; //clear args
         }
       } catch (RuntimeException exc) {

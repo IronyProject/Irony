@@ -10,9 +10,9 @@ namespace Irony.Compiler {
 
   }//class
 
-  public class IronyException : Exception {
-    public IronyException(string message) : base(message) { }
-    public IronyException(string message, Exception inner) : base(message, inner) { }
+  public class CompilerException : Exception {
+    public CompilerException(string message) : base(message) { }
+    public CompilerException(string message, Exception inner) : base(message, inner) { }
 
   }//class
 

@@ -87,8 +87,8 @@ namespace Irony.Compiler {
       }
     }
 
-    public override object Evaluate(Irony.Runtime.EvaluationContext context) {
-      return this.Value;
+    public override void Evaluate(Irony.Runtime.EvaluationContext context) {
+      context.CurrentResult = this.Value;
     }
 
     [System.Diagnostics.DebuggerStepThrough]
@@ -121,6 +121,9 @@ namespace Irony.Compiler {
       return token; 
     }
 
+    public override bool IsEmpty() {
+      return false;
+    }
 
   }//class
 

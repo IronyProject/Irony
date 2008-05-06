@@ -14,32 +14,28 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Irony.Compiler;
+using Irony.Runtime;
 
 namespace Irony.Samples.Scheme {
-  //The following class is an example of custom AST node. Notice how child's tag appears as prefix in node caption
-  // in AST view in GrammarExplorer form.
-  public class IfNode : AstNode {
-    public IfNode(AstNodeArgs args)  : base(args) {
-      _condition = args.ChildNodes[2];
-      _ifTrue = args.ChildNodes[3];
-      _ifFalse = args.ChildNodes[4];
-      _condition.Tag = "Cond";
-      _ifTrue.Tag = "IfTrue";
-      if (_ifFalse != null) _ifFalse.Tag = "IfFalse";
+  public class CondClauseNode : AstNode {
+    public AstNode Test;
+    public DatumListNode Expressions;
+
+    public CondClauseNode(AstNodeArgs args, AstNode test, DatumListNode expressions)  : base(args) {
+      SetFields(test, expressions);
+    }
+    private void SetFields(AstNode test, DatumListNode expressions) {
+      this.Tag = "Clause";
+      Test = test;
+      Test.Tag = "Test";
+      Expressions = expressions;
+      Expressions.Tag = "Command";
+      ReplaceChildNodes(Test, Expressions);
     }
 
-    public AstNode Condition  {
-      get {return _condition;}
-    } AstNode  _condition;
-
-    public AstNode IfTrue {
-      get {return _ifTrue;}
-    } AstNode  _ifTrue;
-
-    public AstNode IfFalse  {
-      get {return _ifFalse;}
-    } AstNode  _ifFalse;
-
+    public override void Evaluate(EvaluationContext context) {
+      Expressions.Evaluate(context);
+    }
   }//class
 
 }//namespace

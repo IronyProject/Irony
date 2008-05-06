@@ -74,11 +74,11 @@ namespace Irony.Compiler {
           yield return CreateSpecialToken(Grammar.Indent, context, token.Location);
         } else if (currIndent < prevIndent) {
           //produce one or more dedent tokens while popping indents from stack
-          while (_indents.Peek() > currIndent) {
+          while (_indents.Count > 0 && _indents.Peek() > currIndent) {
             _indents.Pop();
             yield return CreateSpecialToken(Grammar.Dedent, context, token.Location);
           }
-          if (_indents.Peek() != currIndent) {
+          if (_indents.Count == 0 || _indents.Peek() != currIndent) {
             yield return Grammar.CreateSyntaxErrorToken (context, token.Location, 
                         "Invalid dedent level, no previous matching indent found.");
             //TODO: add error recovery here

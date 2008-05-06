@@ -102,6 +102,7 @@ namespace Irony.Samples.CSharp {
       #region NonTerminals
       //B.2.1. Basic concepts
       NonTerminal qual_name_with_targs = new NonTerminal("qual_name_with_targs");
+      NonTerminal base_type_list = new NonTerminal("base_type_list");
       NonTerminal generic_dimension_specifier = new NonTerminal("generic_dimension_specifier");
       NonTerminal qual_name_segment = new NonTerminal("qual_name_segment");
       NonTerminal qual_name_segments_opt = new NonTerminal("qual_name_segments_opt");
@@ -336,7 +337,7 @@ namespace Irony.Samples.CSharp {
       NonTerminal enum_base_opt = new NonTerminal("enum_base_opt");
       NonTerminal enum_body = new NonTerminal("enum_body");
       NonTerminal enum_member_declaration = new NonTerminal("enum_member_declaration");
-      NonTerminal enum_member_declarations = enum_member_declaration.Plus("enum_member_declarations", comma);
+      NonTerminal enum_member_declarations = new NonTerminal("enum_member_declarations");
 
       //B.2.13 Attributes
       NonTerminal attribute_section = new NonTerminal("attribute_section");
@@ -598,7 +599,8 @@ namespace Irony.Samples.CSharp {
       class_declaration.Rule = member_header + "class" + identifier + type_parameter_list_opt +
         bases_opt + type_parameter_constraints_clauses_opt + class_body;
       class_body.Rule = Lbr + member_declaration.Star() + Rbr;
-      bases_opt.Rule = Empty | colon + qual_name_with_targs.Plus("type_names", comma);
+      bases_opt.Rule = Empty | colon + base_type_list;
+      base_type_list.Rule = MakePlusRule(base_type_list, comma, qual_name_with_targs);
 
       //Type parameters
       type_parameter.Rule = attributes_opt + identifier;

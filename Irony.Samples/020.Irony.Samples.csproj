@@ -44,11 +44,21 @@
   <ItemGroup>
     <Compile Include="CSharp\CSharpGrammar.cs" />
     <Compile Include="OtherGrammars\GwBasicGrammar.cs" />
+    <Compile Include="Scheme\AST\AnonFunctionNode.cs" />
+    <Compile Include="Scheme\AST\CondFormNode.cs" />
+    <Compile Include="Scheme\AST\CondClauseNode.cs" />
+    <Compile Include="Scheme\AST\NamedNode.cs" />
+    <Compile Include="Scheme\AST\FunctionDefNode.cs" />
+    <Compile Include="Scheme\AST\FunctionCallNode.cs" />
+    <Compile Include="Scheme\AST\IdentifierNode.cs" />
+    <Compile Include="Scheme\AST\SetVarNode.cs" />
+    <Compile Include="Scheme\SchemeOps.cs" />
+    <Compile Include="Scheme\AST\DatumListNode.cs" />
     <Compile Include="Script.NET\ScriptDotNetGrammar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Python\PythonGrammar.cs" />
-    <Compile Include="Ruby\RubyGrammar.cs" />
-    <Compile Include="Scheme\SampleAstNodes.cs" />
+    <None Include="Python\PythonGrammar.cs" />
+    <None Include="Ruby\RubyGrammar.cs" />
+    <Compile Include="Scheme\AST\IfThenElseNode.cs" />
     <Compile Include="Scheme\SchemeGrammar.cs" />
     <None Include="OtherGrammars\GrammarEx434.cs" />
     <None Include="OtherGrammars\GrammarEx446.cs" />
@@ -65,7 +75,6 @@
     <None Include="Python\Python_auth_svn.txt" />
     <None Include="SourceSamples\99 bottles.py" />
     <None Include="SourceSamples\99 bottles.rb" />
-    <None Include="SourceSamples\99 bottles.scm" />
     <None Include="SourceSamples\99 bottles with Errors.rb" />
     <Content Include="CSharp\Notes.txt" />
     <Content Include="Ruby\Ruby_auth.txt" />

@@ -70,46 +70,29 @@ namespace Irony.Compiler {
 
 
     #region Kleene operators: Q(), Plus(), Star()
+    // We cache Plus() and Star() lists (non-terminals) and return the same instance for repeated calls; 
+    // we don't do it for Q(), because it returns expression, not NonTerminal, and expression would better be not shared
+    NonTerminal _plus, _star; 
     public BnfExpression Q() {
       BnfExpression q = Grammar.Empty | this;
       q.Name = this.Name + "?";
       return q; 
     }
     public NonTerminal Plus() {
-      return Plus(this.Name + "+");
-    }
-    public NonTerminal Plus(string name) {
-      NonTerminal list = new NonTerminal(name);
-      list.SetOption(TermOptions.IsList);
-      list.Rule = this | list + this;
-      return list;
-    }
-    public NonTerminal Plus(BnfTerm delimiter) {
-      return Plus( this.Name + "_list", delimiter);
-    }
-    public NonTerminal Plus(string name, BnfTerm delimiter) {
-      NonTerminal list = new NonTerminal(name);
-      list.SetOption(TermOptions.IsList);
-      list.Rule = this | list + delimiter + this;
-      return list;
+      if (_plus != null) return _plus;
+      string name = this.Name + "+";
+      _plus = new NonTerminal(name);
+      _plus.SetOption(TermOptions.IsList);
+      _plus.Rule = this | _plus + this;
+      return _plus;
     }
     public NonTerminal Star() {
-      return Star(this.Name + "*");
-    }
-    public NonTerminal Star(string name) {
-      NonTerminal list = new NonTerminal(name);
-      list.SetOption(TermOptions.IsList);
-      list.Rule = Grammar.Empty | list + this;
-      return list;
-    }
-    public NonTerminal Star(BnfTerm delimiter) {
-      return Star(this.Name + "*", delimiter);
-    }
-    public NonTerminal Star(string name, BnfTerm delimiter) {
-      NonTerminal list = this.Plus(this.Name + "+");
-      NonTerminal result = new NonTerminal(name);
-      result.Rule = Grammar.Empty | list;
-      return result; 
+      if (_star != null) return _star;
+      string name = this.Name + "*";
+      _star = new NonTerminal(name);
+      _star.SetOption(TermOptions.IsList);
+      _star.Rule = Grammar.Empty | _star + this;
+      return _star;
     }
     #endregion
 

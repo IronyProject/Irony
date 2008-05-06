@@ -43,6 +43,8 @@ namespace Irony.Compiler {
     //Default node type; if null then GenericNode type is used. 
     public Type DefaultNodeType = typeof(AstNode);
 
+    public Irony.Runtime.LanguageOps Ops;
+
     public NonTerminal Root  {
       [System.Diagnostics.DebuggerStepThrough]
       get { return _root; }
@@ -154,6 +156,7 @@ namespace Irony.Compiler {
       NonTerminal tmp = new NonTerminal(listMember.Name + "+");
       MakePlusRule(tmp, delimiter, listMember);
       listNonTerminal.Rule = Empty | tmp;
+      listNonTerminal.SetOption(TermOptions.IsStarList);
       return listNonTerminal.Rule;
     }
 

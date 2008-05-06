@@ -16,15 +16,19 @@ using System.Text;
 
 namespace Irony.Compiler {
 
+  public delegate AstNode NodeCreatorMethod(AstNodeArgs args);
   public class NonTerminalList : List<NonTerminal> { }
 
-  //Class representing Non-Terminal syntactic element in BNF forms. 
   public class NonTerminal : BnfTerm {
 
     #region constructors
-    public NonTerminal(string name) : base(name) { 
+    public NonTerminal(string name)  : base(name) {
     }
-    public NonTerminal(string name, string alias) : base(name, alias) {
+    public NonTerminal(string name, NodeCreatorMethod nodeCreator)  : base(name) {
+      NodeCreator = nodeCreator;
+    }
+    public NonTerminal(string name, string alias)
+      : base(name, alias) {
     }
     public NonTerminal(string name, Type nodeType) : this(name) { 
       base.NodeType = nodeType;
@@ -57,19 +61,15 @@ namespace Irony.Compiler {
     public readonly ProductionList Productions = new ProductionList();
     public readonly KeyList Firsts = new KeyList();
     public readonly NonTerminalList PropagateFirstsTo = new NonTerminalList();
-
     #endregion
 
-    #region events: NodeCreating, NodeCreated
-    public event EventHandler<NodeCreatingEventArgs> NodeCreating;
+    #region events and delegates: NodeCreator, NodeCreated
+    public NodeCreatorMethod NodeCreator;
     public event EventHandler<NodeCreatedEventArgs> NodeCreated;
 
-    protected internal AstNode OnNodeCreating(CompilerContext context, ParserState state, ActionRecord action,
-                                      SourceSpan span, AstNodeList childNodes  ) {
-      if (NodeCreating == null) return null;
-      NodeCreatingEventArgs args = new NodeCreatingEventArgs(context, state, span, action, childNodes);
-      NodeCreating(this, args);
-      return args.NewNode;
+    protected internal AstNode InvokeNodeCreator(AstNodeArgs args) {
+      if (NodeCreator == null) return null;
+      return NodeCreator(args);
     }
     protected internal void OnNodeCreated(AstNode node) {
       if (NodeCreated == null) return;

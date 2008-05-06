@@ -43,8 +43,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common.cs" />
+    <Compile Include="Compiler\AstProcessing\AstProcessor.cs" />
+    <Compile Include="Compiler\AstProcessing\LexicalAddress.cs" />
     <Compile Include="Compiler\AST\AstNodeArgs.cs" />
     <Compile Include="Compiler\AST\AstVisitor.cs" />
+    <Compile Include="Compiler\AstProcessing\Scope.cs" />
     <Compile Include="Compiler\CompilerContext.cs" />
     <Compile Include="Compiler\Enums.cs" />
     <Compile Include="Compiler\Parser\ParserStack.cs" />
@@ -86,8 +89,12 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Microsoft\BigInteger.cs" />
+    <Compile Include="Runtime\Closure.cs" />
     <Compile Include="Runtime\EvaluationContext.cs" />
-    <Compile Include="Runtime\Scope.cs" />
+    <Compile Include="Runtime\Frame.cs" />
+    <Compile Include="Runtime\RuntimeException.cs" />
+    <Compile Include="Runtime\LanguageOps.cs" />
+    <Compile Include="Runtime\Unassigned.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Microsoft\MathResources.resx">

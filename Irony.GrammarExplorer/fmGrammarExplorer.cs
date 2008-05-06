@@ -21,6 +21,7 @@ using System.IO;
 using System.Configuration;
 using System.Text.RegularExpressions;
 using Irony.Compiler;
+using Irony.Runtime;
 using Irony.GrammarExplorer.Properties;
 
 namespace Irony.GrammarExplorer {
@@ -47,9 +48,14 @@ namespace Irony.GrammarExplorer {
     LanguageCompiler Compiler  {
       get {return _compiler;}
     } LanguageCompiler  _compiler;
+    AstNode _rootNode;
 
     private void btnParse_Click(object sender, EventArgs e) {
-      AstNode rootNode = null;
+      ParseSample();
+    }
+
+    private void ParseSample() {
+      _rootNode = null;
       ResetResultPanels();
       if (chkShowTrace.Checked) {
         Compiler.Parser.ActionSelected += Parser_ParserAction;
@@ -58,7 +64,7 @@ namespace Irony.GrammarExplorer {
       }
       try {
         SourceFile source = new SourceFile(txtSource.Text, "source", 8);
-        rootNode = Compiler.Parse(txtSource.Text);
+        _rootNode = Compiler.Parse(txtSource.Text);
       } catch (Exception ex) {
         lstErrors.Items.Add(ex);
         lstErrors.Items.Add("Parser state: " + Compiler.Parser.CurrentState);
@@ -69,17 +75,22 @@ namespace Irony.GrammarExplorer {
         Compiler.Parser.ActionSelected -= Parser_ParserAction;
         Compiler.Parser.TokenReceived -= Parser_TokenReceived;
       }
-      if (Compiler.Context.Errors.Count > 0) {
-        if (tabResults.SelectedTab == pageResult)
-          tabResults.SelectedTab = pageParseErrors;
-        foreach (SyntaxError err in Compiler.Context.Errors) 
-          lstErrors.Items.Add(err);
-      }
+      ShowCompilerErrors();
       if (chkShowTrace.Checked)
         foreach (Token tkn in _tokens)
           lstTokens.Items.Add(tkn);
       ShowStats();
-      ShowAstNodes(rootNode);
+      ShowAstNodes(_rootNode);
+    }
+
+    private void ShowCompilerErrors() {
+      if (Compiler.Context.Errors.Count > 0) {
+        lstErrors.Items.Clear();
+        if (tabResults.SelectedTab == pageResult)
+          tabResults.SelectedTab = pageParseErrors;
+        foreach (SyntaxError err in Compiler.Context.Errors)
+          lstErrors.Items.Add(err);
+      }
     }
 
     private void ResetResultPanels() {
@@ -231,29 +242,34 @@ namespace Irony.GrammarExplorer {
 
     private void cboLanguage_SelectedIndexChanged(object sender, EventArgs e) {
       SymbolTerminal.ClearSymbols();
-      Grammar grammar = null; 
+      Grammar grammar = null;
+      btnRun.Enabled = false;
+      txtOutput.Text = string.Empty;
       switch (cboLanguage.SelectedIndex) {
         case 0: //ExpressionGrammar
           grammar = new Irony.Samples.ExpressionGrammar();
           break;
         case 1: //Scheme
           grammar = new Irony.Samples.Scheme.SchemeGrammar();
+          btnRun.Enabled = true; 
           break;
-        case 2: //Python
-          grammar = new Irony.Samples.Python.PythonGrammar();
-          break;
-        case 3: //Ruby
-          grammar = new Irony.Samples.Ruby.RubyGrammar();
-          break;
-        case 4: //Script.NET
+        case 2: //Script.NET
           grammar = new  Irony.Samples.ScriptNET.ScriptdotnetGrammar();
+          //grammar = new ScriptNET.ScriptdotnetGrammar();
           break;
-        case 5: //c#
+        case 3: //c#
           grammar = new Irony.Samples.CSharp.CSharpGrammar();
           break;
-        case 6: //GwBasic
+        case 4: //GwBasic
           grammar = new Irony.Samples.GWBasicGrammar();
           break;
+/*        case 2: //Python
+          //grammar = new Irony.Samples.Python.PythonGrammar();
+          break;
+        case 3: //Ruby
+          //grammar = new Irony.Samples.Ruby.RubyGrammar();
+          break;
+ */ 
       }//switch
       try {
         _compiler = new LanguageCompiler(grammar);
@@ -268,6 +284,7 @@ namespace Irony.GrammarExplorer {
       
     }
     private void LoadSourceFile(string path) {
+      _rootNode = null;
       StreamReader reader = null;
       try {
         reader = new StreamReader(path);
@@ -347,6 +364,41 @@ namespace Irony.GrammarExplorer {
 	  }
 
     #endregion
+
+    StringBuilder _outBuffer;
+    private void btnRun_Click(object sender, EventArgs e) {
+      txtOutput.Text = "";
+      _outBuffer = new StringBuilder();
+      EvaluationContext context = null;
+      try {
+        if (_rootNode == null)
+          ParseSample();
+        if (Compiler.Context.Errors.Count > 0) return;
+        
+        AstProcessor astProc = new  AstProcessor();
+        astProc.ProcessAst(_rootNode, Compiler.Context);
+        if (Compiler.Context.Errors.Count > 0) return;
+
+        context = new EvaluationContext(Compiler.Grammar.Ops, _rootNode);
+        context.Ops.ConsoleWrite += Ops_ConsoleWrite;
+        long start = Environment.TickCount;
+        _rootNode.Evaluate(context);
+        lblRunTime.Text = (Environment.TickCount - start).ToString();
+      } catch(RuntimeException rex) {
+        //temporarily - catch and add to compiler context, so they will be shown in the form
+        Compiler.Context.AddError(rex.Location, rex.Message);
+      } finally {
+        if (context != null)
+          context.Ops.ConsoleWrite -= Ops_ConsoleWrite;
+        txtOutput.Text = _outBuffer.ToString();
+        if (Compiler.Context.Errors.Count > 0)
+          ShowCompilerErrors();
+      }//finally
+    }//method
+
+    void Ops_ConsoleWrite(object sender, ConsoleWriteEventArgs e) {
+      _outBuffer.Append(e.Text);
+    }
 
 
 

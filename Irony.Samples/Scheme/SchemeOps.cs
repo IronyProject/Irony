@@ -23,31 +23,31 @@ namespace Irony.Samples.Scheme {
       get { return null; }
     }
 
-    public override MethodRefTarget GetGlobalFunction(string name) {
-      MethodRef method = null;
+    public override FunctionRefWrapper GetGlobalFunction(string name, Irony.Compiler.AstNodeList parameters) {
+      FunctionRef function = null;
       switch (name) {
-        case "+": method = OpPlus; break;
-        case "-": method = OpMinus; break;
-        case "*": method = OpMul; break;
-        case "/": method = OpDiv; break;
-        case "<": method = OpLess; break;
-        case ">": method = OpGreater; break;
-        case "<=": method = OpLessOrEqual; break;
-        case ">=": method = OpGreaterOrEqual; break;
-        case "=": method = OpEqual; break;
-        case "!=": method = OpNonEqual; break;
+        case "+": function = OpPlus; break;
+        case "-": function = OpMinus; break;
+        case "*": function = OpMul; break;
+        case "/": function = OpDiv; break;
+        case "<": function = OpLess; break;
+        case ">": function = OpGreater; break;
+        case "<=": function = OpLessOrEqual; break;
+        case ">=": function = OpGreaterOrEqual; break;
+        case "=": function = OpEqual; break;
+        case "!=": function = OpNonEqual; break;
 
-        case "cons": method = ConsImpl; break;
-        case "car": method = CarImpl; break;
-        case "cdr": method = CdrImpl; break;
-        case "list": method = ListImpl; break;
-        case "null?": method = NullQImpl; break;
+        case "cons": function = ConsImpl; break;
+        case "car": function = CarImpl; break;
+        case "cdr": function = CdrImpl; break;
+        case "list": function = ListImpl; break;
+        case "null?": function = NullQImpl; break;
 
-        case "display": method = DisplayImpl; break;
-        case "newline": method = NewLineImpl; break;
+        case "display": function = DisplayImpl; break;
+        case "newline": function = NewLineImpl; break;
         default: return null;
       }
-      return new MethodRefTarget(method);
+      return new FunctionRefWrapper(function);
     }
 
     private object OpPlus(ValueList args) {

@@ -37,6 +37,9 @@ namespace Irony.Samples.Scheme {
         case AstProcessingPhase.Allocating:
           foreach (IdentifierNode id in Parameters.ChildNodes)
             Scope.CreateSlot(id.Name);
+          break;
+        case AstProcessingPhase.MarkTailCalls:
+          Body.Flags |= AstNodeFlags.IsTail; //unconditionally set body's tail flag
           break; 
       }//switch
     }

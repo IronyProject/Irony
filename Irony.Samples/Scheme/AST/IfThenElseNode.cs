@@ -30,6 +30,20 @@ namespace Irony.Samples.Scheme {
     public IfThenElseNode(AstNodeArgs args, AstNode test, AstNode ifTrue, AstNode ifFalse) : base(args) {
        SetFields(test, ifTrue, ifFalse);
     }
+    public override void OnAstProcessing(CompilerContext context, AstProcessingPhase phase) {
+      base.OnAstProcessing(context, phase);
+      switch (phase) {
+        case AstProcessingPhase.MarkTailCalls:
+          if (IsSet(AstNodeFlags.IsTail)) {
+            IfTrue.Flags |= AstNodeFlags.IsTail;
+            if (IfFalse != null)
+              IfFalse.Flags |= AstNodeFlags.IsTail;
+          }
+          break;
+      }
+    }
+
+
     private void SetFields(AstNode test, AstNode ifTrue, AstNode ifFalse) {
       if (ifTrue != null && ifTrue.IsEmpty()) ifTrue = null;
       if (ifFalse != null && ifFalse.IsEmpty()) ifFalse = null;

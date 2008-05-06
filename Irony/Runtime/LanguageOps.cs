@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Irony.Compiler;
 
 namespace Irony.Runtime {
 
-  public delegate object MethodRef(ValueList args);
-  public class MethodRefTarget : IInvokeTarget {
-    MethodRef _target;
-    public MethodRefTarget(MethodRef target) {
-      _target = target;
+  public delegate object FunctionRef(ValueList args);
+  public class FunctionRefWrapper : IInvokeTarget {
+    FunctionRef _function;
+    public FunctionRefWrapper(FunctionRef function) {
+      _function = function;
     }
     public void Invoke(EvaluationContext context, ValueList args) {
-      context.CurrentResult = _target(args);
+      context.CurrentResult = _function(args);
     }
 
   }
@@ -33,7 +34,7 @@ namespace Irony.Runtime {
       get { return null; }
     }
 
-    public virtual MethodRefTarget GetGlobalFunction(string name) {
+    public virtual FunctionRefWrapper GetGlobalFunction(string name, AstNodeList parameters) {
       return null;
     }
 

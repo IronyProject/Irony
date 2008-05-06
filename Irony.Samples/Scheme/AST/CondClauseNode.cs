@@ -33,6 +33,15 @@ namespace Irony.Samples.Scheme {
       ReplaceChildNodes(Test, Expressions);
     }
 
+    public override void OnAstProcessing(CompilerContext context, AstProcessingPhase phase) {
+      base.OnAstProcessing(context, phase);
+      switch (phase) {
+        case AstProcessingPhase.MarkTailCalls:
+          if (IsSet(AstNodeFlags.IsTail))
+            Expressions.Flags |= AstNodeFlags.IsTail;
+          break;
+      }
+    }
     public override void Evaluate(EvaluationContext context) {
       Expressions.Evaluate(context);
     }

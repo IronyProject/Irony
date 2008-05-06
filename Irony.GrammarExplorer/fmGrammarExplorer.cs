@@ -375,8 +375,8 @@ namespace Irony.GrammarExplorer {
           ParseSample();
         if (Compiler.Context.Errors.Count > 0) return;
         
-        AstProcessor astProc = new  AstProcessor();
-        astProc.ProcessAst(_rootNode, Compiler.Context);
+        AstProcessor astProc = new AstProcessor();
+        astProc.DoDefaultProcessing(_rootNode, Compiler.Context); 
         if (Compiler.Context.Errors.Count > 0) return;
 
         context = new EvaluationContext(Compiler.Grammar.Ops, _rootNode);

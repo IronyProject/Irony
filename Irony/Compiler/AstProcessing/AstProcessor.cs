@@ -5,29 +5,28 @@ using System.Text;
 
 namespace Irony.Compiler {
   public enum AstProcessingPhase {
-    CreatingScopes = 5,
-    Allocating = 10, //Allocating local variables
-    Linking = 20,    //Linking variable references to variables
+    CreatingScopes = 10,
+    Allocating = 20, //Allocating local variables
+    Linking = 30,    //Linking variable references to variables
+    MarkTailCalls = 40,
   }
 
 
   public class AstProcessor {
-    public void AssignScopes(AstNode astRoot, CompilerContext context) {
-    }
 
-    public void ProcessAst(AstNode astRoot, CompilerContext context) {
-      AssignScopes(astRoot, context);
-      IEnumerable<AstNode> allNodes = astRoot.GetAll();
+    public void DoDefaultProcessing(AstNode astRoot, CompilerContext context) {
       Scope rootScope = new Scope(astRoot, null);
       astRoot.Scope = rootScope;
-      foreach (AstNode node in allNodes)
-        node.OnAstProcessing(context, AstProcessingPhase.CreatingScopes);
-      foreach (AstNode node in allNodes) 
-        node.OnAstProcessing(context, AstProcessingPhase.Allocating);
-      foreach (AstNode node in allNodes)
-        node.OnAstProcessing(context, AstProcessingPhase.Linking);
-      
+      RunPhases(astRoot, context, AstProcessingPhase.CreatingScopes, AstProcessingPhase.Allocating,
+           AstProcessingPhase.Linking, AstProcessingPhase.MarkTailCalls);
     }
+    public void RunPhases(AstNode astRoot, CompilerContext context, params AstProcessingPhase[] phases) {
+      IEnumerable<AstNode> allNodes = astRoot.GetAll();
+      foreach (AstProcessingPhase phase in phases) {
+        foreach (AstNode node in allNodes)
+          node.OnAstProcessing(context, phase);
+      }//foreach phase
+    }//method
   
   }
 

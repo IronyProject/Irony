@@ -13,6 +13,16 @@ namespace Irony.Samples.Scheme {
       ReplaceChildNodes(statements);
     }
 
+    public override void OnAstProcessing(CompilerContext context, AstProcessingPhase phase) {
+      base.OnAstProcessing(context, phase);
+      switch (phase) {
+        case AstProcessingPhase.MarkTailCalls:
+          if (IsSet(AstNodeFlags.IsTail) && ChildNodes.Count > 0)
+            ChildNodes[ChildNodes.Count - 1].Flags |= AstNodeFlags.IsTail;
+          break;
+      }
+    }
+
     
     public override void Evaluate(Irony.Runtime.EvaluationContext context) {
       foreach(AstNode node in ChildNodes) {

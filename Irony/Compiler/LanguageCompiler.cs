@@ -20,13 +20,15 @@ namespace Irony.Compiler {
   public class LanguageCompiler {
     public LanguageCompiler(Grammar grammar) {
       Grammar = grammar;
-      long startTime = Environment.TickCount;
+      Stopwatch sw = new Stopwatch();
+      sw.Start();
       GrammarDataBuilder bld = new GrammarDataBuilder(grammar);
       bld.Build();
-      InitTime = Environment.TickCount - startTime;
       Data = bld.Data;
       Parser = new Parser(Data); 
       Scanner = new Scanner(Data);
+      sw.Stop();
+      InitTime = sw.ElapsedMilliseconds;
     }
     public LanguageCompiler(GrammarData data) {
       Data = data;

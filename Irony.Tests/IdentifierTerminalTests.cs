@@ -1,37 +1,34 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
-using NUnit.Framework.Constraints;
 using Irony.Compiler;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Irony.Tests {
 
-  [TestFixture]
+  [TestClass]
   public class IdentifierTerminalTests : TerminalTestsBase {
 
-    [Test]
+    [TestMethod]
     public void TestCSharpIdentifier() {
-      _terminal = TerminalFactory.CreateCSharpIdentifier("Identifier");
-      InitTerminal();
+      SetTerminal(TerminalFactory.CreateCSharpIdentifier("Identifier"));
       TryMatch("x ");
-      Assert.That(_token.Term.Name == "Identifier", "Failed to parse identifier");
-      Assert.That((string)_token.Value == "x", "Failed to parse identifier");
+      Assert.IsTrue(_token.Term.Name == "Identifier", "Failed to parse identifier");
+      Assert.IsTrue((string)_token.Value == "x", "Failed to parse identifier");
       TryMatch("_a01 ");
-      Assert.That(_token.Term.Name == "Identifier", "Failed to parse identifier starting with _");
-      Assert.That((string)_token.Value == "_a01", "Failed to parse identifier starting with _");
+      Assert.IsTrue(_token.Term.Name == "Identifier", "Failed to parse identifier starting with _");
+      Assert.IsTrue((string)_token.Value == "_a01", "Failed to parse identifier starting with _");
 
       TryMatch("0abc ");
-      Assert.That(_token == null, "Erroneously recognized an identifier.");
+      Assert.IsTrue(_token == null, "Erroneously recognized an identifier.");
 
       TryMatch(@"_\u0061bc ");
-      Assert.That(_token.Term.Name == "Identifier", "Failed to parse identifier starting with _");
-      Assert.That((string)_token.Value == "_abc", "Failed to parse identifier containing escape sequence \\u");
+      Assert.IsTrue(_token.Term.Name == "Identifier", "Failed to parse identifier starting with _");
+      Assert.IsTrue((string)_token.Value == "_abc", "Failed to parse identifier containing escape sequence \\u");
 
       TryMatch(@"a\U00000062c_ ");
-      Assert.That(_token.Term.Name == "Identifier", "Failed to parse identifier starting with _");
-      Assert.That((string)_token.Value == "abc_", "Failed to parse identifier containing escape sequence \\U");
+      Assert.IsTrue(_token.Term.Name == "Identifier", "Failed to parse identifier starting with _");
+      Assert.IsTrue((string)_token.Value == "abc_", "Failed to parse identifier containing escape sequence \\U");
     }//method
 
   }//class

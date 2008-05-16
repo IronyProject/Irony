@@ -75,7 +75,7 @@
     <Compile Include="Compiler\Grammar\BnfTerm.cs" />
     <Compile Include="Compiler\Grammar\Grammar.cs" />
     <Compile Include="Compiler\Terminals\TerminalFactory.cs" />
-    <Compile Include="Compiler\TextUtils.cs" />
+    <Compile Include="TextUtils.cs" />
     <Compile Include="Compiler\TokenFilters\BraceMatchFilter.cs" />
     <Compile Include="Compiler\TokenFilters\CodeOutlineFilter.cs" />
     <Compile Include="Compiler\TokenFilters\TokenFilter.cs" />
@@ -92,6 +92,8 @@
     <Compile Include="Runtime\Closure.cs" />
     <Compile Include="Runtime\EvaluationContext.cs" />
     <Compile Include="Runtime\Frame.cs" />
+    <Compile Include="Compiler\AstProcessing\ProcInfo.cs" />
+    <Compile Include="Runtime\OperatorDispatch.cs" />
     <Compile Include="Runtime\RuntimeException.cs" />
     <Compile Include="Runtime\LanguageOps.cs" />
     <Compile Include="Runtime\Unassigned.cs" />

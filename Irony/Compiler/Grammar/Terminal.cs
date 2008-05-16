@@ -38,8 +38,11 @@ namespace Irony.Compiler {
     public int Precedence = int.MaxValue;
     public Associativity Associativity = Associativity.Neutral;
     public Terminal IsPairFor;
-    //Priority is used when more than one terminal matches the input. 
-    // When choosing the token, scanner would check priority, then token length. 
+    // Priority is used when more than one terminal may match the input char. 
+    // It determines the order in which terminals will try to match input for a given char in the input.
+    // For a given input char the scanner uses the hash table to look up the collection of terminals that may match this input symbol. 
+    // It is the order in this collection that is determined by Priority property - the higher the priority, 
+    // the earlier the terminal gets a chance to check the input. 
     public int Priority; //default is 0
 
     #endregion

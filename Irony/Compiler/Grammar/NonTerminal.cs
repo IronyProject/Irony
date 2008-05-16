@@ -59,7 +59,7 @@ namespace Irony.Compiler {
 
     //The following fields are used by GrammarDataBuilder and Parser
     public readonly ProductionList Productions = new ProductionList();
-    public readonly KeyList Firsts = new KeyList();
+    public readonly StringSet Firsts = new StringSet();
     public readonly NonTerminalList PropagateFirstsTo = new NonTerminalList();
     #endregion
 

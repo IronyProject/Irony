@@ -24,11 +24,17 @@ namespace Irony.Compiler {
   public class SymbolTerminal : Terminal {
     private SymbolTerminal(string symbol, string name)  : base(name) {
       _symbol = symbol;
-      Key = symbol.Trim();  //Overwrite base class assignment: symbols are matched by value (symbol itself), not by element name
-      //Symbols found in grammar by default have lowest priority to allow other terminals (like identifiers)
-      // to check input first.
+      //Overwrite the Key assigned by base class (key derived from name): symbols are matched by value (symbol itself), not by element name
+      Key = symbol.Trim();
+      #region comments
+      // Priority - determines the order in which multiple terminals try to match input for a given current char in the input.
+      // For a given input char the scanner looks up the collection of terminals that may match this input symbol. It is the order
+      // in this collection that is determined by Priority value - the higher the priority, the earlier the terminal gets a chance 
+      // to check the input. 
+      //Symbols found in grammar by default have lowest priority to allow other terminals (like identifiers)to check the input first.
       // Additionally, longer symbols have higher priority, so symbols like "+=" should have higher priority value than "+" symbol. 
       // As a result, Scanner would first try to match "+=", longer symbol, and if it fails, it will try "+". 
+      #endregion
       base.Priority = -1000 + symbol.Length;
     }
 

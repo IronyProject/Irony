@@ -71,20 +71,23 @@ namespace Irony.Compiler {
           yield return token;
           continue;
         }
-        if (token.Term.IsSet(TermOptions.IsCloseBrace)) {
-          Token lastOpen = _braces.Peek();
-          if (_braces.Count > 0 && lastOpen.Symbol.IsPairFor == token.Symbol) { 
-            //everything is ok, there's matching brace on top of the stack
-            if (BuildPairsList)
-              BracePairs.Add(new BracePair(lastOpen, token));
-            _braces.Pop();
-            yield return token; //return this token
-          } else {
-            yield return Grammar.CreateSyntaxErrorToken(context, token.Span.Start, 
-                "Unmatched closing brace '{0}' - expected '{1}'", token.Text, lastOpen.Symbol.IsPairFor.Name);
-            //TODO: add some error recovery here
-          }//else
-        }//if token IsCloseBrace
+        //We have closing brace
+        if (_braces.Count == 0) {
+          yield return Grammar.CreateSyntaxErrorToken(context, token.Span.Start,
+              "Unmatched closing brace '{0}'", token.Text);
+          continue;
+        }
+        //check match
+        Token last = _braces.Pop();
+        if (last.Symbol.IsPairFor != token.Symbol) {
+          yield return Grammar.CreateSyntaxErrorToken(context, token.Span.Start,
+              "Unmatched closing brace '{0}' - expected '{1}'", token.Text, last.Symbol.IsPairFor.Name);
+          continue;
+        }
+        //everything is ok, there's matching brace on top of the stack
+        if (BuildPairsList)
+          BracePairs.Add(new BracePair(last, token));
+        yield return token; //return this token
       }//foreach token
       yield break;
     }//method

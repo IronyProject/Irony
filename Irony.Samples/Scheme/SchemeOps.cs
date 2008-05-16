@@ -13,16 +13,18 @@ namespace Irony.Samples.Scheme {
       Car = car;
       Cdr = cdr;
     }
+    public override string ToString() {
+      return "(" + Car + "." + Cdr + ")";
+    }
   }
 
-  public class SchemeOps : Irony.Runtime.LanguageOps {
+  public sealed class SchemeOps : Irony.Runtime.LanguageOps {
     public override bool IsTrue(object value) {
       return value != null;
     }
     public override object NullObject {
       get { return null; }
     }
-
     public override FunctionRefWrapper GetGlobalFunction(string name, Irony.Compiler.AstNodeList parameters) {
       FunctionRef function = null;
       switch (name) {

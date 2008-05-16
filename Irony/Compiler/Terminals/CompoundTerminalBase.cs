@@ -90,8 +90,8 @@ namespace Irony.Compiler {
     #region private fields
     protected readonly ScanFlagTable PrefixFlags = new ScanFlagTable();
     protected readonly TypeCodeTable SuffixTypeCodes = new TypeCodeTable();
-    protected KeyList Prefixes = new KeyList();
-    protected KeyList Suffixes = new KeyList();
+    protected StringList Prefixes = new StringList();
+    protected StringList Suffixes = new StringList();
     string _prefixesFirsts; //first chars of all prefixes, for fast prefix detection
     string _suffixesFirsts; //first chars of all suffixes, for fast suffix detection
     private TypeCode[] _defaultTypes;
@@ -107,12 +107,12 @@ namespace Irony.Compiler {
       base.Init(grammar);
       _defaultTypes = new TypeCode[] { DefaultType };
       //collect all suffixes, prefixes in lists and create strings of first chars for both
-      Prefixes.Sort(KeyList.LongerFirst);
+      Prefixes.Sort(StringList.LongerFirst);
       _prefixesFirsts = string.Empty;
       foreach (string pfx in Prefixes)
         _prefixesFirsts += pfx[0];
 
-      Suffixes.Sort(KeyList.LongerFirst);
+      Suffixes.Sort(StringList.LongerFirst);
       _suffixesFirsts = string.Empty;
       foreach (string sfx in Suffixes)
         _suffixesFirsts += sfx[0]; //we don't care if there are repetitions

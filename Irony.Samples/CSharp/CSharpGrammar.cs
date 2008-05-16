@@ -740,7 +740,7 @@ namespace Irony.Samples.CSharp {
 
     }
 
-    private KeyList _previewTokens = new KeyList(
+    private StringList _previewTokens = new StringList(
           ";", "{", 
           "||" , "&&" , "|" , "^" , "&" , "==" , "!=" , ">" , "<=" , ">=" , "<<" , ">>" , 
           "+" , "-" , "*" , "/" , "%", "=" , "+=" , "-=" , "*=" , "/=" , "%=" , "&=" , ",=" , 

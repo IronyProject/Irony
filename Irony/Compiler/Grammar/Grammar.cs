@@ -100,7 +100,7 @@ namespace Irony.Compiler {
                                       SourceSpan sourceSpan, AstNodeList childNodes) {
       return null;      
     }
-    public virtual string GetSyntaxErrorMessage(CompilerContext context, KeyList expectedList) {
+    public virtual string GetSyntaxErrorMessage(CompilerContext context, StringList expectedList) {
       return null; //Irony then would construct default message
     }
     public virtual void OnActionSelected(Parser parser, Token input, ActionRecord action) {

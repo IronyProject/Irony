@@ -25,6 +25,8 @@ namespace Irony.Runtime {
     }
   }
 
+  //Note: mark the derived language-specific class as sealed - important for JIT optimizations
+  // details here: http://www.codeproject.com/KB/dotnet/JITOptimizations.aspx
   public class LanguageOps {
     public virtual bool IsTrue(object value) {
       return value != NullObject;

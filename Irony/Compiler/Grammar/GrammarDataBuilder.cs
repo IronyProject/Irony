@@ -282,7 +282,7 @@ namespace Irony.Compiler {
     #region Calculating Tail Firsts
     private void CalculateTailFirsts() {
       foreach (Production prod in Data.Productions) {
-        KeyList accumulatedFirsts = new KeyList();
+        StringSet accumulatedFirsts = new StringSet();
         bool allNullable = true;
         //We are going backwards in LR0Items list
         for(int i = prod.LR0Items.Count-1; i >= 0; i--) {
@@ -326,7 +326,8 @@ namespace Irony.Compiler {
       itemList.Add(Data.AugmentedRoot.Productions[0].LR0Items[0]);
       Data.InitialState = FindOrCreateState(itemList); //it is actually create
       Data.InitialState.Items[0].NewLookaheads.Add(Grammar.Eof.Key);
-      //Create final state - because of the way state building works, it doesn't create the final state automatically. 
+      #region comment about FinalState
+      //Create final state - because of the way states construction works, it doesn't create the final state automatically. 
       // We need to create it explicitly and assign it to _data.FinalState property
       // The final executed reduction is "Root' -> Root.". This jump is executed as follows: 
       //   1. parser creates Root' node 
@@ -335,6 +336,7 @@ namespace Irony.Compiler {
       // We must create the final state, and create the entry in transition table
       // The final state is based on the same initial production, but different LRItem - the one with dot AFTER the root nonterminal.
       // it is item at index 1.
+      #endregion
       itemList.Clear();
       itemList.Add(Data.AugmentedRoot.Productions[0].LR0Items[1]);
       Data.FinalState = FindOrCreateState(itemList); //it is actually create
@@ -603,16 +605,18 @@ namespace Irony.Compiler {
 
     private void ValidateAll() {
       //Check rule on all non-terminals
-      KeyList ntList = new KeyList();
+      StringSet ntList = new StringSet();
       foreach(NonTerminal nt in Data.NonTerminals) {
         if (nt == Data.AugmentedRoot) continue; //augm root does not count
         BnfExpressionData data = nt.Rule.Data;
         if (data.Count == 1 && data[0].Count == 1 && data[0][0] is NonTerminal)
           ntList.Add(nt.Name);
       }//foreach
-      if (ntList.Count > 0) 
+      if (ntList.Count > 0) {
+        string slist =  TextUtils.Cleanup(ntList.ToString(", "));
         AddError("Warning: Possible non-terminal duplication. The following non-terminals have rules containing a single non-terminal: \r\n {0}. \r\n" +
-         "Consider merging two non-terminals; you may need to use 'nt1 = nt2;' instead of 'nt1.Rule=nt2'.", ntList.ToString(", "));
+         "Consider merging two non-terminals; you may need to use 'nt1 = nt2;' instead of 'nt1.Rule=nt2'.", slist);
+      }
     }
 
     #region error handling: AddError

@@ -24,7 +24,7 @@ namespace Irony.Compiler {
         Prefixes.AddRange(prefixes);
     }
     
-    public readonly KeyList Prefixes = new KeyList();
+    public readonly StringList Prefixes = new StringList();
 
     public MatchHandler Handler   {
       [System.Diagnostics.DebuggerStepThrough]

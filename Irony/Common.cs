@@ -17,56 +17,37 @@ using System.Text;
 namespace Irony {
   //Some common classes
 
-  public class StringList : List<string> { }
+  //public class StringList : List<string> { }
   public class StringDictionary : Dictionary<string, string> { }
   public class CharList : List<char> { }
 
-  //string list with no duplicates
-  public class KeyList : List<string> {
-    Dictionary<string, byte> _hash = new Dictionary<string, byte>();
-
-    public KeyList() { }
-    public KeyList(params string[] keys) {
-      this.AddRange(keys);
-    }
-    //overwrite Add and AddRange to disallow repetitions
-    public new void Add(string key) {
-      if (!Contains(key)) {
-        base.Add(key);
-        _hash.Add(key, 1);
-      }
-    }
-
-    public new void AddRange(IEnumerable<string> keys) {
-      foreach (string key in keys)
-        this.Add(key);
-    }
-    public new void Remove(string key) {
-      base.Remove(key);
-      _hash.Remove(key);
-    }
-    public new bool Contains(string key) {
-      return _hash.ContainsKey(key);
+  public class StringSet : HashSet<string> {
+    public void AddRange(IEnumerable<string> values) {
+      foreach (string value in values) Add(value);
     }
     public override string ToString() {
       return ToString(" ");
     }
     public string ToString(string separator) {
-      string[] arr = new string[this.Count];
-      this.CopyTo(arr);
-      //Clean-up \b suffix
-      for(int i = 0; i < arr.Length; i++) {
-        string key = arr[i];
-        if(key.EndsWith("\b"))
-          arr[i] = key.Substring(0, key.Length - 1);
-      }
-      return string.Join(separator, arr);
+      return TextUtils.JoinStrings(separator, this);
     }
-    public new void Clear() {
-      base.Clear();
-      _hash.Clear();
-    }
+  }
 
+  public class StringList : List<string> {
+    public StringList() { }
+    public StringList(params string[] args) {
+      AddRange(args);
+    }
+    public new void AddRange(IEnumerable<string> keys) {
+      foreach (string key in keys)
+        this.Add(key);
+    }
+    public override string ToString() {
+      return ToString(" ");
+    }
+    public string ToString(string separator) {
+      return TextUtils.JoinStrings(separator, this);
+    }
     //Used in sorting suffixes and prefixes; longer strings must come first in sort order
     public static int LongerFirst(string x, string y) {
       try {//in case any of them is null

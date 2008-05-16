@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Irony.Compiler;
 
-namespace Irony.Compiler {
+namespace Irony {
 
   public class EscapeTable : Dictionary<char, char> { }
   public static class TextUtils {
@@ -50,7 +51,8 @@ namespace Irony.Compiler {
           sb.AppendLine(pr.ToString());
         }
         sb.Append("  FIRSTS: ");
-        sb.AppendLine(nt.Firsts.ToString(" "));
+        string firsts = TextUtils.Cleanup(nt.Firsts.ToString(" "));
+        sb.AppendLine(firsts);
         sb.AppendLine();
       }//foreachc nt
       return sb.ToString();
@@ -82,6 +84,19 @@ namespace Irony.Compiler {
       return sb.ToString();
     }
 
+    public static string JoinStrings( string separator, IEnumerable<string> values) {
+      StringList list = new StringList();
+      list.AddRange(values);
+      string[] arr = new string[list.Count];
+      list.CopyTo(arr, 0);
+      return string.Join(separator, arr);
+    }
+
+    //removes \b characters
+    public static string Cleanup(string value) {
+      if (string.IsNullOrEmpty(value)) return value;
+      return value.Replace("\b", " ");
+    }
 
   }//class
 

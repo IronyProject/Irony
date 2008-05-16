@@ -41,7 +41,7 @@ namespace Irony.Compiler {
 
     #region private fields
     string _startEndFirsts; //first chars  of start-end symbols
-    KeyList _startEndSymbols = new KeyList();
+    StringList _startEndSymbols = new StringList();
     #endregion
 
     #region overrides: Init, GetFirsts, ReadBody, etc...
@@ -50,7 +50,7 @@ namespace Irony.Compiler {
       //collect all start-end symbols in lists and create strings of first chars for both
       _startEndSymbols.Clear();
       _startEndSymbols.AddRange(StartEndSymbolTable.Keys);
-      _startEndSymbols.Sort(KeyList.LongerFirst);
+      _startEndSymbols.Sort(StringList.LongerFirst);
       _startEndFirsts = string.Empty;
       foreach (string st in _startEndSymbols)
         _startEndFirsts += st[0];

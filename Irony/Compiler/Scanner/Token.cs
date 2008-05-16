@@ -93,11 +93,14 @@ namespace Irony.Compiler {
 
     [System.Diagnostics.DebuggerStepThrough]
     public override string ToString() {
+      string result = string.IsNullOrEmpty(Tag) ? string.Empty : Tag + ":";
       if (Terminal is SymbolTerminal)
-        return _text + " [Symbol]";
-      if (IsKeyword)
-        return _text + " " + "[Keyword]";
-      return ValueString + " " + Terminal.ToString();
+        result += _text + " [Symbol]";
+      else if (IsKeyword)
+        result += _text + " " + "[Keyword]";
+      else
+        result += ValueString + " " + Terminal.ToString();
+      return result; 
     }
 
     public static Token Create(Terminal term, CompilerContext context, SourceLocation location, string text) {

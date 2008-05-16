@@ -48,7 +48,7 @@ namespace Irony.Compiler {
     private StringDictionary _keywordHash;
 
     //The following list must include only words that are reserved and are not general identifiers (variables)
-    public readonly KeyList Keywords = new KeyList();
+    public readonly StringSet Keywords = new StringSet();
     public readonly UnicodeCategoryList StartCharCategories = new UnicodeCategoryList(); //categories of first char
     public readonly UnicodeCategoryList CharCategories = new UnicodeCategoryList();      //categories of all other chars
     public readonly UnicodeCategoryList CharsToRemoveCategories = new UnicodeCategoryList(); //categories of chars to remove from final id, usually formatting category
@@ -188,7 +188,7 @@ namespace Irony.Compiler {
 
     //TODO: put into account non-Ascii aplhabets specified by means of Unicode categories!
     public override IList<string> GetFirsts() {
-      KeyList list = new KeyList();
+      StringList list = new StringList();
       list.AddRange(Prefixes);
       if (string.IsNullOrEmpty(AllFirstChars)) 
         return list;

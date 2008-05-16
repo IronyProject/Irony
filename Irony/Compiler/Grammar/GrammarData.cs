@@ -32,7 +32,7 @@ namespace Irony.Compiler {
     public readonly TerminalList FallbackTerminals = new TerminalList(); //terminals that have no explicit prefixes
     public readonly ProductionList Productions = new ProductionList();
     public readonly ParserStateList States = new ParserStateList();
-    public readonly KeyList Errors = new KeyList();
+    public readonly StringSet Errors = new StringSet();
     public string ScannerRecoverySymbols = "";
     public bool AnalysisCanceled;  //True if grammar analysis was canceled due to errors
   }
@@ -183,14 +183,14 @@ namespace Irony.Compiler {
     public readonly ParserState State;
     public readonly LR0Item Core;
     public readonly LRItemList PropagateTargets = new LRItemList(); //used for lookaheads propagation
-    public readonly KeyList Lookaheads = new KeyList();
-    public readonly KeyList NewLookaheads = new KeyList();
+    public readonly StringSet Lookaheads = new StringSet();
+    public readonly StringSet NewLookaheads = new StringSet();
     public LRItem(ParserState state, LR0Item core) {
       State = state;
       Core = core;
     }
     public override string ToString() {
-      return Core.ToString() + "  LOOKAHEADS: " + Lookaheads.ToString(" ");
+      return Core.ToString() + "  LOOKAHEADS: " + TextUtils.Cleanup(Lookaheads.ToString(" "));
     }
   }//LRItem class
 
@@ -199,7 +199,7 @@ namespace Irony.Compiler {
   public partial class LR0Item {
     public readonly Production Production;
     public readonly int Position;
-    public readonly KeyList TailFirsts = new KeyList(); //tail is a set of elements after the "after-dot-element"
+    public readonly StringSet TailFirsts = new StringSet(); //tail is a set of elements after the "after-dot-element"
     public bool TailIsNullable = false;
     //automatically generated IDs - used for building key for list of kernel LR0Items
     // which in turn are used to quickly lookup parser states in hash

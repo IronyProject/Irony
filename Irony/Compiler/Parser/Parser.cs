@@ -113,7 +113,7 @@ namespace Irony.Compiler {
         _currentToken = Token.Create(Grammar.Eof, _context, new SourceLocation(0, _currentLine - 1, 0), string.Empty); 
     }//method
 
-    public Token PreviewSymbols(KeyList symbols) {
+    public Token PreviewSymbols(StringList symbols) {
       //First check the preview buffer
       foreach (Token token in _previewBuffer) {
         if (symbols.Contains(token.Text)) return token; 
@@ -193,10 +193,10 @@ namespace Irony.Compiler {
         ReportError(_currentToken.Location, "Unexpected end of file.");
         return;
       }
-      KeyList expectedList = GetCurrentExpectedSymbols();
+      StringList expectedList = GetCurrentExpectedSymbols();
       string message = this.Data.Grammar.GetSyntaxErrorMessage(_context, expectedList); 
       if (message == null) 
-        message = "Syntax error" + (expectedList.Count == 0 ? "." : ", expected: " + expectedList.ToString(" "));
+        message = "Syntax error" + (expectedList.Count == 0 ? "." : ", expected: " + TextUtils.Cleanup(expectedList.ToString(" ")));
       ReportError(_currentToken.Location, message);
     }
 
@@ -210,9 +210,9 @@ namespace Irony.Compiler {
     // all NonTerminals that might follow the current position. This list would be calculated at start up, 
     // in addition to normal lookaheads. 
     #endregion
-    private KeyList GetCurrentExpectedSymbols() {
+    private StringList GetCurrentExpectedSymbols() {
       BnfTermList inputElements = new BnfTermList();
-      KeyList inputKeys = new KeyList();
+      StringSet inputKeys = new StringSet();
       inputKeys.AddRange(_currentState.Actions.Keys);
       //First check all NonTerminals
       foreach (NonTerminal nt in Data.NonTerminals) {
@@ -234,7 +234,7 @@ namespace Irony.Compiler {
         if (inputKeys.Contains(term.Key))
           inputElements.Add(term);
       }
-      KeyList result = new KeyList();
+      StringList result = new StringList();
       foreach(BnfTerm term in inputElements)
         result.Add(string.IsNullOrEmpty(term.DisplayName)? term.Name : term.DisplayName);
       result.Sort();

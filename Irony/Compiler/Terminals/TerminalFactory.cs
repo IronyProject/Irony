@@ -104,6 +104,27 @@ namespace Irony.Compiler {
       return term;
     }
 
+    //Note - this is incomplete implementation; need to add functionality to NumberTerminal class to support type detection based 
+    // on exponent symbol. 
+    // From R6RS:
+    //  ... representations of number objects may be written with an exponent marker that indicates the desired precision 
+    // of the inexact representation. The letters s, f, d, and l specify the use of short, single, double, and long precision, respectively. 
+    public static NumberLiteral CreateSchemeNumber(string name) {
+      NumberLiteral term = new NumberLiteral(name, TermOptions.EnableQuickParse | TermOptions.SpecialIgnoreCase);
+      term.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.Int64, NumberLiteral.TypeCodeBigInt };
+      term.DefaultFloatType = TypeCode.Double; // it is default
+      term.ExponentSymbols = "sfdl";
+      term.AddPrefixFlag("#b", ScanFlags.Binary);
+      term.AddPrefixFlag("#o", ScanFlags.Octal);
+      term.AddPrefixFlag("#x", ScanFlags.Hex);
+      term.AddPrefixFlag("#d", ScanFlags.None);
+      term.AddPrefixFlag("#i", ScanFlags.None); // inexact prefix, has no effect
+      term.AddPrefixFlag("#e", ScanFlags.None); // exact prefix, has no effect
+      term.AddSuffixCodes("J", NumberLiteral.TypeCodeImaginary);
+      return term;
+    }
+
+
     public static IdentifierTerminal CreateCSharpIdentifier(string name) {
       IdentifierTerminal id = new IdentifierTerminal(name);
       id.SetOption(TermOptions.CanStartWithEscape);

@@ -23,6 +23,7 @@ using System.Text.RegularExpressions;
 using Irony.Compiler;
 using Irony.Runtime;
 using Irony.GrammarExplorer.Properties;
+using System.Reflection;
 
 namespace Irony.GrammarExplorer {
   public partial class fmGrammarExplorer : Form {
@@ -245,6 +246,7 @@ namespace Irony.GrammarExplorer {
       Grammar grammar = null;
       btnRun.Enabled = false;
       txtOutput.Text = string.Empty;
+      _rootNode = null;
       switch (cboLanguage.SelectedIndex) {
         case 0: //ExpressionGrammar
           grammar = new Irony.Samples.ExpressionGrammar();
@@ -367,6 +369,7 @@ namespace Irony.GrammarExplorer {
 
     StringBuilder _outBuffer;
     private void btnRun_Click(object sender, EventArgs e) {
+      Stopwatch sw = new Stopwatch();
       txtOutput.Text = "";
       _outBuffer = new StringBuilder();
       EvaluationContext context = null;
@@ -381,13 +384,15 @@ namespace Irony.GrammarExplorer {
 
         context = new EvaluationContext(Compiler.Grammar.Ops, _rootNode);
         context.Ops.ConsoleWrite += Ops_ConsoleWrite;
-        long start = Environment.TickCount;
+        sw.Start();
         _rootNode.Evaluate(context);
-        lblRunTime.Text = (Environment.TickCount - start).ToString();
+        sw.Stop();
+        lblRunTime.Text = sw.ElapsedMilliseconds.ToString();
       } catch(RuntimeException rex) {
         //temporarily - catch and add to compiler context, so they will be shown in the form
         Compiler.Context.AddError(rex.Location, rex.Message);
       } finally {
+        sw.Stop();
         if (context != null)
           context.Ops.ConsoleWrite -= Ops_ConsoleWrite;
         txtOutput.Text = _outBuffer.ToString();
@@ -398,6 +403,10 @@ namespace Irony.GrammarExplorer {
 
     void Ops_ConsoleWrite(object sender, ConsoleWriteEventArgs e) {
       _outBuffer.Append(e.Text);
+    }
+
+    private void txtSource_TextChanged(object sender, EventArgs e) {
+      _rootNode = null; //force it to recompile on run
     }
 
 

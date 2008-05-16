@@ -28,6 +28,8 @@ namespace Irony.Samples.Scheme {
       Name = name; 
       Arguments = arguments;
       ReplaceChildNodes(arguments);
+      foreach (AstNode arg in Arguments)
+        arg.Tag = "Arg";
     }
     public override void OnAstProcessing(CompilerContext context, AstProcessingPhase phase) {
       base.OnAstProcessing(context, phase);

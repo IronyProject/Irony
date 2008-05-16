@@ -339,6 +339,7 @@ namespace Irony.GrammarExplorer {
       this.txtSource.TabIndex = 19;
       this.txtSource.Text = "Use Load button to load source code samples from Irony.GrammarExplorer\\SourceSamp" +
           "les folder";
+      this.txtSource.TextChanged += new System.EventHandler(this.txtSource_TextChanged);
       // 
       // splitter4
       // 

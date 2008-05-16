@@ -1,27 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
-using NUnit.Framework.Constraints;
 using Irony.Compiler;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Irony.Tests {
 
-  [TestFixture]
+  [TestClass]
   public class CommentTerminalTests : TerminalTestsBase {
 
-    [Test]
+    [TestMethod]
     public void TestCommentTerminal() {
-      _terminal = new CommentTerminal("Comment", "/*", "*/");
-      InitTerminal();
+      SetTerminal(new CommentTerminal("Comment", "/*", "*/"));
       TryMatch("/* abc  */");
-      Assert.That(_token.Category == TokenCategory.Comment, "Failed to read comment");
+      Assert.IsTrue(_token.Category == TokenCategory.Comment, "Failed to read comment");
 
-      _terminal = new CommentTerminal("Comment", "//", "\n");
-      InitTerminal();
+      SetTerminal(new CommentTerminal("Comment", "//", "\n"));
       TryMatch("// abc  \n   ");
-      Assert.That(_token.Category == TokenCategory.Comment, "Failed to read line comment");
+      Assert.IsTrue(_token.Category == TokenCategory.Comment, "Failed to read line comment");
 
     }//method
 

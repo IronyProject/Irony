@@ -21,12 +21,16 @@ namespace Irony.Samples.Scheme {
     // See Grammar Errors tab in GrammarExplorer for remaining conflicts.
     public SchemeGrammar() {
 
+      base.Ops = new SchemeOps();
+
+
       #region Terminals
       ConstantTerminal Constant = new ConstantTerminal("Constant");
-      Constant.Add("#T", true);
-      Constant.Add("#t", true);
-      Constant.Add("#F", false);
-      Constant.Add("#f", false);
+      Constant.Add("#T", 1);
+      Constant.Add("#t", 1);
+      Constant.Add("#F", null);
+      Constant.Add("#f", null);
+      Constant.Add("'()", null);
       Constant.Add(@"#\nul", '\u0000');
       Constant.Add(@"#\alarm", '\u0007');
       Constant.Add(@"#\backspace", '\b');
@@ -38,7 +42,6 @@ namespace Irony.Samples.Scheme {
       Constant.Add(@"#\esc", '\u001B');
       Constant.Add(@"#\space", ' ');
       Constant.Add(@"#\delete", '\u007F');
-      Constant.Add("'()", null);
 
       // TODO: build SchemeCharLiteral
       // the following is nonsense, just to put something there
@@ -47,7 +50,7 @@ namespace Irony.Samples.Scheme {
       //Identifiers. Note: added "-", just to allow IDs starting with "->" 
       IdentifierTerminal SimpleIdentifier = new IdentifierTerminal("SimpleIdentifier", "_+-*/.@?!<>=", "_+-*/.@?!<>=$%&:^~");
       //                                                           name                extraChars      extraFirstChars  
-      Terminal Number = new NumberLiteral("Number");
+      Terminal Number = TerminalFactory.CreateSchemeNumber("Number");
       Terminal Byte = Number; 
 
       //Comments
@@ -58,48 +61,48 @@ namespace Irony.Samples.Scheme {
       #endregion
 
       #region NonTerminals
-      NonTerminal Module = new NonTerminal("Module");
-      NonTerminal Library = new NonTerminal("Library");
-      NonTerminal Script = new NonTerminal("Script");
+      var Module = new NonTerminal("Module");
+      var Library = new NonTerminal("Library");
+      var Script = new NonTerminal("Script");
 
-      NonTerminal Abbreviation = new NonTerminal("Abbreviation");
-      NonTerminal Vector = new NonTerminal("Vector");
-      NonTerminal ByteVector = new NonTerminal("ByteVector");
-      NonTerminal Datum = new NonTerminal("Datum"); //Datum in R6RS terms
-      NonTerminal DatumList = new NonTerminal("Datum+", typeof(DatumListNode));
-      NonTerminal DatumListOpt = new NonTerminal("Datum*", typeof(DatumListNode));
-      NonTerminal Statement = new NonTerminal("Statement");
-      NonTerminal Atom = new NonTerminal("Atom");
-      NonTerminal CompoundDatum = new NonTerminal("CompoundDatum");
-      NonTerminal AbbrevPrefix = new NonTerminal("AbbrevPrefix");
+      var Abbreviation = new NonTerminal("Abbreviation");
+      var Vector = new NonTerminal("Vector");
+      var ByteVector = new NonTerminal("ByteVector");
+      var Datum = new NonTerminal("Datum"); //Datum in R6RS terms
+      var DatumList = new NonTerminal("Datum+", typeof(DatumListNode));
+      var DatumListOpt = new NonTerminal("Datum*", typeof(DatumListNode));
+      var Statement = new NonTerminal("Statement");
+      var Atom = new NonTerminal("Atom");
+      var CompoundDatum = new NonTerminal("CompoundDatum");
+      var AbbrevPrefix = new NonTerminal("AbbrevPrefix");
 
-      NonTerminal LibraryName = new NonTerminal("LibraryName");
-      NonTerminal ImportSection = new NonTerminal("ImportSection");
-      NonTerminal ExportSection = new NonTerminal("ExportSection");
-      NonTerminal ImportSpec = new NonTerminal("ImportSpec");
-      NonTerminal ExportSpec = new NonTerminal("ExportSpec");
-      NonTerminal LP = new NonTerminal("LP"); //actually is "(" or "["
-      NonTerminal RP = new NonTerminal("RP"); // ")" or "]"
-      NonTerminal Identifier = new NonTerminal("Identifier", typeof(IdentifierNode));
-      NonTerminal IdentifierList = new NonTerminal("IdentifierList");
-      NonTerminal IdentifierListOpt = new NonTerminal("IdentifierListOpt");
-      NonTerminal PeculiarIdentifier = new NonTerminal("PeculiarIdentifier");
-      NonTerminal LibraryVersion = new NonTerminal("LibraryVersion");
+      var LibraryName = new NonTerminal("LibraryName");
+      var ImportSection = new NonTerminal("ImportSection");
+      var ExportSection = new NonTerminal("ExportSection");
+      var ImportSpec = new NonTerminal("ImportSpec");
+      var ExportSpec = new NonTerminal("ExportSpec");
+      var LP = new NonTerminal("LP"); //actually is "(" or "["
+      var RP = new NonTerminal("RP"); // ")" or "]"
+      var Identifier = new NonTerminal("Identifier", typeof(IdentifierNode));
+      var IdentifierList = new NonTerminal("IdentifierList");
+      var IdentifierListOpt = new NonTerminal("IdentifierListOpt");
+      var PeculiarIdentifier = new NonTerminal("PeculiarIdentifier");
+      var LibraryVersion = new NonTerminal("LibraryVersion");
 
-      NonTerminal FunctionCall = new NonTerminal("FunctionCall", CreateFunctionCallNode);
-      NonTerminal FunctionRef = new NonTerminal("FunctionRef");
-      NonTerminal SpecialForm = new NonTerminal("SpecialForm");
-      NonTerminal DefineVarForm = new NonTerminal("DefineVarForm", CreateDefineVarNode);
-      NonTerminal DefineFunForm = new NonTerminal("DefineFunForm", CreateDefineFunNode);
-      NonTerminal LambdaForm = new NonTerminal("LambdaForm", CreateLambdaNode);
-      NonTerminal IfForm = new NonTerminal("IfForm", CreateIfThenElseNode);
-      NonTerminal CondForm = new NonTerminal("CondForm", CreateCondFormNode);
-      NonTerminal CondClause = new NonTerminal("CondClause", CreateCondClauseNode);
-      NonTerminal CondElse = new NonTerminal("CondElse");
-      NonTerminal BeginForm = new NonTerminal("BeginForm", CreateBeginNode);
-      NonTerminal LetForm = new NonTerminal("LetForm"); //not implemented
-      NonTerminal LetRecForm = new NonTerminal("LetRecForm"); //not implemented
-      NonTerminal LetPair = new NonTerminal("LetPair");
+      var FunctionCall = new NonTerminal("FunctionCall", CreateFunctionCallNode);
+      var FunctionRef = new NonTerminal("FunctionRef");
+      var SpecialForm = new NonTerminal("SpecialForm");
+      var DefineVarForm = new NonTerminal("DefineVarForm", CreateDefineVarNode);
+      var DefineFunForm = new NonTerminal("DefineFunForm", CreateDefineFunNode);
+      var LambdaForm = new NonTerminal("LambdaForm", CreateLambdaNode);
+      var IfForm = new NonTerminal("IfForm", CreateIfThenElseNode);
+      var CondForm = new NonTerminal("CondForm", CreateCondFormNode);
+      var CondClause = new NonTerminal("CondClause", CreateCondClauseNode);
+      var CondElse = new NonTerminal("CondElse");
+      var BeginForm = new NonTerminal("BeginForm", CreateBeginNode);
+      var LetForm = new NonTerminal("LetForm"); //not implemented
+      var LetRecForm = new NonTerminal("LetRecForm"); //not implemented
+      var LetPair = new NonTerminal("LetPair");
       #endregion
 
       #region Rules
@@ -129,7 +132,7 @@ namespace Irony.Samples.Scheme {
       IdentifierList.Rule = MakePlusRule(IdentifierList, null, Identifier);
       IdentifierListOpt.Rule = MakeStarRule(IdentifierListOpt, null, Identifier);
 
-      //TODO: create PeculiarIdentifier custom terminal instead of NonTerminal 
+      //TODO: create PeculiarIdentifier custom terminal instead of var 
       // or just custom SchemeIdentifier terminal
       PeculiarIdentifier.Rule = Symbol("+") | "-" | "..."; // |"->" + subsequent; (should be!) 
       Abbreviation.Rule = AbbrevPrefix + Datum;
@@ -167,8 +170,6 @@ namespace Irony.Samples.Scheme {
       TokenFilters.Add(filter);
 
       RegisterPunctuation(LP, RP);
-
-      base.Ops = new SchemeOps();
 
     }//constructor
 

@@ -21,7 +21,7 @@ namespace Irony.Compiler {
   // Token is derived from AstNode because tokens are pushed into Parser stack (like non-terminal nodes),
   // and they can be included as nodes into AST tree. So Token is a primitive AstNode. 
   public class Token : AstNode  {
-    protected Token(AstNodeArgs args)  : base(args){   }
+    public Token(NodeArgs args) : base(args) { }
     
     public Terminal Terminal   {
       [System.Diagnostics.DebuggerStepThrough]
@@ -87,13 +87,13 @@ namespace Irony.Compiler {
       }
     }
 
-    public override void Evaluate(Irony.Runtime.EvaluationContext context) {
+    protected override void DoEvaluate(Irony.Runtime.EvaluationContext context) {
       context.CurrentResult = this.Value;
     }
 
     [System.Diagnostics.DebuggerStepThrough]
     public override string ToString() {
-      string result = string.IsNullOrEmpty(Tag) ? string.Empty : Tag + ":";
+      string result = string.IsNullOrEmpty(Role) ? string.Empty : Role + ":";
       if (Terminal is SymbolTerminal)
         result += _text + " [Symbol]";
       else if (IsKeyword)
@@ -104,24 +104,30 @@ namespace Irony.Compiler {
     }
 
     public static Token Create(Terminal term, CompilerContext context, SourceLocation location, string text) {
-      return Create(term, context, location, text, text);
+      return Create(context, term, location, text, text);
     }
-    public static Token Create(Terminal term, CompilerContext context, SourceLocation location, string text, object value) {
+    public static Token Create(CompilerContext context, Terminal term, SourceLocation location, string text, object value) {
       int textLen = text == null ? 0 : text.Length;
       SourceSpan span = new SourceSpan(location, textLen);
-      AstNodeArgs args = new AstNodeArgs(term, context, span, null);
+      NodeArgs args = new NodeArgs(context, term, span, null); 
       Token token = new Token(args);
       token.Text = text;
       token.Value = value;
+      token.Precedence = term.Precedence; //copy precedence from Terminal, used mainly by operator symbols
       return token;
     }
 
-    public static Token CreateMultiToken(Terminal term, CompilerContext context, TokenList tokens) {
-      SourceSpan span = new SourceSpan();
-      AstNodeArgs args = new AstNodeArgs(term, context, span, null);
-      Token token = new Token(args);
-      token.ChildNodes.AddRange(tokens.ToArray());
-      return token; 
+    public static Token CreateMultiToken(CompilerContext context, Terminal term, TokenList tokens) {
+      if (tokens.Count == 0)
+        throw new ApplicationException("Cannot create MultiToken from empty token list.");
+      SourceLocation startLoc = tokens[0].Location;
+      int endpos = tokens[tokens.Count - 1].Span.EndPos;
+      SourceSpan span = new SourceSpan(startLoc, endpos - startLoc.Position);
+      NodeArgs args = new NodeArgs(context, term, span, null);
+      Token result = new Token(args);
+      foreach (Token child in tokens) 
+        result.ChildNodes.Add(child);
+      return result; 
     }
 
     public override bool IsEmpty() {

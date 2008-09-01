@@ -155,7 +155,7 @@ namespace Irony.Compiler {
 
     protected virtual Token CreateToken(CompilerContext context, ISourceStream source, ScanDetails details) {
       string lexeme = source.GetLexeme();
-      Token token = Token.Create(this, context, source.TokenStart, lexeme, details.Value);
+      Token token = Token.Create(context, this, source.TokenStart, lexeme, details.Value);
       token.Details = details;
       return token;
     }

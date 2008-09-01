@@ -24,16 +24,18 @@ namespace Irony.Compiler {
     public readonly LanguageCompiler Compiler;
     public readonly SyntaxErrorList Errors = new SyntaxErrorList();
     public readonly Dictionary<string, object> Values = new Dictionary<string, object>();
-    public readonly LanguageOps Ops;
+    public readonly LanguageRuntime Runtime;
 
     public CompilerContext(LanguageCompiler compiler) {
       this.Compiler = compiler;
-      Ops = compiler.Grammar.Ops; 
+      this.Runtime = compiler.Grammar.CreateRuntime(); 
     }
-    public void AddError(SourceLocation location, string message, ParserState state) {
+
+    public void AddError(SourceLocation location, string message, string stateName) {
       if (Errors.Count < 20) //just for now, 20 is max
-        Errors.Add(new SyntaxError(location, message, state));
+        Errors.Add(new SyntaxError(location, message, stateName));
     }
+
     public void AddError(SourceLocation location, string message) {
       this.AddError(location, message, null);
     }

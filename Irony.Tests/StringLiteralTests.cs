@@ -46,6 +46,13 @@ namespace Irony.Tests {
     [TestMethod]
     public void TestCSharpString() {
       SetTerminal(TerminalFactory.CreateCSharpString("String"));
+
+      TryMatch('"' + @"abcd\\" + '"' + "  ");
+      Assert.IsTrue((string)_token.Value == @"abcd\", "Failed to process double escape char at the end of the string.");
+
+      TryMatch('"' + @"abcd\\\" + '"' + "efg" + '"' + "   ");
+      Assert.IsTrue((string)_token.Value == @"abcd\" + '"' + "efg" , @"Failed to process '\\\ + double-quote' inside the string.");
+
       //with Escapes
       TryMatchDoubles(@"'00\a\b\t\n\v\f\r\'\\00'  ");
       Assert.IsTrue((string)_token.Value == "00\a\b\t\n\v\f\r\"\\00", "Failed to process escaped characters.");

@@ -25,7 +25,12 @@ namespace Irony.Compiler {
     public string Delimiters = ",;[](){}";
 
     public string WhitespaceChars = " \t\r\n\v";
+    
+    //Used for line counting in source file
     public string LineTerminators = "\n\r\v";
+
+    //Language options
+    public LanguageOptions Options = new LanguageOptions();
 
     //Terminals not present in grammar expressions and not reachable from the Root
     // (Comment terminal is usually one of them)
@@ -43,15 +48,14 @@ namespace Irony.Compiler {
     //Default node type; if null then GenericNode type is used. 
     public Type DefaultNodeType = typeof(AstNode);
 
-    public Irony.Runtime.LanguageOps Ops;
 
-    public NonTerminal Root  {
-      [System.Diagnostics.DebuggerStepThrough]
-      get { return _root; }
-      set { _root = value;  }
-    } NonTerminal _root;
+    public BnfTerm Root;
+    public readonly TokenFilterList TokenFilters = new TokenFilterList();
 
-    public TokenFilterList TokenFilters = new TokenFilterList();
+    //derived lists
+    public readonly BnfTermList AllTerms = new BnfTermList();
+
+    public readonly StringSet Errors = new StringSet();
     #endregion 
 
     #region Register methods
@@ -90,45 +94,36 @@ namespace Irony.Compiler {
     }
     #endregion
 
-    #region virtual methods: TryMatch, CreateNode, GetSyntaxErrorMessage
+    #region virtual methods: TryMatch, CreateNode, GetSyntaxErrorMessage, CreateRuntime
     //This method is called if Scanner failed to produce token
     public virtual Token TryMatch(CompilerContext context, ISourceStream source) {
       return null;
     }
     // Override this method in language grammar if you want a custom node creation mechanism.
-    public virtual AstNode CreateNode(CompilerContext context, ActionRecord reduceAction, 
+    public virtual AstNode CreateNode(CompilerContext context, object reduceAction, 
                                       SourceSpan sourceSpan, AstNodeList childNodes) {
       return null;      
     }
-    public virtual string GetSyntaxErrorMessage(CompilerContext context, StringList expectedList) {
+    public virtual string GetSyntaxErrorMessage(CompilerContext context, StringSet expectedSymbolSet) {
       return null; //Irony then would construct default message
     }
-    public virtual void OnActionSelected(Parser parser, Token input, ActionRecord action) {
+    public virtual void OnActionSelected(IParser parser, Token input, object action) {
     }
-    public virtual ActionRecord OnActionConflict(Parser parser, Token input, ActionRecord action) {
+    public virtual object OnActionConflict(IParser parser, Token input, object action) {
       return action;
     }
+    public virtual Irony.Runtime.LanguageRuntime CreateRuntime() {
+      return new Irony.Runtime.LanguageRuntime();
+    }
+
     #endregion
 
-    #region Static utility methods used in custom grammars: Symbol(), ToElement, WithStar, WithPlus, WithQ
+    #region Static utility methods used in custom grammars: Symbol(), CreateSyntaxErrorToken
     protected static SymbolTerminal Symbol(string symbol) {
       return SymbolTerminal.GetSymbol(symbol);
     }
     protected static SymbolTerminal Symbol(string symbol, string name) {
       return SymbolTerminal.GetSymbol(symbol, name);
-    }
-    protected static BnfTerm ToElement(BnfExpression expression) {
-      string name = expression.ToString();
-      return new NonTerminal(name, expression);
-    }
-    protected static BnfTerm WithStar(BnfExpression expression) {
-      return ToElement(expression).Star();
-    }
-    protected static BnfTerm WithPlus(BnfExpression expression) {
-      return ToElement(expression).Plus();
-    }
-    protected static BnfTerm WithQ(BnfExpression expression) {
-      return ToElement(expression).Q();
     }
     public static Token CreateSyntaxErrorToken(CompilerContext context, SourceLocation location, string message, params object[] args) {
       if (args != null && args.Length > 0)
@@ -138,6 +133,10 @@ namespace Irony.Compiler {
     #endregion
 
 
+    #region MakePlusRule, MakeStarRule methods
+    public BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm listMember) {
+      return MakePlusRule(listNonTerminal, null, listMember);
+    }
     public BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember) {
       listNonTerminal.SetOption(TermOptions.IsList);
       if (delimiter == null)
@@ -145,6 +144,9 @@ namespace Irony.Compiler {
       else
         listNonTerminal.Rule = listMember | listNonTerminal + delimiter + listMember;
       return listNonTerminal.Rule;
+    }
+    public BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm listMember) {
+      return MakeStarRule(listNonTerminal, null, listMember);
     }
     public BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember) {
       if (delimiter == null) {
@@ -159,6 +161,16 @@ namespace Irony.Compiler {
       listNonTerminal.SetOption(TermOptions.IsStarList);
       return listNonTerminal.Rule;
     }
+    #endregion
+
+    #region Hint utilities
+    protected GrammarHint PreferShiftHere() {
+      return new GrammarHint(HintType.PreferShift);
+    }
+    protected GrammarHint ReduceThis() {
+      return new GrammarHint(HintType.ReduceThis);
+    }
+    #endregion
 
     #region Standard terminals: EOF, Empty, NewLine, Indent, Dedent
     // Empty object is used to identify optional element: 
@@ -178,6 +190,89 @@ namespace Irony.Compiler {
     public readonly static Terminal Eos = new Terminal("EOS", TokenCategory.Outline);
 
     public readonly static Terminal SyntaxError = new Terminal("SYNTAX_ERROR", TokenCategory.Error);
+
+
+    #endregion
+
+
+    #region Preparing for processing
+    public bool Prepared {
+      get { return _prepared; }
+    } bool _prepared;
+
+    public void Prepare() {
+      CollectAllTerms();
+      //Init all terms and token filters 
+      foreach (BnfTerm term in this.AllTerms)
+        term.Init(this);
+      foreach (TokenFilter filter in TokenFilters)
+        filter.Init(this);
+      _prepared = true; 
+    }
+
+    int _unnamedCount; //internal counter for generating names for unnamed non-terminals
+    public void CollectAllTerms() {
+      _unnamedCount = 0;
+      AllTerms.Clear();
+      //set IsNonGrammar flag in all NonGrammarTerminals and add them to Terminals collection
+      foreach (Terminal t in NonGrammarTerminals) {
+        t.SetOption(TermOptions.IsNonGrammar);
+        AllTerms.Add(t);
+      }
+      _unnamedCount = 0;
+      CollectAllRecursive(Root);
+    }
+
+    private void CollectAllRecursive(BnfTerm element) {
+      //Terminal
+      Terminal term = element as Terminal;
+      // Do not add pseudo terminals defined as static singletons in Grammar class (Empty, Eof, etc)
+      //  We will never see these terminals in the input stream.
+      //   Filter them by type - their type is exactly "Terminal", not derived class. 
+      if (term != null && !AllTerms.Contains(term) && term.GetType() != typeof(Terminal)) {
+        AllTerms.Add(term);
+        return;
+      }
+      //NonTerminal
+      NonTerminal nt = element as NonTerminal;
+      if (nt == null || AllTerms.Contains(nt))
+        return;
+
+      if (nt.Name == null) {
+        if (nt.Rule != null && !string.IsNullOrEmpty(nt.Rule.Name))
+          nt.Name = nt.Rule.Name;
+        else
+          nt.Name = "NT" + (_unnamedCount++);
+      }
+      AllTerms.Add(nt);
+      if (nt.Rule == null) {
+        ThrowError("Non-terminal {0} has uninitialized Rule property.", nt.Name);
+        return;
+      }
+      //check all child elements
+      foreach (BnfTermList elemList in nt.Rule.Data)
+        for (int i = 0; i < elemList.Count; i++) {
+          BnfTerm child = elemList[i];
+          if (child == null){ 
+            ThrowError("Rule for NonTerminal {0} contains null as an operand in position {1} in one of productions.", nt, i);
+            continue; //for i loop 
+          }
+          //Check for nested expression - convert to non-terminal
+          BnfExpression expr = child as BnfExpression;
+          if (expr != null) {
+            child = new NonTerminal(null, expr);
+            elemList[i] = child;
+          }
+          CollectAllRecursive(child);
+        }
+    }//method
+
+    private void ThrowError(string message, params object[] values) {
+      if (values != null && values.Length > 0)
+        message = string.Format(message, values);
+      throw new ApplicationException(message);
+    }
+
     #endregion
 
         

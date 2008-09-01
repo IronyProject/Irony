@@ -16,36 +16,35 @@ using System.Text;
 using System.Collections;
 using System.Diagnostics;
 
-namespace Irony.Compiler {
+namespace Irony.Compiler.Lalr {
   
-  // This class contains all complex logic of extracting Parser/Scanner's DFA tables and other control information
+  // This class contains all complex logic of constructing LALR parser tables and other control information
   // from the language grammar. 
   // Warning: unlike other classes in this project, understanding what's going on here requires some knowledge of 
   // LR/LALR parsing algorithms. For this I refer you to the Dragon book or any other book on compiler/parser construction.
-  public class GrammarDataBuilder {
+  public class ParserControlDataBuilder {
     class ShiftTable : Dictionary<string, LR0ItemList> { }
     private ParserStateTable _stateHash;
-    public readonly GrammarData Data;
+    public readonly ParserControlData Data;
     Grammar _grammar;
 
 
-    public GrammarDataBuilder(Grammar grammar) {
+    public ParserControlDataBuilder(Grammar grammar) {
       _grammar = grammar;
-      Data = new GrammarData();
+      Data = new ParserControlData(grammar);
       Data.Grammar = _grammar;
     }
-    public void Build() {
+    public ParserControlData Build() {
       try {
-        Data.ScannerRecoverySymbols = _grammar.WhitespaceChars + _grammar.Delimiters;
         if (_grammar.Root == null) 
           Cancel("Root property of the grammar is not set.");
+        if (!_grammar.Prepared)
+          _grammar.Prepare();
+
+        GetNonTerminalsFromGrammar();
+        InitNonTerminalData();
         //Create the augmented root for the grammar
-        Data.AugmentedRoot = new NonTerminal(_grammar.Root.Name + "'", new BnfExpression(_grammar.Root));
-        //Collect all terminals and non-terminals into corresponding collections
-        CollectAllElements();
-        //Adjust case for Symbols for case-insensitive grammar (change keys to lowercase)
-        if (!_grammar.CaseSensitive)
-          AdjustCaseForSymbols();
+        CreateAugmentedRootForGrammar();
         //Create productions and LR0Items 
         CreateProductions();
         //Calculate nullability, Firsts and TailFirsts collections of all non-terminals
@@ -61,16 +60,13 @@ namespace Irony.Compiler {
         CreateReduceActions();
         //finally check for conflicts and detect Operator-based actions
         CheckActionConflicts();
-        //call Init on all elements in the grammar
-        InitAll();
-        //Build hash table of terminals for fast lookup by current input char; note that this must be run after Init
-        BuildTerminalsLookupTable();
         //Validate
         ValidateAll();
       } catch (GrammarErrorException e) {
-        Data.Errors.Add(e.Message);
+        _grammar.Errors.Add(e.Message);
         Data.AnalysisCanceled = true; 
       }
+      return Data;
     }//method
 
     private void Cancel(string msg) {
@@ -78,110 +74,22 @@ namespace Irony.Compiler {
       throw new GrammarErrorException(msg);
     }
 
-    #region Collecting non-terminals
-    int _unnamedCount; //internal counter for generating names for unnamed non-terminals
-    private void CollectAllElements() {
-      Data.NonTerminals.Clear();
-      Data.Terminals.Clear();
-      //set IsNonGrammar flag in all NonGrammarTerminals and add them to Terminals collection
-      foreach (Terminal t in _grammar.NonGrammarTerminals) {
-        t.SetOption(TermOptions.IsNonGrammar);
-        Data.Terminals.Add(t);
+    private void GetNonTerminalsFromGrammar() {
+      foreach (BnfTerm t in _grammar.AllTerms) {
+        NonTerminal nt = t as NonTerminal;
+        if (nt != null)
+          Data.NonTerminals.Add(nt);
       }
-      _unnamedCount = 0;
-      CollectAllElementsRecursive(Data.AugmentedRoot);
-      Data.Terminals.Sort(Terminal.ByName);
-      if (Data.AnalysisCanceled)
-        Cancel(null);
+    }
+    private void InitNonTerminalData() {
+      foreach (NonTerminal nt in Data.NonTerminals)
+        NtData.GetOrCreate(nt);
     }
 
-    private void CollectAllElementsRecursive(BnfTerm element) {
-      //Terminal
-      Terminal term = element as Terminal;
-      // Do not add pseudo terminals defined as static singletons in Grammar class (Empty, Eof, etc)
-      //  We will never see these terminals in the input stream.
-      //   Filter them by type - their type is exactly "Terminal", not derived class. 
-      if (term != null && !Data.Terminals.Contains(term) && term.GetType() != typeof(Terminal)) {
-        Data.Terminals.Add(term);
-        return;
-      }
-      //NonTerminal
-      NonTerminal nt = element as NonTerminal;
-      if (nt == null || Data.NonTerminals.Contains(nt))
-        return;
-
-      if (nt.Name == null) {
-        if (nt.Rule != null && !string.IsNullOrEmpty(nt.Rule.Name))
-          nt.Name = nt.Rule.Name;
-        else 
-          nt.Name = "NT" + (_unnamedCount++);
-      }
-      Data.NonTerminals.Add(nt);
-      if (nt.Rule == null) {
-        AddError("Non-terminal {0} has uninitialized Rule property.", nt.Name);
-        Data.AnalysisCanceled = true;
-        return;
-      }
-      //check all child elements
-      foreach(BnfTermList elemList in nt.Rule.Data)
-        for(int i = 0; i < elemList.Count; i++) {
-          BnfTerm child = elemList[i];
-          if (child == null) {
-            AddError("Rule for NonTerminal {0} contains null as an operand in position {1} in one of productions.", nt, i);
-            continue; //for i loop 
-          }
-          //Check for nested expression - convert to non-terminal
-          BnfExpression expr = child as BnfExpression;
-          if (expr != null) {
-            child = new NonTerminal(null, expr);
-            elemList[i] = child;
-          }
-          CollectAllElementsRecursive(child);
-        }
-    }//method
-
-    private void AdjustCaseForSymbols() {
-      if (_grammar.CaseSensitive) return;
-      foreach (Terminal term in Data.Terminals)
-        if (term is SymbolTerminal)
-          term.Key = term.Key.ToLower();
+    private void CreateAugmentedRootForGrammar() {
+      Data.AugmentedRoot = new NonTerminal(_grammar.Root.Name + "'", new BnfExpression(_grammar.Root));
+      Data.NonTerminals.Add(Data.AugmentedRoot);
     }
-
-    private void BuildTerminalsLookupTable() {
-      Data.TerminalsLookup.Clear();
-      Data.FallbackTerminals.AddRange(Data.Grammar.FallbackTerminals);
-      foreach (Terminal term in Data.Terminals) {
-        IList<string> prefixes = term.GetFirsts();
-        if (prefixes == null || prefixes.Count == 0) {
-          if (!Data.FallbackTerminals.Contains(term))
-            Data.FallbackTerminals.Add(term);
-          continue; //foreach term
-        }
-        //Go through prefixes one-by-one
-        foreach (string prefix in prefixes) {
-          if (string.IsNullOrEmpty(prefix)) continue;
-          //Calculate hash key for the prefix
-          char hashKey = prefix[0];
-          if (!_grammar.CaseSensitive)
-            hashKey = char.ToLower(hashKey);
-          TerminalList currentList;
-          if (!Data.TerminalsLookup.TryGetValue(hashKey, out currentList)) {
-            //if list does not exist yet, create it
-            currentList = new TerminalList();
-            Data.TerminalsLookup[hashKey] = currentList;
-          }
-          //add terminal to the list
-          currentList.Add(term);
-        }
-      }//foreach term
-      //Sort all terminal lists by reverse priority, so that terminal with higher priority comes first in the list
-      foreach (TerminalList list in Data.TerminalsLookup.Values)
-        if (list.Count > 1)
-          list.Sort(Terminal.ByPriorityReverse);
-    }//method
-
-
-    #endregion
 
     #region Creating Productions
     private void CreateProductions() {
@@ -189,7 +97,8 @@ namespace Irony.Compiler {
       //each LR0Item gets its unique ID, last assigned (max) Id is kept in static field
       LR0Item._maxID = 0; 
       foreach(NonTerminal nt in Data.NonTerminals) {
-        nt.Productions.Clear();
+        NtData ntInfo = NtData.GetOrCreate(nt);
+        ntInfo.Productions.Clear();
         //Get data (sequences) from both Rule and ErrorRule
         BnfExpressionData allData = new BnfExpressionData();
         allData.AddRange(nt.Rule.Data);
@@ -197,12 +106,45 @@ namespace Irony.Compiler {
           allData.AddRange(nt.ErrorRule.Data);
         //actually create productions for each sequence
         foreach (BnfTermList prodOperands in allData) {
-          bool isInitial = (nt == Data.AugmentedRoot);
-          Production prod = new Production(isInitial, nt, prodOperands);
-          nt.Productions.Add(prod);
+          Production prod = CreateProduction(nt, prodOperands);
+          //Add the production to non-terminal's list and to global list 
+          ntInfo.Productions.Add(prod);
           Data.Productions.Add(prod);
         }//foreach prodOperands
       }
+    }
+    private Production CreateProduction(NonTerminal lvalue, BnfTermList operands) {
+      Production prod = new Production(lvalue);
+      //create RValues list skipping Empty terminal and collecting grammar hints
+      foreach (BnfTerm operand in operands) {
+        if (operand == Grammar.Empty) 
+          continue;
+        //Collect hints as we go - they will be added to the next non-hint element
+        GrammarHint hint = operand as GrammarHint;
+        if (hint != null) {
+          hint.Position = prod.RValues.Count;
+          prod.Hints.Add(hint);
+          continue;
+        }
+        //Check if it is a Terminal or Error element
+        Terminal t = operand as Terminal;
+        if (t != null) {
+          prod.Flags |= ProductionFlags.HasTerminals;
+          if (t.Category == TokenCategory.Error) prod.Flags |= ProductionFlags.IsError; 
+        }
+        //Add the operand info and LR0 Item
+        LR0Item item = new LR0Item(prod, prod.RValues.Count);
+        prod.LR0Items.Add(item);
+        prod.RValues.Add(operand);
+      }//foreach operand
+      //set the flags
+      if (lvalue == Data.AugmentedRoot)
+        prod.Flags |= ProductionFlags.IsInitial;
+      if (prod.RValues.Count == 0)
+        prod.Flags |= ProductionFlags.IsEmpty;
+      //Add final LRItem
+      prod.LR0Items.Add(new LR0Item(prod, prod.RValues.Count));
+      return prod; 
     }
     #endregion
 
@@ -220,22 +162,23 @@ namespace Irony.Compiler {
     }
 
     private bool CalculateNullability(NonTerminal nonTerminal, NonTerminalList undecided) {
-      foreach (Production prod in nonTerminal.Productions) {
+      NtData nonTerminalInfo = (NtData) nonTerminal.ParserData;
+      foreach (Production prod in nonTerminalInfo.Productions) {
         //If production has terminals, it is not nullable and cannot contribute to nullability
-        if (prod.HasTerminals)   continue;
-        if (prod.IsEmpty()) {
-          nonTerminal.Nullable = true;
+        if (prod.IsSet(ProductionFlags.HasTerminals))   continue;
+        if (prod.IsSet(ProductionFlags.IsEmpty)) {
+          nonTerminalInfo.Nullable = true;
           return true; //Nullable
         }//if 
         //Go thru all elements of production and check nullability
         bool allNullable = true;
-        foreach (BnfTerm term in prod.RValues) {
-          NonTerminal nt = term as NonTerminal;
-          if (nt != null)
-            allNullable &= nt.Nullable;
+        foreach (BnfTerm  term in prod.RValues) {
+          NtData ntd = term.ParserData as NtData;
+          if (ntd != null)
+            allNullable &= ntd.Nullable;
         }//foreach nt
         if (allNullable) {
-          nonTerminal.Nullable = true;
+          nonTerminalInfo.Nullable = true;
           return true;
         }
       }//foreach prod
@@ -247,15 +190,16 @@ namespace Irony.Compiler {
     private void CalculateFirsts() {
       //1. Calculate PropagateTo lists and put initial terminals into Firsts lists
       foreach (Production prod in Data.Productions) {
+        NtData lvData = prod.LValue.ParserData as NtData;
         foreach (BnfTerm term in prod.RValues) {
           if (term is Terminal) { //it is terminal, so add it to Firsts and that's all with this production
-            prod.LValue.Firsts.Add(term.Key); // Add terminal to Firsts (note: Add ignores repetitions)
+            lvData.Firsts.Add(term.Key); // Add terminal to Firsts (note: Add ignores repetitions)
             break; //from foreach term
           }//if
-          NonTerminal nt = term as NonTerminal;
-          if (!nt.PropagateFirstsTo.Contains(prod.LValue))
-            nt.PropagateFirstsTo.Add(prod.LValue); //ignores repetitions
-          if (!nt.Nullable) break; //if not nullable we're done
+          NtData ntInfo = term.ParserData as NtData;
+          if (!ntInfo.PropagateFirstsTo.Contains(prod.LValue))
+            ntInfo.PropagateFirstsTo.Add(prod.LValue); //ignores repetitions
+          if (!ntInfo.Nullable) break; //if not nullable we're done
         }//foreach oper
       }//foreach prod
       
@@ -264,14 +208,17 @@ namespace Irony.Compiler {
       while (workList.Count > 0) {
         NonTerminalList newList = new NonTerminalList();
         foreach (NonTerminal nt in workList) {
-          foreach (NonTerminal toNt in nt.PropagateFirstsTo)
-            foreach (string symbolKey in nt.Firsts) {
-              if (!toNt.Firsts.Contains(symbolKey)) {
-                toNt.Firsts.Add(symbolKey);
+          NtData ntInfo = (NtData)nt.ParserData;
+          foreach (NonTerminal toNt in ntInfo.PropagateFirstsTo) {
+            NtData toInfo = (NtData)toNt.ParserData;
+            foreach (string symbolKey in ntInfo.Firsts) {
+              if (!toInfo.Firsts.Contains(symbolKey)) {
+                toInfo.Firsts.Add(symbolKey);
                 if (!newList.Contains(toNt))
                   newList.Add(toNt);
               }//if
             }//foreach symbolKey
+          }//foreach toNt
         }//foreach nt in workList
         workList = newList;
       }//while
@@ -293,24 +240,26 @@ namespace Irony.Compiler {
             item.TailFirsts.Clear();
             continue;
           }
-          BnfTerm term = prod.RValues[item.Position + 1];  //Element after-after-dot
-          NonTerminal ntElem = term as NonTerminal;
-          if (ntElem == null || !ntElem.Nullable) { //term is a terminal or non-nullable NonTerminal
+          BnfTerm nextTerm = prod.RValues[i + 1];  //Element after-after-dot; remember we're going in reverse direction
+          NtData nextData = (NtData)nextTerm.ParserData;
+          //if (ntElem == null) continue; //it is not NonTerminal
+          bool notNullable = nextTerm is Terminal || nextData != null && !nextData.Nullable; 
+          if (notNullable) { //next term is not nullable  (a terminal or non-nullable NonTerminal)
             //term is not nullable, so we clear all old firsts and add this term
             accumulatedFirsts.Clear();
             allNullable = false;
-            item.TailIsNullable = false;   
-            if (ntElem == null) {
-              item.TailFirsts.Add(term.Key);//term is terminal so add its key
-              accumulatedFirsts.Add(term.Key);
-            } else {
-              item.TailFirsts.AddRange(ntElem.Firsts); //nonterminal
-              accumulatedFirsts.AddRange(ntElem.Firsts);
+            item.TailIsNullable = false;
+            if (nextTerm is Terminal) {
+              item.TailFirsts.Add(nextTerm.Key);//term is terminal so add its key
+              accumulatedFirsts.Add(nextTerm.Key);
+            } else if (nextData != null) { //it is NonTerminal
+              item.TailFirsts.AddRange(nextData.Firsts); //nonterminal
+              accumulatedFirsts.AddRange(nextData.Firsts);
             }
             continue;
           }
           //if we are here, then ntElem is a nullable NonTerminal. We add 
-          accumulatedFirsts.AddRange(ntElem.Firsts);
+          accumulatedFirsts.AddRange(nextData.Firsts);
           item.TailFirsts.AddRange(accumulatedFirsts);
           item.TailIsNullable = allNullable;
         }//for i
@@ -323,7 +272,8 @@ namespace Irony.Compiler {
     private void CreateInitialAndFinalStates() {
       //there is always just one initial production "Root' -> .Root", and we're interested in LR item at 0 index
       LR0ItemList itemList = new LR0ItemList();
-      itemList.Add(Data.AugmentedRoot.Productions[0].LR0Items[0]);
+      NtData rootData = (NtData)Data.AugmentedRoot.ParserData;
+      itemList.Add(rootData.Productions[0].LR0Items[0]);
       Data.InitialState = FindOrCreateState(itemList); //it is actually create
       Data.InitialState.Items[0].NewLookaheads.Add(Grammar.Eof.Key);
       #region comment about FinalState
@@ -338,12 +288,13 @@ namespace Irony.Compiler {
       // it is item at index 1.
       #endregion
       itemList.Clear();
-      itemList.Add(Data.AugmentedRoot.Productions[0].LR0Items[1]);
+      itemList.Add(rootData.Productions[0].LR0Items[1]);
       Data.FinalState = FindOrCreateState(itemList); //it is actually create
       //Create shift transition from initial to final state
-      Data.InitialState.Actions[Data.AugmentedRoot.Key] =
-        new ActionRecord(Data.AugmentedRoot.Key, ParserActionType.Shift, Data.FinalState, null);
+      string rootKey = Data.AugmentedRoot.Key;
+      Data.InitialState.Actions[rootKey] = new ActionRecord(rootKey, ParserActionType.Shift, Data.FinalState, null);
     }
+
     private void CreateParserStates() {
       Data.States.Clear();
       _stateHash = new ParserStateTable();
@@ -361,17 +312,20 @@ namespace Irony.Compiler {
         foreach (string input in shiftTable.Keys) {
           LR0ItemList shiftedCoreItems = shiftTable[input];
           ParserState newState = FindOrCreateState(shiftedCoreItems);
-          state.Actions[input] = new ActionRecord(input,ParserActionType.Shift, newState, null);
+          ActionRecord newAction = new ActionRecord(input, ParserActionType.Shift, newState, null);
+          state.Actions[input] = newAction;
           //link original LRItems in original state to derived LRItems in newState
           foreach (LR0Item coreItem in shiftedCoreItems) {
             LRItem fromItem = FindItem(state, coreItem.Production, coreItem.Position - 1);
             LRItem toItem = FindItem(newState, coreItem.Production, coreItem.Position);
             if (!fromItem.PropagateTargets.Contains(toItem))
               fromItem.PropagateTargets.Add(toItem);
+            //copy hints from core items into the newAction
+            newAction.ShiftItems.Add(fromItem); 
           }//foreach coreItem
         }//foreach input
       } //for index
-      Data.FinalState = Data.InitialState.Actions[Data.AugmentedRoot.Key].NewState;
+      Data.FinalState = Data.InitialState.Actions[augmRootKey].NewState;
     }//method
 
     private string AdjustCase(string key) {
@@ -397,7 +351,7 @@ namespace Irony.Compiler {
       ShiftTable shifts = new ShiftTable();
       LR0ItemList list;
       foreach (LRItem item in state.Items) {
-        BnfTerm term = item.Core.NextElement;
+        BnfTerm term = item.Core.Current;
         if (term == null)  continue;
         LR0Item shiftedItem = item.Core.Production.LR0Items[item.Core.Position + 1];
         if (!shifts.TryGetValue(term.Key, out list))
@@ -424,10 +378,12 @@ namespace Irony.Compiler {
       //note that we change collection while we iterate thru it, so we have to use "for i" loop
       for(int i = 0; i < state.Items.Count; i++) {
         LRItem item = state.Items[i];
-        NonTerminal nextNT = item.Core.NextElement as NonTerminal;
-        if (nextNT == null)  continue;
+        BnfTerm currTerm = item.Core.Current;
+        if (currTerm == null || !(currTerm is NonTerminal))  
+          continue;
         //1. Add normal closure items
-        foreach (Production prod in nextNT.Productions) {
+        NtData currInfo = (NtData)currTerm.ParserData;
+        foreach (Production prod in currInfo.Productions) {
           LR0Item core = prod.LR0Items[0]; //item at zero index is the one that starts with dot
           LRItem newItem = TryFindItem(state, core);
           if (newItem == null) {
@@ -524,7 +480,7 @@ namespace Irony.Compiler {
       foreach(ParserState state in Data.States) {
         foreach (LRItem item in state.Items) {
           //we are interested only in "dot  at the end" items
-          if (item.Core.NextElement != null)   continue;
+          if (item.Core.Current != null)   continue;
           foreach (string lookahead in item.Lookaheads) {
             ActionRecord action;
             if (state.Actions.TryGetValue(lookahead, out action)) 
@@ -544,39 +500,87 @@ namespace Irony.Compiler {
       foreach (ParserState state in Data.States) {
         foreach (ActionRecord action in state.Actions.Values) {
           //1. Pure shift
-          if (action.NewState != null && action.ReduceProductions.Count == 0)
-            continue; //ActionType is shift by default
+          if (action.ShiftItems.Count > 0 && action.ReduceProductions.Count == 0) {
+            action.ActionType = ParserActionType.Shift; 
+            continue; 
+          }
           //2. Pure reduce
-          if (action.NewState == null && action.ReduceProductions.Count == 1) {
+          if (action.ShiftItems.Count == 0 && action.ReduceProductions.Count == 1) {
             action.ActionType = ParserActionType.Reduce; 
             continue;
-          }
-          //3. Shift-reduce conflict
-          if (action.NewState != null && action.ReduceProductions.Count > 0) {
-            //it might be an operation, with resolution by precedence/associativity
-            SymbolTerminal opTerm = SymbolTerminal.GetSymbol(action.Key);
-            if (opTerm != null && opTerm.IsSet(TermOptions.IsOperator)) {
-              action.ActionType = ParserActionType.Operator;
-            } else {
-                AddErrorForInput(errorTable, action.Key, "Shift-reduce conflict in state {0}, reduce production: {1}",
-                    state, action.ReduceProductions[0]); 
-              //NOTE: don't do "continue" here, we need to proceed to reduce-reduce conflict check
-            }//if...else
-          }//if action....
+          } 
+          //3. Shift-reduce and reduce-reduce conflicts
+          if (action.ShiftItems.Count > 0 && action.ReduceProductions.Count > 0) {
+            if (CheckConflictResolutionByPrecedence(action))   continue; 
+            if (CheckShiftHint(action))     continue;
+            if (CheckReduceHint(action))    continue; 
+            //if we are here, we couldn't resolve the conflict, so post a grammar error(actually warning)
+            AddErrorForInput(errorTable, action.Key, "Shift-reduce conflict in state {0}, reduce production: {1}",
+                state, action.ReduceProductions[0]);
+          }//Shift-reduce conflict
+
           //4. Reduce-reduce conflicts
           if (action.ReduceProductions.Count > 1) {
+            if (CheckReduceHint(action)) continue;
+            //if we are here, we reduce-reduce conflict, so post a grammar error
             AddErrorForInput(errorTable, action.Key, "Reduce-reduce conflict in state {0} in productions: {1} ; {2}",
                 state, action.ReduceProductions[0], action.ReduceProductions[1]);
           }
-
         }//foreach action
       }//foreach state
       //copy errors to Errors collection; In errorTable keys are error messages, values are inputs for this message 
       foreach (string msg in errorTable.Keys) {
-        Data.Errors.Add(msg + " on inputs: " + errorTable[msg]);
+        _grammar.Errors.Add(msg + " on inputs: " + errorTable[msg]);
       }
     }//methods
 
+    private bool CheckConflictResolutionByPrecedence(ActionRecord action) {
+      SymbolTerminal opTerm = SymbolTerminal.GetSymbol(action.Key);
+      if (opTerm != null && opTerm.IsSet(TermOptions.IsOperator)) {
+        action.ActionType = ParserActionType.Operator;
+        action.ConflictResolved = true;
+        return true;
+      }
+      return false;
+    }
+    //Checks  shift items for PreferShift grammar hint. Hints are associated with a particular position
+    // inside production, which is in fact an LR0 item. The LR0 item is available thru shiftItem.Core property. 
+    // If PreferShift hint found, moves the hint-owning shiftItem to the beginning of the list and returns true.
+    private bool CheckShiftHint(ActionRecord action) {
+      foreach(LRItem shiftItem in action.ShiftItems) {
+        GrammarHint shiftHint = GetHint(shiftItem.Core.Production, shiftItem.Core.Position, HintType.PreferShift);
+        if (shiftHint != null) {
+            action.ActionType = ParserActionType.Shift;
+            action.ShiftItems.Remove(shiftItem);
+            action.ShiftItems.Insert(0, shiftItem);
+            action.ConflictResolved = true; 
+            return true;
+        }//if
+      }//foreach shiftItem
+      return false; 
+    }//method
+
+    //Checks Reduce productions of an action for a ReduceThis hint. If found, the production is moved to the beginning of the list.
+    private bool CheckReduceHint(ActionRecord action) {
+      foreach (Production prod in action.ReduceProductions) {
+        GrammarHint reduceHint = GetHint(prod, prod.RValues.Count, HintType.ReduceThis);
+        if (reduceHint != null) {
+          action.ReduceProductions.Remove(prod);
+          action.ReduceProductions.Insert(0, prod);
+          action.ActionType = ParserActionType.Reduce;
+          action.ConflictResolved = true;
+          return true; 
+        }//if
+      }//foreach prod
+      return false; 
+    }//method
+
+    private GrammarHint GetHint(Production production, int position, HintType hintType) {
+      foreach (GrammarHint hint in production.Hints)
+        if (hint.Position == position && hint.HintType == hintType)
+          return hint;
+      return null;
+    }
     //Aggregate error messages for different inputs (lookaheads) in errors dictionary
     private void AddErrorForInput(StringDictionary errors, string input, string template, params object[] args) {
       string msg = string.Format(template, args);
@@ -585,22 +589,6 @@ namespace Irony.Compiler {
       errors[msg] = tmpInputs + input + " ";
     }
 
-    private bool ContainsProduction(ProductionList productions, NonTerminal nonTerminal) {
-      foreach (Production prod in productions)
-        if (prod.LValue == nonTerminal) return true;
-      return false;
-    }
-    #endregion
-
-    #region Initialize elements
-    private void InitAll() {
-      foreach (Terminal term in Data.Terminals)
-        term.Init(_grammar);
-      foreach (NonTerminal nt in Data.NonTerminals)
-        nt.Init(_grammar);
-      foreach (TokenFilter filter in _grammar.TokenFilters)
-        filter.Init(_grammar);
-    }
     #endregion
 
     private void ValidateAll() {
@@ -617,13 +605,27 @@ namespace Irony.Compiler {
         AddError("Warning: Possible non-terminal duplication. The following non-terminals have rules containing a single non-terminal: \r\n {0}. \r\n" +
          "Consider merging two non-terminals; you may need to use 'nt1 = nt2;' instead of 'nt1.Rule=nt2'.", slist);
       }
-    }
+      //Check constructors of all nodes referenced in Non-terminals that don't use NodeCreator delegate
+      Type[] ctorArgTypes = new Type[] {typeof(NodeArgs)};
+      foreach (NonTerminal nt in Data.NonTerminals) {
+        if (nt.NodeCreator == null && nt.NodeType != null) {
+          object ci = nt.NodeType.GetConstructor(ctorArgTypes);
+          if (ci == null)
+            AddError(
+@"AST Node class {0} referenced by non-terminal {1} does not have a constructor for automatic node creation. 
+Provide a constructor with a single NodeArgs parameter, or use NodeCreator delegate property in NonTerminal.", 
+  nt.NodeType, nt.Name);
+
+        }//if
+      }//foreach ntInfo
+
+    }//method
 
     #region error handling: AddError
     private void AddError(string message, params object[] args) {
       if (args != null && args.Length > 0)
         message = string.Format(message, args);
-      Data.Errors.Add(message);
+      _grammar.Errors.Add(message);
     }
     #endregion
 

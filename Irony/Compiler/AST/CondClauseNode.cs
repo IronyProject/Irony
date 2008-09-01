@@ -13,38 +13,38 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.Compiler;
 using Irony.Runtime;
 
-namespace Irony.Samples.Scheme {
+namespace Irony.Compiler.AST {
   public class CondClauseNode : AstNode {
     public AstNode Test;
-    public DatumListNode Expressions;
+    public StatementListNode Expressions;
 
-    public CondClauseNode(AstNodeArgs args, AstNode test, DatumListNode expressions)  : base(args) {
-      SetFields(test, expressions);
-    }
-    private void SetFields(AstNode test, DatumListNode expressions) {
-      this.Tag = "Clause";
+    public CondClauseNode(NodeArgs args, AstNode test, StatementListNode expressions) :base(args) {
+      ChildNodes.Clear();
+      this.Role = "Clause";
       Test = test;
-      Test.Tag = "Test";
+      Test.Role = "Test";
+      ChildNodes.Add(Test);
       Expressions = expressions;
-      Expressions.Tag = "Command";
-      ReplaceChildNodes(Test, Expressions);
+      Expressions.Role = "Command";
+      ChildNodes.Add(Expressions);
     }
 
-    public override void OnAstProcessing(CompilerContext context, AstProcessingPhase phase) {
-      base.OnAstProcessing(context, phase);
-      switch (phase) {
-        case AstProcessingPhase.MarkTailCalls:
+    public override void OnCodeAnalysis(CodeAnalysisArgs args) {
+      switch (args.Phase) {
+        case CodeAnalysisPhase.MarkTailCalls:
           if (IsSet(AstNodeFlags.IsTail))
             Expressions.Flags |= AstNodeFlags.IsTail;
           break;
       }
+      base.OnCodeAnalysis(args);
     }
-    public override void Evaluate(EvaluationContext context) {
+
+    protected override void DoEvaluate(EvaluationContext context) {
       Expressions.Evaluate(context);
     }
+  
   }//class
 
 }//namespace

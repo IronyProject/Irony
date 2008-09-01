@@ -29,7 +29,8 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -39,25 +40,36 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common.cs" />
-    <Compile Include="Compiler\AstProcessing\AstProcessor.cs" />
-    <Compile Include="Compiler\AstProcessing\LexicalAddress.cs" />
-    <Compile Include="Compiler\AST\AstNodeArgs.cs" />
-    <Compile Include="Compiler\AST\AstVisitor.cs" />
-    <Compile Include="Compiler\AstProcessing\Scope.cs" />
+    <Compile Include="Compiler\AST\AnonFunctionNode.cs" />
+    <Compile Include="Compiler\Interfaces.cs" />
+    <Compile Include="Compiler\Scope.cs" />
+    <Compile Include="Compiler\AST\BinExprNode.cs" />
+    <Compile Include="Compiler\AST\CondClauseNode.cs" />
+    <Compile Include="Compiler\AST\CondFormNode.cs" />
+    <Compile Include="Compiler\AST\UnExprNode.cs" />
+    <Compile Include="Compiler\AST\FunctionCallNode.cs" />
+    <Compile Include="Compiler\AST\IdentifierNode.cs" />
+    <Compile Include="Compiler\AST\IfNode.cs" />
+    <Compile Include="Compiler\AST\AssigmentNode.cs" />
+    <Compile Include="Compiler\AST\StatementListNode.cs" />
     <Compile Include="Compiler\CompilerContext.cs" />
     <Compile Include="Compiler\Enums.cs" />
-    <Compile Include="Compiler\Parser\ParserStack.cs" />
+    <Compile Include="Compiler\Grammar\GrammarHint.cs" />
+    <Compile Include="Compiler\LALR\ParserStack.cs" />
+    <Compile Include="Compiler\Scanner\ScannerControlData.cs" />
     <Compile Include="Compiler\Scanner\SourceFile.cs" />
     <Compile Include="Compiler\Grammar\NonTerminal.cs" />
-    <Compile Include="Compiler\AST\AstNode.cs" />
+    <Compile Include="Compiler\AST\_AstNode.cs" />
     <Compile Include="Compiler\Grammar\BnfExpression.cs" />
-    <Compile Include="Compiler\Grammar\GrammarDataBuilder.cs" />
-    <Compile Include="Compiler\Parser\Parser.cs" />
-    <Compile Include="Compiler\Grammar\GrammarData.cs" />
+    <Compile Include="Compiler\LALR\ParserControlDataBuilder.cs" />
+    <Compile Include="Compiler\LALR\Parser.cs" />
+    <Compile Include="Compiler\LALR\ParserControlData.cs" />
     <Compile Include="Compiler\SyntaxError.cs" />
     <Compile Include="Compiler\Terminals\CommentTerminal.cs" />
     <Compile Include="Compiler\Terminals\ConstantTerminal.cs" />
@@ -75,6 +87,11 @@
     <Compile Include="Compiler\Grammar\BnfTerm.cs" />
     <Compile Include="Compiler\Grammar\Grammar.cs" />
     <Compile Include="Compiler\Terminals\TerminalFactory.cs" />
+    <Compile Include="Compiler\LanguageOptions.cs" />
+    <Compile Include="Runtime\FunctionBindingInfo.cs" />
+    <Compile Include="Runtime\SlimLock.cs" />
+    <Compile Include="Runtime\LanguageRuntimeInit.cs" />
+    <Compile Include="Runtime\StackTrace.cs" />
     <Compile Include="TextUtils.cs" />
     <Compile Include="Compiler\TokenFilters\BraceMatchFilter.cs" />
     <Compile Include="Compiler\TokenFilters\CodeOutlineFilter.cs" />
@@ -92,10 +109,9 @@
     <Compile Include="Runtime\Closure.cs" />
     <Compile Include="Runtime\EvaluationContext.cs" />
     <Compile Include="Runtime\Frame.cs" />
-    <Compile Include="Compiler\AstProcessing\ProcInfo.cs" />
-    <Compile Include="Runtime\OperatorDispatch.cs" />
+    <Compile Include="Runtime\CallDispatch.cs" />
     <Compile Include="Runtime\RuntimeException.cs" />
-    <Compile Include="Runtime\LanguageOps.cs" />
+    <Compile Include="Runtime\LanguageRuntime.cs" />
     <Compile Include="Runtime\Unassigned.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -105,6 +121,9 @@
       <SubType>Designer</SubType>
       <CustomToolNamespace>Microsoft.Scripting.Math</CustomToolNamespace>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Compiler\LRE\readme.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

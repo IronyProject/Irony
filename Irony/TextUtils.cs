@@ -4,6 +4,7 @@ using System.Text;
 using Irony.Compiler;
 
 namespace Irony {
+  using Compiler.Lalr;
 
   public class EscapeTable : Dictionary<char, char> { }
   public static class TextUtils {
@@ -44,14 +45,15 @@ namespace Irony {
       StringBuilder sb = new StringBuilder();
       foreach (NonTerminal nt in nonTerminals) {
         sb.Append(nt.Name);
-        sb.Append(nt.Nullable ? "  (Nullable) " : "");
+        NtData ntInfo = (NtData)nt.ParserData;
+        sb.Append(ntInfo.Nullable ? "  (Nullable) " : "");
         sb.AppendLine();
-        foreach (Production pr in nt.Productions) {
+        foreach (Production pr in ntInfo.Productions) {
           sb.Append("   ");
           sb.AppendLine(pr.ToString());
         }
         sb.Append("  FIRSTS: ");
-        string firsts = TextUtils.Cleanup(nt.Firsts.ToString(" "));
+        string firsts = TextUtils.Cleanup(ntInfo.Firsts.ToString(" "));
         sb.AppendLine(firsts);
         sb.AppendLine();
       }//foreachc nt

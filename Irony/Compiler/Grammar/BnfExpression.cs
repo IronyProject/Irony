@@ -63,8 +63,8 @@ namespace Irony.Compiler {
     public static implicit operator BnfExpression(Terminal term) {
       return new BnfExpression(term);
     }
-    public static implicit operator BnfExpression(NonTerminal nonTerm) {
-      return new BnfExpression(nonTerm);
+    public static implicit operator BnfExpression(NonTerminal nonTerminal) {
+      return new BnfExpression(nonTerminal);
     }
     #endregion
 

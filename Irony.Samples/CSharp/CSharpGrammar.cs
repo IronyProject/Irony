@@ -4,6 +4,7 @@ using System.Text;
 using Irony.Compiler;
 
 namespace Irony.Samples.CSharp {
+  using Irony.Compiler.Lalr;
 
   //Full c# 3.0 grammar; all but 2 features are not implemented:
   //  - preprocessor directives (currently treated as comment lines)
@@ -501,6 +502,7 @@ namespace Irony.Samples.CSharp {
 
       //B.2.5. Statements
       statement.Rule = labeled_statement | declaration_statement | embedded_statement;
+      statement.ErrorRule = SyntaxError + semi; //skip all until semicolon
       statement_list.Rule = MakePlusRule(statement_list, null, statement);
       statement_list_opt.Rule = Empty | statement_list;
       //labeled_statement
@@ -521,7 +523,7 @@ namespace Irony.Samples.CSharp {
       //selection (if and switch)
       selection_statement.Rule = if_statement | switch_statement;
       if_statement.Rule = Symbol("if") + Lpar + expression + Rpar + embedded_statement + else_clause_opt;
-      else_clause_opt.Rule = Empty | "else" + embedded_statement;
+      else_clause_opt.Rule = Empty | PreferShiftHere() + "else" + embedded_statement;
       switch_statement.Rule = "switch" + parenthesized_expression + Lbr + switch_sections_opt + Rbr;
       switch_section.Rule = switch_labels + statement_list;
       switch_sections_opt.Rule = MakeStarRule(switch_sections_opt, null, switch_section);
@@ -746,17 +748,18 @@ namespace Irony.Samples.CSharp {
           "+" , "-" , "*" , "/" , "%", "=" , "+=" , "-=" , "*=" , "/=" , "%=" , "&=" , ",=" , 
           "^=" , "<<=" , ">>=" , "is" , "as");
     
-    public override ActionRecord OnActionConflict(Parser parser, Token input, ActionRecord action) {
+    public override object OnActionConflict(IParser iparser, Token input, object action) {
       if (input.Text != "<") return action;
-
+      ActionRecord actionRec = (ActionRecord)action;
+      Parser parser = iparser as Parser; 
       Token preview = parser.PreviewSymbols(_previewTokens);
       //if we see closing angle bracket before anything else, it is type arguments, so we must do shift!
       if (preview != null && preview.Text == ">") {
-        if (action.ActionType == ParserActionType.Shift) return action;
-        return action.CreateDerived(ParserActionType.Shift, null);
+        if (actionRec.ActionType == ParserActionType.Shift) return action;
+        return actionRec.CreateDerived(ParserActionType.Shift, null);
       } else {
         //otherwise, mark as operator
-        return action.CreateDerived(ParserActionType.Reduce, action.Production);
+        return actionRec.CreateDerived(ParserActionType.Reduce, actionRec.Production);
       }
     }
   

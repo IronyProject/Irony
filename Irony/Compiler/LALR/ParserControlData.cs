@@ -15,29 +15,66 @@ using System.Collections.Generic;
 using System.Text;
 
 
-namespace Irony.Compiler {
-  // GrammarData is a container for all information used by Parser and Scanner in input processing.
+namespace Irony.Compiler.Lalr {
+  // ParserControlData is a container for all information used by Parser and Scanner in input processing.
   // The state graph entry is InitialState state; the state graph encodes information usually contained 
   // in what is known in literature as transiton/goto tables.
   // The graph is built from the language grammar by GrammarDataBuilder instance. 
   // See Dragon book or other book on compilers on details of LALR parsing and parsing tables construction. 
-  public class GrammarData {
+  public class ParserControlData {
     public Grammar Grammar;
     public NonTerminal AugmentedRoot;
     public ParserState InitialState;
     public ParserState FinalState;
     public readonly NonTerminalList NonTerminals = new NonTerminalList();
-    public readonly TerminalList Terminals = new TerminalList();
-    public readonly TerminalLookupTable TerminalsLookup = new TerminalLookupTable(); //hash table for fast terminal lookup by input char
-    public readonly TerminalList FallbackTerminals = new TerminalList(); //terminals that have no explicit prefixes
+
     public readonly ProductionList Productions = new ProductionList();
     public readonly ParserStateList States = new ParserStateList();
-    public readonly StringSet Errors = new StringSet();
-    public string ScannerRecoverySymbols = "";
+    
     public bool AnalysisCanceled;  //True if grammar analysis was canceled due to errors
+
+    public ParserControlData(Grammar grammar) {
+      Grammar = grammar;
+    }
   }
 
   public class TerminalLookupTable : Dictionary<char, TerminalList> { }
+
+  public enum ParserActionType {
+    Shift,
+    Reduce,
+    Operator,  //shift or reduce depending on operator associativity and precedence
+  }
+
+  /// <summary>
+  /// A container for LALR Parser-specific information for non-terminals
+  /// about the term.
+  /// </summary> 
+  public class NtData {
+    public NonTerminal NonTerminal;
+    public bool Nullable;
+    public readonly ProductionList Productions = new ProductionList();
+
+    public readonly StringSet Firsts = new StringSet();
+    public readonly NonTerminalList PropagateFirstsTo = new NonTerminalList();
+
+    private NtData(NonTerminal  nonTerminal) {
+      this.NonTerminal = nonTerminal;
+      nonTerminal.ParserData = this;
+    }
+    public static NtData GetOrCreate(NonTerminal nonTerminal) {
+      if (nonTerminal.ParserData != null)
+        return nonTerminal.ParserData as NtData;
+      else
+        return new NtData(nonTerminal);
+    }
+  }//class
+
+  public class NtDataList : List<NtData> {
+    public void Add(NonTerminal term) {
+      base.Add(NtData.GetOrCreate(term));
+    }
+  }
 
   public partial class ParserState {
     public readonly string Name;
@@ -62,27 +99,13 @@ namespace Irony.Compiler {
   public class ParserStateTable : Dictionary<string, ParserState> { } //hash table
 
   public class ActionRecord {
-    //public BnfElement Input;
     public string Key;
     public ParserActionType ActionType = ParserActionType.Shift;
     public ParserState NewState;
-    public ProductionList ReduceProductions = new ProductionList(); //may be more than one, in case of conflict
+    public readonly ProductionList ReduceProductions = new ProductionList(); //may be more than one, in case of conflict
+    public readonly LRItemList ShiftItems = new LRItemList();
+    public bool ConflictResolved; 
 
-/*    //used for shift actions
-    internal ActionRecord(string key, ParserState newState) {
-      //Input = input;
-      Key = key; // input.Key;
-      NewState = newState;
-      ActionType = ParserActionType.Shift;
-    }
-    //used for reduce actions
-    internal ActionRecord(string key, Production reduceProduction) {
-      //Input = input;
-      Key = key; // input.Key;
-      ReduceProductions.Add(reduceProduction);
-      ActionType = ParserActionType.Reduce;
-    }
- */ 
     internal ActionRecord(string key, ParserActionType type, ParserState newState, Production reduceProduction) {
       this.Key = key;
       this.ActionType = type;
@@ -104,15 +127,9 @@ namespace Irony.Compiler {
       get { return Production.RValues.Count;}
     }
     public bool HasConflict() {
-      switch (ActionType) {
-        case ParserActionType.Shift:
-          return ReduceProductions.Count > 0;
-        case ParserActionType.Reduce:
-          return ReduceProductions.Count > 1;
-        case ParserActionType.Operator:
-          return true;
-      }//switch
-      return false;
+      if (ConflictResolved) return false; 
+      return ShiftItems.Count > 0 && ReduceProductions.Count > 0 ||
+        ReduceProductions.Count > 1; 
     }
     public override string ToString() {
       string result = ActionType.ToString();
@@ -125,33 +142,27 @@ namespace Irony.Compiler {
 
   public class ActionRecordTable : Dictionary<string, ActionRecord> { }
 
+  [Flags]
+  public enum ProductionFlags {
+    None = 0,
+    IsInitial = 0x01,    //is initial production
+    HasTerminals = 0x02, //contains terminal
+    IsError = 0x04,      //contains Error terminal
+    IsEmpty = 0x08,
+  }
+
   public class Production {
-    public readonly bool IsInitial;
-    public readonly bool HasTerminals;
-    public readonly bool IsError;                                  //means contains Error terminal
-    public readonly NonTerminal LValue;                            // left-side element
+    public ProductionFlags Flags;
+    public readonly NonTerminal LValue;                              // left-side element
     public readonly BnfTermList RValues = new BnfTermList(); //the right-side elements sequence
-    public readonly LR0ItemList LR0Items = new LR0ItemList();      //LR0 items based on this production 
-    public Production(bool isInitial, NonTerminal lvalue, BnfTermList rvalues) {
+    public readonly GrammarHintList Hints = new GrammarHintList();
+    public readonly LR0ItemList LR0Items = new LR0ItemList();        //LR0 items based on this production 
+    public Production(NonTerminal lvalue) {
       LValue = lvalue;
-      //copy RValues skipping Empty pseudo-terminal
-      foreach (BnfTerm rv in rvalues)
-        if (rv != Grammar.Empty)
-          RValues.Add(rv);
-      //Calculate flags
-      foreach (BnfTerm term in RValues) {
-        Terminal terminal = term as Terminal;
-        if (terminal == null) continue;
-        HasTerminals = true;
-        if (terminal.Category == TokenCategory.Error) IsError = true;
-      }//foreach
-      //Note that we add an extra LR0Item with p = RValues.Count
-      for (int p = 0; p <= RValues.Count; p++)
-        LR0Items.Add(new LR0Item(this, p));
     }//constructor
 
-    public bool IsEmpty() {
-      return RValues.Count == 0; 
+    public bool IsSet(ProductionFlags flag) {
+      return (Flags & flag) != ProductionFlags.None;
     }
 
     public override string ToString() {
@@ -199,21 +210,23 @@ namespace Irony.Compiler {
   public partial class LR0Item {
     public readonly Production Production;
     public readonly int Position;
+
     public readonly StringSet TailFirsts = new StringSet(); //tail is a set of elements after the "after-dot-element"
     public bool TailIsNullable = false;
-    //automatically generated IDs - used for building key for list of kernel LR0Items
+    
+    //automatically generated IDs - used for building keys for lists of kernel LR0Items
     // which in turn are used to quickly lookup parser states in hash
     internal int ID;
     internal static int _maxID;
-    private string _toString;
+    private string _toString; //caches the ToString() value
 
     public LR0Item(Production production, int position) {
       Production = production;
       Position = position;
       ID = _maxID++;
-      _toString = Production.ToString(Position);
     }
-    public BnfTerm NextElement {
+    //The after-dot element
+    public BnfTerm Current {
       get {
         if (Position < Production.RValues.Count)
           return Production.RValues[Position];
@@ -222,9 +235,11 @@ namespace Irony.Compiler {
       }
     }
     public bool IsKernel {
-      get { return Position > 0 || (Production.IsInitial && Position == 0); }
+      get { return Position > 0 || (Production.IsSet(ProductionFlags.IsInitial) && Position == 0); }
     }
     public override string ToString() {
+      if (_toString == null)
+        _toString = Production.ToString(Position);
       return _toString;
     }
   }//LR0Item

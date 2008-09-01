@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irony.Compiler {
+namespace Irony.Compiler.Lalr {
   public struct ParserStackElement {
     public readonly AstNode Node;
     public readonly ParserState State;

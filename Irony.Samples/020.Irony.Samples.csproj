@@ -45,21 +45,11 @@
   <ItemGroup>
     <Compile Include="CSharp\CSharpGrammar.cs" />
     <Compile Include="OtherGrammars\GwBasicGrammar.cs" />
-    <Compile Include="Scheme\AST\AnonFunctionNode.cs" />
-    <Compile Include="Scheme\AST\CondFormNode.cs" />
-    <Compile Include="Scheme\AST\CondClauseNode.cs" />
-    <Compile Include="Scheme\AST\NamedNode.cs" />
-    <Compile Include="Scheme\AST\FunctionDefNode.cs" />
-    <Compile Include="Scheme\AST\FunctionCallNode.cs" />
-    <Compile Include="Scheme\AST\IdentifierNode.cs" />
-    <Compile Include="Scheme\AST\SetVarNode.cs" />
-    <Compile Include="Scheme\SchemeOps.cs" />
-    <Compile Include="Scheme\AST\DatumListNode.cs" />
+    <Compile Include="Scheme\SchemeRuntime.cs" />
     <Compile Include="Script.NET\ScriptDotNetGrammar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Python\PythonGrammar.cs" />
     <None Include="Ruby\RubyGrammar.cs" />
-    <Compile Include="Scheme\AST\IfThenElseNode.cs" />
     <Compile Include="Scheme\SchemeGrammar.cs" />
     <None Include="OtherGrammars\GrammarEx434.cs" />
     <None Include="OtherGrammars\GrammarEx446.cs" />

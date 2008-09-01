@@ -20,8 +20,8 @@ namespace Irony.Compiler {
 
   public class BnfTermList : List<BnfTerm> { }
 
-  //Basic Backus-Naur Form element. 
-  public class BnfTerm  {
+  //Basic Backus-Naur Form element. Base class for Terminal, NonTerminal, BnfExpression, GrammarHint
+  public abstract class BnfTerm  {
     public BnfTerm(string name) : this(name, name) { }
     public BnfTerm(string name, string displayName) {
       Name = name;
@@ -41,14 +41,15 @@ namespace Irony.Compiler {
 
     #region properties: Name, DisplayName, Key, Options
     public string Name;    
-    //DisplayName is used in error reporting, e.g. "Syntax error, expected <list-of-aliases>". 
+    //DisplayName is used in error reporting, e.g. "Syntax error, expected <list-of-display-names>". 
     public string DisplayName;
     //The Key is used in matching 
     public string Key;
     public TermOptions Options;
-    public Type NodeType;
     protected Grammar Grammar;
-    public bool Nullable;
+    public Type NodeType;
+    public object ParserData; //custom parser data
+    public int Precedence = AstNode.NoPrecedence;
 
     [System.Diagnostics.DebuggerStepThrough]
     public bool IsSet(TermOptions option) {
@@ -70,9 +71,7 @@ namespace Irony.Compiler {
 
 
     #region Kleene operators: Q(), Plus(), Star()
-    // We cache Plus() and Star() lists (non-terminals) and return the same instance for repeated calls; 
-    // we don't do it for Q(), because it returns expression, not NonTerminal, and expression would better be not shared
-    NonTerminal _plus, _star; 
+    NonTerminal _plus, _star;
     public BnfExpression Q() {
       BnfExpression q = Grammar.Empty | this;
       q.Name = this.Name + "?";

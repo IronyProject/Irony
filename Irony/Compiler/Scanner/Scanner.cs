@@ -20,16 +20,14 @@ namespace Irony.Compiler {
   // like identifier, number, literal, etc. 
 
   public class Scanner  {
-    public Scanner(GrammarData data)  {
-      _data = data;
-      _lineTerminators = _data.Grammar.LineTerminators.ToCharArray();
+    public Scanner(ScannerControlData data)  {
+      Data = data;
     }
 
     #region Fields: _data, _source, _context, _caseSensitive, _currentToken
-    GrammarData _data;
+    public readonly ScannerControlData Data;
     ISourceStream  _source;
     CompilerContext  _context;
-    char[] _lineTerminators;
     bool _caseSensitive;
     Token _currentToken; //it is used only in BeginScan iterator, but we define it as a field to avoid creating local state in iterator
     //buffered tokens can come from expanding a multi-token, when Terminal.TryMatch() returns several tokens packed into one token
@@ -89,23 +87,23 @@ namespace Irony.Compiler {
         return tkn; 
       }
       //1. Skip whitespace. We don't need to check for EOF: at EOF we start getting 0-char, so we'll get out automatically
-      while (_data.Grammar.WhitespaceChars.IndexOf(_source.CurrentChar) >= 0)
+      while (Data.Grammar.WhitespaceChars.IndexOf(_source.CurrentChar) >= 0)
         _source.Position++;
       //That's the token start, calc location (line and column)
       SetTokenStartLocation();
       //Check for EOF
       if (_source.EOF())
-        return Token.Create (Grammar.Eof, _context, _source.TokenStart, string.Empty, Grammar.Eof.Name);
+        return Token.Create (_context, Grammar.Eof, _source.TokenStart, string.Empty, Grammar.Eof.Name);
       //Find matching terminal
       // First, try terminals with explicit "first-char" prefixes, selected by current char in source
       TerminalList terms = SelectTerminals(_source.CurrentChar);
       Token result = MatchTerminals(terms);
       //If no token, try FallbackTerminals
-      if (result == null && _data.FallbackTerminals.Count > 0)
-        result = MatchTerminals(_data.FallbackTerminals); 
+      if (result == null && Data.FallbackTerminals.Count > 0)
+        result = MatchTerminals(Data.FallbackTerminals); 
       //If we don't have a token from registered terminals, try Grammar's method
       if (result == null) 
-        result = _data.Grammar.TryMatch(_context, _source);
+        result = Data.Grammar.TryMatch(_context, _source);
       //Check if we have a multi-token; if yes, copy all but first child tokens from ChildNodes to _bufferedTokens, 
       //  and set result to the first child token
       if (result != null && result.IsMultiToken()) {
@@ -150,14 +148,14 @@ namespace Irony.Compiler {
       TerminalList result;
       if (!_caseSensitive)
         current = char.ToLower(current);
-      if (_data.TerminalsLookup.TryGetValue(current, out result))
+      if (Data.TerminalsLookup.TryGetValue(current, out result))
         return result;
       else
-        return _data.FallbackTerminals;
+        return Data.FallbackTerminals;
     }//Select
 
     private void Recover() {
-      while (!_source.EOF() && _data.ScannerRecoverySymbols.IndexOf(_source.CurrentChar) < 0)
+      while (!_source.EOF() && Data.ScannerRecoverySymbols.IndexOf(_source.CurrentChar) < 0)
         _source.Position++;
     }
 
@@ -195,7 +193,7 @@ namespace Irony.Compiler {
       //First count \n chars in the string fragment
       int lineStart = _nextNewLinePosition;
       int nlCount = 1; //we start after old _nextNewLinePosition, so we count one NewLine char
-      CountCharsInText(text, _lineTerminators, lineStart + 1, newPosition - 1, ref nlCount, ref lineStart);
+      CountCharsInText(text, Data.LineTerminators, lineStart + 1, newPosition - 1, ref nlCount, ref lineStart);
       tokenStart.Line += nlCount;
       //at this moment lineStart is at start of line where newPosition is located 
       //Calc # of tab chars from lineStart to newPosition to adjust column#
@@ -211,7 +209,7 @@ namespace Irony.Compiler {
         tokenStart.Column += (_source.TabWidth - 1) * tabCount; // "-1" to count for tab char itself
 
       //finally cache new line and assign TokenStart
-      _nextNewLinePosition = text.IndexOfAny(_lineTerminators, newPosition);
+      _nextNewLinePosition = text.IndexOfAny(Data.LineTerminators, newPosition);
       _source.TokenStart = tokenStart;
     }
 

@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "030.Irony.GrammarExplorer",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "040.Irony.Tests", "Irony.Tests\040.Irony.Tests.csproj", "{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "050.Irony.Tutorial", "Irony.Tutorial\050.Irony.Tutorial.csproj", "{337C8662-3622-4AD9-8CFF-E7D9E437EA27}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +76,18 @@ Global
 		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.Silverlight Release|Any CPU.Build.0 = Release|Any CPU
 		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.SpecSharp|Any CPU.ActiveCfg = Release|Any CPU
 		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.SpecSharp|Any CPU.Build.0 = Release|Any CPU
+		{337C8662-3622-4AD9-8CFF-E7D9E437EA27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{337C8662-3622-4AD9-8CFF-E7D9E437EA27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{337C8662-3622-4AD9-8CFF-E7D9E437EA27}.FxCop|Any CPU.ActiveCfg = Release|Any CPU
+		{337C8662-3622-4AD9-8CFF-E7D9E437EA27}.FxCop|Any CPU.Build.0 = Release|Any CPU
+		{337C8662-3622-4AD9-8CFF-E7D9E437EA27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{337C8662-3622-4AD9-8CFF-E7D9E437EA27}.Release|Any CPU.Build.0 = Release|Any CPU
+		{337C8662-3622-4AD9-8CFF-E7D9E437EA27}.Silverlight Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{337C8662-3622-4AD9-8CFF-E7D9E437EA27}.Silverlight Debug|Any CPU.Build.0 = Debug|Any CPU
+		{337C8662-3622-4AD9-8CFF-E7D9E437EA27}.Silverlight Release|Any CPU.ActiveCfg = Release|Any CPU
+		{337C8662-3622-4AD9-8CFF-E7D9E437EA27}.Silverlight Release|Any CPU.Build.0 = Release|Any CPU
+		{337C8662-3622-4AD9-8CFF-E7D9E437EA27}.SpecSharp|Any CPU.ActiveCfg = Release|Any CPU
+		{337C8662-3622-4AD9-8CFF-E7D9E437EA27}.SpecSharp|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

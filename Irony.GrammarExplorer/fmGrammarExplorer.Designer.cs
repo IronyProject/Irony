@@ -320,7 +320,7 @@ namespace Irony.GrammarExplorer {
       this.pageTest.Padding = new System.Windows.Forms.Padding(3);
       this.pageTest.Size = new System.Drawing.Size(1095, 621);
       this.pageTest.TabIndex = 4;
-      this.pageTest.Text = "Parsing Test";
+      this.pageTest.Text = "Test";
       this.pageTest.UseVisualStyleBackColor = true;
       // 
       // txtSource
@@ -789,7 +789,8 @@ namespace Irony.GrammarExplorer {
             "Scheme",
             "Script.NET",
             "c# 3.0",
-            "GW Basic"});
+            "GW Basic",
+            "Tutorial - CalcGrammar"});
       this.cboLanguage.Location = new System.Drawing.Point(90, 3);
       this.cboLanguage.Name = "cboLanguage";
       this.cboLanguage.Size = new System.Drawing.Size(189, 21);

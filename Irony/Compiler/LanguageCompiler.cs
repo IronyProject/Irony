@@ -16,40 +16,49 @@ using System.Text;
 using System.Diagnostics;
 
 namespace Irony.Compiler {
-  //Root compiler class
+
+  public enum CodeAnalysisPhase {
+    Init,
+    AssignScopes,
+    Allocate,    //Allocating local variables
+    Binding,     //Binding variable references to variable locations - transforming refs into lex addresses
+    Optimization,
+    MarkTailCalls,
+  }
+
+  public class CodeAnalysisArgs {
+    public readonly CompilerContext Context;
+    public CodeAnalysisPhase Phase;
+    public bool SkipChildren;
+    public CodeAnalysisArgs(CompilerContext context) {
+      Context = context;
+      Phase = CodeAnalysisPhase.Init;
+    }
+  }
+
+  
   public class LanguageCompiler {
     public LanguageCompiler(Grammar grammar) {
       Grammar = grammar;
-      Stopwatch sw = new Stopwatch();
-      sw.Start();
-      GrammarDataBuilder bld = new GrammarDataBuilder(grammar);
-      bld.Build();
-      Data = bld.Data;
-      Parser = new Parser(Data); 
-      Scanner = new Scanner(Data);
-      sw.Stop();
-      InitTime = sw.ElapsedMilliseconds;
+      Options = grammar.Options;
+      grammar.Prepare();
+      ScannerControlData scannerData = new ScannerControlData(grammar);
+      Scanner = new Scanner(scannerData);
+      Parser = new Lalr.Parser(Grammar); 
     }
-    public LanguageCompiler(GrammarData data) {
-      Data = data;
-      Grammar = data.Grammar;
-      Parser = new Parser(Data);
-      Scanner = new Scanner(Data);
-    }
-
     //Used in unit tests
     public static LanguageCompiler CreateDummy() {
-      GrammarData data = new GrammarData();
-      data.Grammar = new Grammar();
-      LanguageCompiler compiler = new LanguageCompiler(data);
+      LanguageCompiler compiler = new LanguageCompiler(new Grammar());
       return compiler;
     }
 
     public readonly Grammar Grammar;
-    public readonly GrammarData Data;
+    public readonly LanguageOptions Options; 
     public readonly Scanner Scanner;
-    public readonly Parser Parser;
-    public readonly long InitTime;
+    public readonly IParser Parser;
+
+    //TODO - remove this
+    public Lalr.Parser LalrParser { get { return Parser as Lalr.Parser; } }
 
     public long CompileTime  {
       [DebuggerStepThrough]
@@ -79,7 +88,32 @@ namespace Irony.Compiler {
       _compileTime = Environment.TickCount - start;
       return rootNode;
     }//method
-    
+
+    public void AnalyzeCode(AstNode astRoot, CompilerContext context) {
+      RunAnalysisPhases(astRoot, context,
+           CodeAnalysisPhase.Init, CodeAnalysisPhase.AssignScopes, CodeAnalysisPhase.Allocate,
+           CodeAnalysisPhase.Binding, CodeAnalysisPhase.MarkTailCalls, CodeAnalysisPhase.Optimization);
+    }
+
+    private void RunAnalysisPhases(AstNode astRoot, CompilerContext context, params CodeAnalysisPhase[] phases) {
+      CodeAnalysisArgs args = new CodeAnalysisArgs(context);
+      foreach (CodeAnalysisPhase phase in phases) {
+        switch (phase) {
+          case CodeAnalysisPhase.AssignScopes:
+            astRoot.Scope = new Scope(astRoot, null);
+            break;
+          
+          case CodeAnalysisPhase.MarkTailCalls:
+            if (!Options.TailRecursive) continue;//foreach
+            astRoot.Flags |= AstNodeFlags.IsTail;
+            break;
+        }//switch
+        args.Phase = phase;
+        astRoot.OnCodeAnalysis(args);
+      }//foreach phase
+    }//method
+  
+
   }//class
 
 }//namespace

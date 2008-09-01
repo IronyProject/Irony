@@ -20,6 +20,8 @@ namespace Irony.Compiler {
   public class StringLiteral : CompoundTerminalBase {
 
     #region constructors and initialization
+    public StringLiteral(string name) : this(name, "\"", ScanFlags.None, TermOptions.None) {
+    }
     public StringLiteral(string name, string startEndSymbol, ScanFlags stringFlags)
       : this(name, startEndSymbol, stringFlags, TermOptions.SpecialIgnoreCase) { }
 
@@ -73,14 +75,14 @@ namespace Irony.Compiler {
       bool escapeEnabled = !details.IsSet(ScanFlags.DisableEscapes);
       bool ignoreCase = IsSet(TermOptions.SpecialIgnoreCase);
       int start = source.Position;
-      string startS = details.ControlSymbol;
-      string startS2 = startS + startS; //doubled start symbol
+      string quoteSymbol = details.ControlSymbol;
+      string quoteDoubled = quoteSymbol + quoteSymbol; //doubled quote symbol
       //1. Find the string end
       // first get the position of the next line break; we are interested in it to detect malformed string, 
       //  therefore do it only if linebreak is NOT allowed; if linebreak is allowed, set it to -1 (we don't care).  
       int nlPos = details.IsSet(ScanFlags.AllowLineBreak) ? -1 : source.Text.IndexOf('\n', source.Position);
       while (!source.EOF()) {
-        int endPos = source.Text.IndexOf(startS, source.Position);
+        int endPos = source.Text.IndexOf(quoteSymbol, source.Position);
         //Check for malformed string: either EndSymbol not found, or LineBreak is found before EndSymbol
         bool malformed = endPos < 0 || nlPos >= 0 && nlPos < endPos;
         if (malformed) {
@@ -92,25 +94,34 @@ namespace Irony.Compiler {
         }
         
         //We found EndSymbol - check if it is escaped; if yes, skip it and continue search
-        if (escapeEnabled && source.Text[endPos - 1] == EscapeChar) {
-          source.Position = endPos + startS.Length;
+        if (escapeEnabled && IsEndQuoteEscaped(source.Text, endPos)) {
+          source.Position = endPos + quoteSymbol.Length;
           continue; //searching for end symbol
         }
         
         //Check if it is doubled end symbol
         source.Position = endPos;
-        if (details.IsSet(ScanFlags.AllowDoubledQuote) && source.MatchSymbol(startS2, ignoreCase)) {
-          source.Position = endPos + startS.Length * 2;
+        if (details.IsSet(ScanFlags.AllowDoubledQuote) && source.MatchSymbol(quoteDoubled, ignoreCase)) {
+          source.Position = endPos + quoteDoubled.Length;
           continue;
         }//checking for doubled end symbol
         
         //Ok, this is normal endSymbol that terminates the string. 
         // Advance source position and get out from the loop
         details.Body = source.Text.Substring(start, endPos - start);
-        source.Position = endPos + startS.Length;
+        source.Position = endPos + quoteSymbol.Length;
         return true; //if we come here it means we're done - we found string end.
       }  //end of loop to find string end; 
       return false;
+    }
+    private bool IsEndQuoteEscaped(string text, int quotePosition) {
+      bool escaped = false;
+      int p = quotePosition - 1;
+      while (p > 0 && text[p] == EscapeChar) {
+        escaped = !escaped;
+        p--;
+      }
+      return escaped;
     }
 
     private bool ReadStartSymbol(ISourceStream source, ScanDetails details) {
@@ -214,7 +225,7 @@ namespace Irony.Compiler {
             }
             //p now point to char right after the last digit
             if (p <= 1) {
-              details.Error = "Invalid \\x escape, at least one digit expected.";
+              details.Error = @"Invalid \x escape, at least one digit expected.";
               return segment;
             }
             digits = segment.Substring(1, p - 1);

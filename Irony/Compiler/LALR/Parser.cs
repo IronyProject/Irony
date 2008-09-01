@@ -16,20 +16,21 @@ using System.Text;
 using System.Collections;
 
 
-namespace Irony.Compiler {
+namespace Irony.Compiler.Lalr {
   // Parser class implements LALR(1) parser DFM. Its behavior is controlled by the state transition graph
   // with root in Data.InitialState. Each state contains a dictionary of parser actions indexed by input 
   // element (token or non-terminal node). 
-  public class Parser {
+  public class Parser : IParser {
 
     #region Constructors
-    public Parser(GrammarData data) {
-      Data = data;
+    public Parser(Grammar grammar) {
+      ParserControlDataBuilder builder = new ParserControlDataBuilder(grammar);
+      Data = builder.Build();
     }
     #endregion
 
     #region Properties and fields: Data, Stack, _context, Input, CurrentState, LineCount, TokenCount
-    public readonly GrammarData Data;
+    public readonly ParserControlData Data;
     public readonly ParserStack Stack = new ParserStack();
 
     private CompilerContext _context;
@@ -156,7 +157,7 @@ namespace Irony.Compiler {
         }//action==null
 
         if (action.HasConflict())
-          action = Data.Grammar.OnActionConflict(this, _currentToken, action);
+          action = (ActionRecord) Data.Grammar.OnActionConflict(this, _currentToken, action);
         this.OnActionSelected(_currentToken, action);
         switch (action.ActionType) {
           case ParserActionType.Operator:
@@ -181,11 +182,11 @@ namespace Irony.Compiler {
     private void ReportError(SourceLocation location, string message, params object[] args) {
       if (args != null && args.Length > 0)
         message = string.Format(message, args);
-      _context.AddError(location, message, _currentState);
+      _context.AddError(location, message, _currentState.Name);
     }
 
     private void ReportScannerError() {
-      _context.AddError(_currentToken.Location, _currentToken.Text, _currentState);
+      _context.AddError(_currentToken.Location, _currentToken.Text, _currentState.Name);
     }
     
     private void ReportParserError() {
@@ -193,7 +194,7 @@ namespace Irony.Compiler {
         ReportError(_currentToken.Location, "Unexpected end of file.");
         return;
       }
-      StringList expectedList = GetCurrentExpectedSymbols();
+      StringSet expectedList = GetCurrentExpectedSymbols();
       string message = this.Data.Grammar.GetSyntaxErrorMessage(_context, expectedList); 
       if (message == null) 
         message = "Syntax error" + (expectedList.Count == 0 ? "." : ", expected: " + TextUtils.Cleanup(expectedList.ToString(" ")));
@@ -210,34 +211,34 @@ namespace Irony.Compiler {
     // all NonTerminals that might follow the current position. This list would be calculated at start up, 
     // in addition to normal lookaheads. 
     #endregion
-    private StringList GetCurrentExpectedSymbols() {
+    private StringSet GetCurrentExpectedSymbols() {
       BnfTermList inputElements = new BnfTermList();
       StringSet inputKeys = new StringSet();
       inputKeys.AddRange(_currentState.Actions.Keys);
       //First check all NonTerminals
       foreach (NonTerminal nt in Data.NonTerminals) {
-        if (!inputKeys.Contains(nt.Key)) continue; 
+        if (!inputKeys.Contains(nt.Key)) continue;
+        NtData ntData = nt.ParserData as NtData;
         //nt is one of our available inputs; check if it has an alias. If not, don't add it to element list;
-        // and we have already all its "Firsts" keys in the list. 
+        // because we have already all its "Firsts" keys in the list. 
         // If yes, add nt to element list and remove
         // all its "fists" symbols from the list. These removed symbols will be represented by single nt alias. 
-        if (string.IsNullOrEmpty(nt.DisplayName))
-          inputKeys.Remove(nt.Key);
+        if (string.IsNullOrEmpty(ntData.NonTerminal.DisplayName))
+          inputKeys.Remove(ntData.NonTerminal.Key);
         else {
-          inputElements.Add(nt);
-          foreach(string first in nt.Firsts) 
+          inputElements.Add(ntData.NonTerminal);
+          foreach(string first in ntData.Firsts) 
             inputKeys.Remove(first);
         }
       }
       //Now terminals
-      foreach (Terminal term in Data.Terminals) {
+      foreach (Terminal term in _context.Compiler.Scanner.Data.Terminals) {
         if (inputKeys.Contains(term.Key))
           inputElements.Add(term);
       }
-      StringList result = new StringList();
+      StringSet result = new StringSet();
       foreach(BnfTerm term in inputElements)
         result.Add(string.IsNullOrEmpty(term.DisplayName)? term.Name : term.DisplayName);
-      result.Sort();
       return result;
     }
 
@@ -336,6 +337,7 @@ namespace Irony.Compiler {
         if (!child.Term.IsSet(TermOptions.IsPunctuation)) 
           childNodes.Add(child);
       }
+
       //recover state, location and pop the stack
       SourceSpan newNodeSpan;
       if (popCnt == 0) {
@@ -349,6 +351,8 @@ namespace Irony.Compiler {
       }
       //Create new node
       AstNode node = CreateNode(action, newNodeSpan, childNodes);
+      action.NonTerminal.OnNodeCreated(node);
+
       // Push node/current state into the stack 
       Stack.Push(node, _currentState);
       //switch to new state
@@ -364,10 +368,12 @@ namespace Irony.Compiler {
     private AstNode CreateNode(ActionRecord reduceAction, SourceSpan sourceSpan, AstNodeList childNodes) {
       NonTerminal nt = reduceAction.NonTerminal;
       AstNode result;
+      NodeArgs nodeArgs = new NodeArgs(_context, nt, sourceSpan, childNodes);
 
-      AstNodeArgs args = new AstNodeArgs(nt, _context, sourceSpan, childNodes);
-      result = nt.InvokeNodeCreator(args);
-      if (result != null) return result;
+      if (nt.NodeCreator != null) {
+        result = nt.NodeCreator(nodeArgs);
+        if (result != null)  return result;
+      }
 
       Type defaultNodeType = _context.Compiler.Grammar.DefaultNodeType;
       Type ntNodeType = nt.NodeType ?? defaultNodeType ?? typeof(AstNode);
@@ -388,7 +394,7 @@ namespace Irony.Compiler {
         result.ChildNodes.Add(newChild);
         return result;
       }
-      //Check for StarList produced by MakeStarList; in this case the production is:  ntList -> Empty | Elem+
+      //Check for StarList produced by MakeStarRule; in this case the production is:  ntList -> Empty | Elem+
       // where Elem+ is non-empty list of elements. The child list we are actually interested in is one-level lower
       if (nt.IsSet(TermOptions.IsStarList) && childNodes.Count == 1) {
         childNodes = childNodes[0].ChildNodes;
@@ -405,20 +411,43 @@ namespace Irony.Compiler {
       }
       // Try using Grammar's CreateNode method
       result = Data.Grammar.CreateNode(_context, reduceAction, sourceSpan, childNodes);
-      if (result == null) {
-        //Finally create node directly. For perf reasons we try using "new" for AstNode type (faster), and
-        // activator for all custom types (slower)
-        if (ntNodeType == typeof(AstNode))
-          result = new AstNode(args);
-        else
-          result = (AstNode)Activator.CreateInstance(ntNodeType, args);
-      }
-      if (result != null)
-        nt.OnNodeCreated(result);
-      return result;
+      if (result != null) 
+        return result; 
+
+      //Finally create node directly. For perf reasons we try using "new" for AstNode type (faster), and
+      // activator for all custom types (slower)
+      if (ntNodeType == typeof(AstNode))
+        return new AstNode(nodeArgs);
+
+     // if (ntNodeType.GetConstructor(new Type[] {typeof(AstNodeList)}) != null) 
+       // return (AstNode)Activator.CreateInstance(ntNodeType, childNodes);
+      if (ntNodeType.GetConstructor(new Type[] {typeof(NodeArgs)}) != null) 
+        return (AstNode) Activator.CreateInstance(ntNodeType, nodeArgs);
+      //The following should never happen - we check that constructor exists when we validate grammar.
+      string msg = string.Format(
+@"AST Node class {0} does not have a constructor for automatic node creation. 
+Provide a constructor with a single NodeArgs parameter, or use NodeCreator delegate property in NonTerminal.", ntNodeType);
+      throw new GrammarErrorException(msg);
     }
     #endregion
 
   }//class
+
+  public class ParserActionEventArgs : EventArgs {
+    public ParserActionEventArgs(ParserState state, Token input, ActionRecord action) {
+      State = state;
+      Input = input;
+      Action = action;
+    }
+
+    public readonly ParserState State;
+    public readonly Token Input;
+    public ActionRecord Action;
+
+    public override string ToString() {
+      return State + "/" + Input + ": " + Action;
+    }
+  }//class
+
 
 }//namespace

@@ -10,6 +10,8 @@ namespace Irony.Tests {
   using BigInteger = Microsoft.Scripting.Math.BigInteger;
   using Complex = Microsoft.Scripting.Math.Complex64;
 
+  //Note: currently test not functional - doesn't compile or run. May need and bring back to life some day.
+
   /// <summary>
   /// Tests OperatorDispatch class
   /// </summary>
@@ -62,45 +64,45 @@ namespace Irony.Tests {
 
     [TestMethod]
     public void TestOperatorDispatchPlus() {
-      OperatorDispatchManager manager = new OperatorDispatchManager();
-      OperatorDispatcher dispatcher = manager.GetDispatcher("+");
+      LanguageRuntime runtime = new LanguageRuntime();
+      CallDispatcher dispatcher = runtime.GetDispatcher("+");
       object v;
       
-      v = dispatcher.Dispatch(2, 3);
+      v = dispatcher.Evaluate(2, 3);
       CheckResult(v, 5, "int + int");
 
-      v = dispatcher.Dispatch(2, 3.0);
+      v = dispatcher.Evaluate(2, 3.0);
       CheckResult(v, 5.0, "int + double");
 
-      v = dispatcher.Dispatch(2, "3");
+      v = dispatcher.Evaluate(2, "3");
       CheckResult(v, "23", "int + string");
 
-      v = dispatcher.Dispatch("2", "3");
+      v = dispatcher.Evaluate("2", "3");
       CheckResult(v, "23", "string + string");
 
       //Note that for all operations on bytes/sbytes/int16 types our implementation returns int32
-      v = dispatcher.Dispatch((sbyte)2, (sbyte)3);
+      v = dispatcher.Evaluate((sbyte)2, (sbyte)3);
       CheckResult(v, 5, "sbyte + sbyte");
 
-      v = dispatcher.Dispatch((byte)2, (byte)3);
+      v = dispatcher.Evaluate((byte)2, (byte)3);
       CheckResult(v, 5, "byte + byte");
 
-      v = dispatcher.Dispatch((Int16)2, (Int16)3);
+      v = dispatcher.Evaluate((Int16)2, (Int16)3);
       CheckResult(v, 5, "Int16 + Int16");
 
-      v = dispatcher.Dispatch((byte)2, 3);
+      v = dispatcher.Evaluate((byte)2, 3);
       CheckResult(v, 5, "byte + int");
 
-      v = dispatcher.Dispatch(int.MaxValue, 10); //we get overflow here, and switch to Int64
+      v = dispatcher.Evaluate(int.MaxValue, 10); //we get overflow here, and switch to Int64
       CheckResult(v, (Int64)int.MaxValue + 10, "Int32 overflow");
 
       BigInteger xBig = BigInteger.Create(1000000000); //one billion
       xBig = xBig * xBig * xBig;
       xBig = xBig * xBig * xBig - 1; //that makes it really big
-      v = dispatcher.Dispatch(xBig, 2);
+      v = dispatcher.Evaluate(xBig, 2);
       Assert.IsTrue(v != null && v.GetType() == typeof(BigInteger) && v.ToString().EndsWith("0001"), "Test [BigInteger + int] failed");
 
-      v = dispatcher.Dispatch(new Complex(1, 2), new Complex(2, 3)); 
+      v = dispatcher.Evaluate(new Complex(1, 2), new Complex(2, 3)); 
       CheckResult(v, new Complex(3, 5), "complex + complex");
     }
 
@@ -108,8 +110,8 @@ namespace Irony.Tests {
     // Uncomment the TestMethod attribute and run test in Release mode to see the performance numbers in the Output Window
     [TestMethod]
     public void PerformanceEvaluation() {
-      OperatorDispatchManager manager = new OperatorDispatchManager();
-      OperatorDispatcher dispatcher = manager.GetDispatcher("+");
+      LanguageRuntime runtime = new LanguageRuntime();
+      CallDispatcher dispatcher = runtime.GetDispatcher("+");
 
       Trace.WriteLine("");
       Trace.WriteLine("Performance evaluation, time in nanoseconds: ------------------------------------");
@@ -124,22 +126,22 @@ namespace Irony.Tests {
       Trace.WriteLine("");
 
     }
-    private void DispatchMultiple(OperatorDispatcher dispatcher, object x, object y) {
+    private void DispatchMultiple(CallDispatcher dispatcher, object x, object y) {
       int count = 1000000; // one million
       int index = count / 10; //do it in 10-packs to reduce the impact of the loop counting
       Stopwatch sw = new Stopwatch();
       sw.Start();
       while (index-- > 0) {
-        dispatcher.Dispatch(x, y);
-        dispatcher.Dispatch(x, y);
-        dispatcher.Dispatch(x, y);
-        dispatcher.Dispatch(x, y);
-        dispatcher.Dispatch(x, y);
-        dispatcher.Dispatch(x, y);
-        dispatcher.Dispatch(x, y);
-        dispatcher.Dispatch(x, y);
-        dispatcher.Dispatch(x, y);
-        dispatcher.Dispatch(x, y);
+        dispatcher.Evaluate(x, y);
+        dispatcher.Evaluate(x, y);
+        dispatcher.Evaluate(x, y);
+        dispatcher.Evaluate(x, y);
+        dispatcher.Evaluate(x, y);
+        dispatcher.Evaluate(x, y);
+        dispatcher.Evaluate(x, y);
+        dispatcher.Evaluate(x, y);
+        dispatcher.Evaluate(x, y);
+        dispatcher.Evaluate(x, y);
       }
       sw.Stop();
       long timeNsPerOper = sw.ElapsedMilliseconds * 1000000 / count; //timeMs * (one million ns per ms) divided by number of runs

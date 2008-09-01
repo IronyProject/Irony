@@ -6,30 +6,26 @@ using Irony.Compiler;
 
 namespace Irony.Runtime {
 
-  public interface IInvokeTarget {
-    void Invoke(EvaluationContext context, ValueList args);
-  }
-
-  public delegate void ClosureTarget(EvaluationContext context);
-  public class Closure : IInvokeTarget {
-    Frame _parentFrame;
-    AstNode _node;
-    //public readonly int ArgCount;
-    ClosureTarget _target;
-    public Closure(Frame parentFrame, AstNode node, ClosureTarget target) {
-      _parentFrame = parentFrame;
-      //_argCount = argCount;
-      _node = node; 
-      _target = target;
+  public class Closure {
+    public string MethodName; //either BindingInfo.Name, or name of the variable storing lambda expression 
+    public readonly Frame ParentFrame;
+    public readonly AstNode Node;
+    public readonly FunctionBindingInfo BindingInfo;
+    public Closure(Frame parentFrame, AstNode node, FunctionBindingInfo bindingInfo) {
+      MethodName = bindingInfo.Name;
+      ParentFrame = parentFrame;
+      Node = node; 
+      BindingInfo = bindingInfo;
     }
-    public void Invoke(EvaluationContext context, ValueList args) {
+    public void Evaluate(EvaluationContext context) {
+      context.PushFrame(MethodName, Node, ParentFrame);
       try {
-        context.PushFrame(_node, _parentFrame, args);
-        _target(context);
+        BindingInfo.Evaluate(context);
       } finally {
         context.PopFrame();
-      }
-    }
+      }//finally
+    }//method
+
   }//class
 
 

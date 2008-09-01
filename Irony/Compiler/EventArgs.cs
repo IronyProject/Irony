@@ -27,22 +27,6 @@ namespace Irony.Compiler {
 
   }//class
 
-  public class ParserActionEventArgs : EventArgs {
-    public ParserActionEventArgs(ParserState state, Token input, ActionRecord action) {
-      State = state;
-      Input = input;
-      Action = action;
-    }
-
-    public readonly ParserState State;
-    public readonly Token Input;
-    public ActionRecord Action;
-
-    public override string ToString() {
-      return State + "/" + Input + ": " + Action;
-    }
-  }//class
-
   public class ScannerConvertingValueEventArgs : EventArgs {
     public ScannerConvertingValueEventArgs(ScanDetails details) {
       this.Details = details;

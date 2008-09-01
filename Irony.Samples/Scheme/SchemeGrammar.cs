@@ -14,15 +14,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Irony.Compiler;
+using Irony.Compiler.AST;
 
 namespace Irony.Samples.Scheme {
   public class SchemeGrammar : Grammar {
     // It is loosely based on R6RS specs.  
     // See Grammar Errors tab in GrammarExplorer for remaining conflicts.
     public SchemeGrammar() {
-
-      base.Ops = new SchemeOps();
-
 
       #region Terminals
       ConstantTerminal Constant = new ConstantTerminal("Constant");
@@ -45,13 +43,13 @@ namespace Irony.Samples.Scheme {
 
       // TODO: build SchemeCharLiteral
       // the following is nonsense, just to put something there
-      StringLiteral charLiteral = new StringLiteral("Char", "'", ScanFlags.None); 
-      Terminal stringLiteral = new StringLiteral("String", "\"", ScanFlags.AllowAllEscapes);
+      var charLiteral = new StringLiteral("Char", "'", ScanFlags.None); 
+      var stringLiteral = new StringLiteral("String", "\"", ScanFlags.AllowAllEscapes);
       //Identifiers. Note: added "-", just to allow IDs starting with "->" 
-      IdentifierTerminal SimpleIdentifier = new IdentifierTerminal("SimpleIdentifier", "_+-*/.@?!<>=", "_+-*/.@?!<>=$%&:^~");
+      var SimpleIdentifier = new IdentifierTerminal("SimpleIdentifier", "_+-*/.@?!<>=", "_+-*/.@?!<>=$%&:^~");
       //                                                           name                extraChars      extraFirstChars  
-      Terminal Number = TerminalFactory.CreateSchemeNumber("Number");
-      Terminal Byte = Number; 
+      var Number = TerminalFactory.CreateSchemeNumber("Number");
+      var Byte = new NumberLiteral("Byte", TermOptions.NumberIntOnly); 
 
       //Comments
       Terminal Comment = new CommentTerminal("Comment", "#|", "|#");
@@ -63,31 +61,38 @@ namespace Irony.Samples.Scheme {
       #region NonTerminals
       var Module = new NonTerminal("Module");
       var Library = new NonTerminal("Library");
+      var LibraryList = new NonTerminal("Library+");
       var Script = new NonTerminal("Script");
 
       var Abbreviation = new NonTerminal("Abbreviation");
       var Vector = new NonTerminal("Vector");
+      var ByteList = new NonTerminal("ByteList");
       var ByteVector = new NonTerminal("ByteVector");
       var Datum = new NonTerminal("Datum"); //Datum in R6RS terms
-      var DatumList = new NonTerminal("Datum+", typeof(DatumListNode));
-      var DatumListOpt = new NonTerminal("Datum*", typeof(DatumListNode));
+      var DatumOpt = new NonTerminal("DatumOpt"); //Datum in R6RS terms
+      var DatumList = new NonTerminal("Datum+", typeof(StatementListNode));
+      var DatumListOpt = new NonTerminal("Datum*", typeof(StatementListNode));
       var Statement = new NonTerminal("Statement");
       var Atom = new NonTerminal("Atom");
       var CompoundDatum = new NonTerminal("CompoundDatum");
       var AbbrevPrefix = new NonTerminal("AbbrevPrefix");
 
       var LibraryName = new NonTerminal("LibraryName");
+      var LibraryBody = new NonTerminal("LibraryBody");
       var ImportSection = new NonTerminal("ImportSection");
       var ExportSection = new NonTerminal("ExportSection");
       var ImportSpec = new NonTerminal("ImportSpec");
+      var ImportSpecList = new NonTerminal("ImportSpecList");
       var ExportSpec = new NonTerminal("ExportSpec");
-      var LP = new NonTerminal("LP"); //actually is "(" or "["
+      var ExportSpecList = new NonTerminal("ExportSpecList");
+      var LP = new NonTerminal("LP"); //"(" or "["
       var RP = new NonTerminal("RP"); // ")" or "]"
       var Identifier = new NonTerminal("Identifier", typeof(IdentifierNode));
       var IdentifierList = new NonTerminal("IdentifierList");
       var IdentifierListOpt = new NonTerminal("IdentifierListOpt");
       var PeculiarIdentifier = new NonTerminal("PeculiarIdentifier");
       var LibraryVersion = new NonTerminal("LibraryVersion");
+      var VersionListOpt = new NonTerminal("VersionListOpt");
 
       var FunctionCall = new NonTerminal("FunctionCall", CreateFunctionCallNode);
       var FunctionRef = new NonTerminal("FunctionRef");
@@ -98,39 +103,65 @@ namespace Irony.Samples.Scheme {
       var IfForm = new NonTerminal("IfForm", CreateIfThenElseNode);
       var CondForm = new NonTerminal("CondForm", CreateCondFormNode);
       var CondClause = new NonTerminal("CondClause", CreateCondClauseNode);
-      var CondElse = new NonTerminal("CondElse");
+      var CondClauseList = new NonTerminal("CondClauseList");
+      var CondElseOpt = new NonTerminal("CondElseOpt");
       var BeginForm = new NonTerminal("BeginForm", CreateBeginNode);
       var LetForm = new NonTerminal("LetForm"); //not implemented
       var LetRecForm = new NonTerminal("LetRecForm"); //not implemented
       var LetPair = new NonTerminal("LetPair");
+      var LetPairList = new NonTerminal("LetPairList");
       #endregion
 
       #region Rules
-      base.Root = Module;
+      //
+      // Using optional elements in Scheme grammar brings some nasty conflicts - by default the parser selects "shift" over reduce
+      // which leads to failure to parse simple programs without libraries and export/import sections. 
+      // This trouble comes from that the fact that Scheme has soooooo many parenthesis. Therefore, using a single next symbol 
+      // as a lookahead (as it happens in LALR parsing) doesn't help much - the next symbol is almost always a parenthesis, 
+      // not some meaningful symbol. That's why in the following expressions I had to use explicit listing of variants, 
+      // instead of simply marking some elements as optional (see Module, Script, LibraryBody elements) - this clears the conflicts
+      // but would make node construction more difficult.
+      base.Root = Module; 
 
-      Module.Rule = Library.Plus() + Script | Script;
-      Script.Rule = ImportSection + DatumList | DatumList;
       LP.Rule = Symbol("(") | "[";  //R6RS allows mix & match () and []
       RP.Rule = Symbol(")") | "]";
 
+      // Module.Rule = LibraryListOpt + Script; -- this brings conflicts
+      Module.Rule = LibraryList + Script | Script;
+      LibraryList.Rule = MakePlusRule(LibraryList, Library);
+      Script.Rule = ImportSection + DatumList | DatumList; 
+
       //Library
-      Library.Rule = LP + "library" + LibraryName + ExportSection.Q() + ImportSection.Q() + DatumListOpt + RP;
+      // the following doesn't work - brings conflicts that incorrectly resolved by default shifting
+      //Library.Rule = LP + "library" + LibraryName + ExportSectionOpt + ImportSectionOpt + DatumListOpt + RP;
+      Library.Rule = LP + "library" + LibraryName + LibraryBody + RP;
+      //Note - we should be using DatumListOpt, but that brings 2 conflicts, so for now it is just DatumList
+      //Note that the following style of BNF expressions is strongly discouraged - all productions should be of the same length, 
+      // so that the process of mapping child nodes to parent's properties is straightforward.
+      LibraryBody.Rule = ExportSection + ImportSection + DatumList
+                       | ExportSection + DatumList
+                       | ImportSection + DatumList
+                       | DatumList; 
       LibraryName.Rule = LP + IdentifierList + LibraryVersion.Q() + RP;
-      LibraryVersion.Rule = LP + Number.Star() + RP; //zero or more subversion numbers
-      ExportSection.Rule = LP + "export" + ExportSpec.Plus() + RP;
-      ImportSection.Rule = LP + "import" + ImportSpec.Plus() + RP;
+      LibraryVersion.Rule = LP + VersionListOpt + RP; //zero or more subversion numbers
+      VersionListOpt.Rule = MakeStarRule(VersionListOpt, Number);
+      ExportSection.Rule = LP + "export" + ExportSpecList + RP;
+      ImportSection.Rule = LP + "import" + ImportSpecList + RP;
+      ExportSpecList.Rule = MakePlusRule(ExportSpecList, ExportSpec);
+      ImportSpecList.Rule = MakePlusRule(ImportSpecList, ImportSpec);
       ExportSpec.Rule = Identifier | LP + "rename"  +  LP + Identifier + Identifier + RP + RP;
-      ImportSpec.Rule = LP + Identifier + RP;   //FRI - much more complex in R6RS
+      ImportSpec.Rule = LP + Identifier + RP;   // - much more complex in R6RS
 
       //Datum
       Datum.Rule = Atom | CompoundDatum;
-      DatumList.Rule = MakePlusRule(DatumList, null, Datum);
-      DatumListOpt.Rule = MakeStarRule(DatumListOpt, null, Datum);
+      DatumOpt.Rule = Empty | Datum;
+      DatumList.Rule = MakePlusRule(DatumList, Datum);
+      DatumListOpt.Rule = MakeStarRule(DatumListOpt, Datum);
       Atom.Rule = Number | Identifier | stringLiteral | Constant | charLiteral | ".";
       CompoundDatum.Rule = Statement | Abbreviation | Vector | ByteVector;
       Identifier.Rule = SimpleIdentifier | PeculiarIdentifier;
-      IdentifierList.Rule = MakePlusRule(IdentifierList, null, Identifier);
-      IdentifierListOpt.Rule = MakeStarRule(IdentifierListOpt, null, Identifier);
+      IdentifierList.Rule = MakePlusRule(IdentifierList, Identifier);
+      IdentifierListOpt.Rule = MakeStarRule(IdentifierListOpt, Identifier);
 
       //TODO: create PeculiarIdentifier custom terminal instead of var 
       // or just custom SchemeIdentifier terminal
@@ -138,7 +169,8 @@ namespace Irony.Samples.Scheme {
       Abbreviation.Rule = AbbrevPrefix + Datum;
       AbbrevPrefix.Rule = Symbol("'") | "`" | ",@" | "," | "#'" | "#`" | "#,@" | "#,";
       Vector.Rule = "#(" + DatumListOpt + ")";
-      ByteVector.Rule = "#vu8(" + Byte.Star() + ")";
+      ByteVector.Rule = "#vu8(" + ByteList + ")";
+      ByteList.Rule = MakeStarRule(ByteList, Byte);
 
       Statement.Rule = FunctionCall | SpecialForm;
 
@@ -149,73 +181,91 @@ namespace Irony.Samples.Scheme {
       DefineVarForm.Rule = LP + "define" + Identifier + Datum + RP;
       DefineFunForm.Rule = LP + "define" + LP + Identifier + IdentifierListOpt + RP + DatumList + RP;
       LambdaForm.Rule = LP + "lambda" + LP + IdentifierListOpt + RP + DatumList + RP;
-      IfForm.Rule = LP + "if" + Datum + Datum + Datum.Q() + RP;
-      CondForm.Rule = LP + "cond" + CondClause.Plus() + CondElse.Q() + RP;
+      IfForm.Rule = LP + "if" + Datum + Datum + DatumOpt + RP;
+
+      CondForm.Rule = LP + "cond" + CondClauseList + CondElseOpt + RP;
+      CondClauseList.Rule = MakePlusRule(CondClauseList, CondClause);
       CondClause.Rule = LP + Datum + DatumList + RP;
-      CondElse.Rule = LP + "else" + DatumList + RP;
-      LetForm.Rule = LP + "let" + LP + LetPair.Plus() + RP + DatumList + RP;
-      LetRecForm.Rule = LP + "letrec" + LP + LetPair.Plus() + RP + DatumList + RP;
+      CondElseOpt.Rule = Empty | LP + "else" + DatumList + RP;
+      LetForm.Rule = LP + "let" + LP + LetPairList + RP + DatumList + RP;
+      LetRecForm.Rule = LP + "letrec" + LP + LetPairList + RP + DatumList + RP;
       BeginForm.Rule = LP + "begin" + DatumList + RP;
+      LetPairList.Rule = MakePlusRule(LetPairList, LetPair);
       LetPair.Rule = LP + Identifier + Datum + RP;
-
-
       #endregion 
 
       //Register brace  pairs
       RegisterBracePair("(", ")");
       RegisterBracePair("[", "]");
 
+      RegisterPunctuation(LP, RP);
+
       //Filters and other stuff
       BraceMatchFilter filter = new BraceMatchFilter();
       TokenFilters.Add(filter);
 
-      RegisterPunctuation(LP, RP);
 
     }//constructor
 
-    private AstNode CreateFunctionCallNode(AstNodeArgs args) {
-      string name = args.GetContent(0);
+    public override Irony.Runtime.LanguageRuntime CreateRuntime() {
+      return new SchemeRuntime();
+    }
+
+    private string[] Operators = new string[] { "+", "-", "*", "/", "<", "=", ">" };
+    private bool IsOperator(string op) {
+      foreach (string s in Operators)
+        if (s == op) return true;
+      return false; 
+    }
+    private AstNode CreateFunctionCallNode(NodeArgs args) {
+      IdentifierNode id = args.ChildNodes[0] as IdentifierNode;
       AstNodeList funArgs = args.ChildNodes[1].ChildNodes;
-      return new FunctionCallNode(args, name, funArgs); 
+      if (IsOperator(id.Name)) {
+        return new BinExprNode(args, funArgs[0], id.Name, funArgs[1]);
+      } else {
+        return new FunctionCallNode(args, id, funArgs);
+      }
     }
-    private AstNode CreateDefineVarNode(AstNodeArgs args) {
-      //we skip the "define" keyword so the indexes are 1,2 - compare to CreateLetPairNode
-      return new SetVarNode(args, args.ChildNodes[1] as IdentifierNode, args.ChildNodes[2]);
+    private AstNode CreateDefineVarNode(NodeArgs args) {
+      //we skip the "define" keyword so the indexes are 1,2
+      return new AssigmentNode(args, args.ChildNodes[1] as IdentifierNode, args.ChildNodes[2]);
     }
-    private AstNode CreateDefineFunNode(AstNodeArgs args) {
+    private AstNode CreateDefineFunNode(NodeArgs args) {
       //"define" keyword is at index 0
-      IdentifierNode funName = args.ChildNodes[1] as IdentifierNode; 
+      IdentifierNode funNameNode = args.ChildNodes[1] as IdentifierNode;
+      funNameNode.Flags |= AstNodeFlags.AllocateSlot;
       AstNode funParams = args.ChildNodes[2]; 
       AstNode funBody = args.ChildNodes[3];
-      AstNode fun = new FunctionDefNode(args, funName, funParams, funBody);
-      return fun;
+      AstNode anonFun = new AnonFunctionNode(args, funParams, funBody);
+      AssigmentNode function = new AssigmentNode(args, funNameNode, anonFun);
+      return function;
     }
-    private AstNode CreateLambdaNode(AstNodeArgs args) {
+    private AstNode CreateLambdaNode(NodeArgs args) {
       AstNode funParams = args.ChildNodes[1];
       AstNode funBody = args.ChildNodes[2];
       return new AnonFunctionNode(args, funParams, funBody); 
     }
-    private AstNode CreateIfThenElseNode(AstNodeArgs args) {
+    private AstNode CreateIfThenElseNode(NodeArgs args) {
       AstNode test = args.ChildNodes[1];
       AstNode ifTrue = args.ChildNodes[2];
       AstNode ifFalse = args.ChildNodes[3];
-      return new IfThenElseNode(args,test, ifTrue, ifFalse);
+      return new IfNode(args, test, ifTrue, ifFalse);
     }
     
-    private AstNode CreateCondFormNode(AstNodeArgs args) {
+    private AstNode CreateCondFormNode(NodeArgs args) {
       AstNodeList condClauses = args.ChildNodes[1].ChildNodes;
       AstNode elseNode = args.ChildNodes[2];
       AstNode elseCommands = (elseNode.IsEmpty()? null : elseNode.ChildNodes[1]);
       return new CondFormNode(args, condClauses, elseCommands);
     }
-    private AstNode CreateCondClauseNode(AstNodeArgs args) {
+    private AstNode CreateCondClauseNode(NodeArgs args) {
       AstNode test = args.ChildNodes[0];
-      DatumListNode command = args.ChildNodes[1] as DatumListNode;
+      StatementListNode command = args.ChildNodes[1] as StatementListNode;
       return new CondClauseNode(args, test, command);
     }
 
-    private AstNode CreateBeginNode(AstNodeArgs args) {
-      return new DatumListNode(args, args.ChildNodes[1].ChildNodes);
+    private AstNode CreateBeginNode(NodeArgs args) {
+      return new StatementListNode(args, args.ChildNodes[1].ChildNodes);
     }
 
   }//class

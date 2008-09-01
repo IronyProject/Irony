@@ -1,6 +1,5 @@
-(define bottles 
-  (lambda (n)
-     (display n) (display " bottles of beer")))
+(define (bottles n)
+   (display n) (display " bottles of beer"))
 
 (define (beer n)
     (if (> n 0)

@@ -22,7 +22,6 @@ namespace Irony.Compiler {
   public class Terminal : BnfTerm {
 
     public Terminal(string name)  : base(name) {
-      Nullable = false; 
       this.NodeType = typeof(Token);
     }
     public Terminal(string name, TokenCategory category)  : this(name) {
@@ -35,7 +34,6 @@ namespace Irony.Compiler {
     #region fields and properties
     public TokenMatchMode MatchMode = TokenMatchMode.ByValueThenByType;
     public TokenCategory Category = TokenCategory.Content;
-    public int Precedence = int.MaxValue;
     public Associativity Associativity = Associativity.Neutral;
     public Terminal IsPairFor;
     // Priority is used when more than one terminal may match the input char. 
@@ -71,6 +69,7 @@ namespace Irony.Compiler {
     }
     #endregion
 
+    public const int LowestPriority = -1000;
   }//class
 
 

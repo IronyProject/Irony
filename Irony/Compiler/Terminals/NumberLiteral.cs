@@ -91,7 +91,7 @@ namespace Irony.Compiler {
           case TypeCode.UInt16: value = (UInt16)iValue; break;
           default: return null; 
         }
-        Token token = Token.Create(this, context, source.TokenStart, current.ToString(), value);
+        Token token = Token.Create(context, this, source.TokenStart, current.ToString(), value);
         source.Position++;
         return token;
       } else

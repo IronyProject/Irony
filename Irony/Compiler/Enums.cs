@@ -36,12 +36,6 @@ namespace Irony.Compiler {
     Neutral  //don't know what that means 
   }
 
-  public enum ParserActionType {
-    Shift,
-    Reduce,
-    Operator,  //shift or reduce depending on operator associativity and precedence
-  }
-
   public enum TermOptions {
     None = 0,
     IsOperator = 0x01,
@@ -115,10 +109,5 @@ namespace Irony.Compiler {
 
   }//enum
 
-
-  public enum AstNodeFlags {
-    None = 0x0,
-    IsTail = 0x01,
-  }
 
 }

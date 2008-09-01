@@ -18,15 +18,15 @@ namespace Irony.Compiler {
 
   //Container for syntax error
   public class SyntaxError {
-    public SyntaxError(SourceLocation location, string message, ParserState state) {
+    public SyntaxError(SourceLocation location, string message, string parserStateName) {
       Location = location;
       Message = message;
-      State = state;
+      ParserStateName = parserStateName;
     }
 
     public readonly SourceLocation Location;
     public readonly string Message;
-    public readonly ParserState State;
+    public readonly string ParserStateName;
 
     public override string ToString() {
       return Message;

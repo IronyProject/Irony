@@ -25,7 +25,7 @@ namespace Irony.Compiler {
     private SymbolTerminal(string symbol, string name)  : base(name) {
       _symbol = symbol;
       //Overwrite the Key assigned by base class (key derived from name): symbols are matched by value (symbol itself), not by element name
-      Key = symbol.Trim();
+      Key = symbol;
       #region comments
       // Priority - determines the order in which multiple terminals try to match input for a given current char in the input.
       // For a given input char the scanner looks up the collection of terminals that may match this input symbol. It is the order
@@ -35,7 +35,7 @@ namespace Irony.Compiler {
       // Additionally, longer symbols have higher priority, so symbols like "+=" should have higher priority value than "+" symbol. 
       // As a result, Scanner would first try to match "+=", longer symbol, and if it fails, it will try "+". 
       #endregion
-      base.Priority = -1000 + symbol.Length;
+      base.Priority = LowestPriority + symbol.Length;
     }
 
     public string Symbol {

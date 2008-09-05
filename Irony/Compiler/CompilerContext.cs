@@ -25,26 +25,37 @@ namespace Irony.Compiler {
     public readonly SyntaxErrorList Errors = new SyntaxErrorList();
     public readonly Dictionary<string, object> Values = new Dictionary<string, object>();
     public readonly LanguageRuntime Runtime;
+    public static int MaxErrors = 20;
 
+    #region constructors and factory methods
     public CompilerContext(LanguageCompiler compiler) {
       this.Compiler = compiler;
-      this.Runtime = compiler.Grammar.CreateRuntime(); 
+      this.Runtime = compiler.Grammar.CreateRuntime();
     }
-
-    public void AddError(SourceLocation location, string message, string stateName) {
-      if (Errors.Count < 20) //just for now, 20 is max
-        Errors.Add(new SyntaxError(location, message, stateName));
-    }
-
-    public void AddError(SourceLocation location, string message) {
-      this.AddError(location, message, null);
-    }
-
     //Used in unit tests
     public static CompilerContext CreateDummy() {
       CompilerContext ctx = new CompilerContext(LanguageCompiler.CreateDummy());
-      return ctx; 
+      return ctx;
     }
+    #endregion
+
+    #region Error handling
+    public Token CreateErrorToken(SourceLocation location, string content) {
+      return Token.Create(Grammar.SyntaxError, this, location, content);
+    }
+    public Token CreateErrorTokenAndReportError(SourceLocation location, string content, string message, params object[] args) {
+      ReportError(location, message, args);
+      Token result = Token.Create(Grammar.SyntaxError, this, location, content);
+      return result; 
+    }
+    public void ReportError(SourceLocation location, string message, params object[] args) {
+      if (Errors.Count >= MaxErrors) return;
+      if (args != null && args.Length > 0)
+        message = string.Format(message, args);
+      Errors.Add(new SyntaxError(location, message));
+    }
+    #endregion
+
   }//class
 
 }

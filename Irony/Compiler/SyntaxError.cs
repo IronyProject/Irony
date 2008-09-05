@@ -18,21 +18,23 @@ namespace Irony.Compiler {
 
   //Container for syntax error
   public class SyntaxError {
-    public SyntaxError(SourceLocation location, string message, string parserStateName) {
+    public SyntaxError(SourceLocation location, string message) {
       Location = location;
       Message = message;
-      ParserStateName = parserStateName;
     }
 
     public readonly SourceLocation Location;
     public readonly string Message;
-    public readonly string ParserStateName;
 
     public override string ToString() {
-      return Message;
+      return Message + " (at " + Location.ToString() + ")";
     }
   }//class
 
-  public class SyntaxErrorList : List<SyntaxError> { }
+  public class SyntaxErrorList : List<SyntaxError> {
+    public static int ByLocation(SyntaxError x, SyntaxError y) {
+      return SourceLocation.Compare(x.Location, y.Location);
+    }
+  }
 
 }//namespace

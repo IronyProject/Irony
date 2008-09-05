@@ -17,31 +17,17 @@ using System.Diagnostics;
 
 namespace Irony.Compiler {
 
-  public enum CodeAnalysisPhase {
-    Init,
-    AssignScopes,
-    Allocate,    //Allocating local variables
-    Binding,     //Binding variable references to variable locations - transforming refs into lex addresses
-    Optimization,
-    MarkTailCalls,
+  public enum CompilerOptions {
+    GrammarDebugging, 
   }
-
-  public class CodeAnalysisArgs {
-    public readonly CompilerContext Context;
-    public CodeAnalysisPhase Phase;
-    public bool SkipChildren;
-    public CodeAnalysisArgs(CompilerContext context) {
-      Context = context;
-      Phase = CodeAnalysisPhase.Init;
-    }
-  }
-
   
   public class LanguageCompiler {
     public LanguageCompiler(Grammar grammar) {
       Grammar = grammar;
-      Options = grammar.Options;
       grammar.Prepare();
+#if DEBUG
+      Options |= CompilerOptions.GrammarDebugging;
+#endif
       ScannerControlData scannerData = new ScannerControlData(grammar);
       Scanner = new Scanner(scannerData);
       Parser = new Lalr.Parser(Grammar); 
@@ -53,7 +39,7 @@ namespace Irony.Compiler {
     }
 
     public readonly Grammar Grammar;
-    public readonly LanguageOptions Options; 
+    public readonly CompilerOptions Options; 
     public readonly Scanner Scanner;
     public readonly IParser Parser;
 
@@ -70,6 +56,9 @@ namespace Irony.Compiler {
       get { return _context; }
     } CompilerContext  _context;
 
+    public bool OptionIsSet(CompilerOptions option) {
+      return (Options & option) != 0;
+    }
     public AstNode Parse(string source) {
       return Parse(new CompilerContext(this), new SourceFile(source, "Source"));
     }
@@ -86,6 +75,8 @@ namespace Irony.Compiler {
       //finally, parser takes token stream and produces root Ast node
       AstNode rootNode = Parser.Parse(context, tokenStream);
       _compileTime = Environment.TickCount - start;
+      if (_context.Errors.Count > 0)
+        _context.Errors.Sort(SyntaxErrorList.ByLocation);
       return rootNode;
     }//method
 
@@ -93,6 +84,9 @@ namespace Irony.Compiler {
       RunAnalysisPhases(astRoot, context,
            CodeAnalysisPhase.Init, CodeAnalysisPhase.AssignScopes, CodeAnalysisPhase.Allocate,
            CodeAnalysisPhase.Binding, CodeAnalysisPhase.MarkTailCalls, CodeAnalysisPhase.Optimization);
+      //sort errors if there are any
+      if (context.Errors.Count > 0)
+        context.Errors.Sort(SyntaxErrorList.ByLocation);
     }
 
     private void RunAnalysisPhases(AstNode astRoot, CompilerContext context, params CodeAnalysisPhase[] phases) {
@@ -104,7 +98,7 @@ namespace Irony.Compiler {
             break;
           
           case CodeAnalysisPhase.MarkTailCalls:
-            if (!Options.TailRecursive) continue;//foreach
+            if (!Grammar.OptionIsSet(LanguageOptions.TailRecursive)) continue;//foreach loop - don't run the phase
             astRoot.Flags |= AstNodeFlags.IsTail;
             break;
         }//switch

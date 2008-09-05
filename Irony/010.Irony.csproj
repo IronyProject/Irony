@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="Common.cs" />
     <Compile Include="Compiler\AST\AnonFunctionNode.cs" />
+    <Compile Include="Compiler\CodeAnalysis.cs" />
     <Compile Include="Compiler\Interfaces.cs" />
     <Compile Include="Compiler\Scope.cs" />
     <Compile Include="Compiler\AST\BinExprNode.cs" />
@@ -87,7 +88,7 @@
     <Compile Include="Compiler\Grammar\BnfTerm.cs" />
     <Compile Include="Compiler\Grammar\Grammar.cs" />
     <Compile Include="Compiler\Terminals\TerminalFactory.cs" />
-    <Compile Include="Compiler\LanguageOptions.cs" />
+    <Compile Include="Compiler\Grammar\LanguageOptions.cs" />
     <Compile Include="Runtime\FunctionBindingInfo.cs" />
     <Compile Include="Runtime\SlimLock.cs" />
     <Compile Include="Runtime\LanguageRuntimeInit.cs" />

@@ -79,8 +79,7 @@ namespace Irony.Compiler {
             yield return CreateSpecialToken(Grammar.Dedent, context, token.Location);
           }
           if (_indents.Count == 0 || _indents.Peek() != currIndent) {
-            yield return Grammar.CreateSyntaxErrorToken (context, token.Location, 
-                        "Invalid dedent level, no previous matching indent found.");
+            yield return context.CreateErrorTokenAndReportError (token.Location, string.Empty, "Invalid dedent level, no previous matching indent found.");
             //TODO: add error recovery here
           }
         }//else if currIndent < prevIndent

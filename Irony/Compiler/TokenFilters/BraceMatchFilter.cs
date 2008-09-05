@@ -73,15 +73,14 @@ namespace Irony.Compiler {
         }
         //We have closing brace
         if (_braces.Count == 0) {
-          yield return Grammar.CreateSyntaxErrorToken(context, token.Span.Start,
-              "Unmatched closing brace '{0}'", token.Text);
+          yield return context.CreateErrorTokenAndReportError( token.Span.Start, token.Text, "Unmatched closing brace '{0}'", token.Text);
           continue;
         }
         //check match
         Token last = _braces.Pop();
         if (last.Symbol.IsPairFor != token.Symbol) {
-          yield return Grammar.CreateSyntaxErrorToken(context, token.Span.Start,
-              "Unmatched closing brace '{0}' - expected '{1}'", token.Text, last.Symbol.IsPairFor.Name);
+          yield return context.CreateErrorTokenAndReportError(token.Span.Start, token.Text,
+              "Unmatched closing brace '{0}' - expected '{1}'", last.Symbol.IsPairFor.Name);
           continue;
         }
         //everything is ok, there's matching brace on top of the stack

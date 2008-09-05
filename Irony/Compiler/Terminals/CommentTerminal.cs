@@ -59,7 +59,7 @@ namespace Irony.Compiler {
           if (_isLineComment) //if it is LineComment, it is ok to hit EOF without final line-break; just return all until end.
             return Token.Create(this, context, source.TokenStart, source.GetLexeme());
           else 
-            return Grammar.CreateSyntaxErrorToken(context, source.TokenStart, "Unclosed comment block");
+            return context.CreateErrorTokenAndReportError( source.TokenStart, string.Empty, "Unclosed comment block");
         }
         //We found a character that might start an end symbol; let's see if it is true.
         source.Position = firstCharPos;

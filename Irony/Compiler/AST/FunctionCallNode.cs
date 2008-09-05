@@ -40,13 +40,13 @@ namespace Irony.Compiler.AST {
             //  before checking global methods
             FixedTargetInfo = args.Context.Runtime.GetFunctionBindingInfo(NameRef.Name, Arguments);
             if (FixedTargetInfo == null) {
-              ReportError(args.Context, "Method not found: {0}", NameRef.Name);
+              args.Context.ReportError(this.Location, "Method not found: {0}", NameRef.Name);
               return;
             }
           }//else
           break;
         case CodeAnalysisPhase.MarkTailCalls:
-          _isTail = args.Context.Compiler.Options.TailRecursive && IsSet(AstNodeFlags.IsTail) && this.Scope.Level > 0;
+          _isTail = IsSet(AstNodeFlags.IsTail) && this.Scope.Level > 0;
           break; 
         case CodeAnalysisPhase.Optimization:
           if (this.FixedTargetInfo != null)
@@ -135,12 +135,6 @@ namespace Irony.Compiler.AST {
       if (!string.IsNullOrEmpty(Role))
         result = Role + ": " + result; 
       return result; 
-    }
-    private void ReportError(CompilerContext context, string message, params object[] args) {
-      if (args != null && args.Length > 0)
-        message = String.Format(message, args);
-      message += "(" + this.Location.ToString() + ")";
-      context.AddError(this.Location, message);
     }
 
 

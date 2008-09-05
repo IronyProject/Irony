@@ -36,7 +36,7 @@ namespace Irony.Compiler.AST {
         case CodeAnalysisPhase.Binding:
           Slot = Scope.FindSlot(Name);
           if (Slot == null && !IsSet(AstNodeFlags.SuppressNotDefined))
-            args.Context.AddError(this.Location, "Variable " + Name + " is not declared");
+            args.Context.ReportError(this.Location, "Variable " + Name + " is not declared");
           if (Slot != null) {
             //unless suppressed, mark this ID use as RValue
             if (!IsSet(AstNodeFlags.NotRValue))

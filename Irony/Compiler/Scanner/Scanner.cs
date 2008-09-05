@@ -65,7 +65,6 @@ namespace Irony.Compiler {
         _currentToken = ReadToken();
         if (TokenCreated != null)
           OnTokenCreated(_currentToken);
-        //if (tkn.Terminal.Category != TerminalCategory.Comment)
         yield return _currentToken;
         if (_currentToken.Terminal == Grammar.Eof)
           yield break;
@@ -119,8 +118,8 @@ namespace Irony.Compiler {
         return result;
       } 
       //we have an error: either error token or no token at all
-      if (result == null) //if no error result then create it
-        result = Grammar.CreateSyntaxErrorToken(_context, _source.TokenStart, "Invalid character: '{0}'", _source.CurrentChar);
+      if (result == null)  //if no token then create error token
+        result = _context.CreateErrorTokenAndReportError(_source.TokenStart, _source.CurrentChar.ToString(), "Invalid character: '{0}'", _source.CurrentChar);
       Recover();
       return result;
     }//method

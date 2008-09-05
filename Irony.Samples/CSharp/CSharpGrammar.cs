@@ -758,7 +758,8 @@ namespace Irony.Samples.CSharp {
         if (actionRec.ActionType == ParserActionType.Shift) return action;
         return actionRec.CreateDerived(ParserActionType.Shift, null);
       } else {
-        //otherwise, mark as operator
+        //otherwise, return reduce action on member_access production
+        // it is hard to explain, just look at productions in parser state for which this method is invoked (S186 but might change) 
         return actionRec.CreateDerived(ParserActionType.Reduce, actionRec.Production);
       }
     }

@@ -204,6 +204,8 @@ namespace Irony.Samples.Scheme {
       BraceMatchFilter filter = new BraceMatchFilter();
       TokenFilters.Add(filter);
 
+      //Scheme is tail-recursive language
+      base.Options |= LanguageOptions.TailRecursive;
 
     }//constructor
 

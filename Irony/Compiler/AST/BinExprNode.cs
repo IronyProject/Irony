@@ -29,7 +29,7 @@ namespace Irony.Compiler.AST {
         case CodeAnalysisPhase.Binding:
           _dispatcher = args.Context.Runtime.GetDispatcher(Op);
           if (_dispatcher == null)
-            args.Context.AddError(this.Location, "Operator " + Op + " not defined.");
+            args.Context.ReportError(this.Location, "Operator " + Op + " not defined.");
           break;
       }//switch
       base.OnCodeAnalysis(args);

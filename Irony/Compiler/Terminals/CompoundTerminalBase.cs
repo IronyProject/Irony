@@ -143,11 +143,11 @@ namespace Irony.Compiler {
       if (!ReadBody(source, details))
         return null;
       if (details.HasError()) 
-        return Grammar.CreateSyntaxErrorToken(context, source.TokenStart, details.Error);
+        return context.CreateErrorTokenAndReportError(source.TokenStart, source.CurrentChar.ToString(), details.Error);
       ReadSuffix(source, details);
 
-      if (!ConvertValue(details))
-        return Grammar.CreateSyntaxErrorToken(context, source.TokenStart, "Failed to convert the value: " + details.Error);
+      if (!ConvertValue(details)) 
+        return context.CreateErrorTokenAndReportError(source.TokenStart, source.CurrentChar.ToString(), "Failed to convert the value: " + details.Error);
 
       token = CreateToken(context, source, details);
       return token; 

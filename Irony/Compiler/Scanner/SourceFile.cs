@@ -45,6 +45,11 @@ namespace Irony.Compiler {
     public override string ToString() {
       return "L" + Line + ":" + "C" + Column;
     }
+    public static int Compare(SourceLocation x, SourceLocation y) {
+      if (x.Position < y.Position) return -1;
+      if (x.Position == y.Position) return 0;
+      return 1; 
+    }
   }//SourceLocation
 
   public struct SourceSpan {

@@ -5,6 +5,8 @@ using System.Text;
 
 namespace Irony.Compiler {
 
+  public class TerminalLookupTable : Dictionary<char, TerminalList> { }
+
   public class ScannerControlData {
     public readonly Grammar Grammar;
     public readonly TerminalList Terminals = new TerminalList();
@@ -81,6 +83,5 @@ namespace Irony.Compiler {
 
   }
 
-  public class TerminalLookupTable : Dictionary<char, TerminalList> { }
 
 }

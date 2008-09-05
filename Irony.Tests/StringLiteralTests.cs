@@ -22,7 +22,7 @@ namespace Irony.Tests {
       TryMatch(@"'00\a\b\t\n\v\f\r\'\\00'  ");
       Assert.IsTrue((string)_token.Value == "00\a\b\t\n\v\f\r\'\\00", "Failed to process escaped characters.");
       TryMatch("'abcd\nefg'  ");
-      Assert.IsTrue(_token.Category == TokenCategory.Error, "Failed to detect erroneous multi-line string.");
+      Assert.IsTrue(_token.IsError(), "Failed to detect erroneous multi-line string.");
       TryMatch("'''abcd\nefg'''  ");
       Assert.IsTrue((string)_token.Value == "abcd\nefg", "Failed to process line break in triple-quote string.");
       TryMatch(@"'''abcd\" + "\n" + "efg'''  ");
@@ -34,7 +34,7 @@ namespace Irony.Tests {
       TryMatchDoubles(@"'00\a\b\t\n\v\f\r\'\\00'  ");
       Assert.IsTrue((string)_token.Value == "00\a\b\t\n\v\f\r\"\\00", "Failed to process escaped characters.");
       TryMatchDoubles("'abcd\nefg'  ");
-      Assert.IsTrue(_token.Category == TokenCategory.Error, "Failed to detect erroneous multi-line string. (Double quotes)");
+      Assert.IsTrue(_token.IsError(), "Failed to detect erroneous multi-line string. (Double quotes)");
       TryMatchDoubles("'''abcd\nefg'''  ");
       Assert.IsTrue((string)_token.Value == "abcd\nefg", "Failed to process line break in triple-quote string. (Double quotes)");
       TryMatchDoubles(@"'''abcd\" + "\n" + "efg'''  ");
@@ -57,7 +57,7 @@ namespace Irony.Tests {
       TryMatchDoubles(@"'00\a\b\t\n\v\f\r\'\\00'  ");
       Assert.IsTrue((string)_token.Value == "00\a\b\t\n\v\f\r\"\\00", "Failed to process escaped characters.");
       TryMatchDoubles("'abcd\nefg'  ");
-      Assert.IsTrue(_token.Category == TokenCategory.Error, "Failed to detect erroneous multi-line string.");
+      Assert.IsTrue(_token.IsError(), "Failed to detect erroneous multi-line string.");
       //with disabled escapes
       TryMatchDoubles(@"@'00\a\b\t\n\v\f\r00'  ");
       Assert.IsTrue((string)_token.Value == @"00\a\b\t\n\v\f\r00", "Failed to process @-string with disabled escapes.");
@@ -93,9 +93,9 @@ namespace Irony.Tests {
       TryMatch(@"'\n'  ");
       Assert.IsTrue((char)_token.Value == '\n', "Failed to process new-line char.");
       TryMatch(@"''  ");
-      Assert.IsTrue(_token.Category == TokenCategory.Error, "Failed to recognize empty quotes as invalid char literal.");
+      Assert.IsTrue(_token.IsError(), "Failed to recognize empty quotes as invalid char literal.");
       TryMatch(@"'abc'  ");
-      Assert.IsTrue(_token.Category == TokenCategory.Error, "Failed to recognize multi-char sequence as invalid char literal.");
+      Assert.IsTrue(_token.IsError(), "Failed to recognize multi-char sequence as invalid char literal.");
       //Note: unlike strings, c# char literals don't allow the "@" prefix
     }
 
@@ -106,16 +106,16 @@ namespace Irony.Tests {
       TryMatchDoubles(@"'00\a\b\t\n\v\f\r\\00'  ");
       Assert.IsTrue((string)_token.Value == @"00\a\b\t\n\v\f\r\\00", "Failed to process string with \\ characters.");
       TryMatchDoubles("'abcd\nefg'  ");
-      Assert.IsTrue(_token.Category == TokenCategory.Error, "Failed to detect erroneous multi-line string.");
+      Assert.IsTrue(_token.IsError(), "Failed to detect erroneous multi-line string.");
       TryMatchDoubles("'abcd''efg'  "); // doubled quote should change to single
       Assert.IsTrue((string)_token.Value == "abcd\"efg", "Failed to process a string with doubled double-quote char.");
       //Test char suffix "c"
       TryMatchDoubles("'A'c  "); 
       Assert.IsTrue((char)_token.Value == 'A', "Failed to process a character");
       TryMatchDoubles("''c  ");
-      Assert.IsTrue(_token.Category == TokenCategory.Error, "Failed to detect an error for an empty char.");
+      Assert.IsTrue(_token.IsError(), "Failed to detect an error for an empty char.");
       TryMatchDoubles("'ab'C  ");
-      Assert.IsTrue(_token.Category == TokenCategory.Error, "Failed to detect error in multi-char sequence.");
+      Assert.IsTrue(_token.IsError(), "Failed to detect error in multi-char sequence.");
     }
 
   }//class

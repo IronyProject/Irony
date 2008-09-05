@@ -30,7 +30,10 @@ namespace Irony.Compiler {
     public string LineTerminators = "\n\r\v";
 
     //Language options
-    public LanguageOptions Options = new LanguageOptions();
+    public LanguageOptions Options = LanguageOptions.Default;
+    public bool OptionIsSet(LanguageOptions option) {
+      return (Options & option) != 0;
+    }
 
     //Terminals not present in grammar expressions and not reachable from the Root
     // (Comment terminal is usually one of them)
@@ -124,11 +127,6 @@ namespace Irony.Compiler {
     }
     protected static SymbolTerminal Symbol(string symbol, string name) {
       return SymbolTerminal.GetSymbol(symbol, name);
-    }
-    public static Token CreateSyntaxErrorToken(CompilerContext context, SourceLocation location, string message, params object[] args) {
-      if (args != null && args.Length > 0)
-        message = string.Format(message, args);
-      return Token.Create(Grammar.SyntaxError, context, location, message);
     }
     #endregion
 

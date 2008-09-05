@@ -141,16 +141,14 @@ namespace Irony.Compiler.Lalr {
           return result;
         }
         //check for scammer error
-        if (_currentToken.Terminal.Category == TokenCategory.Error) {
-          ReportScannerError();
-          if (!Recover()) 
-            return null; 
+        if (_currentToken.IsError()) {
+          if (!Recover()) return null; 
           continue;
         }
         //Get action
         ActionRecord action = GetCurrentAction();
         if (action == null) {
-          ReportParserError();
+          ReportParseError();
           if (!Recover())
             return null; //did not recover
           continue;
@@ -179,26 +177,18 @@ namespace Irony.Compiler.Lalr {
     #endregion
 
     #region Error reporting and recovery
-    private void ReportError(SourceLocation location, string message, params object[] args) {
-      if (args != null && args.Length > 0)
-        message = string.Format(message, args);
-      _context.AddError(location, message, _currentState.Name);
-    }
-
-    private void ReportScannerError() {
-      _context.AddError(_currentToken.Location, _currentToken.Text, _currentState.Name);
-    }
-    
-    private void ReportParserError() {
+    private void ReportParseError() {
       if (_currentToken.Terminal == Grammar.Eof) {
-        ReportError(_currentToken.Location, "Unexpected end of file.");
+        _context.ReportError(_currentToken.Location, "Unexpected end of file.");
         return;
       }
       StringSet expectedList = GetCurrentExpectedSymbols();
-      string message = this.Data.Grammar.GetSyntaxErrorMessage(_context, expectedList); 
-      if (message == null) 
+      string message = this.Data.Grammar.GetSyntaxErrorMessage(_context, expectedList);
+      if (message == null)
         message = "Syntax error" + (expectedList.Count == 0 ? "." : ", expected: " + TextUtils.Cleanup(expectedList.ToString(" ")));
-      ReportError(_currentToken.Location, message);
+      if (_context.Compiler.OptionIsSet(CompilerOptions.GrammarDebugging))
+        message += " (parser state: " + _currentState.Name + ")";
+      _context.Errors.Add(new SyntaxError(_currentToken.Location, message));
     }
 
     #region Comment
@@ -244,8 +234,9 @@ namespace Irony.Compiler.Lalr {
 
     //TODO: need to rewrite, looks ugly
     private bool Recover() {
-      if (_currentToken.Category != TokenCategory.Error)
-        _currentToken = Grammar.CreateSyntaxErrorToken(_context, _currentToken.Location, "Syntax error.");
+      //for recovery the current token must be error token, we rely on it
+      if (!_currentToken.IsError())
+        _currentToken = _context.CreateErrorToken(_currentToken.Location, _currentToken.Text);
       //Check the current state and states in stack for error shift action - this would be recovery state.
       ActionRecord action = GetCurrentAction();
       if (action == null || action.ActionType == ParserActionType.Reduce) {

@@ -16,11 +16,12 @@ using System.Text;
 
 
 namespace Irony.Compiler.Lalr {
-  // ParserControlData is a container for all information used by Parser and Scanner in input processing.
+  // ParserControlData is a container for all information used by LALR Parser in input processing.
   // The state graph entry is InitialState state; the state graph encodes information usually contained 
   // in what is known in literature as transiton/goto tables.
-  // The graph is built from the language grammar by GrammarDataBuilder instance. 
+  // The graph is built from the language grammar by ParserControlDataBuilder instance. 
   // See Dragon book or other book on compilers on details of LALR parsing and parsing tables construction. 
+
   public class ParserControlData {
     public Grammar Grammar;
     public NonTerminal AugmentedRoot;
@@ -38,7 +39,6 @@ namespace Irony.Compiler.Lalr {
     }
   }
 
-  public class TerminalLookupTable : Dictionary<char, TerminalList> { }
 
   public enum ParserActionType {
     Shift,
@@ -127,7 +127,14 @@ namespace Irony.Compiler.Lalr {
       get { return Production.RValues.Count;}
     }
     public bool HasConflict() {
-      if (ConflictResolved) return false; 
+      // This function is used by parser to determine if it needs to call OnActionConflict method in Grammar.
+      // Even if conflict is resolved, we still need to return true to force parser to invoke method.
+      // This is necessary to make parser work properly in situation like this: in c#, the "<" symbol is 
+      // both operator symbol and opening brace for type parameter. When used purely as operator symbol, 
+      //  it is involved in shift/reduced conflict resolved by operator precedence. Still, before parser starts 
+      // acting based on precedence, a custom grammar method should decide - is it really an operator or type parameter
+      // bracket.
+      //if (ConflictResolved) return false; -- this should be commented out
       return ShiftItems.Count > 0 && ReduceProductions.Count > 0 ||
         ReduceProductions.Count > 1; 
     }
@@ -211,12 +218,12 @@ namespace Irony.Compiler.Lalr {
     public readonly Production Production;
     public readonly int Position;
 
-    public readonly StringSet TailFirsts = new StringSet(); //tail is a set of elements after the "after-dot-element"
+    public readonly StringSet TailFirsts = new StringSet(); //tail is a set of elements after the Current element
     public bool TailIsNullable = false;
     
     //automatically generated IDs - used for building keys for lists of kernel LR0Items
     // which in turn are used to quickly lookup parser states in hash
-    internal int ID;
+    internal readonly int ID;
     internal static int _maxID;
     private string _toString; //caches the ToString() value
 

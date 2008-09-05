@@ -212,7 +212,7 @@ namespace Irony.GrammarExplorer {
       SyntaxError se = lstErrors.SelectedItem as SyntaxError;
       if (se == null) return;
       ShowLocation(se.Location, 1);
-      txtErrDetails.Text = se.Message + "\r\n (L:C = " + se.Location + ", parser state: " + se.ParserStateName + ")";
+      txtErrDetails.Text = se.Message + "\r\n (L:C = " + se.Location + ")";
     }
 
     private void lstTokens_Click(object sender, EventArgs e) {
@@ -396,7 +396,7 @@ namespace Irony.GrammarExplorer {
         lblRunTime.Text = sw.ElapsedMilliseconds.ToString();
       } catch(RuntimeException rex) {
         //catch and add runtime to compiler context, so they will be shown in the form
-        Compiler.Context.AddError(rex.Location, rex.Message);
+        Compiler.Context.ReportError(rex.Location, rex.Message);
       } finally {
         sw.Stop();
         if (context != null) {

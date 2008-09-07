@@ -18,7 +18,8 @@ namespace Irony.Compiler {
     IsExternal = 0x040,       //the function call target is an external function
   }
 
-  public class SlotInfo {
+
+  public class SlotInfo  {
     public string Name;
     public Scope Scope;
     public int Index;

@@ -57,7 +57,6 @@ namespace Irony.Compiler {
     NumberAllowStartEndDot = 0x100000,     //python : http://docs.python.org/ref/floating.html
     NumberIntOnly = 0x200000,
 
-
   }
 
   public enum ScanFlags {

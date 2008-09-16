@@ -27,6 +27,11 @@ namespace Irony.Compiler {
     public void Add(string lexeme, object value) {
       this.Table[lexeme] = value;
     }
+    public override void Init(Grammar grammar) {
+      base.Init(grammar);
+      if (this.EditorInfo == null)
+        this.EditorInfo = new TokenEditorInfo(TokenType.Unknown, TokenColor.Text, TokenTriggers.None);
+    }
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
       string text = source.Text;
       foreach (string lexeme in Table.Keys) {

@@ -39,6 +39,10 @@ namespace Irony.Compiler {
         _endSymbolsFirsts[i] = sym[0];
         _isLineComment |= sym.Contains("\n");
       }
+      if (this.EditorInfo == null) {
+        TokenType ttype = _isLineComment ? TokenType.LineComment : TokenType.Comment;
+        this.EditorInfo = new TokenEditorInfo(ttype, TokenColor.Comment, TokenTriggers.None);
+      }
     }
 
     public override Token TryMatch(CompilerContext context, ISourceStream source) {

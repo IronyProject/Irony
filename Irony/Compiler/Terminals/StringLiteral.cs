@@ -59,6 +59,8 @@ namespace Irony.Compiler {
  
       if (IsSet(TermOptions.SpecialIgnoreCase)) 
         _startEndFirsts = _startEndFirsts.ToLower() + _startEndFirsts.ToUpper();
+      if (this.EditorInfo == null)
+        this.EditorInfo = new TokenEditorInfo(TokenType.String, TokenColor.String, TokenTriggers.None);
     }//method
 
     public override IList<string> GetFirsts() {

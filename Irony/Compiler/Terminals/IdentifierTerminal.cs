@@ -45,7 +45,7 @@ namespace Irony.Compiler {
     public string AllChars;
     public string AllFirstChars;
     private string _terminators;
-    private StringDictionary _keywordHash;
+    public TokenEditorInfo KeywordEditorInfo = new TokenEditorInfo(TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
 
     //The following list must include only words that are reserved and are not general identifiers (variables)
     public readonly StringSet Keywords = new StringSet();
@@ -72,16 +72,20 @@ namespace Irony.Compiler {
     public override void Init(Grammar grammar) {
       base.Init(grammar);
       _terminators = grammar.WhitespaceChars + grammar.Delimiters;
-      //build a hash table of keywords
-      _keywordHash = new StringDictionary();
-      foreach (string keyw in Keywords) {
-        if (grammar.CaseSensitive) 
-          _keywordHash.Add(keyw, string.Empty);
-        else 
-          _keywordHash.Add(keyw.ToLower(), string.Empty);
-      }//foreach
+      //If grammar is case insensitive, we need to refill the keywords set with lowercase versions
+      if (!Grammar.CaseSensitive && Keywords.Count > 0) {
+        string[] buff = new string[Keywords.Count];
+        Keywords.CopyTo(buff);
+        Keywords.Clear();
+        foreach(string kw in buff) {
+          string adjkw = kw.ToLower();
+          Keywords.Add(adjkw);
+        }
+      }//if
       if (this.StartCharCategories.Count > 0 && !grammar.FallbackTerminals.Contains(this))
         grammar.FallbackTerminals.Add(this);
+      if (this.EditorInfo == null) 
+        this.EditorInfo = new TokenEditorInfo(TokenType.Identifier, TokenColor.Identifier, TokenTriggers.None);
     }
 
     //Override to assign IsKeyword flag to keyword tokens
@@ -95,8 +99,10 @@ namespace Irony.Compiler {
       string text = token.Text;
       if (!Grammar.CaseSensitive)
         text = text.ToLower();
-      if (_keywordHash.ContainsKey(text))
+      if (Keywords.Contains(text)) {
         token.IsKeyword = true;
+        token.EditorInfo = KeywordEditorInfo; //overwrite identifier editor info copied by default by token constructor 
+      }
       return token; 
     }
 

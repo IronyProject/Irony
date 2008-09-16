@@ -19,6 +19,27 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "050.Irony.Tutorial", "Irony.Tutorial\050.Irony.Tutorial.csproj", "{337C8662-3622-4AD9-8CFF-E7D9E437EA27}"
 EndProject
 Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 6
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://tfs05.codeplex.com/
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = Irony\\010.Irony.csproj
+		SccProjectName1 = Irony
+		SccLocalPath1 = Irony
+		SccProjectUniqueName2 = Irony.Samples\\020.Irony.Samples.csproj
+		SccProjectName2 = Irony.Samples
+		SccLocalPath2 = Irony.Samples
+		SccProjectUniqueName3 = Irony.GrammarExplorer\\030.Irony.GrammarExplorer.csproj
+		SccProjectName3 = Irony.GrammarExplorer
+		SccLocalPath3 = Irony.GrammarExplorer
+		SccProjectUniqueName4 = Irony.Tests\\040.Irony.Tests.csproj
+		SccProjectName4 = Irony.Tests
+		SccLocalPath4 = Irony.Tests
+		SccProjectUniqueName5 = Irony.Tutorial\\050.Irony.Tutorial.csproj
+		SccProjectName5 = Irony.Tutorial
+		SccLocalPath5 = Irony.Tutorial
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		FxCop|Any CPU = FxCop|Any CPU

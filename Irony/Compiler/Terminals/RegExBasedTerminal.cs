@@ -40,6 +40,8 @@ namespace Irony.Compiler {
       string workPattern = @"\G(" + Pattern + ")";
       RegexOptions options = (grammar.CaseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase);
       _expression = new Regex(workPattern, options);
+      if (this.EditorInfo == null) 
+        this.EditorInfo = new TokenEditorInfo(TokenType.Unknown, TokenColor.Text, TokenTriggers.None);
     }
 
     public override IList<string> GetFirsts() {

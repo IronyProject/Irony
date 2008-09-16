@@ -20,7 +20,7 @@ namespace Irony.Compiler {
   
 
   public class Terminal : BnfTerm {
-
+    #region Constructors
     public Terminal(string name)  : base(name) {
       this.NodeType = typeof(Token);
     }
@@ -30,6 +30,7 @@ namespace Irony.Compiler {
     public Terminal(string name, TokenMatchMode matchMode) : this(name) {
       this.MatchMode = matchMode;
     }
+    #endregion
 
     #region fields and properties
     public TokenMatchMode MatchMode = TokenMatchMode.ByValueThenByType;
@@ -43,6 +44,7 @@ namespace Irony.Compiler {
     // the earlier the terminal gets a chance to check the input. 
     public int Priority; //default is 0
 
+    public TokenEditorInfo EditorInfo;
     #endregion
 
     #region virtuals

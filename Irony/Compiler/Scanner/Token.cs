@@ -21,7 +21,11 @@ namespace Irony.Compiler {
   // Token is derived from AstNode because tokens are pushed into Parser stack (like non-terminal nodes),
   // and they can be included as nodes into AST tree. So Token is a primitive AstNode. 
   public class Token : AstNode  {
-    public Token(NodeArgs args) : base(args) { }
+    public Token(NodeArgs args) : base(args) {
+      this.Precedence = args.Term.Precedence; //copy precedence from Terminal, used mainly by operator symbols
+      this.EditorInfo = Terminal.EditorInfo;  //set to term's EditorInfo by default
+    
+    }
     
     public Terminal Terminal   {
       [System.Diagnostics.DebuggerStepThrough]
@@ -72,6 +76,7 @@ namespace Irony.Compiler {
     }
 
     public bool IsKeyword;
+    public TokenEditorInfo EditorInfo;
 
     public bool MatchByValue {
       get {
@@ -113,7 +118,6 @@ namespace Irony.Compiler {
       Token token = new Token(args);
       token.Text = text;
       token.Value = value;
-      token.Precedence = term.Precedence; //copy precedence from Terminal, used mainly by operator symbols
       return token;
     }
 

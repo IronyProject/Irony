@@ -22,6 +22,7 @@ namespace Irony.Compiler {
       _handler = handler;
       if (prefixes != null) 
         Prefixes.AddRange(prefixes);
+      this.EditorInfo = new TokenEditorInfo(TokenType.Unknown, TokenColor.Text, TokenTriggers.None);
     }
     
     public readonly StringList Prefixes = new StringList();

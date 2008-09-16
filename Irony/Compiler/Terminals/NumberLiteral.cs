@@ -35,11 +35,11 @@ namespace Irony.Compiler {
     public NumberLiteral(string name, TermOptions options)  : this(name) {
       SetOption(options);
     }
-    public NumberLiteral(string name)  : base(name) {
-      base.MatchMode = TokenMatchMode.ByType;
-    }
     public NumberLiteral(string name, string displayName)  : this(name) {
       base.DisplayName = displayName;
+    }
+    public NumberLiteral(string name)  : base(name) {
+      base.MatchMode = TokenMatchMode.ByType;
     }
     #endregion
 
@@ -63,6 +63,8 @@ namespace Irony.Compiler {
       if (string.IsNullOrEmpty(QuickParseTerminators))  
         QuickParseTerminators = grammar.WhitespaceChars + grammar.Delimiters;
       _defaultFloatTypes = new TypeCode[] { DefaultFloatType };
+      if (this.EditorInfo == null) 
+        this.EditorInfo = new TokenEditorInfo(TokenType.Literal, TokenColor.Number, TokenTriggers.None);
     }
     public override IList<string> GetFirsts() {
       StringList result = new StringList();

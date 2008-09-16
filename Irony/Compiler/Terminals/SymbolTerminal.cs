@@ -59,6 +59,19 @@ namespace Irony.Compiler {
     }
     #endregion
 
+    public override void Init(Grammar grammar) {
+      base.Init(grammar);
+      if (this.EditorInfo != null) return;
+      TokenType tknType = TokenType.Identifier;
+      if (IsSet(TermOptions.IsOperator))
+        tknType |= TokenType.Operator; 
+      else if (IsSet(TermOptions.IsDelimiter | TermOptions.IsPunctuation))
+        tknType |= TokenType.Delimiter;
+      TokenTriggers triggers = TokenTriggers.None;
+      if (this.IsSet(TermOptions.IsBrace))
+        triggers |= TokenTriggers.MatchBraces;
+      this.EditorInfo = new TokenEditorInfo(tknType, TokenColor.Text, triggers);
+    }
 
     //TODO: move Symbols table to Grammar instance
     #region static members: _symbols table of all symbol terminals

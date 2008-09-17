@@ -69,8 +69,10 @@ namespace Irony.Compiler {
         source.Position = firstCharPos;
         foreach (string endSymbol in EndSymbols)
           if (source.MatchSymbol(endSymbol, ignoreCase)) {
-            //We found end symbol
-            source.Position += endSymbol.Length;
+            //We found end symbol; eat end symbol only if it is not line comment.
+            // For line comment, leave LF symbol there, it might be important to have a separate LF token
+            if (!_isLineComment) 
+              source.Position += endSymbol.Length;
             return Token.Create(this, context, source.TokenStart, source.GetLexeme());
           }//if
         source.Position++; //move to the next char and try again    

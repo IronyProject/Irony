@@ -18,7 +18,7 @@ using Irony.Compiler.AST;
 using Irony.Runtime;
 
 namespace Irony.Tutorial.Part1 {
-  //Sample expression grammar - recognizes arithmetic expressions with numbers and variables
+  //Sample expression grammar - recognizes arithmetic expressions with numbers
   //
   // Expr    -> Term | UnExpr | BinExpr
   // Term    -> number | ParExpr

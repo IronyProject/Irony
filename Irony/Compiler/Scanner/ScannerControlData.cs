@@ -17,8 +17,8 @@ namespace Irony.Compiler {
 
     public ScannerControlData(Grammar grammar) {
       Grammar = grammar;
-      if (!Grammar.Prepared)
-        Grammar.Prepare();
+      if (!Grammar.Initialized)
+        Grammar.Init();
       LineTerminators = grammar.LineTerminators.ToCharArray();
       ScannerRecoverySymbols = grammar.WhitespaceChars + grammar.Delimiters;
       ExtractTerminalsFromGrammar();

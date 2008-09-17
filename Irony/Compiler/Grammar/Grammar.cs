@@ -29,6 +29,9 @@ namespace Irony.Compiler {
     //Used for line counting in source file
     public string LineTerminators = "\n\r\v";
 
+    //The following list must include only words that are reserved and are not general identifiers (variables)
+    public readonly StringSet Keywords = new StringSet();
+
     //Language options
     public LanguageOptions Options = LanguageOptions.Default;
     public bool OptionIsSet(LanguageOptions option) {
@@ -59,6 +62,20 @@ namespace Irony.Compiler {
     public readonly BnfTermList AllTerms = new BnfTermList();
 
     public readonly StringSet Errors = new StringSet();
+    #endregion 
+
+    #region Keywords handling
+    public void AddKeywords(params string[] keywords) {
+      Keywords.AddRange(keywords);
+    }
+    public void AddKeywordList(string keywordList) {
+      string[] arr = keywordList.Split(' ', ',', ';', '\n', '\r', '\t');
+      foreach (string kw in arr) {
+        string trimmed = kw.Trim();
+        if (!string.IsNullOrEmpty(trimmed))
+          Keywords.Add(trimmed);
+      }
+    }
     #endregion 
 
     #region Register methods
@@ -194,18 +211,32 @@ namespace Irony.Compiler {
 
 
     #region Preparing for processing
-    public bool Prepared {
-      get { return _prepared; }
-    } bool _prepared;
+    public bool Initialized {
+      get { return _initialized; }
+    } bool _initialized;
 
-    public void Prepare() {
+    public void Init() {
       CollectAllTerms();
       //Init all terms and token filters 
       foreach (BnfTerm term in this.AllTerms)
         term.Init(this);
       foreach (TokenFilter filter in TokenFilters)
         filter.Init(this);
-      _prepared = true; 
+      InitKeywords();
+      _initialized = true; 
+    }
+
+    private void InitKeywords() {
+      //If grammar is case insensitive, we need to refill the keywords set with lowercase versions
+      if (!CaseSensitive && Keywords.Count > 0) {
+        string[] buff = new string[Keywords.Count];
+        Keywords.CopyTo(buff);
+        Keywords.Clear();
+        foreach (string kw in buff) {
+          string adjkw = kw.ToLower();
+          Keywords.Add(adjkw);
+        }
+      }//if
     }
 
     int _unnamedCount; //internal counter for generating names for unnamed non-terminals

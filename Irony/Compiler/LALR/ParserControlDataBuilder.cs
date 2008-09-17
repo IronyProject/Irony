@@ -38,8 +38,8 @@ namespace Irony.Compiler.Lalr {
       try {
         if (_grammar.Root == null) 
           Cancel("Root property of the grammar is not set.");
-        if (!_grammar.Prepared)
-          _grammar.Prepare();
+        if (!_grammar.Initialized)
+          _grammar.Init();
 
         GetNonTerminalsFromGrammar();
         InitNonTerminalData();

@@ -47,41 +47,15 @@ namespace Irony.Compiler {
     private string _terminators;
     public TokenEditorInfo KeywordEditorInfo = new TokenEditorInfo(TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
 
-    //The following list must include only words that are reserved and are not general identifiers (variables)
-    public readonly StringSet Keywords = new StringSet();
     public readonly UnicodeCategoryList StartCharCategories = new UnicodeCategoryList(); //categories of first char
     public readonly UnicodeCategoryList CharCategories = new UnicodeCategoryList();      //categories of all other chars
     public readonly UnicodeCategoryList CharsToRemoveCategories = new UnicodeCategoryList(); //categories of chars to remove from final id, usually formatting category
     #endregion
 
-    public void AddKeywords(params string[] keywords) {
-      Keywords.AddRange(keywords);
-    }
-
-    public void AddKeywordList(string keywordList) {
-      string[] arr = keywordList.Split(' ', ',', ';', '\n', '\r', '\t');
-      foreach (string kw in arr) {
-        string trimmed = kw.Trim();
-        if (!string.IsNullOrEmpty(trimmed))
-          Keywords.Add(trimmed);
-
-      }
-    }
-
     #region overrides
     public override void Init(Grammar grammar) {
       base.Init(grammar);
       _terminators = grammar.WhitespaceChars + grammar.Delimiters;
-      //If grammar is case insensitive, we need to refill the keywords set with lowercase versions
-      if (!Grammar.CaseSensitive && Keywords.Count > 0) {
-        string[] buff = new string[Keywords.Count];
-        Keywords.CopyTo(buff);
-        Keywords.Clear();
-        foreach(string kw in buff) {
-          string adjkw = kw.ToLower();
-          Keywords.Add(adjkw);
-        }
-      }//if
       if (this.StartCharCategories.Count > 0 && !grammar.FallbackTerminals.Contains(this))
         grammar.FallbackTerminals.Add(this);
       if (this.EditorInfo == null) 
@@ -99,7 +73,7 @@ namespace Irony.Compiler {
       string text = token.Text;
       if (!Grammar.CaseSensitive)
         text = text.ToLower();
-      if (Keywords.Contains(text)) {
+      if (Grammar.Keywords.Contains(text)) {
         token.IsKeyword = true;
         token.EditorInfo = KeywordEditorInfo; //overwrite identifier editor info copied by default by token constructor 
       }

@@ -24,7 +24,7 @@ namespace Irony.Compiler {
   public class LanguageCompiler {
     public LanguageCompiler(Grammar grammar) {
       Grammar = grammar;
-      grammar.Prepare();
+      grammar.Init();
 #if DEBUG
       Options |= CompilerOptions.GrammarDebugging;
 #endif

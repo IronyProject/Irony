@@ -27,9 +27,6 @@ namespace Irony.Samples
             // BASIC is not case sensitive... 
             this.CaseSensitive = false;
 
-            // Add a custom filter to remove blank lines and make sure lines are numbered correctly.
-            this.TokenFilters.Add(new CodeOutlineFilter(false));
-
             // Define the Terminals
             var lineNumber = new NumberLiteral("NUMBER", TermOptions.NumberIntOnly);
             var fileNumber = new NumberLiteral("NUMBER", TermOptions.NumberIntOnly);
@@ -39,8 +36,10 @@ namespace Irony.Samples
             //Important: do not add comment term to base.NonGrammarTerminals list - we do use this terminal in grammar rules
             var userFunctionName = variable;
             var comment = new CommentTerminal("Comment", "REM", "\n");
-            var shortcomment = new CommentTerminal("ShortComment", "'", "\n");
+            var short_comment = new CommentTerminal("ShortComment", "'", "\n");
             var comma = Symbol(",", "comma");
+            var colon = Symbol(":", "colon");
+
 
             var comma_opt = new NonTerminal("comma_opt");
             comma_opt.Rule = Empty | ",";
@@ -52,6 +51,8 @@ namespace Irony.Samples
             // Define the non-terminals
             var PROGRAM = new NonTerminal("PROGRAM");
             var LINE = new NonTerminal("LINE");
+            var LINE_CONTENT = new NonTerminal("LINE_CONTENT");
+            var SHORT_COMMENT_OPT = new NonTerminal("SHORT_COMMENT_OPT");
             var STATEMENT_LIST = new NonTerminal("STATEMENT_LIST");
             var STATEMENT = new NonTerminal("STATEMENT");
             var PRINT_STMT = new NonTerminal("PRINT_STMT");
@@ -105,18 +106,15 @@ namespace Irony.Samples
 
             #region Grammar declaration
             // A program is a bunch of lines
-            PROGRAM.Rule = MakePlusRule(PROGRAM, null, LINE);
-
-            // "Lines" is recursively defined as "Lines" followed by a line, or just a single line.
-            //LINES.Rule = MakePlusRule(LINES, null, LINE);
+            PROGRAM.Rule = MakePlusRule(PROGRAM, LINE);
 
             // A line can be an empty line, or it's a number followed by a statement list ended by a new-line.
-            LINE.Rule = NewLine | lineNumber + STATEMENT_LIST + NewLine;
+            LINE.Rule = NewLine | lineNumber + LINE_CONTENT + SHORT_COMMENT_OPT + NewLine;
 
             // A statement list is 1 or more statements separated by the ':' character
-            STATEMENT_LIST.Rule = IF_STMT | COMMENT_STMT
-                | STATEMENT + (Empty | shortcomment)
-                | STATEMENT + Symbol(":") + STATEMENT_LIST;
+            LINE_CONTENT.Rule = IF_STMT | COMMENT_STMT | STATEMENT_LIST;
+            STATEMENT_LIST.Rule = MakePlusRule(STATEMENT_LIST, colon, STATEMENT);
+            SHORT_COMMENT_OPT.Rule = short_comment | Empty; 
 
             // A statement can be one of a number of types
             STATEMENT.Rule = ASSIGN_STMT | PRINT_STMT | INPUT_STMT | OPEN_STMT | CLOSE_STMT
@@ -160,7 +158,7 @@ namespace Irony.Samples
             END_STMT.Rule = "end";
             CLS_STMT.Rule = "cls";
             CLEAR_STMT.Rule = Symbol("clear") + comma + (Empty | number) + (Empty | comma + number) | "clear" + number | "clear";
-            COMMENT_STMT.Rule = comment | shortcomment;
+            COMMENT_STMT.Rule = comment | short_comment;
             RANDOMIZE_STMT.Rule = "randomize" + EXPR;
 
             // An expression is a number, or a variable, a string, or the result of a binary comparison.
@@ -193,10 +191,15 @@ namespace Irony.Samples
             //TODO: check number of arguments for particular function in node constructor
             ARG_LIST.Rule = MakePlusRule(ARG_LIST, comma, EXPR);
 
-            RegisterPunctuation("(", ")", ",", ";");
             #endregion
 
-        }//constructor
+            #region Punctuation, token filters
+            RegisterPunctuation("(", ")", ",", ";");
+            // Add a custom filter to remove blank lines and make sure lines are numbered correctly.
+            //this.TokenFilters.Add(new CodeOutlineFilter(false));
+            #endregion
+
+      }//constructor
 
     }//class
 }//namespace

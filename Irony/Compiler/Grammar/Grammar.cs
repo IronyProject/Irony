@@ -176,7 +176,7 @@ namespace Irony.Compiler {
     public readonly static Terminal Empty = new Terminal("EMPTY");
     // The following terminals are used in indent-sensitive languages like Python;
     // they are not produced by scanner but are produced by CodeOutlineFilter after scanning
-    public readonly static Terminal NewLine = new Terminal("LF", TokenCategory.Outline);
+    public readonly static Terminal NewLine = new NewLineTerminal("LF");
     public readonly static Terminal Indent = new Terminal("INDENT", TokenCategory.Outline);
     public readonly static Terminal Dedent = new Terminal("DEDENT", TokenCategory.Outline);
     // Identifies end of file

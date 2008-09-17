@@ -18,7 +18,7 @@ using System.Diagnostics;
 namespace Irony.Compiler {
 
   public enum CompilerOptions {
-    GrammarDebugging, 
+    GrammarDebugging = 0x01, 
   }
   
   public class LanguageCompiler {

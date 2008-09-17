@@ -80,6 +80,7 @@
     <Compile Include="Compiler\Terminals\CommentTerminal.cs" />
     <Compile Include="Compiler\Terminals\ConstantTerminal.cs" />
     <Compile Include="Compiler\Terminals\CompoundTerminalBase.cs" />
+    <Compile Include="Compiler\Terminals\NewLineTerminal.cs" />
     <Compile Include="Compiler\Terminals\NumberLiteral.cs" />
     <Compile Include="Compiler\Terminals\StringLiteral.cs" />
     <Compile Include="Compiler\Terminals\CustomTerminal.cs" />

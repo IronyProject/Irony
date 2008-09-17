@@ -26,9 +26,6 @@ namespace Irony.Compiler {
     public BnfTerm(string name, string displayName) {
       Name = name;
       DisplayName = displayName;
-      Key = Name + "\b"; //to guarantee against erroneous match of term's key with token value
-                          // so Identifier terminal doesn't match 'identifier' string 
-                          // in the input stream
     }
     public virtual void Init(Grammar grammar) {
       Grammar = grammar;
@@ -40,7 +37,16 @@ namespace Irony.Compiler {
 
 
     #region properties: Name, DisplayName, Key, Options
-    public string Name;    
+    public string Name {
+      get { return _name; }
+      set {
+        _name = value;
+        //Note on key assignment: we append non-printable char to guarantee against erroneous match of term's key with token value
+        // so Identifier terminal doesn't match 'identifier' string in the input stream
+        Key = Name + "\b";
+      }
+    }  string _name;
+  
     //DisplayName is used in error reporting, e.g. "Syntax error, expected <list-of-display-names>". 
     public string DisplayName;
     //The Key is used in matching 

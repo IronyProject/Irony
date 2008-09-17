@@ -13,14 +13,14 @@ namespace Irony.Compiler {
     public readonly TerminalLookupTable TerminalsLookup = new TerminalLookupTable(); //hash table for fast terminal lookup by input char
     public readonly TerminalList FallbackTerminals = new TerminalList(); //terminals that have no explicit prefixes
     public readonly string ScannerRecoverySymbols = "";
-    public readonly char[] LineTerminators;
+    public readonly char[] LineTerminators; //used for line counting
 
     public ScannerControlData(Grammar grammar) {
       Grammar = grammar;
-      LineTerminators = grammar.LineTerminators.ToCharArray();
-      ScannerRecoverySymbols = grammar.WhitespaceChars + grammar.Delimiters;
       if (!Grammar.Prepared)
         Grammar.Prepare();
+      LineTerminators = grammar.LineTerminators.ToCharArray();
+      ScannerRecoverySymbols = grammar.WhitespaceChars + grammar.Delimiters;
       ExtractTerminalsFromGrammar();
       BuildTerminalsLookupTable();
     }
@@ -36,9 +36,6 @@ namespace Irony.Compiler {
       if (!Grammar.CaseSensitive)
         AdjustCaseForSymbols();
       Terminals.Sort(Terminal.ByName);
-      //Init all
-      foreach (Terminal term in Terminals)
-        term.Init(Grammar);
     }
     
     private void AdjustCaseForSymbols() {

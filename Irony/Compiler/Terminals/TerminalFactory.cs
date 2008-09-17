@@ -128,16 +128,6 @@ namespace Irony.Compiler {
     public static IdentifierTerminal CreateCSharpIdentifier(string name) {
       IdentifierTerminal id = new IdentifierTerminal(name);
       id.SetOption(TermOptions.CanStartWithEscape);
-      string strKeywords =
-            "abstract as base bool break byte case catch char checked " +
-            "class	const	continue decimal default delegate  do double else enum event explicit extern false finally " +
-            "fixed float for foreach goto if implicit in int interface internal is lock long namespace " +
-            "new null object operator out override params private protected public " +
-            "readonly ref return sbyte sealed short sizeof stackalloc static string " +
-            "struct switch this throw true try typeof uint ulong unchecked unsafe ushort using virtual void " +
-            "volatile while";
-      id.AddKeywordList(strKeywords);
-
       id.AddPrefixFlag("@", ScanFlags.IsNotKeyword | ScanFlags.DisableEscapes);
       //From spec:
       //Start char is "_" or letter-character, which is a Unicode character of classes Lu, Ll, Lt, Lm, Lo, or Nl 
@@ -169,10 +159,6 @@ namespace Irony.Compiler {
 
     public static IdentifierTerminal CreatePythonIdentifier(string name) {
       IdentifierTerminal id = new IdentifierTerminal("Identifier"); //defaults are OK
-      id.AddKeywords("and", "del", "from", "not", "while", "as", "elif", "global", "or", "with",
-                                  "assert", "else", "if", "pass", "yield", "break", "except", "import", "print",
-                                  "class", "exec", "in", "raise", "continue", "finally", "is", "return",
-                                  "def", "for", "lambda", "try");
       return id;
     }
 

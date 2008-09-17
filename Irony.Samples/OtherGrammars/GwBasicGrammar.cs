@@ -193,10 +193,8 @@ namespace Irony.Samples
 
             #endregion
 
-            #region Punctuation, token filters
+            #region Punctuation
             RegisterPunctuation("(", ")", ",", ";");
-            // Add a custom filter to remove blank lines and make sure lines are numbered correctly.
-            //this.TokenFilters.Add(new CodeOutlineFilter(false));
             #endregion
 
       }//constructor

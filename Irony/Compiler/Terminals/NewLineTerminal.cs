@@ -37,7 +37,9 @@ namespace Irony.Compiler {
       Token result = Token.Create(this, context, source.TokenStart, source.GetLexeme());
       return result;
     }
+
     #endregion
 
+    
   }//class
 }//namespace

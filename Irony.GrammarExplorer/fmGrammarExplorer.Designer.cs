@@ -790,7 +790,8 @@ namespace Irony.GrammarExplorer {
             "Script.NET",
             "c# 3.0",
             "GW Basic",
-            "Tutorial - CalcGrammar"});
+            "Tutorial - CalcGrammar Part 1",
+            "Tutorial - CalcGrammar Part 2"});
       this.cboLanguage.Location = new System.Drawing.Point(90, 3);
       this.cboLanguage.Name = "cboLanguage";
       this.cboLanguage.Size = new System.Drawing.Size(189, 21);

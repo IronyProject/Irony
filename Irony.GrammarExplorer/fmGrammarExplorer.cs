@@ -274,6 +274,10 @@ namespace Irony.GrammarExplorer {
           grammar = new Irony.Tutorial.Part1.CalcGrammar();
           btnRun.Enabled = true;
           break;
+        case 6: //Tutorial
+          grammar = new Irony.Tutorial.Part2.CalcGrammar();
+          btnRun.Enabled = true;
+          break;
       }//switch
       Stopwatch sw = new Stopwatch();
       try {

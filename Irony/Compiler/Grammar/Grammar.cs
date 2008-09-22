@@ -193,9 +193,20 @@ namespace Irony.Compiler {
     public readonly static Terminal Empty = new Terminal("EMPTY");
     // The following terminals are used in indent-sensitive languages like Python;
     // they are not produced by scanner but are produced by CodeOutlineFilter after scanning
-    public readonly static Terminal NewLine = new NewLineTerminal("LF");
+    public readonly static NewLineTerminal NewLine = new NewLineTerminal("LF");
     public readonly static Terminal Indent = new Terminal("INDENT", TokenCategory.Outline);
     public readonly static Terminal Dedent = new Terminal("DEDENT", TokenCategory.Outline);
+    public static NonTerminal NewLinePlus {
+      get {
+        if (_newLinePlus == null) {
+          _newLinePlus = new NonTerminal("LF+");
+          _newLinePlus.SetOption(TermOptions.IsList);
+          _newLinePlus.Rule = NewLine | _newLinePlus + NewLine;
+        }//if
+        return _newLinePlus;
+      }
+    } static NonTerminal _newLinePlus;
+
     // Identifies end of file
     // Note: using Eof in grammar rules is optional. Parser automatically adds this symbol 
     // as a lookahead to Root non-terminal

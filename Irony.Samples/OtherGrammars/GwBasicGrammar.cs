@@ -28,9 +28,9 @@ namespace Irony.Samples
             this.CaseSensitive = false;
 
             // Define the Terminals
-            var lineNumber = new NumberLiteral("NUMBER", TermOptions.NumberIntOnly);
-            var fileNumber = new NumberLiteral("NUMBER", TermOptions.NumberIntOnly);
-            var number = new NumberLiteral("NUMBER", TermOptions.NumberAllowStartEndDot);
+            var lineNumber = new NumberLiteral("NUMBER", NumberFlags.IntOnly);
+            var fileNumber = new NumberLiteral("NUMBER", NumberFlags.IntOnly);
+            var number = new NumberLiteral("NUMBER", NumberFlags.AllowStartEndDot);
             var variable = new IdentifierTerminal("Identifier", "$%!", string.Empty);
             var stringLiteral = new StringLiteral("STRING", "\"", ScanFlags.None);
             //Important: do not add comment term to base.NonGrammarTerminals list - we do use this terminal in grammar rules

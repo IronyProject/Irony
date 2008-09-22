@@ -86,7 +86,9 @@ namespace Irony.Runtime {
     }
 
     internal DispatchRecord GetRecord(TypePair key) {
-      return DispatchRecords[key];
+      DispatchRecord result;
+      if (DispatchRecords.TryGetValue(key, out result)) return result;
+      return null;
     }
     public void SetResultConverter(TypeConverter converter) {
       foreach (DispatchRecord rec in DispatchRecords.Values) {

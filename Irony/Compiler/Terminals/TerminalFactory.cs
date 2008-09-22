@@ -91,7 +91,7 @@ namespace Irony.Compiler {
     }
     //http://docs.python.org/ref/numbers.html
     public static NumberLiteral CreatePythonNumber(string name) {
-      NumberLiteral term = new NumberLiteral(name, TermOptions.EnableQuickParse | TermOptions.SpecialIgnoreCase | TermOptions.NumberAllowStartEndDot);
+      NumberLiteral term = new NumberLiteral(name, TermOptions.EnableQuickParse | TermOptions.SpecialIgnoreCase, NumberFlags.AllowStartEndDot);
       //default int types are Integer (32bit) -> LongInteger (BigInt); Try Int64 before BigInt: Better performance?
       term.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.Int64, NumberLiteral.TypeCodeBigInt };
       // term.DefaultFloatType = TypeCode.Double; -- it is default

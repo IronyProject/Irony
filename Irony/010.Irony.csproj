@@ -60,7 +60,7 @@
     <Compile Include="Compiler\AST\CondFormNode.cs" />
     <Compile Include="Compiler\AST\UnExprNode.cs" />
     <Compile Include="Compiler\AST\FunctionCallNode.cs" />
-    <Compile Include="Compiler\AST\IdentifierNode.cs" />
+    <Compile Include="Compiler\AST\VarRefNode.cs" />
     <Compile Include="Compiler\AST\IfNode.cs" />
     <Compile Include="Compiler\AST\AssigmentNode.cs" />
     <Compile Include="Compiler\AST\StatementListNode.cs" />

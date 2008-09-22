@@ -17,17 +17,22 @@ using Irony.Compiler;
 using Irony.Compiler.AST;
 using Irony.Runtime;
 
-namespace Irony.Tutorial.Part1 {
-  //Sample expression grammar; recognizes one-line arithmetic expressions with numbers
-  // for example: 
-  // 5 + 2.5 * 4
+namespace Irony.Tutorial.Part2 {
+  // The grammar is an extension of expression grammar in Part 1. 
+  // This grammar recognizes programs that contain simple expressions and assignments involving variables
+  // for ex:
+  // x = 3 + 4
+  // y = x * 2 + 1
+  //  the result of calculation is the result of last expression or assignment (y in this case).
 
   public class CalcGrammar : Irony.Compiler.Grammar {
     public CalcGrammar() {
       // 1. Terminals
       var number = new NumberLiteral("number");
+      var identifier = new IdentifierTerminal("identifier");
 
       // 2. Non-terminals
+      var Variable = new NonTerminal("Variable", typeof(VarRefNode));
       var Expr = new NonTerminal("Expr");
       var Term = new NonTerminal("Term");
       var BinExpr = new NonTerminal("BinExpr", typeof(BinExprNode));
@@ -35,23 +40,35 @@ namespace Irony.Tutorial.Part1 {
       var UnExpr = new NonTerminal("UnExpr", typeof(UnExprNode));
       var UnOp = new NonTerminal("UnOp");
       var BinOp = new NonTerminal("BinOp");
+      var AssignmentStmt = new NonTerminal("AssignmentStmt", typeof(AssigmentNode));
+      var Statement = new NonTerminal("Statement");
+      var ProgramLine = new NonTerminal("ProgramLine");
+      var Program = new NonTerminal("Program", typeof(StatementListNode));
 
       // 3. BNF rules
+      Variable.Rule = identifier;
       Expr.Rule = Term | UnExpr | BinExpr;
-      Term.Rule = number | ParExpr;
+      Term.Rule = number | ParExpr | Variable;
       ParExpr.Rule = "(" + Expr + ")";
       UnExpr.Rule = UnOp + Term;
       UnOp.Rule = Symbol("+") | "-";
       BinExpr.Rule =  Expr + BinOp + Expr;
       BinOp.Rule = Symbol("+") | "-" | "*" | "/" | "**";
-      this.Root = Expr;       // Set grammar root
+      AssignmentStmt.Rule = Variable + "=" + Expr;
+      Statement.Rule = AssignmentStmt | Expr | Empty;
+      ProgramLine.Rule = Statement + NewLine;
+      Program.Rule = MakeStarRule(Program, ProgramLine); 
+      this.Root = Program;       // Set grammar root
 
       // 4. Operators precedence
       RegisterOperators(1, "+", "-");
       RegisterOperators(2, "*", "/");
       RegisterOperators(3, Associativity.Right, "**");
 
-      RegisterPunctuation( "(", ")" );
+      RegisterPunctuation( "(", ")");
+      RegisterPunctuation(NewLine); //remove all newLines - important, extra new lines in output tree can mess up calc result
+
+      this.Options |= LanguageOptions.AutoNewLine; //automatically add newLine before EOF so that our grammar works
 
     }
   }

@@ -22,6 +22,15 @@ namespace Irony.Compiler {
   using BigInteger = Microsoft.Scripting.Math.BigInteger;
   using Complex64 = Microsoft.Scripting.Math.Complex64;
 
+  public enum NumberFlags {
+    None = 0,
+    AllowStartEndDot  = 0x01,     //python : http://docs.python.org/ref/floating.html
+    IntOnly           = 0x02,
+    AvoidPartialFloat = 0x04,     //for use with IntOnly flag; essentially tells terminal to avoid matching integer if 
+                                  // it is followed by dot (or exp symbol) - leave to another terminal that will handle float numbers
+    AllowSign   = 0x08,
+  }
+
 
   //TODO: For VB, we may need to add a flag to automatically use long instead of int (default) when number is too large
   public class NumberLiteral : CompoundTerminalBase {
@@ -32,8 +41,15 @@ namespace Irony.Compiler {
     #endregion
 
     #region constructors
+    public NumberLiteral(string name, TermOptions options, NumberFlags flags)  : this(name) {
+      Flags |= flags;
+      SetOption(options);
+    }
     public NumberLiteral(string name, TermOptions options)  : this(name) {
       SetOption(options);
+    }
+    public NumberLiteral(string name, NumberFlags flags)    : this(name) {
+      Flags |= flags;
     }
     public NumberLiteral(string name, string displayName)  : this(name) {
       base.DisplayName = displayName;
@@ -44,6 +60,7 @@ namespace Irony.Compiler {
     #endregion
 
     #region Public fields/properties: ExponentSymbols, Suffixes
+    public NumberFlags Flags;
     public string QuickParseTerminators;
     public string ExponentSymbols = "eE"; //most of the time; in some languages (Scheme) we have more
     public char DecimalSeparator = '.';
@@ -52,6 +69,10 @@ namespace Irony.Compiler {
     public TypeCode[] DefaultIntTypes = new TypeCode[] { TypeCode.Int32 };
     public TypeCode DefaultFloatType = TypeCode.Double;
     private TypeCode[] _defaultFloatTypes;
+
+    public bool IsSet(NumberFlags flag) {
+      return (Flags & flag) != 0;
+    }
     #endregion
 
     #region Private fields: _quickParseTerminators
@@ -72,8 +93,10 @@ namespace Irony.Compiler {
       //we assume that prefix is always optional, so number can always start with plain digit
       result.AddRange(new string[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" });
       // Python float numbers can start with a dot
-      if (IsSet(TermOptions.NumberAllowStartEndDot))
+      if (IsSet(NumberFlags.AllowStartEndDot))
         result.Add(DecimalSeparator.ToString());
+      if (IsSet(NumberFlags.AllowSign))
+        result.AddRange(new string[] {"-", "+"} );
       return result;
     }
 
@@ -114,33 +137,51 @@ namespace Irony.Compiler {
     }
 
     protected override bool ReadBody(ISourceStream source, ScanDetails details) {
-      //remember start - it may be different from source.TokenStart, we may have skipped 
+      //remember start - it may be different from source.TokenStart, we may have skipped prefix
       int start = source.Position;
+      char current = source.CurrentChar;
+      if (current == '-' || current == '+') {
+        details.Negative = (current == '-');
+        source.Position++;
+      }
       //Figure out digits set
       string digits = GetDigits(details);
       bool isDecimal = !details.IsSet(ScanFlags.NonDecimal);
-      bool allowFloat = !IsSet(TermOptions.NumberIntOnly);
+      bool allowFloat = !IsSet(NumberFlags.IntOnly);
+      bool foundDigits = false;
 
       while (!source.EOF()) {
-        char current = source.CurrentChar;
+        current = source.CurrentChar;
         //1. If it is a digit, just continue going
         if (digits.IndexOf(current) >= 0) {
           source.Position++;
+          foundDigits = true; 
           continue;
         }
-        //2. Check if it is a dot
-        if (current == DecimalSeparator && allowFloat) {
+        //2. Check if it is a dot in float number
+        bool isDot = current == DecimalSeparator;
+        if (allowFloat && isDot) {
           //If we had seen already a dot or exponent, don't accept this one;
           //In python number literals (NumberAllowPointFloat) a point can be the first and last character,
           //otherwise we accept dot only if it is followed by a digit
-          if (details.IsSet(ScanFlags.HasDotOrExp) || (digits.IndexOf(source.NextChar) < 0) && !IsSet(TermOptions.NumberAllowStartEndDot))
+          if (details.IsSet(ScanFlags.HasDotOrExp) || (digits.IndexOf(source.NextChar) < 0) && !IsSet(NumberFlags.AllowStartEndDot))
             break; //from while loop
           details.Flags |= ScanFlags.HasDot;
           source.Position++;
           continue;
         }
-        //3. Only for decimals - check if it is (the first) exponent symbol
-        if (allowFloat && isDecimal && (details.ControlSymbol == null) && (ExponentSymbols.IndexOf(current) >= 0)) {
+        //3. Check if it is int number followed by dot or exp symbol
+        bool isExpSymbol = (details.ControlSymbol == null) && ExponentSymbols.IndexOf(current) >= 0;
+        if (!allowFloat && foundDigits && (isDot || isExpSymbol)) {
+          //If no partial float allowed then return false - it is not integer, let float terminal recognize it as float
+          if (IsSet(NumberFlags.AvoidPartialFloat)) return false;  
+          //otherwise break, it is integer and we're done reading digits
+          break;
+        }
+
+
+        //4. Only for decimals - check if it is (the first) exponent symbol
+        if (allowFloat && isDecimal && isExpSymbol) {
           char next = source.NextChar;
           bool nextIsSign = next == '-' || next == '+';
           bool nextIsDigit = digits.IndexOf(next) >= 0;
@@ -206,15 +247,16 @@ namespace Irony.Compiler {
 
     #region private utilities
     private bool QuickConvertToInt32(ScanDetails details) {
-      TypeCode type = details.TypeCodes[0];
       int radix = GetRadix(details);
       if (radix == 10 && details.Body.Length > 10) return false;    //10 digits is maximum for int32; int32.MaxValue = 2 147 483 647
       try {
         //workaround for .Net FX bug: http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=278448
+        int iValue = 0;
         if (radix == 10)
-          details.Value = Convert.ToInt32(details.Body, CultureInfo.InvariantCulture);
+          iValue =  Convert.ToInt32(details.Body, CultureInfo.InvariantCulture);
         else
-          details.Value = Convert.ToInt32(details.Body, radix);
+          iValue = Convert.ToInt32(details.Body, radix);
+        details.Value = iValue;
         return true;
       } catch {
         return false;
@@ -224,9 +266,9 @@ namespace Irony.Compiler {
     private bool QuickConvertToDouble(ScanDetails details) {
       if (details.IsSet(ScanFlags.Binary | ScanFlags.Octal | ScanFlags.Hex | ScanFlags.HasExp)) return false; 
       if (DecimalSeparator != '.') return false;
-      double result;
-      if (!double.TryParse(details.Body, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out result)) return false;
-      details.Value = result;
+      double dvalue;
+      if (!double.TryParse(details.Body, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out dvalue)) return false;
+      details.Value = dvalue;
       return true; 
     }
     private bool ConvertToFloat(TypeCode typeCode, ScanDetails details) {
@@ -296,8 +338,8 @@ namespace Irony.Compiler {
 
 
     private bool ConvertToBigInteger(ScanDetails details) {
-      //ignore leading zeros
-      details.Body = details.Body.TrimStart('0');
+      //ignore leading zeros and sign
+      details.Body = details.Body.TrimStart('+').TrimStart('-').TrimStart('0');
       int bodyLength = details.Body.Length;
       int radix = GetRadix(details);
       int wordLength = GetSafeWordLength(details);
@@ -328,6 +370,8 @@ namespace Irony.Compiler {
       BigInteger bigIntegerValue = numberSections[0];
       for (int i = 1; i < sectionCount; i++)
         bigIntegerValue = checked(bigIntegerValue * safeWordRadix + numberSections[i]);
+      if (details.Negative)
+        bigIntegerValue = -bigIntegerValue;
       details.Value = bigIntegerValue;
       return true;
     }

@@ -49,7 +49,7 @@ namespace Irony.Samples.Scheme {
       var SimpleIdentifier = new IdentifierTerminal("SimpleIdentifier", "_+-*/.@?!<>=", "_+-*/.@?!<>=$%&:^~");
       //                                                           name                extraChars      extraFirstChars  
       var Number = TerminalFactory.CreateSchemeNumber("Number");
-      var Byte = new NumberLiteral("Byte", TermOptions.NumberIntOnly); 
+      var Byte = new NumberLiteral("Byte", NumberFlags.IntOnly); 
 
       //Comments
       Terminal Comment = new CommentTerminal("Comment", "#|", "|#");
@@ -87,7 +87,7 @@ namespace Irony.Samples.Scheme {
       var ExportSpecList = new NonTerminal("ExportSpecList");
       var LP = new NonTerminal("LP"); //"(" or "["
       var RP = new NonTerminal("RP"); // ")" or "]"
-      var Identifier = new NonTerminal("Identifier", typeof(IdentifierNode));
+      var Identifier = new NonTerminal("Identifier", typeof(VarRefNode));
       var IdentifierList = new NonTerminal("IdentifierList");
       var IdentifierListOpt = new NonTerminal("IdentifierListOpt");
       var PeculiarIdentifier = new NonTerminal("PeculiarIdentifier");
@@ -220,7 +220,7 @@ namespace Irony.Samples.Scheme {
       return false; 
     }
     private AstNode CreateFunctionCallNode(NodeArgs args) {
-      IdentifierNode id = args.ChildNodes[0] as IdentifierNode;
+      VarRefNode id = args.ChildNodes[0] as VarRefNode;
       AstNodeList funArgs = args.ChildNodes[1].ChildNodes;
       if (IsOperator(id.Name)) {
         return new BinExprNode(args, funArgs[0], id.Name, funArgs[1]);
@@ -230,11 +230,11 @@ namespace Irony.Samples.Scheme {
     }
     private AstNode CreateDefineVarNode(NodeArgs args) {
       //we skip the "define" keyword so the indexes are 1,2
-      return new AssigmentNode(args, args.ChildNodes[1] as IdentifierNode, args.ChildNodes[2]);
+      return new AssigmentNode(args, args.ChildNodes[1] as VarRefNode, args.ChildNodes[2]);
     }
     private AstNode CreateDefineFunNode(NodeArgs args) {
       //"define" keyword is at index 0
-      IdentifierNode funNameNode = args.ChildNodes[1] as IdentifierNode;
+      VarRefNode funNameNode = args.ChildNodes[1] as VarRefNode;
       funNameNode.Flags |= AstNodeFlags.AllocateSlot;
       AstNode funParams = args.ChildNodes[2]; 
       AstNode funBody = args.ChildNodes[3];

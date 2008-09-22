@@ -10,14 +10,14 @@ namespace Irony.Compiler.AST {
   // TODO: extend to support dynamic binding - for ex in Scheme, the node in function position can be any expression
   // that evaluates to a function
   public class FunctionCallNode : AstNode {
-    public IdentifierNode NameRef;
+    public VarRefNode NameRef;
     public AstNodeList Arguments;
     private bool _isTail;
     //If the target method is fixed and statically bound (runtime library function for ex),
     // then this field contains the binding info for the target method
     public FunctionBindingInfo FixedTargetInfo;
 
-    public FunctionCallNode(NodeArgs args, IdentifierNode name, AstNodeList arguments) : base(args) {
+    public FunctionCallNode(NodeArgs args, VarRefNode name, AstNodeList arguments) : base(args) {
       ChildNodes.Clear();
       NameRef = name;
       NameRef.Flags |= AstNodeFlags.SuppressNotDefined;

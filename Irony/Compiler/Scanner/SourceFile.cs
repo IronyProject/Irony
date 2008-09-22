@@ -33,6 +33,7 @@ namespace Irony.Compiler {
 
 
   #region SourceLocation, SourceSpan structs
+  [Serializable]
   public struct SourceLocation {
     public int Position;
     public int Line;

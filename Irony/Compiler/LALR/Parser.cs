@@ -395,8 +395,9 @@ namespace Irony.Compiler.Lalr {
       // the child node B is usually a subclass of node A, 
       // so child node B can be used directly in place of the A. So we simply return child node as a result. 
       // TODO: probably need a grammar option to enable/disable this behavior explicitly
-      if (!isList && !nt.IsSet(TermOptions.IsPunctuation) && childNodes.Count == 1) {
-        Type childNodeType = childNodes[0].Term.NodeType ?? defaultNodeType ?? typeof(AstNode);
+      if (!isList && !nt.IsSet(TermOptions.IsPunctuation) && childNodes.Count == 1 && (childNodes[0].Term is NonTerminal)) {
+        NonTerminal childNT = childNodes[0].Term as NonTerminal;
+        Type childNodeType = childNT.NodeType ?? defaultNodeType ?? typeof(AstNode);
         if (childNodeType == ntNodeType || childNodeType.IsSubclassOf(ntNodeType))
           return childNodes[0];
       }

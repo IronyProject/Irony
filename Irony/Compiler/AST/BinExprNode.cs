@@ -36,12 +36,17 @@ namespace Irony.Compiler.AST {
     }
 
     protected override void DoEvaluate(EvaluationContext context) {
-      Left.Evaluate(context);
-      object arg1 = context.CurrentResult;
-      Right.Evaluate(context);
-      context.Arg2 = context.CurrentResult;
-      context.Arg1 = arg1; 
-      _dispatcher.Evaluate(context);
+      try {
+        Left.Evaluate(context);
+        object arg1 = context.CurrentResult;
+        Right.Evaluate(context);
+        context.Arg2 = context.CurrentResult;
+        context.Arg1 = arg1;
+        _dispatcher.Evaluate(context);
+      } catch (RuntimeException e) {
+        e.Location = this.Location;
+        throw; 
+      }
     }
 
     public override string ToString() {

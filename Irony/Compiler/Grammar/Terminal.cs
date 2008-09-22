@@ -22,7 +22,7 @@ namespace Irony.Compiler {
   public class Terminal : BnfTerm {
     #region Constructors
     public Terminal(string name)  : base(name) {
-      this.NodeType = typeof(Token);
+      //this.NodeType = typeof(Token);
     }
     public Terminal(string name, TokenCategory category)  : this(name) {
       Category = category;

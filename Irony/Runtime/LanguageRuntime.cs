@@ -82,7 +82,7 @@ namespace Irony.Runtime {
       TypePair baseKey = new TypePair(commonType, commonType);
       DispatchRecord rec = dispatcher.GetRecord(baseKey);
       if (rec == null)
-        throw new RuntimeException("Operator not defined for type " + commonType);
+        throw new RuntimeException("Operator or method " + dispatcher.MethodName + " is not defined for type " + commonType);
       rec = new DispatchRecord(forKey, commonType, arg1Converter, arg2Converter, rec.ResultConverter, rec.Implementation);
       dispatcher.Add(rec);
       return rec;

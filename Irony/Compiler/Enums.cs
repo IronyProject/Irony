@@ -54,8 +54,6 @@ namespace Irony.Compiler {
     SpecialIgnoreCase = 0x010000,         //Ignore case in suffixes and prefixes
     EnableQuickParse = 0x020000,
     CanStartWithEscape = 0x040000,
-    NumberAllowStartEndDot = 0x100000,     //python : http://docs.python.org/ref/floating.html
-    NumberIntOnly = 0x200000,
 
   }
 

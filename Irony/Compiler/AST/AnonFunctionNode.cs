@@ -19,7 +19,7 @@ namespace Irony.Compiler.AST {
       AddChild("Params", Parameters);
       Body = body;
       AddChild("Body", Body);
-      foreach (IdentifierNode prm in Parameters.ChildNodes)
+      foreach (VarRefNode prm in Parameters.ChildNodes)
         prm.Flags |= AstNodeFlags.AllocateSlot;
       BindingInfo = new FunctionBindingInfo(null, Parameters.ChildNodes.Count, this.Body.Evaluate, this, FunctionFlags.IsLocal);
     }

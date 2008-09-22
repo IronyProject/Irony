@@ -39,6 +39,7 @@ namespace Irony.Compiler {
 
 
   public class ScanDetails {
+    public bool Negative;
     public string Prefix;
     public string Body;
     public string Suffix;

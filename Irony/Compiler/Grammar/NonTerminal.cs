@@ -32,10 +32,10 @@ namespace Irony.Compiler {
       : base(name, alias) {
     }
     public NonTerminal(string name, Type nodeType) : this(name) { 
-      base.NodeType = nodeType;
+      NodeType = nodeType;
     }
     public NonTerminal(Type nodeType) : this(nodeType.Name) {
-      base.NodeType = nodeType;
+      NodeType = nodeType;
     }
     public NonTerminal(string name, BnfExpression expression)
       : this(name) { 
@@ -44,6 +44,8 @@ namespace Irony.Compiler {
     #endregion
 
     #region properties/fields: Rule, ErrorRule 
+    public Type NodeType;
+    
     public BnfExpression Rule; 
     //Separate property for specifying error expressions. This allows putting all such expressions in a separate section
     // in grammar for all non-terminals. However you can still put error expressions in the main Rule property, just like

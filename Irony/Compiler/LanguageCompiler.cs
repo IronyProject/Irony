@@ -17,17 +17,10 @@ using System.Diagnostics;
 
 namespace Irony.Compiler {
 
-  public enum CompilerOptions {
-    GrammarDebugging = 0x01, 
-  }
-  
   public class LanguageCompiler {
     public LanguageCompiler(Grammar grammar) {
       Grammar = grammar;
       grammar.Init();
-#if DEBUG
-      Options |= CompilerOptions.GrammarDebugging;
-#endif
       ScannerControlData scannerData = new ScannerControlData(grammar);
       Scanner = new Scanner(scannerData);
       Parser = new Lalr.Parser(Grammar); 
@@ -39,7 +32,6 @@ namespace Irony.Compiler {
     }
 
     public readonly Grammar Grammar;
-    public readonly CompilerOptions Options; 
     public readonly Scanner Scanner;
     public readonly IParser Parser;
 
@@ -51,20 +43,11 @@ namespace Irony.Compiler {
       get {return _compileTime;}
     } long  _compileTime;
 
-    public CompilerContext Context  {
-      [DebuggerStepThrough]
-      get { return _context; }
-    } CompilerContext  _context;
-
-    public bool OptionIsSet(CompilerOptions option) {
-      return (Options & option) != 0;
-    }
     public AstNode Parse(string source) {
       return Parse(new CompilerContext(this), new SourceFile(source, "Source"));
     }
 
     public AstNode Parse(CompilerContext context, SourceFile source) {
-      _context = context;
       int start = Environment.TickCount;
       Scanner.Prepare(context, source);
       IEnumerable<Token> tokenStream = Scanner.BeginScan();
@@ -75,8 +58,8 @@ namespace Irony.Compiler {
       //finally, parser takes token stream and produces root Ast node
       AstNode rootNode = Parser.Parse(context, tokenStream);
       _compileTime = Environment.TickCount - start;
-      if (_context.Errors.Count > 0)
-        _context.Errors.Sort(SyntaxErrorList.ByLocation);
+      if (context.Errors.Count > 0)
+        context.Errors.Sort(SyntaxErrorList.ByLocation);
       return rootNode;
     }//method
 

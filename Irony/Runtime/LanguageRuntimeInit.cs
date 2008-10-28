@@ -139,7 +139,6 @@ namespace Irony.Runtime {
     }
 
     public virtual void InitOperatorImplementations() {
-      //SupportedMethods.AddRange(new string[] { "+", "-", "*", "/", "&", "|", "^" });
       //note that arithmetics on byte, sbyte, int16, uint16 are performed in Int32 format, so the result is always Int32
       // we don't force the result back to original type - I don't think it's necessary
       // For each operator, we add a series of implementation methods for same-type operands. They are saved as DispatchRecords in 

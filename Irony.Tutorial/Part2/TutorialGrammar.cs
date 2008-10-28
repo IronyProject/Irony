@@ -23,7 +23,7 @@ namespace Irony.Tutorial.Part2 {
   // for ex:
   // x = 3 + 4
   // y = x * 2 + 1
-  //  the result of calculation is the result of last expression or assignment (y in this case).
+  //  the result of calculation is the result of last expression or assignment (value of "y" in this case).
 
   public class CalcGrammar : Irony.Compiler.Grammar {
     public CalcGrammar() {

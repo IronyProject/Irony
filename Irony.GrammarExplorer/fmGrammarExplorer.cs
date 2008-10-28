@@ -21,6 +21,7 @@ using System.IO;
 using System.Configuration;
 using System.Text.RegularExpressions;
 using Irony.Compiler;
+using Irony.EditorServices;
 using Irony.Compiler.Lalr;
 using Irony.Runtime;
 using Irony.GrammarExplorer.Properties;
@@ -32,11 +33,16 @@ namespace Irony.GrammarExplorer {
     public fmGrammarExplorer() {
       InitializeComponent();
     }
+    LanguageCompiler _compiler;
+    CompilerContext _compilerContext;
+    AstNode _rootNode;
+    RichTextBoxHighligter _highlighter;
+
     private void fmExploreGrammar_Load(object sender, EventArgs e) {
       try {
-        cboLanguage.SelectedIndex = Settings.Default.LanguageIndex;
         txtSource.Text = Settings.Default.SourceSample;
-        txtSearch.Text = Settings.Default.SearchPattern; 
+        txtSearch.Text = Settings.Default.SearchPattern;
+        cboLanguage.SelectedIndex = Settings.Default.LanguageIndex; //this will start colorizer
       } catch { }
     }
     private void fmExploreGrammar_FormClosing(object sender, FormClosingEventArgs e) {
@@ -46,12 +52,20 @@ namespace Irony.GrammarExplorer {
       Settings.Default.Save();
     }//method
 
+    private void StartHighligter() {
+      if (_highlighter != null) 
+        StopHighlighter(); 
+      var adapter = new EditorAdapter(_compiler);
+      var viewAdapter = new EditorViewAdapter(adapter, txtSource);
+      _highlighter = new RichTextBoxHighligter(txtSource, viewAdapter);
+      adapter.Activate();
+    }
+    private void StopHighlighter() {
+      _highlighter.Dispose();
+      _highlighter = null;
+      txtSource.Text = txtSource.Text; //remove all old highlighting
+    }
 
-
-    LanguageCompiler Compiler  {
-      get {return _compiler;}
-    } LanguageCompiler  _compiler;
-    AstNode _rootNode;
 
     private void btnParse_Click(object sender, EventArgs e) {
       ParseSample();
@@ -59,24 +73,25 @@ namespace Irony.GrammarExplorer {
 
     private void ParseSample() {
       _rootNode = null;
+      _compilerContext = new CompilerContext(_compiler);
       ResetResultPanels();
       if (chkShowTrace.Checked) {
-        Compiler.LalrParser.ActionSelected += Parser_ParserAction;
-        Compiler.LalrParser.TokenReceived +=  Parser_TokenReceived; 
+        _compiler.LalrParser.ActionSelected += Parser_ParserAction;
+        _compiler.LalrParser.TokenReceived +=  Parser_TokenReceived; 
         _tokens.Clear();
       }
+      SourceFile source = new SourceFile(txtSource.Text, "source", 8);
       try {
-        SourceFile source = new SourceFile(txtSource.Text, "source", 8);
-        _rootNode = Compiler.Parse(txtSource.Text);
+        _rootNode = _compiler.Parse(_compilerContext, source);
       } catch (Exception ex) {
         lstErrors.Items.Add(ex);
-        lstErrors.Items.Add("Parser state: " + Compiler.LalrParser.CurrentState);
+        lstErrors.Items.Add("Parser state: " + _compiler.LalrParser.CurrentState);
         tabResults.SelectedTab = pageParseErrors;
         ShowParseStack();
         throw;
       } finally {
-        Compiler.LalrParser.ActionSelected -= Parser_ParserAction;
-        Compiler.LalrParser.TokenReceived -= Parser_TokenReceived;
+        _compiler.LalrParser.ActionSelected -= Parser_ParserAction;
+        _compiler.LalrParser.TokenReceived -= Parser_TokenReceived;
       }
       ShowCompilerErrors();
       if (chkShowTrace.Checked)
@@ -87,11 +102,11 @@ namespace Irony.GrammarExplorer {
     }
 
     private void ShowCompilerErrors() {
-      if (Compiler.Context.Errors.Count > 0) {
+      if (_compilerContext.Errors.Count > 0) {
         lstErrors.Items.Clear();
         if (tabResults.SelectedTab == pageResult)
           tabResults.SelectedTab = pageParseErrors;
-        foreach (SyntaxError err in Compiler.Context.Errors)
+        foreach (SyntaxError err in _compilerContext.Errors)
           lstErrors.Items.Add(err);
       }
     }
@@ -112,10 +127,10 @@ namespace Irony.GrammarExplorer {
       Application.DoEvents();
     }
     private void ShowStats() {
-      lblStatLines.Text = Compiler.LalrParser.LineCount.ToString();
-      lblStatTokens.Text = Compiler.LalrParser.TokenCount.ToString();
-      lblStatTime.Text = Compiler.CompileTime.ToString();
-      lblErrCount.Text = Compiler.Context.Errors.Count.ToString();
+      lblStatLines.Text = _compiler.LalrParser.LineCount.ToString();
+      lblStatTokens.Text = _compiler.LalrParser.TokenCount.ToString();
+      lblStatTime.Text = _compiler.CompileTime.ToString();
+      lblErrCount.Text = _compilerContext.Errors.Count.ToString();
       Application.DoEvents();
       //Note: this time is "pure" compile time; actual delay after cliking "Compile" includes time to fill TreeView control 
       //  showing compiled syntax tree. 
@@ -133,8 +148,8 @@ namespace Irony.GrammarExplorer {
 
     private void ShowParseStack() {
       lstParseStack.Items.Clear();
-      for (int i = 0; i < Compiler.LalrParser.Stack.Count; i++ ) {
-        lstParseStack.Items.Add(Compiler.LalrParser.Stack[i]);
+      for (int i = 0; i < _compiler.LalrParser.Stack.Count; i++ ) {
+        lstParseStack.Items.Add(_compiler.LalrParser.Stack[i]);
       }
     }
 
@@ -161,12 +176,12 @@ namespace Irony.GrammarExplorer {
       txtLR0Items.Text = "";
       txtParserStates.Text = "" ;
       txtGrammarErrors.Text = "(no errors found)";
-      if (Compiler == null) return;
+      if (_compiler == null) return;
 
       //Temporarily - this works only for LALR parser
-      Irony.Compiler.Lalr.ParserControlData data =((Irony.Compiler.Lalr.Parser) Compiler.Parser).Data;
+      Irony.Compiler.Lalr.ParserControlData data =((Irony.Compiler.Lalr.Parser) _compiler.Parser).Data;
       
-      txtTerms.Text = TextUtils.TerminalsToText(Compiler.Scanner.Data.Terminals);
+      txtTerms.Text = TextUtils.TerminalsToText(_compiler.Scanner.Data.Terminals);
       txtNonTerms.Text = TextUtils.NonTerminalsToText(data.NonTerminals);
       //Productions and LR0 items
       foreach (Production pr in data.Productions) {
@@ -175,7 +190,7 @@ namespace Irony.GrammarExplorer {
       //States
       txtParserStates.Text = TextUtils.StateListToText(data.States);
       //Validation errors
-      StringSet errors = Compiler.Grammar.Errors;
+      StringSet errors = _compiler.Grammar.Errors;
       if (errors.Count > 0) {
         txtGrammarErrors.Text = errors.ToString(Environment.NewLine);
         txtGrammarErrors.Text += "\r\n\r\nTotal errors: " + errors.Count;
@@ -226,8 +241,11 @@ namespace Irony.GrammarExplorer {
     }
     private void ShowLocation(SourceLocation location, int length) {
       if (location.Position < 0) return;
-      txtSource.Select(location.Position, length);
+      txtSource.SelectionStart = location.Position;
+      txtSource.SelectionLength = length;
+      //txtSource.Select(location.Position, length);
       txtSource.ScrollToCaret();
+      txtSource.Focus(); 
       //lblLoc.Text = location.ToString();
     }
 
@@ -283,7 +301,9 @@ namespace Irony.GrammarExplorer {
       try {
         sw.Start();
         _compiler = new LanguageCompiler(grammar);
+        _compilerContext = new CompilerContext(_compiler); 
         sw.Stop();
+        StartHighligter();
       } finally {
         RefreshGrammarInfo();
         lblInitTime.Text = sw.ElapsedMilliseconds.ToString();
@@ -300,6 +320,7 @@ namespace Irony.GrammarExplorer {
       StreamReader reader = null;
       try {
         reader = new StreamReader(path);
+        txtSource.Text = null;  //to clear any old formatting
         txtSource.Text = reader.ReadToEnd();
         txtSource.Select(0, 0);
       } catch (Exception e) {
@@ -324,14 +345,14 @@ namespace Irony.GrammarExplorer {
 
     private void DoSearch() {
       lblSearchError.Visible = false; 
-      TextBox cur = GetSearchContentBox();
-      if (cur == null) return;
+      var textBox = GetSearchContentBox();
+      if (textBox == null) return;
 
-      int idxStart = cur.SelectionStart + cur.SelectionLength;
+      int idxStart = textBox.SelectionStart + textBox.SelectionLength;
       // Compile the regular expression.
       Regex r = new Regex(txtSearch.Text, RegexOptions.IgnoreCase);
       // Match the regular expression pattern against a text string.
-      Match m = r.Match(cur.Text.Substring(idxStart));
+      Match m = r.Match(textBox.Text.Substring(idxStart));
 
       if (m.Success) {
         int i = 0;
@@ -339,11 +360,11 @@ namespace Irony.GrammarExplorer {
         CaptureCollection cc = g.Captures;
         Capture c = cc[0];
 
-        cur.SelectionStart = c.Index + idxStart + 100;
-        cur.ScrollToCaret();
-        cur.SelectionStart = c.Index + idxStart;
-        cur.SelectionLength = c.Length;
-        cur.Focus();
+        textBox.SelectionStart = c.Index + idxStart + 100;
+        textBox.ScrollToCaret();
+        textBox.SelectionStart = c.Index + idxStart;
+        textBox.SelectionLength = c.Length;
+        textBox.Focus();
         return;
       } else {
         lblSearchError.Text = "Not found.";
@@ -353,8 +374,9 @@ namespace Irony.GrammarExplorer {
         
     }
 
-    public TextBox GetSearchContentBox()		{
+    public RichTextBox GetSearchContentBox()		{
       switch (tabGrammar.SelectedIndex) {
+/*
         case 0:
           return txtTerms;
         case 1:
@@ -365,6 +387,7 @@ namespace Irony.GrammarExplorer {
           return txtParserStates;
         case 4:
           return txtGrammarErrors;
+  */
         case 5:
           return txtSource;
         default:
@@ -383,12 +406,12 @@ namespace Irony.GrammarExplorer {
       try {
         if (_rootNode == null)
           ParseSample();
-        if (Compiler.Context.Errors.Count > 0) return;
+        if (_compilerContext.Errors.Count > 0) return;
         
-        Compiler.AnalyzeCode(_rootNode, Compiler.Context); 
-        if (Compiler.Context.Errors.Count > 0) return;
+        _compiler.AnalyzeCode(_rootNode, _compilerContext); 
+        if (_compilerContext.Errors.Count > 0) return;
 
-        LanguageRuntime runtime = Compiler.Context.Runtime;
+        LanguageRuntime runtime = _compilerContext.Runtime;
         if (runtime == null)
           throw new RuntimeException("Runtime is not implemented for the language (Grammar.CreateRuntime() returned null). Cannot execute the program.");
         context = new EvaluationContext(runtime, _rootNode);
@@ -400,7 +423,7 @@ namespace Irony.GrammarExplorer {
         lblRunTime.Text = sw.ElapsedMilliseconds.ToString();
       } catch(RuntimeException rex) {
         //catch and add runtime to compiler context, so they will be shown in the form
-        Compiler.Context.ReportError(rex.Location, rex.Message);
+        _compilerContext.ReportError(rex.Location, rex.Message);
       } finally {
         sw.Stop();
         if (context != null) {
@@ -409,7 +432,7 @@ namespace Irony.GrammarExplorer {
           if (context.CurrentResult != Unassigned.Value)
             txtOutput.Text += context.CurrentResult;
         }
-        if (Compiler.Context.Errors.Count > 0)
+        if (_compilerContext.Errors.Count > 0)
           ShowCompilerErrors();
 
       }//finally
@@ -422,9 +445,6 @@ namespace Irony.GrammarExplorer {
     private void txtSource_TextChanged(object sender, EventArgs e) {
       _rootNode = null; //force it to recompile on run
     }
-
-
-
 
   }//class
 }

@@ -195,7 +195,7 @@ namespace Irony.Samples.Scheme {
       #endregion 
 
       //Register brace  pairs
-      RegisterBracePair("(", ")");
+      RegisterBracePair("(", ")"); 
       RegisterBracePair("[", "]");
 
       RegisterPunctuation(LP, RP);
@@ -206,6 +206,8 @@ namespace Irony.Samples.Scheme {
 
       //Scheme is tail-recursive language
       base.Options |= LanguageOptions.TailRecursive;
+      //keywords - just for colorizer
+      base.AddKeywords("define", "lambda", "cond", "if", "begin", "let");
 
     }//constructor
 

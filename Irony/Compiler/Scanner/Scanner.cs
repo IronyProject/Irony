@@ -48,6 +48,7 @@ namespace Irony.Compiler {
     }
     #endregion
 
+
     public void Prepare(CompilerContext context, ISourceStream source) {
       _context = context;
       _caseSensitive = context.Compiler.Grammar.CaseSensitive;
@@ -154,6 +155,7 @@ namespace Irony.Compiler {
     }//Select
 
     private void Recover() {
+      _source.Position++;
       while (!_source.EOF() && Data.ScannerRecoverySymbols.IndexOf(_source.CurrentChar) < 0)
         _source.Position++;
     }
@@ -172,7 +174,6 @@ namespace Irony.Compiler {
 
     //Calculates the _source.TokenStart values (row/column) for the token which starts at the current position.
     // We just skipped the whitespace and about to start scanning the next token.
-    private static char[] _tab_arr = { '\t' };
     internal void SetTokenStartLocation() {
       //cache values in local variables
       SourceLocation tokenStart = _source.TokenStart;
@@ -198,8 +199,9 @@ namespace Irony.Compiler {
       //Calc # of tab chars from lineStart to newPosition to adjust column#
       int tabCount = 0;
       int dummy = 0;
+      char[] tab_arr = { '\t' };
       if (_source.TabWidth > 1)
-        CountCharsInText(text, _tab_arr, lineStart, newPosition - 1, ref tabCount, ref dummy);
+        CountCharsInText(text, tab_arr, lineStart, newPosition - 1, ref tabCount, ref dummy);
 
       //adjust TokenStart with calculated information
       tokenStart.Position = newPosition;

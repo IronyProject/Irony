@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{AE1C04A8-B03D-4144-98E9-BF66C50265E7}</ProjectGuid>
     <OutputType>WinExe</OutputType>
@@ -91,6 +91,7 @@
     <Compile Include="fmShowException.Designer.cs">
       <DependentUpon>fmShowException.cs</DependentUpon>
     </Compile>
+    <Compile Include="RichTextBoxHighlighter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Irony.Samples\020.Irony.Samples.csproj">

@@ -606,7 +606,7 @@ namespace Irony.Compiler.Lalr {
          "Consider merging two non-terminals; you may need to use 'nt1 = nt2;' instead of 'nt1.Rule=nt2'.", slist);
       }
       //Check constructors of all nodes referenced in Non-terminals that don't use NodeCreator delegate
-      Type[] ctorArgTypes = new Type[] {typeof(NodeArgs)};
+      var ctorArgTypes = new Type[] {typeof(NodeArgs)};
       foreach (NonTerminal nt in Data.NonTerminals) {
         if (nt.NodeCreator == null && nt.NodeType != null) {
           object ci = nt.NodeType.GetConstructor(ctorArgTypes);

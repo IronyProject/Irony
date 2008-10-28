@@ -333,6 +333,7 @@ namespace Irony.GrammarExplorer {
       this.txtSource.Size = new System.Drawing.Size(729, 466);
       this.txtSource.TabIndex = 22;
       this.txtSource.Text = "";
+      this.txtSource.TextChanged += new System.EventHandler(this.txtSource_TextChanged);
       // 
       // splitter4
       // 

@@ -25,6 +25,7 @@ namespace Irony.GrammarExplorer {
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);
       Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(Application_ThreadException);
+      AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
       Application.Run(new fmGrammarExplorer());
     }
 
@@ -32,5 +33,17 @@ namespace Irony.GrammarExplorer {
       fmShowException.ShowException(e.Exception);
       Debug.Write("Exception!: ############################################## \n" + e.Exception.ToString());
     }
+
+    static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e) {
+      Exception ex = e.ExceptionObject as Exception;
+      string message = (ex == null ? e.ExceptionObject.ToString() : ex.Message);
+      if (ex == null) {
+        Debug.Write("Exception!: ############################################## \n" + e.ExceptionObject.ToString());
+        MessageBox.Show(message, "Exception");
+      } else {
+        fmShowException.ShowException(ex);
+      }
+    }
+
   }
 }

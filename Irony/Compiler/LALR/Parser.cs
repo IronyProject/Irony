@@ -106,12 +106,13 @@ namespace Irony.Compiler.Lalr {
       if (_previewBuffer.Count > 0) {
         _currentToken = _previewBuffer[0];
         _previewBuffer.RemoveAt(0);
-        return; 
-      }
-      _currentToken = ReadToken();
+      } else 
+        _currentToken = ReadToken();
       //  if null, we reached end of file; return EOF token.
       if (_currentToken == null) 
-        _currentToken = Token.Create(Grammar.Eof, _context, new SourceLocation(0, _currentLine - 1, 0), string.Empty); 
+        _currentToken = Token.Create(Grammar.Eof, _context, new SourceLocation(0, _currentLine - 1, 0), string.Empty);
+      if (_context.OptionIsSet(CompilerOptions.CollectTokens))
+        _context.Tokens.Add(_currentToken);
     }//method
 
     public Token PreviewSymbols(StringList symbols) {
@@ -186,7 +187,7 @@ namespace Irony.Compiler.Lalr {
       string message = this.Data.Grammar.GetSyntaxErrorMessage(_context, expectedList);
       if (message == null)
         message = "Syntax error" + (expectedList.Count == 0 ? "." : ", expected: " + TextUtils.Cleanup(expectedList.ToString(" ")));
-      if (_context.Compiler.OptionIsSet(CompilerOptions.GrammarDebugging))
+      if (_context.OptionIsSet(CompilerOptions.GrammarDebugging))
         message += " (parser state: " + _currentState.Name + ")";
       _context.Errors.Add(new SyntaxError(_currentToken.Location, message));
     }

@@ -17,20 +17,31 @@ using Irony.Runtime;
 
 namespace Irony.Compiler {
 
+  public enum CompilerOptions {
+    GrammarDebugging = 0x01,
+    CollectTokens = 0x02, //Collect all tokens in CompilerContext.Tokens collection
+  }
+
   // The purpose of this class is to provide a container for information shared 
   // between parser, scanner and token filters.
   // Developers can extend this class to add language-specific properties or methods.
   public class CompilerContext {
+    public CompilerOptions Options;
     public readonly LanguageCompiler Compiler;
     public readonly SyntaxErrorList Errors = new SyntaxErrorList();
     public readonly Dictionary<string, object> Values = new Dictionary<string, object>();
     public readonly LanguageRuntime Runtime;
-    public static int MaxErrors = 20;
+    public int MaxErrors = 20;
+    //Tokens consumed by parser are added to this collection, but only if CompilerOptions.RetainTokens flag is set
+    public readonly TokenList Tokens = new TokenList(); 
 
     #region constructors and factory methods
     public CompilerContext(LanguageCompiler compiler) {
       this.Compiler = compiler;
       this.Runtime = compiler.Grammar.CreateRuntime();
+#if DEBUG
+      Options |= CompilerOptions.GrammarDebugging;
+#endif
     }
     //Used in unit tests
     public static CompilerContext CreateDummy() {
@@ -38,6 +49,10 @@ namespace Irony.Compiler {
       return ctx;
     }
     #endregion
+
+    public bool OptionIsSet(CompilerOptions option) {
+      return (Options & option) != 0;
+    }
 
     #region Error handling
     public Token CreateErrorToken(SourceLocation location, string content) {

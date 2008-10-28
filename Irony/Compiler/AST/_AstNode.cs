@@ -105,6 +105,7 @@ namespace Irony.Compiler {
     public void AddChild(string role, AstNode child) {
       if (child == null) return;
       child.Role = role;
+
       ChildNodes.Add(child);
     }
 

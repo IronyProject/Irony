@@ -42,7 +42,7 @@ namespace Irony.GrammarExplorer {
       this.pageGrErrors = new System.Windows.Forms.TabPage();
       this.txtGrammarErrors = new System.Windows.Forms.TextBox();
       this.pageTest = new System.Windows.Forms.TabPage();
-      this.txtSource = new System.Windows.Forms.TextBox();
+      this.txtSource = new System.Windows.Forms.RichTextBox();
       this.splitter4 = new System.Windows.Forms.Splitter();
       this.panel1 = new System.Windows.Forms.Panel();
       this.btnRun = new System.Windows.Forms.Button();
@@ -325,21 +325,14 @@ namespace Irony.GrammarExplorer {
       // 
       // txtSource
       // 
-      this.txtSource.AcceptsReturn = true;
-      this.txtSource.AcceptsTab = true;
       this.txtSource.Dock = System.Windows.Forms.DockStyle.Fill;
       this.txtSource.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.txtSource.HideSelection = false;
       this.txtSource.Location = new System.Drawing.Point(3, 33);
-      this.txtSource.MaxLength = 0;
-      this.txtSource.Multiline = true;
       this.txtSource.Name = "txtSource";
-      this.txtSource.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
       this.txtSource.Size = new System.Drawing.Size(729, 466);
-      this.txtSource.TabIndex = 19;
-      this.txtSource.Text = "Use Load button to load source code samples from Irony.GrammarExplorer\\SourceSamp" +
-          "les folder";
-      this.txtSource.TextChanged += new System.EventHandler(this.txtSource_TextChanged);
+      this.txtSource.TabIndex = 22;
+      this.txtSource.Text = "";
       // 
       // splitter4
       // 
@@ -823,7 +816,6 @@ namespace Irony.GrammarExplorer {
       this.pageGrErrors.ResumeLayout(false);
       this.pageGrErrors.PerformLayout();
       this.pageTest.ResumeLayout(false);
-      this.pageTest.PerformLayout();
       this.panel1.ResumeLayout(false);
       this.panel1.PerformLayout();
       this.grpOutput.ResumeLayout(false);
@@ -899,7 +891,6 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.Label lblSearchError;
     private System.Windows.Forms.Label label5;
     private System.Windows.Forms.Label lblRunTime;
-    private System.Windows.Forms.TextBox txtSource;
     private System.Windows.Forms.Panel panel1;
     private System.Windows.Forms.Button btnRun;
     private System.Windows.Forms.CheckBox chkShowTrace;
@@ -908,6 +899,7 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.GroupBox grpOutput;
     private System.Windows.Forms.TextBox txtOutput;
     private System.Windows.Forms.Splitter splitter4;
+    private System.Windows.Forms.RichTextBox txtSource;
 
   }
 }

@@ -392,9 +392,11 @@ namespace Irony.Samples.CSharp {
       builtin_type.Rule = integral_type | "bool" | "decimal" | "float" | "double" | "string" | "object";
 
       type_ref.Rule = type_or_void + qmark_opt + rank_specifiers_opt + generic_dimension_specifier_opt;
-      type_ref_list.Rule = MakePlusRule(type_ref_list, comma, type_ref); 
+      type_ref_list.Rule = MakePlusRule(type_ref_list, comma, type_ref);
 
-      rank_specifier.Rule = "[" + comma.Star() + "]";
+      var comma_list_opt = new NonTerminal("comma_list_opt");
+      comma_list_opt.Rule = MakeStarRule(comma_list_opt, comma); 
+      rank_specifier.Rule = "[" + comma_list_opt + "]";
       rank_specifiers.Rule = MakePlusRule(rank_specifiers, null, rank_specifier);
       rank_specifiers_opt.Rule = rank_specifiers.Q();
       integral_type.Rule = Symbol("sbyte") | "byte" | "short" | "ushort" | "int" | "uint" | "long" | "ulong" | "char";

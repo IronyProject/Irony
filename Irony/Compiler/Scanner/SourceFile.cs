@@ -102,6 +102,7 @@ namespace Irony.Compiler {
       [System.Diagnostics.DebuggerStepThrough]
       get {
         try {
+          if (_position >= Text.Length) return '\0';
           return _text[_position];
         } catch { return '\0'; }
       }

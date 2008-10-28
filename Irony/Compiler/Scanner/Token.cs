@@ -91,6 +91,7 @@ namespace Irony.Compiler {
         return (Terminal.MatchMode & TokenMatchMode.ByType) != 0;
       }
     }
+    public short ScannerState; //Scanner state after producing token 
 
     protected override void DoEvaluate(Irony.Runtime.EvaluationContext context) {
       context.CurrentResult = this.Value;

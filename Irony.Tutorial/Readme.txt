@@ -7,6 +7,6 @@
 4. Code blocks, indentation - code outline filter. Python-style IF statement. Using NodeCreator to create custom nodes 
      Defining functions (def statement). 
 6. Adding StringLiteral, string operations, string functions. Extending numeric operations (bigInteger),
-   Overflow handling in rutime, BigIntegers - maybe move it to part 2.
+   Overflow handling in runtime, BigIntegers - maybe move it to part 2.
      
 

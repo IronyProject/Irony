@@ -224,13 +224,13 @@ namespace Irony.Compiler.Lalr {
     //automatically generated IDs - used for building keys for lists of kernel LR0Items
     // which in turn are used to quickly lookup parser states in hash
     internal readonly int ID;
-    internal static int _maxID;
     private string _toString; //caches the ToString() value
 
-    public LR0Item(Production production, int position) {
+    public LR0Item(Production production, int position, ref int id) {
       Production = production;
       Position = position;
-      ID = _maxID++;
+      ID = id;
+      id++;
     }
     //The after-dot element
     public BnfTerm Current {

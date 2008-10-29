@@ -275,7 +275,7 @@ namespace Microsoft.Scripting.Math {
       return (ulong)((ulong)i1 | ((ulong)i2 << 32));
     }
 
-    private static int bias = 1075;
+    private const int bias = 1075; //RI: changed from static field to const, to avoid security warning
     public static BigInteger Create(double v) {
       byte[] bytes = System.BitConverter.GetBytes(v);
       ulong mantissa = Mantissa(bytes);

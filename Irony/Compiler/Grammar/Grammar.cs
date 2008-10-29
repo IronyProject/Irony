@@ -196,16 +196,14 @@ namespace Irony.Compiler {
     public readonly static NewLineTerminal NewLine = new NewLineTerminal("LF");
     public readonly static Terminal Indent = new Terminal("INDENT", TokenCategory.Outline);
     public readonly static Terminal Dedent = new Terminal("DEDENT", TokenCategory.Outline);
-    public static NonTerminal NewLinePlus {
-      get {
-        if (_newLinePlus == null) {
-          _newLinePlus = new NonTerminal("LF+");
-          _newLinePlus.SetOption(TermOptions.IsList);
-          _newLinePlus.Rule = NewLine | _newLinePlus + NewLine;
-        }//if
-        return _newLinePlus;
-      }
-    } static NonTerminal _newLinePlus;
+    public static NonTerminal NewLinePlus = CreateNewLinePlus();
+    
+    private static NonTerminal CreateNewLinePlus() {
+      var result = new NonTerminal("LF+");
+      result.SetOption(TermOptions.IsList);
+      result.Rule = NewLine | result + NewLine;
+      return result; 
+    }
 
     // Identifies end of file
     // Note: using Eof in grammar rules is optional. Parser automatically adds this symbol 

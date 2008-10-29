@@ -36,19 +36,9 @@ namespace Irony.Runtime {
 
     public EvaluationContext(LanguageRuntime runtime, AstNode rootNode) {
       Runtime = runtime;
+      ResizeUnassignedArray(64); 
       CallArgs = CreateCallArgs(rootNode.Scope.Slots.Count);
       PushFrame("root", rootNode, null);
-    }
-    // We use Array.Copy as a fast way to initialize local data with Unassigned value
-    //  "When copying elements between arrays of the same types, array.Copy performs a single range check before the transfer 
-    //    followed by a ultrafast memmove byte transfer." (from http://www.codeproject.com/KB/dotnet/arrays.aspx)
-    public object[] CreateCallArgs(int argCount) {
-      int count = argCount + LocalsPreallocateCount;
-      if (count > Unassigned.ArrayOfUnassigned.Length)
-        Unassigned.ResizeArrayTo(count);
-      object[] args = new object[count];
-      Array.Copy(Unassigned.ArrayOfUnassigned, args, count);
-      return args; 
     }
 
     public void PushFrame(string methodName, AstNode node, Frame parent) {
@@ -63,7 +53,35 @@ namespace Irony.Runtime {
       get { return new StackTrace(this); }
     }
 
-    public static int LocalsPreallocateCount = 8;
+    #region FrameData/CallArgs initialization
+    public int LocalsPreallocateSize = 8;
+    // We use Array.Copy as a fast way to initialize local data with Unassigned value
+    //  "When copying elements between arrays of the same types, Array.Copy performs a single range check before the transfer 
+    //    followed by a ultrafast memmove byte transfer." (from http://www.codeproject.com/KB/dotnet/arrays.aspx)
+    public object[] CreateCallArgs(int argCount) {
+      int count = argCount + LocalsPreallocateSize;
+      if (count > _arrayOfUnassigned.Length)
+        ResizeUnassignedArray(count);
+      object[] args = new object[count];
+      Array.Copy(_arrayOfUnassigned, args, count);
+      return args;
+    }
+
+    //This array is used for initializing parameters/local variables arrays, see EvaluationContext.CreateCallArgs method
+    private object[] _arrayOfUnassigned;
+    private void ResizeUnassignedArray(int newSize) {
+      object[] tmp = new object[newSize];
+      for (int i = 0; i < tmp.Length; i++)
+        tmp[i] = Unassigned.Value;
+      lock (this) {
+        //check if we still need to resize it - other thread may have already done the job while this thread was waiting for the lock
+        if (_arrayOfUnassigned != null && newSize <= _arrayOfUnassigned.Length) return;
+        _arrayOfUnassigned = tmp;
+      } //lock
+    }
+
+    #endregion
+
   }//class
 
 }

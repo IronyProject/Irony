@@ -76,7 +76,7 @@ namespace Irony.Compiler {
     //TODO: move Symbols table to Grammar instance
     #region static members: _symbols table of all symbol terminals
 
-    private static SymbolTerminalTable _symbols = new SymbolTerminalTable();
+    private static readonly SymbolTerminalTable _symbols = new SymbolTerminalTable();
     public static void ClearSymbols() {
       _symbols.Clear();
     }

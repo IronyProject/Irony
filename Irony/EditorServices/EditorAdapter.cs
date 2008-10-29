@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Runtime.InteropServices;
 using Irony.Compiler;
 
 namespace Irony.EditorServices {
@@ -125,11 +126,10 @@ namespace Irony.EditorServices {
       while (!_stopped) {
         ParsedSource source = _parsedSource; 
         string newtext = Interlocked.Exchange(ref _newText, null);
-        if (newtext == null || ( source != null && newtext == source.Text))
-          Thread.Sleep(20);
-        else {
+        if (newtext != null && ( source == null || newtext != source.Text)) {
           ParseSource(newtext);
         }
+        SwitchToThread();
       }//while
     }
 
@@ -137,24 +137,17 @@ namespace Irony.EditorServices {
       while (!_stopped) {
         EditorViewAdapterList views = GetViews();
         //Go through views and invoke refresh
-        bool found;
-        bool allDone = true;
-        do {
-          found = false;
-          foreach (EditorViewAdapter view in views) {
-            if (_stopped) break;
-            if (view.WantsColorize) {
-              found = true;
-              allDone = false;
-              view.TryInvokeColorize();
-            }
-          }//foreach
-        } while (found);
-        if (allDone)
-          Thread.Sleep(100);
+        foreach (EditorViewAdapter view in views) {
+          if (_stopped) break;
+          if (view.WantsColorize) 
+            view.TryInvokeColorize();
+        }//foreach
+        SwitchToThread();
       }// while !_stopped
     }//method
 
+    [DllImport("kernel32", ExactSpelling = true)]
+    private static extern void SwitchToThread();
 
   }//class
 }//namespace

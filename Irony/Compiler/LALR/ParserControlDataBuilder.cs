@@ -27,6 +27,7 @@ namespace Irony.Compiler.Lalr {
     private ParserStateTable _stateHash;
     public readonly ParserControlData Data;
     Grammar _grammar;
+    private int _itemID; //used to assign unique IDs to LR0Items
 
 
     public ParserControlDataBuilder(Grammar grammar) {
@@ -95,7 +96,7 @@ namespace Irony.Compiler.Lalr {
     private void CreateProductions() {
       Data.Productions.Clear();
       //each LR0Item gets its unique ID, last assigned (max) Id is kept in static field
-      LR0Item._maxID = 0; 
+      _itemID = 0;
       foreach(NonTerminal nt in Data.NonTerminals) {
         NtData ntInfo = NtData.GetOrCreate(nt);
         ntInfo.Productions.Clear();
@@ -133,7 +134,7 @@ namespace Irony.Compiler.Lalr {
           if (t.Category == TokenCategory.Error) prod.Flags |= ProductionFlags.IsError; 
         }
         //Add the operand info and LR0 Item
-        LR0Item item = new LR0Item(prod, prod.RValues.Count);
+        LR0Item item = new LR0Item(prod, prod.RValues.Count, ref _itemID);
         prod.LR0Items.Add(item);
         prod.RValues.Add(operand);
       }//foreach operand
@@ -143,7 +144,7 @@ namespace Irony.Compiler.Lalr {
       if (prod.RValues.Count == 0)
         prod.Flags |= ProductionFlags.IsEmpty;
       //Add final LRItem
-      prod.LR0Items.Add(new LR0Item(prod, prod.RValues.Count));
+      prod.LR0Items.Add(new LR0Item(prod, prod.RValues.Count, ref _itemID));
       return prod; 
     }
     #endregion

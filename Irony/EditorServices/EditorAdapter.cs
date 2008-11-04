@@ -72,6 +72,7 @@ namespace Irony.EditorServices {
     }
 
     public void SetNewText(string text) {
+      text = text ?? string.Empty; //force it to become not null; null is special value meaning "no changes"
       _newText = text;
     }
 
@@ -82,11 +83,14 @@ namespace Irony.EditorServices {
     //Note: we don't actually parse in current version, only scan. Will implement full parsing in the future, 
     // to support all intellisense operations
     private  void ParseSource(string newText) {
-      SourceFile srcFile = new SourceFile(newText, "source");
-      _compiler.Scanner.Prepare(_context, srcFile);
-      IEnumerable<Token> tokenStream = _compiler.Scanner.BeginScan();
       TokenList newTokens = new TokenList();
-      newTokens.AddRange(tokenStream);
+      //Explicitly catch the case when new text is empty
+      if (newText != string.Empty) {
+        SourceFile srcFile = new SourceFile(newText, "source");
+        _compiler.Scanner.Prepare(_context, srcFile);
+        IEnumerable<Token> tokenStream = _compiler.Scanner.BeginScan();
+        newTokens.AddRange(tokenStream);
+      }
       //finally create new contents object and replace the existing _contents value
       _parsedSource = new ParsedSource(newText, newTokens, null);
       //notify views
@@ -126,10 +130,10 @@ namespace Irony.EditorServices {
       while (!_stopped) {
         ParsedSource source = _parsedSource; 
         string newtext = Interlocked.Exchange(ref _newText, null);
-        if (newtext != null && ( source == null || newtext != source.Text)) {
+        if (newtext != null)  {
           ParseSource(newtext);
         }
-        SwitchToThread();
+        Thread.Sleep(10);
       }//while
     }
 
@@ -142,12 +146,9 @@ namespace Irony.EditorServices {
           if (view.WantsColorize) 
             view.TryInvokeColorize();
         }//foreach
-        SwitchToThread();
+        Thread.Sleep(10);
       }// while !_stopped
     }//method
-
-    [DllImport("kernel32", ExactSpelling = true)]
-    private static extern void SwitchToThread();
 
   }//class
 }//namespace

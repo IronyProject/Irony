@@ -33,8 +33,8 @@ namespace Irony.GrammarExplorer {
       _viewAdapter = adapter;
       InitColorTable();
       Connect();
-      _viewAdapter.SetNewText(TextBox.Text);
       UpdateViewRange();
+      _viewAdapter.SetNewText(TextBox.Text);
     }
     private void Connect() {
       TextBox.MouseMove += TextBox_MouseMove;
@@ -88,8 +88,8 @@ namespace Irony.GrammarExplorer {
     }
 
     void TextBox_TextChanged(object sender, EventArgs e) {
-      if (_colorizing) return; //if we are here while colorizing, it means the "change" event is a result of our coloring action
-      UpdateViewRange();
+      //if we are here while colorizing, it means the "change" event is a result of our coloring action
+      if (_colorizing) return; 
       _viewAdapter.SetNewText(TextBox.Text);
     }
     void TextBox_ScrollResize(object sender, EventArgs e) {
@@ -100,7 +100,6 @@ namespace Irony.GrammarExplorer {
     void TextBox_Disposed(object sender, EventArgs e) {
       Dispose();
     }
-
     private void UpdateViewRange() {
       int minpos = TextBox.GetCharIndexFromPosition(new Point(0, 0));
       int maxpos = TextBox.GetCharIndexFromPosition(new Point(TextBox.ClientSize.Width, TextBox.ClientSize.Height));

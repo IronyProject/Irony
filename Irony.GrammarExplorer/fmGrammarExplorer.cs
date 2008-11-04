@@ -328,7 +328,7 @@ namespace Irony.GrammarExplorer {
       } finally {
         if (reader != null)
           reader.Close();
-      }      
+      }
     }
 
 

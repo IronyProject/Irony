@@ -17,7 +17,6 @@ using System.Text;
 namespace Irony {
   //Some common classes
 
-  //public class StringList : List<string> { }
   public class StringDictionary : Dictionary<string, string> { }
   public class CharList : List<char> { }
 

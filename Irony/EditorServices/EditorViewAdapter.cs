@@ -35,6 +35,9 @@ namespace Irony.EditorServices {
       Min = min;
       Max = max; 
     }
+    public bool Equals(ViewRange other) {
+      return other.Min == Min && other.Max == Max; 
+    }
   }
 
   public class ViewData {
@@ -77,16 +80,19 @@ namespace Irony.EditorServices {
 
     //SetViewRange and SetNewText are called by text box's event handlers to notify adapter that user did something edit box
     public void SetViewRange(int min, int max) {
-      var range = _range;
-      if (range.Min == min && range.Max == max) return;
       _range = new ViewRange(min, max);
       _wantsColorize = true; 
     }
     //The new text is passed directly to EditorAdapter instance (possibly shared by several view adapters).
     // EditorAdapter parses the text on a separate background thread, and notifies back this and other 
     // view adapters and provides them with newly parsed source through UpdateParsedSource method (see below) 
-    public void SetNewText(string text) {
-      Adapter.SetNewText(text);
+    public void SetNewText(string newText) {
+      //TODO: fix this
+      //hack, temp solution for more general problem
+      //When we load/replace/clear entire text, clear out colored tokens to force recoloring from scratch 
+      if (string.IsNullOrEmpty(newText))
+        _data = null;
+      Adapter.SetNewText(newText);
     }
 
     //Called by EditorAdapter to provide the latest parsed source 

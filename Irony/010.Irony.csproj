@@ -97,7 +97,7 @@
     <Compile Include="Compiler\Terminals\TerminalFactory.cs" />
     <Compile Include="Compiler\Grammar\LanguageOptions.cs" />
     <Compile Include="Runtime\FunctionBindingInfo.cs" />
-    <Compile Include="Runtime\SlimLock.cs" />
+    <None Include="Runtime\SlimLock.cs" />
     <Compile Include="Runtime\LanguageRuntimeInit.cs" />
     <Compile Include="Runtime\StackTrace.cs" />
     <Compile Include="TextUtils.cs" />

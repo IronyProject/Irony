@@ -23,7 +23,9 @@ namespace Irony.Samples {
   // UnOp  -> -
   // ExprLine -> Expr EOF
 
+  [Language("ExpressionGrammar", "1.0", "Arithmetic expressions grammar")]
   public class ExpressionGrammar : Irony.Compiler.Grammar {
+
     public ExpressionGrammar() {
       // 1. Terminals
       Terminal n = new NumberLiteral("number");

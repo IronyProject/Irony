@@ -24,6 +24,7 @@ namespace Irony.GrammarExplorer {
     /// the contents of this method with the code editor.
     /// </summary>
     private void InitializeComponent() {
+      this.components = new System.ComponentModel.Container();
       this.lblStatTime = new System.Windows.Forms.Label();
       this.lstParseTrace = new System.Windows.Forms.ListBox();
       this.lstErrors = new System.Windows.Forms.ListBox();
@@ -78,13 +79,18 @@ namespace Irony.GrammarExplorer {
       this.pageTokens = new System.Windows.Forms.TabPage();
       this.lstTokens = new System.Windows.Forms.ListBox();
       this.pnlLang = new System.Windows.Forms.Panel();
+      this.btnManageGrammars = new System.Windows.Forms.Button();
       this.lblSearchError = new System.Windows.Forms.Label();
       this.SearchLabel = new System.Windows.Forms.Label();
       this.btnSearch = new System.Windows.Forms.Button();
       this.txtSearch = new System.Windows.Forms.TextBox();
       this.label2 = new System.Windows.Forms.Label();
-      this.cboLanguage = new System.Windows.Forms.ComboBox();
+      this.cboGrammars = new System.Windows.Forms.ComboBox();
+      this.menuGrammars = new System.Windows.Forms.ContextMenuStrip(this.components);
+      this.miAdd = new System.Windows.Forms.ToolStripMenuItem();
+      this.miRemove = new System.Windows.Forms.ToolStripMenuItem();
       this.dlgOpenFile = new System.Windows.Forms.OpenFileDialog();
+      this.dlgSelectAssembly = new System.Windows.Forms.OpenFileDialog();
       this.tabGrammar.SuspendLayout();
       this.pageTerminals.SuspendLayout();
       this.pageNonTerms.SuspendLayout();
@@ -105,6 +111,7 @@ namespace Irony.GrammarExplorer {
       this.groupBox2.SuspendLayout();
       this.pageTokens.SuspendLayout();
       this.pnlLang.SuspendLayout();
+      this.menuGrammars.SuspendLayout();
       this.SuspendLayout();
       // 
       // lblStatTime
@@ -708,17 +715,29 @@ namespace Irony.GrammarExplorer {
       // 
       // pnlLang
       // 
+      this.pnlLang.Controls.Add(this.btnManageGrammars);
       this.pnlLang.Controls.Add(this.lblSearchError);
       this.pnlLang.Controls.Add(this.SearchLabel);
       this.pnlLang.Controls.Add(this.btnSearch);
       this.pnlLang.Controls.Add(this.txtSearch);
       this.pnlLang.Controls.Add(this.label2);
-      this.pnlLang.Controls.Add(this.cboLanguage);
+      this.pnlLang.Controls.Add(this.cboGrammars);
       this.pnlLang.Dock = System.Windows.Forms.DockStyle.Top;
       this.pnlLang.Location = new System.Drawing.Point(0, 0);
       this.pnlLang.Name = "pnlLang";
       this.pnlLang.Size = new System.Drawing.Size(1103, 29);
       this.pnlLang.TabIndex = 13;
+      // 
+      // btnManageGrammars
+      // 
+      this.btnManageGrammars.Location = new System.Drawing.Point(281, 2);
+      this.btnManageGrammars.Margin = new System.Windows.Forms.Padding(2);
+      this.btnManageGrammars.Name = "btnManageGrammars";
+      this.btnManageGrammars.Size = new System.Drawing.Size(28, 24);
+      this.btnManageGrammars.TabIndex = 12;
+      this.btnManageGrammars.Text = "...";
+      this.btnManageGrammars.UseVisualStyleBackColor = true;
+      this.btnManageGrammars.Click += new System.EventHandler(this.btnManageGrammars_Click);
       // 
       // lblSearchError
       // 
@@ -774,11 +793,12 @@ namespace Irony.GrammarExplorer {
       this.label2.TabIndex = 4;
       this.label2.Text = "Grammar:";
       // 
-      // cboLanguage
+      // cboGrammar
       // 
-      this.cboLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-      this.cboLanguage.FormattingEnabled = true;
-      this.cboLanguage.Items.AddRange(new object[] {
+      this.cboGrammars.ContextMenuStrip = this.menuGrammars;
+      this.cboGrammars.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this.cboGrammars.FormattingEnabled = true;
+      this.cboGrammars.Items.AddRange(new object[] {
             "ExpressionGrammar",
             "Scheme",
             "Script.NET",
@@ -786,11 +806,40 @@ namespace Irony.GrammarExplorer {
             "GW Basic",
             "Tutorial - CalcGrammar Part 1",
             "Tutorial - CalcGrammar Part 2"});
-      this.cboLanguage.Location = new System.Drawing.Point(90, 3);
-      this.cboLanguage.Name = "cboLanguage";
-      this.cboLanguage.Size = new System.Drawing.Size(189, 21);
-      this.cboLanguage.TabIndex = 3;
-      this.cboLanguage.SelectedIndexChanged += new System.EventHandler(this.cboLanguage_SelectedIndexChanged);
+      this.cboGrammars.Location = new System.Drawing.Point(90, 3);
+      this.cboGrammars.Name = "cboGrammar";
+      this.cboGrammars.Size = new System.Drawing.Size(189, 21);
+      this.cboGrammars.TabIndex = 3;
+      this.cboGrammars.SelectedIndexChanged += new System.EventHandler(this.cboLanguage_SelectedIndexChanged);
+      // 
+      // menuGrammars
+      // 
+      this.menuGrammars.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.miAdd,
+            this.miRemove});
+      this.menuGrammars.Name = "menuGrammars";
+      this.menuGrammars.Size = new System.Drawing.Size(159, 48);
+      this.menuGrammars.Opening += new System.ComponentModel.CancelEventHandler(this.menuGrammars_Opening);
+      // 
+      // miAdd
+      // 
+      this.miAdd.Name = "miAdd";
+      this.miAdd.Size = new System.Drawing.Size(158, 22);
+      this.miAdd.Text = "Add Grammar...";
+      this.miAdd.Click += new System.EventHandler(this.miAdd_Click);
+      // 
+      // miRemove
+      // 
+      this.miRemove.Name = "miRemove";
+      this.miRemove.Size = new System.Drawing.Size(158, 22);
+      this.miRemove.Text = "Remove";
+      this.miRemove.Click += new System.EventHandler(this.miRemove_Click);
+      // 
+      // dlgSelectAssembly
+      // 
+      this.dlgSelectAssembly.DefaultExt = "dll";
+      this.dlgSelectAssembly.Filter = "DLL files|*.dll";
+      this.dlgSelectAssembly.Title = "Select Grammar Assembly ";
       // 
       // fmGrammarExplorer
       // 
@@ -834,6 +883,7 @@ namespace Irony.GrammarExplorer {
       this.pageTokens.ResumeLayout(false);
       this.pnlLang.ResumeLayout(false);
       this.pnlLang.PerformLayout();
+      this.menuGrammars.ResumeLayout(false);
       this.ResumeLayout(false);
 
     }
@@ -856,7 +906,7 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.Splitter splitter1;
     private System.Windows.Forms.ListBox lstProds;
     private System.Windows.Forms.ListBox lstParseTrace;
-    private System.Windows.Forms.ComboBox cboLanguage;
+    private System.Windows.Forms.ComboBox cboGrammars;
     private System.Windows.Forms.Label label2;
     private System.Windows.Forms.TabPage pageTest;
     private System.Windows.Forms.Splitter splitter3;
@@ -901,6 +951,11 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.TextBox txtOutput;
     private System.Windows.Forms.Splitter splitter4;
     private System.Windows.Forms.RichTextBox txtSource;
+    private System.Windows.Forms.Button btnManageGrammars;
+    private System.Windows.Forms.ContextMenuStrip menuGrammars;
+    private System.Windows.Forms.ToolStripMenuItem miAdd;
+    private System.Windows.Forms.ToolStripMenuItem miRemove;
+    private System.Windows.Forms.OpenFileDialog dlgSelectAssembly;
 
   }
 }

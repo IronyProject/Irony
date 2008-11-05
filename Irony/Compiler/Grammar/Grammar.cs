@@ -18,7 +18,7 @@ namespace Irony.Compiler {
 
   public class Grammar {
 
-    #region properties: CaseSensitive, WhitespaceChars, Delimiters ExtraTerminals, Root, TokenFilters
+    #region properties: CaseSensitive, WhitespaceChars, Delimiters, ExtraTerminals, Root, TokenFilters
     public bool CaseSensitive = true;
     //List of chars that unambigously identify the start of new token. 
     //used in scanner error recovery, and in quick parse path in Number literals 
@@ -33,9 +33,9 @@ namespace Irony.Compiler {
     public readonly StringSet Keywords = new StringSet();
 
     //Language options
-    public LanguageOptions Options = LanguageOptions.Default;
-    public bool OptionIsSet(LanguageOptions option) {
-      return (Options & option) != 0;
+    public LanguageFlags LanguageFlags = LanguageFlags.Default;
+    public bool FlagIsSet(LanguageFlags flag) {
+      return (LanguageFlags & flag) != 0;
     }
 
     //Terminals not present in grammar expressions and not reachable from the Root

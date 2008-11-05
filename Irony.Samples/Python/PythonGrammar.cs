@@ -31,6 +31,7 @@ namespace Irony.Samples.Python {
 
   //TODO: (13 Feb 2008) - the grammar is broken, AST tree shows some "extra" symbols; this is result of some latest
   // refactoring
+  [Language("Python", "1.0", "Sample Python grammar")]
   public class PythonGrammar : Grammar {
 
     public PythonGrammar() {

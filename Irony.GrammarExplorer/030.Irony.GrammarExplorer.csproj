@@ -55,11 +55,21 @@
     <Compile Include="fmGrammarExplorer.Designer.cs">
       <DependentUpon>fmGrammarExplorer.cs</DependentUpon>
     </Compile>
+    <Compile Include="fmSelectGrammars.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="fmSelectGrammars.Designer.cs">
+      <DependentUpon>fmSelectGrammars.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GrammarItemList.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="fmGrammarExplorer.resx">
       <DependentUpon>fmGrammarExplorer.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="fmSelectGrammars.resx">
+      <DependentUpon>fmSelectGrammars.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -94,14 +104,6 @@
     <Compile Include="RichTextBoxHighlighter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Irony.Samples\020.Irony.Samples.csproj">
-      <Project>{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}</Project>
-      <Name>020.Irony.Samples</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Irony.Tutorial\050.Irony.Tutorial.csproj">
-      <Project>{337C8662-3622-4AD9-8CFF-E7D9E437EA27}</Project>
-      <Name>050.Irony.Tutorial</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Irony\010.Irony.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
       <Name>010.Irony</Name>

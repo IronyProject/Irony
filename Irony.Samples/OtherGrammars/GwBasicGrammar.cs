@@ -16,7 +16,8 @@ namespace Irony.Samples
     /// or
     /// http://www.geocities.com/KindlyRat/GWBASIC_Help.zip
     /// </remarks>
-    public class GWBasicGrammar : Grammar
+  [Language("GwBasic", "1.0", "Sample GW Basic grammar")]
+  public class GWBasicGrammar : Grammar
     {
 
         public GWBasicGrammar()

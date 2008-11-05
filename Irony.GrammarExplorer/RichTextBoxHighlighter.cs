@@ -26,6 +26,7 @@ namespace Irony.GrammarExplorer {
 
     private IntPtr _savedEventMask = IntPtr.Zero;
     bool _colorizing;
+    bool _disposed;
 
     #region constructor, initialization and disposing
     public RichTextBoxHighligter(RichTextBox textBox, EditorViewAdapter adapter) {
@@ -62,6 +63,7 @@ namespace Irony.GrammarExplorer {
     }
 
     public void Dispose() {
+      _disposed = true; 
       Disconnect();
       this.ReleaseHandle();
       GC.SuppressFinalize(this);
@@ -133,7 +135,10 @@ namespace Irony.GrammarExplorer {
     const int WM_PAINT = 0x000F;
 
     private int HScrollPos {
-      get { return GetScrollPos((int)TextBox.Handle, SB_HORZ); }
+      get {
+        //sometimes explodes with null reference exception
+        return GetScrollPos((int)TextBox.Handle, SB_HORZ); 
+      }
       set {
         SetScrollPos((IntPtr)TextBox.Handle, SB_HORZ, value, true);
         PostMessageA((IntPtr)TextBox.Handle, WM_HSCROLL, SB_THUMBPOSITION + 0x10000 * value, 0);
@@ -141,7 +146,9 @@ namespace Irony.GrammarExplorer {
     }
 
     private int VScrollPos {
-      get { return GetScrollPos((int)TextBox.Handle, SB_VERT); }
+      get {
+        return GetScrollPos((int)TextBox.Handle, SB_VERT); 
+      }
       set {
         SetScrollPos((IntPtr)TextBox.Handle, SB_VERT, value, true);
         PostMessageA((IntPtr)TextBox.Handle, WM_VSCROLL, SB_THUMBPOSITION + 0x10000 * value, 0);
@@ -182,8 +189,10 @@ namespace Irony.GrammarExplorer {
     }
 
     void Adapter_ColorizeTokens(object sender, ColorizeEventArgs args) {
+      if (_disposed) return; 
       //Debug.WriteLine("Coloring " + args.Tokens.Count + " tokens.");
       _colorizing = true;
+      
       int hscroll = HScrollPos;
       int vscroll = VScrollPos;
       int selstart = TextBox.SelectionStart;

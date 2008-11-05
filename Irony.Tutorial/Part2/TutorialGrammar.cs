@@ -25,6 +25,7 @@ namespace Irony.Tutorial.Part2 {
   // y = x * 2 + 1
   //  the result of calculation is the result of last expression or assignment (value of "y" in this case).
 
+  [Language("TutorialGrammar", "2.0", "Sample tutorial grammar")]
   public class CalcGrammar : Irony.Compiler.Grammar {
     public CalcGrammar() {
       // 1. Terminals
@@ -68,7 +69,8 @@ namespace Irony.Tutorial.Part2 {
       RegisterPunctuation( "(", ")");
       RegisterPunctuation(NewLine); //remove all newLines - important, extra new lines in output tree can mess up calc result
 
-      this.Options |= LanguageOptions.AutoNewLine; //automatically add newLine before EOF so that our grammar works
+      //automatically add newLine before EOF so that our grammar works
+      this.LanguageFlags = LanguageFlags.AutoNewLine | LanguageFlags.SupportsInterpreter; 
 
     }
   }

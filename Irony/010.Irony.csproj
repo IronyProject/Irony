@@ -52,6 +52,7 @@
     <Compile Include="Common.cs" />
     <Compile Include="Compiler\AST\AnonFunctionNode.cs" />
     <Compile Include="Compiler\CodeAnalysis.cs" />
+    <Compile Include="Compiler\Grammar\LanguageAttribute.cs" />
     <Compile Include="EditorServices\EditorViewAdapter.cs" />
     <Compile Include="Compiler\Scanner\TokenEditorInfo.cs" />
     <Compile Include="Compiler\Interfaces.cs" />
@@ -95,7 +96,7 @@
     <Compile Include="Compiler\Grammar\BnfTerm.cs" />
     <Compile Include="Compiler\Grammar\Grammar.cs" />
     <Compile Include="Compiler\Terminals\TerminalFactory.cs" />
-    <Compile Include="Compiler\Grammar\LanguageOptions.cs" />
+    <Compile Include="Compiler\Grammar\LanguageFlags.cs" />
     <Compile Include="Runtime\FunctionBindingInfo.cs" />
     <None Include="Runtime\SlimLock.cs" />
     <Compile Include="Runtime\LanguageRuntimeInit.cs" />

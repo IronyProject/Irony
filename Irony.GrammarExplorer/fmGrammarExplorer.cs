@@ -42,13 +42,17 @@ namespace Irony.GrammarExplorer {
       try {
         txtSource.Text = Settings.Default.SourceSample;
         txtSearch.Text = Settings.Default.SearchPattern;
-        cboLanguage.SelectedIndex = Settings.Default.LanguageIndex; //this will start colorizer
+        GrammarItemList grammars = GrammarItemList.FromXml(Settings.Default.Grammars);
+        grammars.ShowIn(cboGrammars);
+        cboGrammars.SelectedIndex = Settings.Default.LanguageIndex; //this will start colorizer
       } catch { }
     }
     private void fmExploreGrammar_FormClosing(object sender, FormClosingEventArgs e) {
       Settings.Default.SourceSample = txtSource.Text;
-      Settings.Default.LanguageIndex = cboLanguage.SelectedIndex;
+      Settings.Default.LanguageIndex = cboGrammars.SelectedIndex;
       Settings.Default.SearchPattern = txtSearch.Text;
+      var grammars = GrammarItemList.FromCombo(cboGrammars);
+      Settings.Default.Grammars = grammars.ToXml(); 
       Settings.Default.Save();
     }//method
 
@@ -270,33 +274,10 @@ namespace Irony.GrammarExplorer {
       btnRun.Enabled = false;
       txtOutput.Text = string.Empty;
       _rootNode = null;
-      switch (cboLanguage.SelectedIndex) {
-        case 0: //ExpressionGrammar
-          grammar = new Irony.Samples.ExpressionGrammar();
-          break;
-        case 1: //Scheme
-          grammar = new Irony.Samples.Scheme.SchemeGrammar();
-          btnRun.Enabled = true; 
-          break;
-        case 2: //Script.NET
-          grammar = new  Irony.Samples.ScriptNET.ScriptdotnetGrammar();
-          //grammar = new ScriptNET.ScriptdotnetGrammar();
-          break;
-        case 3: //c#
-          grammar = new Irony.Samples.CSharp.CSharpGrammar();
-          break;
-        case 4: //GwBasic
-          grammar = new Irony.Samples.GWBasicGrammar();
-          break;
-        case 5: //Tutorial
-          grammar = new Irony.Tutorial.Part1.CalcGrammar();
-          btnRun.Enabled = true;
-          break;
-        case 6: //Tutorial
-          grammar = new Irony.Tutorial.Part2.CalcGrammar();
-          btnRun.Enabled = true;
-          break;
-      }//switch
+
+      GrammarItem selItem = cboGrammars.SelectedItem as GrammarItem;
+      grammar = selItem.CreateGrammar();
+      btnRun.Enabled = grammar.FlagIsSet(LanguageFlags.SupportsInterpreter);
       Stopwatch sw = new Stopwatch();
       try {
         sw.Start();
@@ -445,6 +426,46 @@ namespace Irony.GrammarExplorer {
     private void txtSource_TextChanged(object sender, EventArgs e) {
       _rootNode = null; //force it to recompile on run
     }
+
+    private void btnManageGrammars_Click(object sender, EventArgs e) {
+      menuGrammars.Show(btnManageGrammars, 0, btnManageGrammars.Height); 
+    }
+
+    private void menuGrammars_Opening(object sender, CancelEventArgs e) {
+      miRemove.Enabled = cboGrammars.Items.Count > 0; 
+    }
+
+    private void miRemove_Click(object sender, EventArgs e) {
+      if (MessageBox.Show("Are you sure you want to remove grammmar " + cboGrammars.SelectedItem + "?",
+        "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes) {
+        cboGrammars.Items.RemoveAt(cboGrammars.SelectedIndex);
+        _compiler = null;
+        if (cboGrammars.Items.Count > 0)
+          cboGrammars.SelectedIndex = 0; 
+      }
+    }
+
+    private void miAdd_Click(object sender, EventArgs e) {
+       if (dlgSelectAssembly.ShowDialog() != DialogResult.OK) return;
+       string location = dlgSelectAssembly.FileName;
+      Assembly asm = Assembly.LoadFrom(location);
+      var types = asm.GetTypes();
+      GrammarItemList grammars = new GrammarItemList(); 
+      foreach(Type t in types) {
+        if (!t.IsSubclassOf(typeof(Grammar))) continue;
+        grammars.Add(new GrammarItem(t, location));
+      }
+      if (grammars.Count == 0) {
+        MessageBox.Show("No classes derived from Irony.Grammar were found in the assembly.");
+        return; 
+      }
+      grammars = fmSelectGrammars.SelectGrammars(grammars);
+      if (grammars == null) return;
+      foreach (GrammarItem item in grammars)
+        cboGrammars.Items.Add(item); 
+    }//method
+
+
 
   }//class
 }

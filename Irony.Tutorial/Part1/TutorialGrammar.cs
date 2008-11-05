@@ -22,6 +22,7 @@ namespace Irony.Tutorial.Part1 {
   // for example: 
   // 5 + 2.5 * 4
 
+  [Language("TutorialGrammar", "1.0", "Sample tutorial grammar")]
   public class CalcGrammar : Irony.Compiler.Grammar {
     public CalcGrammar() {
       // 1. Terminals

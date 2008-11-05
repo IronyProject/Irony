@@ -81,7 +81,7 @@ namespace Irony.Compiler {
             break;
           
           case CodeAnalysisPhase.MarkTailCalls:
-            if (!Grammar.OptionIsSet(LanguageOptions.TailRecursive)) continue;//foreach loop - don't run the phase
+            if (!Grammar.FlagIsSet(LanguageFlags.TailRecursive)) continue;//foreach loop - don't run the phase
             astRoot.Flags |= AstNodeFlags.IsTail;
             break;
         }//switch

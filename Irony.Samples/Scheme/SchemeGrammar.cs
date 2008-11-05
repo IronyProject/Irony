@@ -17,6 +17,7 @@ using Irony.Compiler;
 using Irony.Compiler.AST;
 
 namespace Irony.Samples.Scheme {
+  [Language("Scheme", "1.0", "Sample Scheme grammar")]
   public class SchemeGrammar : Grammar {
     // It is loosely based on R6RS specs.  
     // See Grammar Errors tab in GrammarExplorer for remaining conflicts.
@@ -205,7 +206,7 @@ namespace Irony.Samples.Scheme {
       TokenFilters.Add(filter);
 
       //Scheme is tail-recursive language
-      base.Options |= LanguageOptions.TailRecursive;
+      base.LanguageFlags = LanguageFlags.TailRecursive | LanguageFlags.SupportsInterpreter | LanguageFlags.SupportsConsole;
       //keywords - just for colorizer
       base.AddKeywords("define", "lambda", "cond", "if", "begin", "let");
 

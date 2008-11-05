@@ -15,6 +15,7 @@ namespace Irony.Samples.ScriptNET
   /// <summary>
   /// This class represents Irony Grammar for Script.NET
   /// </summary>
+  [Language("Script.NET", "1.0", "Script.NET grammar")]
   public class ScriptdotnetGrammar : Grammar
   {
     public ScriptdotnetGrammar()

@@ -22,6 +22,7 @@ namespace Irony.Samples.Ruby {
   // not for directly building parsers.  
   // See Grammar Errors tab in GrammarExplorer for remaining conflicts.
 
+  [Language("Ruby", "1.0", "Sample Ruby grammar")]
   public class RubyGrammar : Grammar {
 
     public RubyGrammar() {

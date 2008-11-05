@@ -11,5 +11,8 @@
     <Setting Name="SearchPattern" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="Grammars" Type="System.String" Scope="User">
+      <Value Profile="(Default)">&lt;Grammars&gt;&lt;Grammar Caption="Scheme" Location="C:\Users\v-roivan\_Irony\Source_onCodePlex\Irony.Samples\bin\Debug\Irony.Samples.dll" TypeName="Irony.Samples.Scheme.SchemeGrammar"/&gt;&lt;/Grammars&gt;</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

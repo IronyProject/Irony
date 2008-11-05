@@ -20,8 +20,8 @@ namespace Irony.Samples.CSharp {
        */
   #endregion
 
+  [Language("c#", "3.5", "Sample c# grammar")]
   public class CSharpGrammar : Grammar {
-
     public CSharpGrammar() {
 
       #region Lexical structure

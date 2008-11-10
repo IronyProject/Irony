@@ -22,7 +22,6 @@ namespace Irony.Compiler {
   // and they can be included as nodes into AST tree. So Token is a primitive AstNode. 
   public class Token : AstNode  {
     public Token(NodeArgs args) : base(args) {
-      this.Precedence = args.Term.Precedence; //copy precedence from Terminal, used mainly by operator symbols
       this.EditorInfo = Terminal.EditorInfo;  //set to term's EditorInfo by default
     
     }

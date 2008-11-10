@@ -18,7 +18,7 @@ using System.Diagnostics;
 namespace Irony.Compiler {
 
   //BNF expressions are represented as OR-list of Plus-lists of BNF terms
-  public class BnfExpressionData : List<BnfTermList> { }
+  internal class BnfExpressionData : List<BnfTermList> { }
 
   public class BnfExpression : BnfTerm {
 
@@ -29,7 +29,7 @@ namespace Irony.Compiler {
     }
 
     #region properties: Data
-    public BnfExpressionData Data;
+    internal BnfExpressionData Data;
     #endregion
 
     #region overrides: ToString()

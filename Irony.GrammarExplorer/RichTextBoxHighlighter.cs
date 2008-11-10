@@ -1,4 +1,21 @@
-﻿using System;
+﻿#region License
+/* **********************************************************************************
+ * Copyright (c) Roman Ivantsov
+ * This source code is subject to terms and conditions of the MIT License
+ * for Irony. A copy of the license can be found in the License.txt file
+ * at the root of this distribution. 
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * MIT License.
+ * You must not remove this notice from this software.
+ * **********************************************************************************/
+#endregion
+
+// Aknowledgments
+// This module borrows code and ideas from TinyPG framework by Herre Kuijpers,
+// specifically TextMarker.cs and TextHighlighter.cs classes.
+// http://www.codeproject.com/KB/recipes/TinyPG.aspx
+//
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
@@ -10,11 +27,6 @@ using Irony.Compiler;
 using Irony.EditorServices;
 using System.Diagnostics;
 
-// Aknowledgments
-// This module borrows code and ideas from TinyPG framework by Herre Kuijpers,
-// specifically TextMarker.cs and TextHighlighter.cs classes.
-// http://www.codeproject.com/KB/recipes/TinyPG.aspx
-//
 namespace Irony.GrammarExplorer {
 
   public class TokenColorTable : Dictionary<TokenColor, Color> { }

@@ -96,7 +96,6 @@
     <Compile Include="Compiler\Grammar\BnfTerm.cs" />
     <Compile Include="Compiler\Grammar\Grammar.cs" />
     <Compile Include="Compiler\Terminals\TerminalFactory.cs" />
-    <Compile Include="Compiler\Grammar\LanguageFlags.cs" />
     <Compile Include="Runtime\FunctionBindingInfo.cs" />
     <None Include="Runtime\SlimLock.cs" />
     <Compile Include="Runtime\LanguageRuntimeInit.cs" />
@@ -133,7 +132,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Compiler\LRE\readme.txt" />
+    <Content Include="Compiler\NLALR\about_NLALR.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

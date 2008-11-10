@@ -298,16 +298,15 @@ namespace Irony.Compiler.Lalr {
       return null; //action not found
     }
     private ParserActionType GetActionTypeForOperation(Token current) {
-      Terminal thisTerm = current.Terminal;
       for (int i = Stack.Count - 2; i >= 0; i--) {
-        if (Stack[i].Node == null) continue;
-        BnfTerm term = Stack[i].Node.Term;
-        if (!term.IsSet(TermOptions.IsOperator)) continue;
-        Terminal prevTerm = term as Terminal;
+        AstNode prevNode = Stack[i].Node;
+        if (prevNode == null || prevNode.Precedence == AstNode.NoPrecedence) continue;
+        ParserActionType result;
         //if previous operator has the same precedence then use associativity
-        if (prevTerm.Precedence == thisTerm.Precedence) 
-          return thisTerm.Associativity == Associativity.Left ? ParserActionType.Reduce : ParserActionType.Shift;
-        ParserActionType result = prevTerm.Precedence > thisTerm.Precedence ? ParserActionType.Reduce : ParserActionType.Shift;
+        if (prevNode.Precedence == current.Precedence) 
+          result = current.Terminal.Associativity == Associativity.Left ? ParserActionType.Reduce : ParserActionType.Shift;
+        else 
+          result = prevNode.Precedence > current.Precedence ? ParserActionType.Reduce : ParserActionType.Shift;
         return result;
       }
       //If no operators found on the stack, do simple shift

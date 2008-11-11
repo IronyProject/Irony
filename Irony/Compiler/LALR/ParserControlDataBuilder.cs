@@ -42,8 +42,6 @@ namespace Irony.Compiler.Lalr {
         if (!_grammar.Initialized)
           _grammar.Init();
 
-        GetNonTerminalsFromGrammar();
-        InitNonTerminalData();
         //Create the augmented root for the grammar
         CreateAugmentedRootForGrammar();
         //Create productions and LR0Items 
@@ -75,31 +73,17 @@ namespace Irony.Compiler.Lalr {
       throw new GrammarErrorException(msg);
     }
 
-    private void GetNonTerminalsFromGrammar() {
-      foreach (BnfTerm t in _grammar.AllTerms) {
-        NonTerminal nt = t as NonTerminal;
-        if (nt != null)
-          Data.NonTerminals.Add(nt);
-      }
-    }
-    private void InitNonTerminalData() {
-      foreach (NonTerminal nt in Data.NonTerminals)
-        NtData.GetOrCreate(nt);
-    }
-
     private void CreateAugmentedRootForGrammar() {
       Data.AugmentedRoot = new NonTerminal(_grammar.Root.Name + "'", new BnfExpression(_grammar.Root));
-      Data.NonTerminals.Add(Data.AugmentedRoot);
+      _grammar.NonTerminals.Add(Data.AugmentedRoot);
     }
 
     #region Creating Productions
     private void CreateProductions() {
-      Data.Productions.Clear();
       //each LR0Item gets its unique ID, last assigned (max) Id is kept in static field
       _itemID = 0;
-      foreach(NonTerminal nt in Data.NonTerminals) {
-        NtData ntInfo = NtData.GetOrCreate(nt);
-        ntInfo.Productions.Clear();
+      foreach(NonTerminal nt in _grammar.NonTerminals) {
+        nt.Productions.Clear();
         //Get data (sequences) from both Rule and ErrorRule
         BnfExpressionData allData = new BnfExpressionData();
         allData.AddRange(nt.Rule.Data);
@@ -109,8 +93,7 @@ namespace Irony.Compiler.Lalr {
         foreach (BnfTermList prodOperands in allData) {
           Production prod = CreateProduction(nt, prodOperands);
           //Add the production to non-terminal's list and to global list 
-          ntInfo.Productions.Add(prod);
-          Data.Productions.Add(prod);
+          nt.Productions.Add(prod);
         }//foreach prodOperands
       }
     }
@@ -151,7 +134,7 @@ namespace Irony.Compiler.Lalr {
 
     #region Nullability calculation
     private void CalculateNullability() {
-      NonTerminalList undecided = Data.NonTerminals;
+      NonTerminalList undecided = _grammar.NonTerminals;
       while(undecided.Count > 0) {
         NonTerminalList newUndecided = new NonTerminalList();
         foreach(NonTerminal nt in undecided)
@@ -163,23 +146,22 @@ namespace Irony.Compiler.Lalr {
     }
 
     private bool CalculateNullability(NonTerminal nonTerminal, NonTerminalList undecided) {
-      NtData nonTerminalInfo = (NtData) nonTerminal.ParserData;
-      foreach (Production prod in nonTerminalInfo.Productions) {
+      foreach (Production prod in nonTerminal.Productions) {
         //If production has terminals, it is not nullable and cannot contribute to nullability
         if (prod.IsSet(ProductionFlags.HasTerminals))   continue;
         if (prod.IsSet(ProductionFlags.IsEmpty)) {
-          nonTerminalInfo.Nullable = true;
+          nonTerminal.Nullable = true;
           return true; //Nullable
         }//if 
         //Go thru all elements of production and check nullability
         bool allNullable = true;
-        foreach (BnfTerm  term in prod.RValues) {
-          NtData ntd = term.ParserData as NtData;
-          if (ntd != null)
-            allNullable &= ntd.Nullable;
+        foreach (BnfTerm  child in prod.RValues) {
+          NonTerminal childNt = child as NonTerminal;
+          if (childNt != null)
+            allNullable &= childNt.Nullable;
         }//foreach nt
         if (allNullable) {
-          nonTerminalInfo.Nullable = true;
+          nonTerminal.Nullable = true;
           return true;
         }
       }//foreach prod
@@ -190,31 +172,31 @@ namespace Irony.Compiler.Lalr {
     #region Calculating Firsts
     private void CalculateFirsts() {
       //1. Calculate PropagateTo lists and put initial terminals into Firsts lists
-      foreach (Production prod in Data.Productions) {
-        NtData lvData = prod.LValue.ParserData as NtData;
-        foreach (BnfTerm term in prod.RValues) {
-          if (term is Terminal) { //it is terminal, so add it to Firsts and that's all with this production
-            lvData.Firsts.Add(term.Key); // Add terminal to Firsts (note: Add ignores repetitions)
-            break; //from foreach term
-          }//if
-          NtData ntInfo = term.ParserData as NtData;
-          if (!ntInfo.PropagateFirstsTo.Contains(prod.LValue))
-            ntInfo.PropagateFirstsTo.Add(prod.LValue); //ignores repetitions
-          if (!ntInfo.Nullable) break; //if not nullable we're done
-        }//foreach oper
-      }//foreach prod
+      foreach (NonTerminal nt in _grammar.NonTerminals) {
+        foreach (Production prod in nt.Productions) {
+          //NtData lvData = prod.LValue.ParserData as NtData;
+          foreach (BnfTerm term in prod.RValues) {
+            if (term is Terminal) { //it is terminal, so add it to Firsts and that's all with this production
+              prod.LValue.Firsts.Add(term.Key); // Add terminal to Firsts (note: Add ignores repetitions)
+              break; //from foreach term
+            }//if
+            NonTerminal ntChild = term as NonTerminal;
+            if (!ntChild.PropagateFirstsTo.Contains(prod.LValue))
+              ntChild.PropagateFirstsTo.Add(prod.LValue); //ignores repetitions
+            if (!ntChild.Nullable) break; //if not nullable we're done
+          }//foreach oper
+        }//foreach prod
+      }//foreach nt
       
       //2. Propagate all firsts thru all dependencies
-      NonTerminalList workList = Data.NonTerminals;
+      NonTerminalList workList = _grammar.NonTerminals;
       while (workList.Count > 0) {
         NonTerminalList newList = new NonTerminalList();
         foreach (NonTerminal nt in workList) {
-          NtData ntInfo = (NtData)nt.ParserData;
-          foreach (NonTerminal toNt in ntInfo.PropagateFirstsTo) {
-            NtData toInfo = (NtData)toNt.ParserData;
-            foreach (string symbolKey in ntInfo.Firsts) {
-              if (!toInfo.Firsts.Contains(symbolKey)) {
-                toInfo.Firsts.Add(symbolKey);
+          foreach (NonTerminal toNt in nt.PropagateFirstsTo) {
+            foreach (string symbolKey in nt.Firsts) {
+              if (!toNt.Firsts.Contains(symbolKey)) {
+                toNt.Firsts.Add(symbolKey);
                 if (!newList.Contains(toNt))
                   newList.Add(toNt);
               }//if
@@ -229,42 +211,44 @@ namespace Irony.Compiler.Lalr {
 
     #region Calculating Tail Firsts
     private void CalculateTailFirsts() {
-      foreach (Production prod in Data.Productions) {
-        StringSet accumulatedFirsts = new StringSet();
-        bool allNullable = true;
-        //We are going backwards in LR0Items list
-        for(int i = prod.LR0Items.Count-1; i >= 0; i--) {
-          LR0Item item = prod.LR0Items[i];
-          if (i >= prod.LR0Items.Count-2) {
-            //Last and before last items have empty tails
-            item.TailIsNullable = true;
-            item.TailFirsts.Clear();
-            continue;
-          }
-          BnfTerm nextTerm = prod.RValues[i + 1];  //Element after-after-dot; remember we're going in reverse direction
-          NtData nextData = (NtData)nextTerm.ParserData;
-          //if (ntElem == null) continue; //it is not NonTerminal
-          bool notNullable = nextTerm is Terminal || nextData != null && !nextData.Nullable; 
-          if (notNullable) { //next term is not nullable  (a terminal or non-nullable NonTerminal)
-            //term is not nullable, so we clear all old firsts and add this term
-            accumulatedFirsts.Clear();
-            allNullable = false;
-            item.TailIsNullable = false;
-            if (nextTerm is Terminal) {
-              item.TailFirsts.Add(nextTerm.Key);//term is terminal so add its key
-              accumulatedFirsts.Add(nextTerm.Key);
-            } else if (nextData != null) { //it is NonTerminal
-              item.TailFirsts.AddRange(nextData.Firsts); //nonterminal
-              accumulatedFirsts.AddRange(nextData.Firsts);
+      foreach (NonTerminal nt in _grammar.NonTerminals) {
+        foreach (Production prod in nt.Productions) {
+          StringSet accumulatedFirsts = new StringSet();
+          bool allNullable = true;
+          //We are going backwards in LR0Items list
+          for (int i = prod.LR0Items.Count - 1; i >= 0; i--) {
+            LR0Item item = prod.LR0Items[i];
+            if (i >= prod.LR0Items.Count - 2) {
+              //Last and before last items have empty tails
+              item.TailIsNullable = true;
+              item.TailFirsts.Clear();
+              continue;
             }
-            continue;
-          }
-          //if we are here, then ntElem is a nullable NonTerminal. We add 
-          accumulatedFirsts.AddRange(nextData.Firsts);
-          item.TailFirsts.AddRange(accumulatedFirsts);
-          item.TailIsNullable = allNullable;
-        }//for i
-      }//foreach prod
+            BnfTerm nextTerm = prod.RValues[i + 1];  //Element after-after-dot; remember we're going in reverse direction
+            //if (ntElem == null) continue; //it is not NonTerminal
+            NonTerminal nextNt = nextTerm as NonTerminal;
+            bool notNullable = nextTerm is Terminal || nextNt != null && !nextNt.Nullable;
+            if (notNullable) { //next term is not nullable  (a terminal or non-nullable NonTerminal)
+              //term is not nullable, so we clear all old firsts and add this term
+              accumulatedFirsts.Clear();
+              allNullable = false;
+              item.TailIsNullable = false;
+              if (nextTerm is Terminal) {
+                item.TailFirsts.Add(nextTerm.Key);//term is terminal so add its key
+                accumulatedFirsts.Add(nextTerm.Key);
+              } else if (nextNt != null) { //it is NonTerminal
+                item.TailFirsts.AddRange(nextNt.Firsts); //nonterminal
+                accumulatedFirsts.AddRange(nextNt.Firsts);
+              }
+              continue;
+            }
+            //if we are here, then ntElem is a nullable NonTerminal. We add 
+            accumulatedFirsts.AddRange(nextNt.Firsts);
+            item.TailFirsts.AddRange(accumulatedFirsts);
+            item.TailIsNullable = allNullable;
+          }//for i
+        }//foreach prod
+      }//foreach nt
     }//method
 
     #endregion
@@ -273,8 +257,7 @@ namespace Irony.Compiler.Lalr {
     private void CreateInitialAndFinalStates() {
       //there is always just one initial production "Root' -> .Root", and we're interested in LR item at 0 index
       LR0ItemList itemList = new LR0ItemList();
-      NtData rootData = (NtData)Data.AugmentedRoot.ParserData;
-      itemList.Add(rootData.Productions[0].LR0Items[0]);
+      itemList.Add(Data.AugmentedRoot.Productions[0].LR0Items[0]);
       Data.InitialState = FindOrCreateState(itemList); //it is actually create
       Data.InitialState.Items[0].NewLookaheads.Add(Grammar.Eof.Key);
       #region comment about FinalState
@@ -289,7 +272,7 @@ namespace Irony.Compiler.Lalr {
       // it is item at index 1.
       #endregion
       itemList.Clear();
-      itemList.Add(rootData.Productions[0].LR0Items[1]);
+      itemList.Add(Data.AugmentedRoot.Productions[0].LR0Items[1]);
       Data.FinalState = FindOrCreateState(itemList); //it is actually create
       //Create shift transition from initial to final state
       string rootKey = Data.AugmentedRoot.Key;
@@ -383,8 +366,8 @@ namespace Irony.Compiler.Lalr {
         if (currTerm == null || !(currTerm is NonTerminal))  
           continue;
         //1. Add normal closure items
-        NtData currInfo = (NtData)currTerm.ParserData;
-        foreach (Production prod in currInfo.Productions) {
+        NonTerminal currNt = currTerm as NonTerminal;
+        foreach (Production prod in currNt.Productions) {
           LR0Item core = prod.LR0Items[0]; //item at zero index is the one that starts with dot
           LRItem newItem = TryFindItem(state, core);
           if (newItem == null) {
@@ -595,7 +578,7 @@ namespace Irony.Compiler.Lalr {
     private void ValidateAll() {
       //Check rule on all non-terminals
       StringSet ntList = new StringSet();
-      foreach(NonTerminal nt in Data.NonTerminals) {
+      foreach(NonTerminal nt in _grammar.NonTerminals) {
         if (nt == Data.AugmentedRoot) continue; //augm root does not count
         BnfExpressionData data = nt.Rule.Data;
         if (data.Count == 1 && data[0].Count == 1 && data[0][0] is NonTerminal)
@@ -608,7 +591,7 @@ namespace Irony.Compiler.Lalr {
       }
       //Check constructors of all nodes referenced in Non-terminals that don't use NodeCreator delegate
       var ctorArgTypes = new Type[] {typeof(NodeArgs)};
-      foreach (NonTerminal nt in Data.NonTerminals) {
+      foreach (NonTerminal nt in _grammar.NonTerminals) {
         if (nt.NodeCreator == null && nt.NodeType != null) {
           object ci = nt.NodeType.GetConstructor(ctorArgTypes);
           if (ci == null)

@@ -73,6 +73,8 @@ namespace Irony.Compiler {
 
     //derived lists
     public readonly BnfTermList AllTerms = new BnfTermList();
+    public readonly TerminalList Terminals = new TerminalList();
+    public readonly NonTerminalList NonTerminals = new NonTerminalList();
 
     public readonly StringSet Errors = new StringSet();
     #endregion 
@@ -151,7 +153,7 @@ namespace Irony.Compiler {
 
     #endregion
 
-    #region Static utility methods used in custom grammars: Symbol(), CreateSyntaxErrorToken
+    #region Static utility methods used in custom grammars: Symbol()
     protected static SymbolTerminal Symbol(string symbol) {
       return SymbolTerminal.GetSymbol(symbol);
     }
@@ -239,11 +241,10 @@ namespace Irony.Compiler {
 
     public void Init() {
       CollectAllTerms();
-      //Init all terms and token filters 
-      foreach (BnfTerm term in this.AllTerms)
-        term.Init(this);
+      //Init filters
       foreach (TokenFilter filter in TokenFilters)
         filter.Init(this);
+
       InitKeywords();
       _initialized = true; 
     }
@@ -272,6 +273,28 @@ namespace Irony.Compiler {
       }
       _unnamedCount = 0;
       CollectAllRecursive(Root);
+
+      //Init all terms
+      foreach (BnfTerm term in this.AllTerms)
+        term.Init(this);
+
+      //Collect terminals and NonTerminals
+      NonTerminals.Clear();
+      foreach (BnfTerm t in AllTerms) {
+        NonTerminal nt = t as NonTerminal;
+        if (nt != null)
+          NonTerminals.Add(nt);
+        Terminal terminal = t as Terminal;
+        if (terminal != null)
+          Terminals.Add(terminal);
+      }
+      //Adjust case for Symbols for case-insensitive grammar (change keys to lowercase)
+      if (!CaseSensitive) {
+        foreach (Terminal term in Terminals)
+          if (term is SymbolTerminal)
+            term.Key = term.Key.ToLower();
+      }
+      Terminals.Sort(Terminal.ByName);
     }
 
     private void CollectAllRecursive(BnfTerm element) {
@@ -317,6 +340,7 @@ namespace Irony.Compiler {
           CollectAllRecursive(child);
         }
     }//method
+    
 
     private void ThrowError(string message, params object[] values) {
       if (values != null && values.Length > 0)

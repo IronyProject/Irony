@@ -207,23 +207,22 @@ namespace Irony.Compiler.Lalr {
       StringSet inputKeys = new StringSet();
       inputKeys.AddRange(_currentState.Actions.Keys);
       //First check all NonTerminals
-      foreach (NonTerminal nt in Data.NonTerminals) {
+      foreach (NonTerminal nt in _context.Compiler.Grammar.NonTerminals) {
         if (!inputKeys.Contains(nt.Key)) continue;
-        NtData ntData = nt.ParserData as NtData;
         //nt is one of our available inputs; check if it has an alias. If not, don't add it to element list;
         // because we have already all its "Firsts" keys in the list. 
         // If yes, add nt to element list and remove
         // all its "fists" symbols from the list. These removed symbols will be represented by single nt alias. 
-        if (string.IsNullOrEmpty(ntData.NonTerminal.DisplayName))
-          inputKeys.Remove(ntData.NonTerminal.Key);
+        if (string.IsNullOrEmpty(nt.DisplayName))
+          inputKeys.Remove(nt.Key);
         else {
-          inputElements.Add(ntData.NonTerminal);
-          foreach(string first in ntData.Firsts) 
+          inputElements.Add(nt);
+          foreach(string first in nt.Firsts) 
             inputKeys.Remove(first);
         }
       }
       //Now terminals
-      foreach (Terminal term in _context.Compiler.Scanner.Data.Terminals) {
+      foreach (Terminal term in  _context.Compiler.Grammar.Terminals) {
         if (inputKeys.Contains(term.Key))
           inputElements.Add(term);
       }
@@ -421,6 +420,13 @@ namespace Irony.Compiler.Lalr {
 Provide a constructor with a single NodeArgs parameter, or use NodeCreator delegate property in NonTerminal.", ntNodeType);
       throw new GrammarErrorException(msg);
     }
+    #endregion
+
+    #region IParser.GetStateList()
+    public string GetStateList() {
+      return TextUtils.StateListToText(Data.States);
+    }
+
     #endregion
 
   }//class

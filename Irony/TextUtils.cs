@@ -57,15 +57,14 @@ namespace Irony {
       StringBuilder sb = new StringBuilder();
       foreach (NonTerminal nt in nonTerminals) {
         sb.Append(nt.Name);
-        NtData ntInfo = (NtData)nt.ParserData;
-        sb.Append(ntInfo.Nullable ? "  (Nullable) " : "");
+        sb.Append(nt.Nullable ? "  (Nullable) " : "");
         sb.AppendLine();
-        foreach (Production pr in ntInfo.Productions) {
+        foreach (Production pr in nt.Productions) {
           sb.Append("   ");
           sb.AppendLine(pr.ToString());
         }
         sb.Append("  FIRSTS: ");
-        string firsts = TextUtils.Cleanup(ntInfo.Firsts.ToString(" "));
+        string firsts = TextUtils.Cleanup(nt.Firsts.ToString(" "));
         sb.AppendLine(firsts);
         sb.AppendLine();
       }//foreachc nt

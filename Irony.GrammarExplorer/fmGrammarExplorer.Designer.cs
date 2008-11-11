@@ -33,11 +33,6 @@ namespace Irony.GrammarExplorer {
       this.txtTerms = new System.Windows.Forms.TextBox();
       this.pageNonTerms = new System.Windows.Forms.TabPage();
       this.txtNonTerms = new System.Windows.Forms.TextBox();
-      this.pageProds = new System.Windows.Forms.TabPage();
-      this.grpLR0Items = new System.Windows.Forms.GroupBox();
-      this.txtLR0Items = new System.Windows.Forms.TextBox();
-      this.splitter1 = new System.Windows.Forms.Splitter();
-      this.lstProds = new System.Windows.Forms.ListBox();
       this.pageParserStates = new System.Windows.Forms.TabPage();
       this.txtParserStates = new System.Windows.Forms.TextBox();
       this.pageGrErrors = new System.Windows.Forms.TabPage();
@@ -94,8 +89,6 @@ namespace Irony.GrammarExplorer {
       this.tabGrammar.SuspendLayout();
       this.pageTerminals.SuspendLayout();
       this.pageNonTerms.SuspendLayout();
-      this.pageProds.SuspendLayout();
-      this.grpLR0Items.SuspendLayout();
       this.pageParserStates.SuspendLayout();
       this.pageGrErrors.SuspendLayout();
       this.pageTest.SuspendLayout();
@@ -150,7 +143,6 @@ namespace Irony.GrammarExplorer {
       // 
       this.tabGrammar.Controls.Add(this.pageTerminals);
       this.tabGrammar.Controls.Add(this.pageNonTerms);
-      this.tabGrammar.Controls.Add(this.pageProds);
       this.tabGrammar.Controls.Add(this.pageParserStates);
       this.tabGrammar.Controls.Add(this.pageGrErrors);
       this.tabGrammar.Controls.Add(this.pageTest);
@@ -208,64 +200,6 @@ namespace Irony.GrammarExplorer {
       this.txtNonTerms.Size = new System.Drawing.Size(1089, 615);
       this.txtNonTerms.TabIndex = 1;
       this.txtNonTerms.WordWrap = false;
-      // 
-      // pageProds
-      // 
-      this.pageProds.Controls.Add(this.grpLR0Items);
-      this.pageProds.Controls.Add(this.splitter1);
-      this.pageProds.Controls.Add(this.lstProds);
-      this.pageProds.Location = new System.Drawing.Point(4, 22);
-      this.pageProds.Name = "pageProds";
-      this.pageProds.Padding = new System.Windows.Forms.Padding(3);
-      this.pageProds.Size = new System.Drawing.Size(1095, 621);
-      this.pageProds.TabIndex = 3;
-      this.pageProds.Text = "Productions";
-      this.pageProds.UseVisualStyleBackColor = true;
-      // 
-      // grpLR0Items
-      // 
-      this.grpLR0Items.Controls.Add(this.txtLR0Items);
-      this.grpLR0Items.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.grpLR0Items.Location = new System.Drawing.Point(3, 241);
-      this.grpLR0Items.Name = "grpLR0Items";
-      this.grpLR0Items.Size = new System.Drawing.Size(1089, 377);
-      this.grpLR0Items.TabIndex = 3;
-      this.grpLR0Items.TabStop = false;
-      this.grpLR0Items.Text = "LR0 Items";
-      // 
-      // txtLR0Items
-      // 
-      this.txtLR0Items.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.txtLR0Items.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.txtLR0Items.HideSelection = false;
-      this.txtLR0Items.Location = new System.Drawing.Point(3, 16);
-      this.txtLR0Items.Multiline = true;
-      this.txtLR0Items.Name = "txtLR0Items";
-      this.txtLR0Items.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-      this.txtLR0Items.Size = new System.Drawing.Size(1083, 358);
-      this.txtLR0Items.TabIndex = 2;
-      this.txtLR0Items.WordWrap = false;
-      // 
-      // splitter1
-      // 
-      this.splitter1.Dock = System.Windows.Forms.DockStyle.Top;
-      this.splitter1.Location = new System.Drawing.Point(3, 231);
-      this.splitter1.Name = "splitter1";
-      this.splitter1.Size = new System.Drawing.Size(1089, 10);
-      this.splitter1.TabIndex = 1;
-      this.splitter1.TabStop = false;
-      // 
-      // lstProds
-      // 
-      this.lstProds.Dock = System.Windows.Forms.DockStyle.Top;
-      this.lstProds.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.lstProds.FormattingEnabled = true;
-      this.lstProds.ItemHeight = 14;
-      this.lstProds.Location = new System.Drawing.Point(3, 3);
-      this.lstProds.Name = "lstProds";
-      this.lstProds.Size = new System.Drawing.Size(1089, 228);
-      this.lstProds.TabIndex = 0;
-      this.lstProds.SelectedIndexChanged += new System.EventHandler(this.lstProds_SelectedIndexChanged);
       // 
       // pageParserStates
       // 
@@ -793,7 +727,7 @@ namespace Irony.GrammarExplorer {
       this.label2.TabIndex = 4;
       this.label2.Text = "Grammar:";
       // 
-      // cboGrammar
+      // cboGrammars
       // 
       this.cboGrammars.ContextMenuStrip = this.menuGrammars;
       this.cboGrammars.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -807,7 +741,7 @@ namespace Irony.GrammarExplorer {
             "Tutorial - CalcGrammar Part 1",
             "Tutorial - CalcGrammar Part 2"});
       this.cboGrammars.Location = new System.Drawing.Point(90, 3);
-      this.cboGrammars.Name = "cboGrammar";
+      this.cboGrammars.Name = "cboGrammars";
       this.cboGrammars.Size = new System.Drawing.Size(189, 21);
       this.cboGrammars.TabIndex = 3;
       this.cboGrammars.SelectedIndexChanged += new System.EventHandler(this.cboLanguage_SelectedIndexChanged);
@@ -858,9 +792,6 @@ namespace Irony.GrammarExplorer {
       this.pageTerminals.PerformLayout();
       this.pageNonTerms.ResumeLayout(false);
       this.pageNonTerms.PerformLayout();
-      this.pageProds.ResumeLayout(false);
-      this.grpLR0Items.ResumeLayout(false);
-      this.grpLR0Items.PerformLayout();
       this.pageParserStates.ResumeLayout(false);
       this.pageParserStates.PerformLayout();
       this.pageGrErrors.ResumeLayout(false);
@@ -900,11 +831,6 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.TextBox txtParserStates;
     private System.Windows.Forms.TextBox txtGrammarErrors;
     private System.Windows.Forms.Panel pnlLang;
-    private System.Windows.Forms.TabPage pageProds;
-    private System.Windows.Forms.GroupBox grpLR0Items;
-    private System.Windows.Forms.TextBox txtLR0Items;
-    private System.Windows.Forms.Splitter splitter1;
-    private System.Windows.Forms.ListBox lstProds;
     private System.Windows.Forms.ListBox lstParseTrace;
     private System.Windows.Forms.ComboBox cboGrammars;
     private System.Windows.Forms.Label label2;

@@ -43,7 +43,7 @@ namespace Irony.Compiler {
     }
     #endregion
 
-    #region properties/fields: Rule, ErrorRule 
+    #region properties/fields: NodeType, Rule, ErrorRule 
     public Type NodeType;
     
     public BnfExpression Rule; 
@@ -53,6 +53,13 @@ namespace Irony.Compiler {
     public BnfExpression ErrorRule;
 
     #endregion
+
+    public bool Nullable;
+    public readonly ProductionList Productions = new ProductionList();
+
+    public readonly StringSet Firsts = new StringSet();
+    public readonly NonTerminalList PropagateFirstsTo = new NonTerminalList();
+
 
     #region events and delegates: NodeCreator, NodeCreated
     public NodeCreatorMethod NodeCreator;

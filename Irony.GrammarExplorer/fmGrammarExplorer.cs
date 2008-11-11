@@ -20,12 +20,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Configuration;
 using System.Text.RegularExpressions;
-using Irony.Compiler;
-using Irony.EditorServices;
-using Irony.Compiler.Lalr;
-using Irony.Runtime;
-using Irony.GrammarExplorer.Properties;
 using System.Reflection;
+using Irony.Compiler;
+using Irony.Runtime;
+using Irony.EditorServices;
+using Irony.GrammarExplorer.Properties;
 
 
 namespace Irony.GrammarExplorer {
@@ -176,23 +175,14 @@ namespace Irony.GrammarExplorer {
      
     }
     private void RefreshGrammarInfo() {
-      lstProds.Items.Clear();
-      txtLR0Items.Text = "";
       txtParserStates.Text = "" ;
       txtGrammarErrors.Text = "(no errors found)";
       if (_compiler == null) return;
 
-      //Temporarily - this works only for LALR parser
-      Irony.Compiler.Lalr.ParserControlData data =((Irony.Compiler.Lalr.Parser) _compiler.Parser).Data;
-      
-      txtTerms.Text = TextUtils.TerminalsToText(_compiler.Scanner.Data.Terminals);
-      txtNonTerms.Text = TextUtils.NonTerminalsToText(data.NonTerminals);
-      //Productions and LR0 items
-      foreach (Production pr in data.Productions) {
-        lstProds.Items.Add(pr);
-      }
+      txtTerms.Text = TextUtils.TerminalsToText(_compiler.Grammar.Terminals);
+      txtNonTerms.Text = TextUtils.NonTerminalsToText(_compiler.Grammar.NonTerminals);
       //States
-      txtParserStates.Text = TextUtils.StateListToText(data.States);
+      txtParserStates.Text = _compiler.Parser.GetStateList();
       //Validation errors
       StringSet errors = _compiler.Grammar.Errors;
       if (errors.Count > 0) {
@@ -201,19 +191,6 @@ namespace Irony.GrammarExplorer {
         tabGrammar.SelectedTab = pageGrErrors;
       }
     }//methold
-
-    private void lstProds_SelectedIndexChanged(object sender, EventArgs e) {
-      Production pr = (Production) lstProds.SelectedItem;
-      if (pr == null) return;
-      string text = string.Empty;
-      string nl = Environment.NewLine;
-      foreach (LR0Item item in pr.LR0Items) {
-        text += item.ToString() + nl + 
-          "    Tail-Nullable = " + item.TailIsNullable + nl +
-          "    Tail-Firsts   = " + item.TailFirsts.ToString(" ") + nl;
-      }
-      txtLR0Items.Text = text;
-    }
     
     public string LoadFile(string fileName) {
       StreamReader rdr = new StreamReader(fileName);
@@ -326,7 +303,7 @@ namespace Irony.GrammarExplorer {
 
     private void DoSearch() {
       lblSearchError.Visible = false; 
-      var textBox = GetSearchContentBox();
+      TextBoxBase textBox = GetSearchContentBox();
       if (textBox == null) return;
 
       int idxStart = textBox.SelectionStart + textBox.SelectionLength;
@@ -334,7 +311,6 @@ namespace Irony.GrammarExplorer {
       Regex r = new Regex(txtSearch.Text, RegexOptions.IgnoreCase);
       // Match the regular expression pattern against a text string.
       Match m = r.Match(textBox.Text.Substring(idxStart));
-
       if (m.Success) {
         int i = 0;
         Group g = m.Groups[i];
@@ -351,25 +327,19 @@ namespace Irony.GrammarExplorer {
         lblSearchError.Text = "Not found.";
         lblSearchError.Visible = true; 
       }
+    }//method
 
-        
-    }
-
-    public RichTextBox GetSearchContentBox()		{
+    public TextBoxBase GetSearchContentBox()		{
       switch (tabGrammar.SelectedIndex) {
-/*
         case 0:
           return txtTerms;
         case 1:
           return txtNonTerms;
-        //case 2:
-        //this.pageProds);
-        case 3:
+        case 2:
           return txtParserStates;
-        case 4:
+        case 3:
           return txtGrammarErrors;
-  */
-        case 5:
+        case 4:
           return txtSource;
         default:
           return null;

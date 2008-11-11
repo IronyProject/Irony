@@ -62,7 +62,7 @@ namespace Irony.Compiler.AST {
     }
 
     public override string ToString() {
-      return Op + " (operator)";
+      return Op + " (binary operation)";
     }
   }//class
 }//namespace

@@ -1,1 +1,4 @@
-3 + a * d / (x + z1**z2**z3)
+#Simple calculation
+x = 3 + 5
+y = 3
+x / 2.0 + y * 2 - 2.5 #result= 7.5

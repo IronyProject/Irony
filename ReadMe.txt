@@ -6,17 +6,24 @@ Prerequisites
   
 Demo instructions
 To run Grammar Explorer
-1. Open Irony_All.sln solution file in Visual Studio.
-2. Right-click on the project "030.Irony.GrammarExplorer" and select "Set as StartUp project" from context menu.
-3. Click Run button on toolbar (F5). Grammar Explorer Window opens.
-4. Select grammar/language in top combo-box.
-5. Browse form tabs to see grammar data. 
-6. To parse source code sample, switch to "Test" tab. Click "Load..." button on top of the form. Open file dialog opens.
-7. Navigate to <root>\Irony.Samples\SourceSamples folder. Select source file appropriate for grammar selected in step 4. 
-8. Source file contents are loaded into text area in the form. Click Parse button on top of the form. 
-9. The Output Syntax Tree control on the right (in Results tab in the right tab control) would contain a parsed syntax tree.
-10. Alternatively you can paste or type your own sample program into source text area. 
-11. Repeat steps 4-10 for other languages.
+* Open Irony_All.sln solution file in Visual Studio.
+* Right-click on the project "030.Irony.GrammarExplorer" and select "Set as StartUp project" from context menu.
+* Click Run button on toolbar (F5). Grammar Explorer Window opens.
+* If Grammars combobox on top is empty, click on the button next to it (or right-click the combobox) and select 
+   "Add grammar" command. In the file-open window that appears, navigate to (root)\Irony.Samples\bin\debug folder and 
+   select Irony.Samples.dll. Application will popup a small window with a list of grammars in selected assembly. 
+   Leave all lines checked and click "OK". The newly added grammars will appear in the grammar combobox.  
+* Select grammar/language in top combo-box.
+* Browse form tabs to see grammar data. 
+* To parse source code sample, switch to "Test" tab. Click "Load..." button on top of the form. Open file dialog opens.
+* Navigate to <root>\Irony.Samples\SourceSamples folder. Select source file appropriate for grammar selected in step 4. 
+* Source file contents are loaded into text area in the form. Click Parse button on top of the form. 
+* The Output Syntax Tree control on the right (in Results tab in the right tab control) would contain a parsed syntax tree.
+* If the button "Run" enabled, click it to execute/evaluate the code. The results are shown in the Output window at the bottom of the form.
+  For Expression Evaluator grammar, the output is the result of the last expression or assignment. Interpreter for Scheme
+  can execute more complex programs found in SourceSamples\Scheme subfolder.  
+* Alternatively you can paste or type your own sample program into source text area. 
+* Repeat for other selections in the Grammar combobox.
 Note that Grammar Explorer restores your last language selection and source sample after you close/restart the form. 
 
   

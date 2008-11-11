@@ -53,8 +53,6 @@ namespace Irony.Compiler {
     public string Key;
     public TermOptions Options;
     protected Grammar Grammar;
-//    public Type NodeType;
-    public object ParserData; //custom parser data
     public int Precedence = AstNode.NoPrecedence;
 
     [System.Diagnostics.DebuggerStepThrough]

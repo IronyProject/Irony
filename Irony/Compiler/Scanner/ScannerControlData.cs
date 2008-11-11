@@ -21,7 +21,6 @@ namespace Irony.Compiler {
 
   public class ScannerControlData {
     public readonly Grammar Grammar;
-    public readonly TerminalList Terminals = new TerminalList();
     public readonly TerminalLookupTable TerminalsLookup = new TerminalLookupTable(); //hash table for fast terminal lookup by input char
     public readonly TerminalList FallbackTerminals = new TerminalList(); //terminals that have no explicit prefixes
     public readonly string ScannerRecoverySymbols = "";
@@ -33,33 +32,13 @@ namespace Irony.Compiler {
         Grammar.Init();
       LineTerminators = grammar.LineTerminators.ToCharArray();
       ScannerRecoverySymbols = grammar.WhitespaceChars + grammar.Delimiters;
-      ExtractTerminalsFromGrammar();
       BuildTerminalsLookupTable();
-    }
-
-    private void ExtractTerminalsFromGrammar() {
-      Terminals.Clear();
-      foreach (BnfTerm t in Grammar.AllTerms) {
-        Terminal terminal = t as Terminal;
-        if (terminal != null)
-          Terminals.Add(terminal);
-      }
-      //Adjust case for Symbols for case-insensitive grammar (change keys to lowercase)
-      if (!Grammar.CaseSensitive)
-        AdjustCaseForSymbols();
-      Terminals.Sort(Terminal.ByName);
-    }
-    
-    private void AdjustCaseForSymbols() {
-      foreach (Terminal term in Terminals)
-        if (term is SymbolTerminal)
-          term.Key = term.Key.ToLower();
     }
 
     private void BuildTerminalsLookupTable() {
       TerminalsLookup.Clear();
       FallbackTerminals.AddRange(Grammar.FallbackTerminals);
-      foreach (Terminal term in Terminals) {
+      foreach (Terminal term in Grammar.Terminals) {
         IList<string> prefixes = term.GetFirsts();
         if (prefixes == null || prefixes.Count == 0) {
           if (!FallbackTerminals.Contains(term))

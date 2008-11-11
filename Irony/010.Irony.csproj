@@ -53,6 +53,7 @@
     <Compile Include="Compiler\AST\AnonFunctionNode.cs" />
     <Compile Include="Compiler\CodeAnalysis.cs" />
     <Compile Include="Compiler\Grammar\LanguageAttribute.cs" />
+    <Compile Include="Compiler\Grammar\NonTerminalData.cs" />
     <Compile Include="EditorServices\EditorViewAdapter.cs" />
     <Compile Include="Compiler\Scanner\TokenEditorInfo.cs" />
     <Compile Include="Compiler\Interfaces.cs" />

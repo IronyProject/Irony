@@ -18,5 +18,6 @@ using System.Text;
 namespace Irony.Compiler {
   public interface IParser {
     AstNode Parse(CompilerContext context, IEnumerable<Token> tokenStream);
+    string GetStateList();
   }
 }

@@ -27,9 +27,6 @@ namespace Irony.Compiler.Lalr {
     public NonTerminal AugmentedRoot;
     public ParserState InitialState;
     public ParserState FinalState;
-    public readonly NonTerminalList NonTerminals = new NonTerminalList();
-
-    public readonly ProductionList Productions = new ProductionList();
     public readonly ParserStateList States = new ParserStateList();
     
     public bool AnalysisCanceled;  //True if grammar analysis was canceled due to errors
@@ -44,36 +41,6 @@ namespace Irony.Compiler.Lalr {
     Shift,
     Reduce,
     Operator,  //shift or reduce depending on operator associativity and precedence
-  }
-
-  /// <summary>
-  /// A container for LALR Parser-specific information for non-terminals
-  /// about the term.
-  /// </summary> 
-  public class NtData {
-    public NonTerminal NonTerminal;
-    public bool Nullable;
-    public readonly ProductionList Productions = new ProductionList();
-
-    public readonly StringSet Firsts = new StringSet();
-    public readonly NonTerminalList PropagateFirstsTo = new NonTerminalList();
-
-    private NtData(NonTerminal  nonTerminal) {
-      this.NonTerminal = nonTerminal;
-      nonTerminal.ParserData = this;
-    }
-    public static NtData GetOrCreate(NonTerminal nonTerminal) {
-      if (nonTerminal.ParserData != null)
-        return nonTerminal.ParserData as NtData;
-      else
-        return new NtData(nonTerminal);
-    }
-  }//class
-
-  public class NtDataList : List<NtData> {
-    public void Add(NonTerminal term) {
-      base.Add(NtData.GetOrCreate(term));
-    }
   }
 
   public partial class ParserState {
@@ -149,54 +116,6 @@ namespace Irony.Compiler.Lalr {
 
   public class ActionRecordTable : Dictionary<string, ActionRecord> { }
 
-  [Flags]
-  public enum ProductionFlags {
-    None = 0,
-    IsInitial = 0x01,    //is initial production
-    HasTerminals = 0x02, //contains terminal
-    IsError = 0x04,      //contains Error terminal
-    IsEmpty = 0x08,
-  }
-
-  public class Production {
-    public ProductionFlags Flags;
-    public readonly NonTerminal LValue;                              // left-side element
-    public readonly BnfTermList RValues = new BnfTermList(); //the right-side elements sequence
-    public readonly GrammarHintList Hints = new GrammarHintList();
-    public readonly LR0ItemList LR0Items = new LR0ItemList();        //LR0 items based on this production 
-    public Production(NonTerminal lvalue) {
-      LValue = lvalue;
-    }//constructor
-
-    public bool IsSet(ProductionFlags flag) {
-      return (Flags & flag) != ProductionFlags.None;
-    }
-
-    public override string ToString() {
-      return ToString(-1); //no dot
-    }
-
-    //Utility method used by Production and LR0Item
-    internal string ToString(int dotPosition) {
-      char dotChar = '\u00B7'; //dot in the middle of the line
-      StringBuilder bld = new StringBuilder();
-      bld.Append(LValue.Name);
-      bld.Append(" -> ");
-      for (int i = 0; i < RValues.Count; i++) {
-        if (i == dotPosition)
-          bld.Append(dotChar);
-        bld.Append(RValues[i].Name);
-        bld.Append(" ");
-      }//for i
-      if (dotPosition == RValues.Count)
-        bld.Append(dotChar);
-      return bld.ToString();
-    }
-
-  }//Production class
-
-  public class ProductionList : List<Production> { }
-
   public class LRItem {
     public readonly ParserState State;
     public readonly LR0Item Core;
@@ -213,45 +132,6 @@ namespace Irony.Compiler.Lalr {
   }//LRItem class
 
   public class LRItemList : List<LRItem> { }
-
-  public partial class LR0Item {
-    public readonly Production Production;
-    public readonly int Position;
-
-    public readonly StringSet TailFirsts = new StringSet(); //tail is a set of elements after the Current element
-    public bool TailIsNullable = false;
-    
-    //automatically generated IDs - used for building keys for lists of kernel LR0Items
-    // which in turn are used to quickly lookup parser states in hash
-    internal readonly int ID;
-    private string _toString; //caches the ToString() value
-
-    public LR0Item(Production production, int position, ref int id) {
-      Production = production;
-      Position = position;
-      ID = id;
-      id++;
-    }
-    //The after-dot element
-    public BnfTerm Current {
-      get {
-        if (Position < Production.RValues.Count)
-          return Production.RValues[Position];
-        else
-          return null;
-      }
-    }
-    public bool IsKernel {
-      get { return Position > 0 || (Production.IsSet(ProductionFlags.IsInitial) && Position == 0); }
-    }
-    public override string ToString() {
-      if (_toString == null)
-        _toString = Production.ToString(Position);
-      return _toString;
-    }
-  }//LR0Item
-
-  public class LR0ItemList : List<LR0Item> { }
 
 
 }//namespace

@@ -23,7 +23,7 @@ namespace Irony.Samples {
   // x = 3 + 4
   // y = x * 2 + 1
   //  the result of calculation is the result of last expression or assignment (value of "y" in this case).
-  // Irony-provided runtime evaluates the expressions
+  //  Irony's default  runtime provides expression evaluation. 
   // Note that nodes in AST tree are shown in prefix-like notation; for ex. an operation "2 + 3" is shown with 
   //  header node "+ (binary operation)" and two arg child nodes containing 2 and 3. 
 
@@ -71,10 +71,9 @@ namespace Irony.Samples {
       RegisterOperators(3, Associativity.Right, "**");
 
       RegisterPunctuation( "(", ")");
-      RegisterPunctuation(NewLine); //remove all newLines - important, extra new lines in output tree can mess up calc result
 
       //automatically add newLine before EOF so that our grammar works
-      this.LanguageFlags = LanguageFlags.AutoNewLine | LanguageFlags.SupportsInterpreter; 
+      this.LanguageFlags = LanguageFlags.NewLineBeforeEOF | LanguageFlags.SupportsInterpreter; 
 
     }
   }

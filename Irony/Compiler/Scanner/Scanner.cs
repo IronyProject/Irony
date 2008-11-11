@@ -80,6 +80,7 @@ namespace Irony.Compiler {
       return ReadToken();
     }
 
+
     private Token ReadToken() {
       if (_bufferedTokens.Count > 0) {
         Token tkn = _bufferedTokens[0];
@@ -91,13 +92,22 @@ namespace Irony.Compiler {
         _source.Position++;
       //That's the token start, calc location (line and column)
       SetTokenStartLocation();
+      Token result = null; 
       //Check for EOF
-      if (_source.EOF())
-        return Token.Create (_context, Grammar.Eof, _source.TokenStart, string.Empty, Grammar.Eof.Name);
+      if (_source.EOF()) {
+        result = Token.Create(_context, Grammar.Eof, _source.TokenStart, string.Empty, Grammar.Eof.Name);
+        //check if we need extra newline before EOF
+        bool currentIsNewLine = _currentToken != null && _currentToken.Terminal == Grammar.NewLine;
+        if (_context.Compiler.Grammar.FlagIsSet(LanguageFlags.NewLineBeforeEOF) && !currentIsNewLine) {
+          _bufferedTokens.Insert(0, result); //put it into buffer
+          result = Token.Create(Grammar.NewLine, _context, _currentToken.Location, "\n");
+        }//if AutoNewLine
+        return result; 
+      }
       //Find matching terminal
       // First, try terminals with explicit "first-char" prefixes, selected by current char in source
       TerminalList terms = SelectTerminals(_source.CurrentChar);
-      Token result = MatchTerminals(terms);
+      result = MatchTerminals(terms);
       //If no token, try FallbackTerminals
       if (result == null && Data.FallbackTerminals.Count > 0)
         result = MatchTerminals(Data.FallbackTerminals); 
@@ -115,7 +125,7 @@ namespace Irony.Compiler {
       //If we have normal token then return it
       if (result != null && !result.IsError()) {
         //restore position to point after the result token
-        _source.Position = _source.TokenStart.Position + result.Length; 
+        _source.Position = _source.TokenStart.Position + result.Length;
         return result;
       } 
       //we have an error: either error token or no token at all

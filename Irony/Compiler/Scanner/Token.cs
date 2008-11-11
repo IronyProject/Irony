@@ -23,6 +23,10 @@ namespace Irony.Compiler {
   public class Token : AstNode  {
     public Token(NodeArgs args) : base(args) {
       this.EditorInfo = Terminal.EditorInfo;  //set to term's EditorInfo by default
+      if (Terminal.Category == TokenCategory.Content)
+        this.Evaluate = EvaluateAssign;
+      else
+        this.Evaluate = EvaluateEmpty; 
     
     }
     
@@ -92,8 +96,10 @@ namespace Irony.Compiler {
     }
     public short ScannerState; //Scanner state after producing token 
 
-    protected override void DoEvaluate(Irony.Runtime.EvaluationContext context) {
+    private void EvaluateAssign(Irony.Runtime.EvaluationContext context) {
       context.CurrentResult = this.Value;
+    }
+    private void EvaluateEmpty(Irony.Runtime.EvaluationContext context) {
     }
 
     [System.Diagnostics.DebuggerStepThrough]

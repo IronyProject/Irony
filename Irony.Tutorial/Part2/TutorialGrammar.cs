@@ -70,7 +70,7 @@ namespace Irony.Tutorial.Part2 {
       RegisterPunctuation(NewLine); //remove all newLines - important, extra new lines in output tree can mess up calc result
 
       //automatically add newLine before EOF so that our grammar works
-      this.LanguageFlags = LanguageFlags.NewLineBeforeEOF | LanguageFlags.SupportsInterpreter; 
+      this.LanguageFlags = LanguageFlags.NewLineBeforeEOF | LanguageFlags.SupportsInterpreter | LanguageFlags.BubbleNodes; 
 
     }
   }

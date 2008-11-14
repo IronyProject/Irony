@@ -206,7 +206,8 @@ namespace Irony.Samples.Scheme {
       TokenFilters.Add(filter);
 
       //Scheme is tail-recursive language
-      base.LanguageFlags = LanguageFlags.TailRecursive | LanguageFlags.SupportsInterpreter | LanguageFlags.SupportsConsole;
+      base.LanguageFlags = LanguageFlags.BubbleNodes | LanguageFlags.TailRecursive | 
+                  LanguageFlags.SupportsInterpreter | LanguageFlags.SupportsConsole;
       //keywords - just for colorizer
       base.AddKeywords("define", "lambda", "cond", "if", "begin", "let");
 

@@ -20,12 +20,21 @@ namespace Irony.Compiler {
   public enum LanguageFlags {
     None = 0,
 
-    TailRecursive = 0x01,
-    NewLineBeforeEOF = 0x02,
-    SupportsInterpreter = 0x04,
-    SupportsConsole = 0x08,
+    //Capabilities
+    SupportsInterpreter = 0x01,
+    SupportsConsole = 0x02,
+    //Tail-recursive language - Scheme is one example
+    TailRecursive = 0x04,
 
-    Default = NewLineBeforeEOF,
+    //Parsing specifics
+    //Bubble nodes in AST tree - see Parser.CreateNode method
+    BubbleNodes = 0x0100,
+    //Be careful - use this flag ONLY if you use NewLine terminal in grammar explicitly!
+    // - it happens only in line-based languages like Basic.
+    NewLineBeforeEOF = 0x0200,
+
+    //Default value
+    Default = BubbleNodes,
   }
 
 

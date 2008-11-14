@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommentTerminalTests.cs" />
+    <Compile Include="EvaluationTests.cs" />
     <Compile Include="IdentifierTerminalTests.cs" />
     <Compile Include="NumberLiteralTests.cs" />
     <None Include="OperatorDispatchTests.cs" />
@@ -51,6 +52,10 @@
     <Compile Include="_TerminalTestBase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Irony.Samples\020.Irony.Samples.csproj">
+      <Project>{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}</Project>
+      <Name>020.Irony.Samples</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Irony\010.Irony.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
       <Name>010.Irony</Name>

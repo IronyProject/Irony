@@ -3,6 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{64EF478E-7535-46A8-9047-5EBA5EFBF13E}"
 	ProjectSection(SolutionItems) = preProject
+		Irony_All3.vsmdi = Irony_All3.vsmdi
 		License.txt = License.txt
 		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
 		ReadMe.txt = ReadMe.txt
@@ -20,7 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "050.Irony.Tutorial", "Irony
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 9
+		SccNumberOfProjects = 6
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs05.codeplex.com/
 		SccLocalPath0 = .
@@ -39,15 +40,9 @@ Global
 		SccProjectUniqueName5 = Irony.Tutorial\\050.Irony.Tutorial.csproj
 		SccProjectName5 = Irony.Tutorial
 		SccLocalPath5 = Irony.Tutorial
-		SccProjectUniqueName6 = ..\\VSIntegration\\LanguageService\\PythonLanguageService.csproj
-		SccProjectName6 = LanguageService
-		SccLocalPath6 = ..\\VSIntegration\\LanguageService
-		SccProjectUniqueName7 = Irony.Samples.LanguageService\\025.Irony.Samples.LanguageService.csproj
-		SccProjectName7 = Irony.Samples.LanguageService
-		SccLocalPath7 = Irony.Samples.LanguageService
-		SccProjectUniqueName8 = Irony.Integration\\015.Irony.Integration.csproj
-		SccProjectName8 = Irony.Integration
-		SccLocalPath8 = Irony.Integration
+	EndGlobalSection
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = Irony_All3.vsmdi
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -367,7 +367,6 @@ namespace Irony.GrammarExplorer {
           throw new RuntimeException("Runtime is not implemented for the language (Grammar.CreateRuntime() returned null). Cannot execute the program.");
         context = new EvaluationContext(runtime, _rootNode);
         context.Runtime.ConsoleWrite += Ops_ConsoleWrite;
-        GC.Collect(); //collect now to avoid spontaneous collection on repeated runs 
         sw.Start();
         _rootNode.Evaluate(context);
         sw.Stop();

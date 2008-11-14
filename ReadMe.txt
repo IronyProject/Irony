@@ -16,7 +16,7 @@ To run Grammar Explorer
 * Select grammar/language in top combo-box.
 * Browse form tabs to see grammar data. 
 * To parse source code sample, switch to "Test" tab. Click "Load..." button on top of the form. Open file dialog opens.
-* Navigate to <root>\Irony.Samples\SourceSamples folder. Select source file appropriate for grammar selected in step 4. 
+* Navigate to <root>\Irony.Samples\SourceSamples folder. Select source file appropriate for the selected grammar. 
 * Source file contents are loaded into text area in the form. Click Parse button on top of the form. 
 * The Output Syntax Tree control on the right (in Results tab in the right tab control) would contain a parsed syntax tree.
 * If the button "Run" enabled, click it to execute/evaluate the code. The results are shown in the Output window at the bottom of the form.

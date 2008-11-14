@@ -15,7 +15,6 @@ using System.Collections.Generic;
 using System.Text;
 using Irony.Compiler;
 using Irony.Compiler.AST;
-using Irony.Runtime;
 
 namespace Irony.Samples {
   // This grammar describes programs that consist of simple expressions and assignments,
@@ -24,8 +23,9 @@ namespace Irony.Samples {
   // y = x * 2 + 1
   //  the result of calculation is the result of last expression or assignment (value of "y" in this case).
   //  Irony's default  runtime provides expression evaluation. 
-  // Note that nodes in AST tree are shown in prefix-like notation; for ex. an operation "2 + 3" is shown with 
-  //  header node "+ (binary operation)" and two arg child nodes containing 2 and 3. 
+  //  Note that in Grammar Explorer the nodes in AST tree  are shown in prefix-like notation; 
+  //  for ex. an operation "2 + 3" is shown with a header node "+ (binary operation)" and two child nodes
+  //  for arguments 2 and 3. 
 
   [Language("ExpressionEvaluator", "1.0", "Multi-line expression evaluator")]
   public class ExpressionEvaluatorGrammar : Irony.Compiler.Grammar {
@@ -72,8 +72,8 @@ namespace Irony.Samples {
 
       RegisterPunctuation( "(", ")");
 
-      //automatically add newLine before EOF so that our grammar works
-      this.LanguageFlags = LanguageFlags.NewLineBeforeEOF | LanguageFlags.SupportsInterpreter; 
+      //automatically add NewLine before EOF so that our BNF rules work correctly when there's no final line break in source
+      this.LanguageFlags |= LanguageFlags.NewLineBeforeEOF | LanguageFlags.SupportsInterpreter; 
 
     }
   }

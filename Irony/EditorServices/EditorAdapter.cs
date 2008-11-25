@@ -47,7 +47,7 @@ namespace Irony.EditorServices {
     public EditorAdapter(LanguageCompiler compiler) {
       _compiler = compiler;
       _context = new CompilerContext(_compiler); 
-      _context.Options |= CompilerOptions.CollectTokens;
+      _context.Options |= CompilerOptions.CollectTokens | CompilerOptions.MatchBraces;
       _parsedSource = new ParsedSource(string.Empty, new TokenList(), null);
       _colorizerThread = new Thread(ColorizerLoop);
       _colorizerThread.IsBackground = true;

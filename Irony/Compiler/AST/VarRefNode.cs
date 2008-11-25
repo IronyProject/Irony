@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using Irony.Compiler;
 using Irony.Runtime;
 
@@ -128,6 +129,13 @@ namespace Irony.Compiler.AST {
     public override string ToString() {
       return Name;
     }
+
+
+    protected override void XmlSetAttributes(XmlElement thisElement) {
+      base.XmlSetAttributes(thisElement);
+      thisElement.SetAttribute("Name", Name); 
+    }
+
   }//class
 
 }

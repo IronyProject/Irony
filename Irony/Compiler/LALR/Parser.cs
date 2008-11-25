@@ -138,6 +138,9 @@ namespace Irony.Compiler.Lalr {
       while (true) {
         if (_currentState == Data.FinalState) {
           AstNode result = Stack[0].Node;
+          //Check transient status
+          if (result.Term.IsSet(TermOptions.IsTransient) && result.ChildNodes.Count == 1)
+            result = result.ChildNodes[0];
           Stack.Reset();
           return result;
         }
@@ -324,8 +327,15 @@ namespace Irony.Compiler.Lalr {
       AstNodeList childNodes = new AstNodeList();
       for (int i = 0; i < action.PopCount; i++) {
         AstNode child = Stack[Stack.Count - popCnt + i].Node;
-        if (!child.Term.IsSet(TermOptions.IsPunctuation)) 
-          childNodes.Add(child);
+        if (child.Term.IsSet(TermOptions.IsPunctuation)) continue;
+        //Transient nodes - don't add them but add their childrent directly to grandparent
+        if (child.Term.IsSet(TermOptions.IsTransient)) {
+          foreach (AstNode grandChild in child.ChildNodes)
+            childNodes.Add(grandChild);
+          continue; 
+        }
+        //Add normal child
+        childNodes.Add(child);
       }
 
       //recover state, location and pop the stack

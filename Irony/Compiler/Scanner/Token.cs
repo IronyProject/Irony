@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml;
 
 namespace Irony.Compiler {
 
@@ -23,7 +24,7 @@ namespace Irony.Compiler {
   public class Token : AstNode  {
     public Token(NodeArgs args) : base(args) {
       this.EditorInfo = Terminal.EditorInfo;  //set to term's EditorInfo by default
-      if (Terminal.Category == TokenCategory.Content)
+      if (Terminal.Category == TokenCategory.Literal)
         this.Evaluate = EvaluateAssign;
       else
         this.Evaluate = EvaluateEmpty; 
@@ -80,6 +81,15 @@ namespace Irony.Compiler {
 
     public bool IsKeyword;
     public TokenEditorInfo EditorInfo;
+
+    public Token OtherBrace {  //matching opening/closing brace
+      get { return _otherBrace; }
+    } Token _otherBrace;
+
+    public static void LinkMatchingBraces(Token openingBrace, Token closingBrace) {
+      openingBrace._otherBrace = closingBrace;
+      closingBrace._otherBrace = openingBrace;
+    }
 
     public bool MatchByValue {
       get {
@@ -143,6 +153,15 @@ namespace Irony.Compiler {
     public override bool IsEmpty() {
       return false;
     }
+
+    protected override void XmlSetAttributes(XmlElement thisElement) {
+      base.XmlSetAttributes(thisElement);
+      thisElement.SetAttribute("Value", this.ValueString); //Adds value string
+      if (Value != null)
+        thisElement.SetAttribute("ValueType", this.Value.GetType().FullName); //Adds value string
+
+    }
+
 
   }//class
 

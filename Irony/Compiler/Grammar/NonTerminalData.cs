@@ -32,24 +32,7 @@ namespace Irony.Compiler {
     }
 
     public override string ToString() {
-      return ToString(-1); //no dot
-    }
-
-    //Utility method used by Production and LR0Item
-    internal string ToString(int dotPosition) {
-      char dotChar = '\u00B7'; //dot in the middle of the line
-      StringBuilder bld = new StringBuilder();
-      bld.Append(LValue.Name);
-      bld.Append(" -> ");
-      for (int i = 0; i < RValues.Count; i++) {
-        if (i == dotPosition)
-          bld.Append(dotChar);
-        bld.Append(RValues[i].Name);
-        bld.Append(" ");
-      }//for i
-      if (dotPosition == RValues.Count)
-        bld.Append(dotChar);
-      return bld.ToString();
+      return TextUtils.ProductionToString(this, -1); //no dot
     }
 
   }//Production class
@@ -64,13 +47,11 @@ namespace Irony.Compiler {
     //automatically generated IDs - used for building keys for lists of kernel LR0Items
     // which in turn are used to quickly lookup parser states in hash
     internal readonly int ID;
-    private string _toString; //caches the ToString() value
 
-    public LR0Item(Production production, int position, ref int id) {
+    public LR0Item(Production production, int position, int id) {
       Production = production;
       Position = position;
       ID = id;
-      id++;
     }
     //The after-dot element
     public BnfTerm Current {
@@ -85,9 +66,7 @@ namespace Irony.Compiler {
       get { return Position > 0 || (Production.IsSet(ProductionFlags.IsInitial) && Position == 0); }
     }
     public override string ToString() {
-      if (_toString == null)
-        _toString = Production.ToString(Position);
-      return _toString;
+      return TextUtils.ProductionToString(this.Production, Position);
     }
   }//LR0Item
 

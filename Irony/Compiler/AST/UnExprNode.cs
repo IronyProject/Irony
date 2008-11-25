@@ -62,5 +62,9 @@ namespace Irony.Compiler.AST {
     public override string ToString() {
       return Op + " (unary)";
     }
+    protected override void XmlSetAttributes(System.Xml.XmlElement element) {
+      base.XmlSetAttributes(element);
+      element.SetAttribute("Operation", Op); 
+    }
   }//class
 }//namespace

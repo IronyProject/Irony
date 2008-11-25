@@ -21,6 +21,7 @@ using System.IO;
 using System.Configuration;
 using System.Text.RegularExpressions;
 using System.Reflection;
+using System.Xml;
 using Irony.Compiler;
 using Irony.Runtime;
 using Irony.EditorServices;
@@ -72,11 +73,24 @@ namespace Irony.GrammarExplorer {
 
     private void btnParse_Click(object sender, EventArgs e) {
       ParseSample();
+  /* test for opening braces
+        //don't forget to set the flags on compiler context before parsing/scanning: 
+        //         _compilerContext.Options |= CompilerOptions.MatchBraces | CompilerOptions.CollectTokens;
+        var braces = EditorUtilities.GetOpeningBraces(_compilerContext.Tokens); 
+        string text = string.Empty;
+        foreach (Token brace in braces)
+          text += brace.Text + ":" + brace.OtherBrace.Text + " at " + brace.Location.ToString() + Environment.NewLine;
+        txtOutput.Text = text; 
+   */
     }
 
     private void ParseSample() {
       _rootNode = null;
       _compilerContext = new CompilerContext(_compiler);
+      //Just for testing purposes
+      _compilerContext.Options |= CompilerOptions.MatchBraces | CompilerOptions.CollectTokens;
+      if (_compiler.Grammar.FlagIsSet(LanguageFlags.SupportsInterpreter))
+        _compilerContext.Options |= CompilerOptions.AnalyzeCode;
       ResetResultPanels();
       if (chkShowTrace.Checked) {
         _compiler.LalrParser.ActionSelected += Parser_ParserAction;
@@ -164,7 +178,7 @@ namespace Irony.GrammarExplorer {
       if (node == null) return;
       if (node is Token) {
         Token token = node as Token;
-        if (token.Terminal.Category != TokenCategory.Content) return; 
+        if (token.Terminal.Category != TokenCategory.Content && token.Terminal.Category != TokenCategory.Literal) return; 
       }
       string txt = node.ToString();
       TreeNode tn = (parent == null? 
@@ -353,22 +367,19 @@ namespace Irony.GrammarExplorer {
       Stopwatch sw = new Stopwatch();
       txtOutput.Text = "";
       _outBuffer = new StringBuilder();
-      EvaluationContext context = null;
+      EvaluationContext evalContext = null;
       try {
         if (_rootNode == null)
           ParseSample();
         if (_compilerContext.Errors.Count > 0) return;
         
-        _compiler.AnalyzeCode(_rootNode, _compilerContext); 
+        //_compiler.AnalyzeCode(_rootNode, _compilerContext); -- code should be analyzed already
         if (_compilerContext.Errors.Count > 0) return;
 
-        LanguageRuntime runtime = _compilerContext.Runtime;
-        if (runtime == null)
-          throw new RuntimeException("Runtime is not implemented for the language (Grammar.CreateRuntime() returned null). Cannot execute the program.");
-        context = new EvaluationContext(runtime, _rootNode);
-        context.Runtime.ConsoleWrite += Ops_ConsoleWrite;
+        evalContext = new EvaluationContext(_compilerContext.Runtime, _rootNode);
+        evalContext.Runtime.ConsoleWrite += Ops_ConsoleWrite;
         sw.Start();
-        _rootNode.Evaluate(context);
+        _rootNode.Evaluate(evalContext);
         sw.Stop();
         lblRunTime.Text = sw.ElapsedMilliseconds.ToString();
       } catch(RuntimeException rex) {
@@ -376,11 +387,11 @@ namespace Irony.GrammarExplorer {
         _compilerContext.ReportError(rex.Location, rex.Message);
       } finally {
         sw.Stop();
-        if (context != null) {
-          context.Runtime.ConsoleWrite -= Ops_ConsoleWrite;
+        if (evalContext != null) {
+          evalContext.Runtime.ConsoleWrite -= Ops_ConsoleWrite;
           txtOutput.Text = _outBuffer.ToString();
-          if (context.CurrentResult != Unassigned.Value)
-            txtOutput.Text += context.CurrentResult;
+          if (evalContext.CurrentResult != Unassigned.Value)
+            txtOutput.Text += evalContext.CurrentResult;
         }
         if (_compilerContext.Errors.Count > 0)
           ShowCompilerErrors();
@@ -404,16 +415,6 @@ namespace Irony.GrammarExplorer {
       miRemove.Enabled = cboGrammars.Items.Count > 0; 
     }
 
-    private void miRemove_Click(object sender, EventArgs e) {
-      if (MessageBox.Show("Are you sure you want to remove grammmar " + cboGrammars.SelectedItem + "?",
-        "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes) {
-        cboGrammars.Items.RemoveAt(cboGrammars.SelectedIndex);
-        _compiler = null;
-        if (cboGrammars.Items.Count > 0)
-          cboGrammars.SelectedIndex = 0; 
-      }
-    }
-
     private void miAdd_Click(object sender, EventArgs e) {
        if (dlgSelectAssembly.ShowDialog() != DialogResult.OK) return;
        string location = dlgSelectAssembly.FileName;
@@ -432,6 +433,30 @@ namespace Irony.GrammarExplorer {
       if (grammars == null) return;
       foreach (GrammarItem item in grammars)
         cboGrammars.Items.Add(item); 
+    }
+
+    private void miRemove_Click(object sender, EventArgs e) {
+      if (MessageBox.Show("Are you sure you want to remove grammmar " + cboGrammars.SelectedItem + "?",
+        "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes) {
+        cboGrammars.Items.RemoveAt(cboGrammars.SelectedIndex);
+        _compiler = null;
+        if (cboGrammars.Items.Count > 0)
+          cboGrammars.SelectedIndex = 0;
+      }
+    }
+
+    private void miRemoveAll_Click(object sender, EventArgs e) {
+      if (MessageBox.Show("Are you sure you want to remove all grammmars in the list?",
+        "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes) {
+        cboGrammars.Items.Clear();
+        _compiler = null;
+      }
+    }
+
+    private void btnToXml_Click(object sender, EventArgs e) {
+      if (_rootNode == null) ParseSample();
+      if (_rootNode == null) return;
+      txtOutput.Text = _rootNode.XmlGetXmlString();
     }//method
 
 

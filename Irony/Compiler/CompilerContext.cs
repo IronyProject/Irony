@@ -20,6 +20,13 @@ namespace Irony.Compiler {
   public enum CompilerOptions {
     GrammarDebugging = 0x01,
     CollectTokens = 0x02, //Collect all tokens in CompilerContext.Tokens collection
+    MatchBraces = 0x04,   //link all open/closing brace tokens
+    AnalyzeCode = 0x10,   //run code analysis; effective only in Module mode
+  }
+  public enum CompileMode {
+    Module,       //default, continuous input file
+    Line,         // support for VS integration mode, syntax highlighting
+    //ConsoleInput, //line-by-line from console
   }
 
   // The purpose of this class is to provide a container for information shared 
@@ -27,6 +34,7 @@ namespace Irony.Compiler {
   // Developers can extend this class to add language-specific properties or methods.
   public class CompilerContext {
     public CompilerOptions Options;
+    public CompileMode Mode = CompileMode.Module;
     public readonly LanguageCompiler Compiler;
     public readonly SyntaxErrorList Errors = new SyntaxErrorList();
     public readonly Dictionary<string, object> Values = new Dictionary<string, object>();

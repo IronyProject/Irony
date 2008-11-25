@@ -136,6 +136,10 @@ namespace Irony.Compiler {
       closeS.SetOption(TermOptions.IsCloseBrace);
       closeS.IsPairFor = openS;
     }
+    public void MarkTransient(params NonTerminal[] nonTerminals) {
+      foreach (NonTerminal nt in nonTerminals)
+        nt.Options |= TermOptions.IsTransient;
+    }
     #endregion
 
     #region virtual methods: TryMatch, CreateNode, GetSyntaxErrorMessage, CreateRuntime
@@ -195,6 +199,7 @@ namespace Irony.Compiler {
         return listNonTerminal.Rule;
       }
       NonTerminal tmp = new NonTerminal(listMember.Name + "+");
+      tmp.SetOption(TermOptions.IsTransient); //important - mark it as Transient so it will be eliminated from AST tree
       MakePlusRule(tmp, delimiter, listMember);
       listNonTerminal.Rule = Empty | tmp;
       listNonTerminal.SetOption(TermOptions.IsStarList);

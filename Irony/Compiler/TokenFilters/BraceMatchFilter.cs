@@ -30,34 +30,13 @@ namespace Irony.Compiler {
   // The alternative is to declare two nonTerminals, one for all opening symbols and one 
   // for all closing ones, and then use them in productions. 
   // In this case the resulting grammar (and parser) ignores the matching rule, 
-  // so we must provide the match checking outside the parser. 
-  // That's what this filter is doing. It is analyzing the token stream
-  // produced by the scanner and validates that each closing brace matches the opening one.
-  // At initialization the filter must be provided with all the brace pairs defined in the language thru
-  // method AddBracePair.
-  // Don't use this filter to validate "normal" pairs that never interchange - this validation 
-  //  should be embedded into normal parsing process.
+  // so we must provide the match checking outside the parser - and that's what this filter is doing. 
+  // The other use is to match open/closing braces for editor support (VS integration)
   #endregion
-
-  public class BracePair {
-    public readonly Token Open;
-    public readonly Token Close;
-    public BracePair(Token open, Token close) {
-      this.Open = open;
-      this.Close = close;
-    }
-  }
-  public class BracePairList : List<BracePair> { }
 
 
   public class BraceMatchFilter : TokenFilter {
-    StringList _stack = new StringList();
-    //We don't use dictionaries as number of symbols would be small - two or four at most,
-    // so hashtables/dictionaries give no advantage
     private Stack<Token> _braces = new Stack<Token>();
-    public BracePairList BracePairs = new BracePairList();
-    public bool BuildPairsList = false; //do not build pairs list
-
 
     public override IEnumerable<Token> BeginFiltering(CompilerContext context, IEnumerable<Token> tokens) {
       foreach (Token token in tokens) {
@@ -84,8 +63,7 @@ namespace Irony.Compiler {
           continue;
         }
         //everything is ok, there's matching brace on top of the stack
-        if (BuildPairsList)
-          BracePairs.Add(new BracePair(last, token));
+        Token.LinkMatchingBraces(last, token); 
         yield return token; //return this token
       }//foreach token
       yield break;

@@ -76,7 +76,6 @@ namespace Irony.GrammarExplorer {
       this.pnlLang = new System.Windows.Forms.Panel();
       this.btnManageGrammars = new System.Windows.Forms.Button();
       this.lblSearchError = new System.Windows.Forms.Label();
-      this.SearchLabel = new System.Windows.Forms.Label();
       this.btnSearch = new System.Windows.Forms.Button();
       this.txtSearch = new System.Windows.Forms.TextBox();
       this.label2 = new System.Windows.Forms.Label();
@@ -84,8 +83,10 @@ namespace Irony.GrammarExplorer {
       this.menuGrammars = new System.Windows.Forms.ContextMenuStrip(this.components);
       this.miAdd = new System.Windows.Forms.ToolStripMenuItem();
       this.miRemove = new System.Windows.Forms.ToolStripMenuItem();
+      this.miRemoveAll = new System.Windows.Forms.ToolStripMenuItem();
       this.dlgOpenFile = new System.Windows.Forms.OpenFileDialog();
       this.dlgSelectAssembly = new System.Windows.Forms.OpenFileDialog();
+      this.btnToXml = new System.Windows.Forms.Button();
       this.tabGrammar.SuspendLayout();
       this.pageTerminals.SuspendLayout();
       this.pageNonTerms.SuspendLayout();
@@ -287,6 +288,7 @@ namespace Irony.GrammarExplorer {
       // 
       // panel1
       // 
+      this.panel1.Controls.Add(this.btnToXml);
       this.panel1.Controls.Add(this.btnRun);
       this.panel1.Controls.Add(this.chkShowTrace);
       this.panel1.Controls.Add(this.btnFileOpen);
@@ -300,7 +302,7 @@ namespace Irony.GrammarExplorer {
       // btnRun
       // 
       this.btnRun.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnRun.Location = new System.Drawing.Point(595, 3);
+      this.btnRun.Location = new System.Drawing.Point(526, 4);
       this.btnRun.Name = "btnRun";
       this.btnRun.Size = new System.Drawing.Size(65, 23);
       this.btnRun.TabIndex = 7;
@@ -322,7 +324,7 @@ namespace Irony.GrammarExplorer {
       // btnFileOpen
       // 
       this.btnFileOpen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnFileOpen.Location = new System.Drawing.Point(451, 3);
+      this.btnFileOpen.Location = new System.Drawing.Point(382, 4);
       this.btnFileOpen.Name = "btnFileOpen";
       this.btnFileOpen.Size = new System.Drawing.Size(65, 23);
       this.btnFileOpen.TabIndex = 6;
@@ -333,7 +335,7 @@ namespace Irony.GrammarExplorer {
       // btnParse
       // 
       this.btnParse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnParse.Location = new System.Drawing.Point(522, 3);
+      this.btnParse.Location = new System.Drawing.Point(453, 4);
       this.btnParse.Name = "btnParse";
       this.btnParse.Size = new System.Drawing.Size(67, 23);
       this.btnParse.TabIndex = 1;
@@ -651,7 +653,6 @@ namespace Irony.GrammarExplorer {
       // 
       this.pnlLang.Controls.Add(this.btnManageGrammars);
       this.pnlLang.Controls.Add(this.lblSearchError);
-      this.pnlLang.Controls.Add(this.SearchLabel);
       this.pnlLang.Controls.Add(this.btnSearch);
       this.pnlLang.Controls.Add(this.txtSearch);
       this.pnlLang.Controls.Add(this.label2);
@@ -677,7 +678,7 @@ namespace Irony.GrammarExplorer {
       // 
       this.lblSearchError.AutoSize = true;
       this.lblSearchError.ForeColor = System.Drawing.Color.Red;
-      this.lblSearchError.Location = new System.Drawing.Point(809, 6);
+      this.lblSearchError.Location = new System.Drawing.Point(698, 8);
       this.lblSearchError.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
       this.lblSearchError.Name = "lblSearchError";
       this.lblSearchError.Size = new System.Drawing.Size(54, 13);
@@ -685,24 +686,14 @@ namespace Irony.GrammarExplorer {
       this.lblSearchError.Text = "Not found";
       this.lblSearchError.Visible = false;
       // 
-      // SearchLabel
-      // 
-      this.SearchLabel.AutoSize = true;
-      this.SearchLabel.Location = new System.Drawing.Point(429, 6);
-      this.SearchLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-      this.SearchLabel.Name = "SearchLabel";
-      this.SearchLabel.Size = new System.Drawing.Size(79, 13);
-      this.SearchLabel.TabIndex = 9;
-      this.SearchLabel.Text = "Search (regex):";
-      // 
       // btnSearch
       // 
-      this.btnSearch.Location = new System.Drawing.Point(734, 2);
+      this.btnSearch.Location = new System.Drawing.Point(639, 3);
       this.btnSearch.Margin = new System.Windows.Forms.Padding(2);
       this.btnSearch.Name = "btnSearch";
-      this.btnSearch.Size = new System.Drawing.Size(71, 24);
+      this.btnSearch.Size = new System.Drawing.Size(55, 23);
       this.btnSearch.TabIndex = 10;
-      this.btnSearch.Text = "&Search";
+      this.btnSearch.Text = "Find";
       this.btnSearch.UseVisualStyleBackColor = true;
       this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
       // 
@@ -713,7 +704,7 @@ namespace Irony.GrammarExplorer {
       this.txtSearch.Location = new System.Drawing.Point(512, 3);
       this.txtSearch.Margin = new System.Windows.Forms.Padding(2);
       this.txtSearch.Name = "txtSearch";
-      this.txtSearch.Size = new System.Drawing.Size(218, 20);
+      this.txtSearch.Size = new System.Drawing.Size(123, 20);
       this.txtSearch.TabIndex = 8;
       this.txtSearch.Text = global::Irony.GrammarExplorer.Properties.Settings.Default.SearchPattern;
       this.txtSearch.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtSearch_KeyPress);
@@ -750,30 +741,49 @@ namespace Irony.GrammarExplorer {
       // 
       this.menuGrammars.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.miAdd,
-            this.miRemove});
+            this.miRemove,
+            this.miRemoveAll});
       this.menuGrammars.Name = "menuGrammars";
-      this.menuGrammars.Size = new System.Drawing.Size(159, 48);
+      this.menuGrammars.Size = new System.Drawing.Size(164, 70);
       this.menuGrammars.Opening += new System.ComponentModel.CancelEventHandler(this.menuGrammars_Opening);
       // 
       // miAdd
       // 
       this.miAdd.Name = "miAdd";
-      this.miAdd.Size = new System.Drawing.Size(158, 22);
-      this.miAdd.Text = "Add Grammar...";
+      this.miAdd.Size = new System.Drawing.Size(163, 22);
+      this.miAdd.Text = "Add grammar...";
       this.miAdd.Click += new System.EventHandler(this.miAdd_Click);
       // 
       // miRemove
       // 
       this.miRemove.Name = "miRemove";
-      this.miRemove.Size = new System.Drawing.Size(158, 22);
-      this.miRemove.Text = "Remove";
+      this.miRemove.Size = new System.Drawing.Size(163, 22);
+      this.miRemove.Text = "Remove selected";
       this.miRemove.Click += new System.EventHandler(this.miRemove_Click);
+      // 
+      // miRemoveAll
+      // 
+      this.miRemoveAll.Name = "miRemoveAll";
+      this.miRemoveAll.Size = new System.Drawing.Size(163, 22);
+      this.miRemoveAll.Text = "Remove all";
+      this.miRemoveAll.Click += new System.EventHandler(this.miRemoveAll_Click);
       // 
       // dlgSelectAssembly
       // 
       this.dlgSelectAssembly.DefaultExt = "dll";
       this.dlgSelectAssembly.Filter = "DLL files|*.dll";
       this.dlgSelectAssembly.Title = "Select Grammar Assembly ";
+      // 
+      // btnToXml
+      // 
+      this.btnToXml.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.btnToXml.Location = new System.Drawing.Point(597, 4);
+      this.btnToXml.Name = "btnToXml";
+      this.btnToXml.Size = new System.Drawing.Size(65, 23);
+      this.btnToXml.TabIndex = 8;
+      this.btnToXml.Text = "->XML";
+      this.btnToXml.UseVisualStyleBackColor = true;
+      this.btnToXml.Click += new System.EventHandler(this.btnToXml_Click);
       // 
       // fmGrammarExplorer
       // 
@@ -862,7 +872,6 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.Label label6;
     private System.Windows.Forms.Label lblInitTime;
     private System.Windows.Forms.Label label7;
-    private System.Windows.Forms.Label SearchLabel;
     private System.Windows.Forms.Button btnSearch;
     private System.Windows.Forms.TextBox txtSearch;
     private System.Windows.Forms.Label lblSearchError;
@@ -882,6 +891,8 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.ToolStripMenuItem miAdd;
     private System.Windows.Forms.ToolStripMenuItem miRemove;
     private System.Windows.Forms.OpenFileDialog dlgSelectAssembly;
+    private System.Windows.Forms.ToolStripMenuItem miRemoveAll;
+    private System.Windows.Forms.Button btnToXml;
 
   }
 }

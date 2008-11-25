@@ -31,6 +31,7 @@ namespace Irony.Compiler {
     public StringLiteral(string name, TermOptions options) : base(name) {
       SetOption(options);
       base.Escapes = TextUtils.GetDefaultEscapes();
+      base.Category = TokenCategory.Literal;
     }
     public void AddStartEnd(string startEndSymbol, ScanFlags stringFlags) {
       StartEndSymbolTable.Add(startEndSymbol, stringFlags);

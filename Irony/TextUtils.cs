@@ -97,6 +97,24 @@ namespace Irony {
       return sb.ToString();
     }
 
+    //Utility method used by Production and LR0Item
+    public static string ProductionToString(Production production, int dotPosition) {
+      char dotChar = '\u00B7'; //dot in the middle of the line
+      StringBuilder bld = new StringBuilder();
+      bld.Append(production.LValue.Name);
+      bld.Append(" -> ");
+      for (int i = 0; i < production.RValues.Count; i++) {
+        if (i == dotPosition)
+          bld.Append(dotChar);
+        bld.Append(production.RValues[i].Name);
+        bld.Append(" ");
+      }//for i
+      if (dotPosition == production.RValues.Count)
+        bld.Append(dotChar);
+      return bld.ToString();
+    }
+
+
     public static string JoinStrings( string separator, IEnumerable<string> values) {
       StringList list = new StringList();
       list.AddRange(values);

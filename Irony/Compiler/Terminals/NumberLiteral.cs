@@ -55,6 +55,7 @@ namespace Irony.Compiler {
       base.DisplayName = displayName;
     }
     public NumberLiteral(string name)  : base(name) {
+      base.Category = TokenCategory.Literal;
       base.MatchMode = TokenMatchMode.ByType;
     }
     #endregion

@@ -14,6 +14,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.CodeDom;
+using System.Xml;
+using System.IO;
 using Irony.Runtime;
 
 //Note - we put AstNode into Irony.Compiler namespace, not Irony.Compiler.AST, to reduce number of extra "using" 
@@ -242,6 +244,41 @@ namespace Irony.Compiler {
       return null;
     }
     #endregion
+
+    #region Xml Processing
+    //TODO: Xml - this is just initial draft, needs more work.
+    protected virtual XmlElement XmlAppendTo(XmlNode parentNode) {
+      XmlElement thisElem = parentNode.OwnerDocument.CreateElement("Node");
+      XmlSetAttributes(thisElem); 
+      parentNode.AppendChild(thisElem);
+      foreach (AstNode node in ChildNodes)
+        node.XmlAppendTo(thisElem);
+      return thisElem;
+    }
+
+    protected virtual void XmlSetAttributes(XmlElement element) {
+      element.SetAttribute("Element", this.Term.Name);
+      element.SetAttribute("NodeType", this.GetType().Name);
+    }
+
+    public XmlDocument XmlToDocument() {
+      XmlDocument xdoc = new XmlDocument();
+      XmlElement xRoot = xdoc.CreateElement("AST");
+      xdoc.AppendChild(xRoot);
+      this.XmlAppendTo(xRoot); 
+      return xdoc;
+    }
+    public string XmlGetXmlString() {
+      XmlDocument xdoc = XmlToDocument();
+      StringWriter sw = new StringWriter();
+      XmlTextWriter xw = new XmlTextWriter(sw);
+      xw.Formatting = Formatting.Indented;
+      xdoc.WriteTo(xw);
+      xw.Flush();
+      return sw.ToString(); 
+    } 
+    #endregion
+
 
   }//class
 

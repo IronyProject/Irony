@@ -48,21 +48,32 @@ namespace Irony.Compiler {
     }
 
     public AstNode Parse(CompilerContext context, SourceFile source) {
-      int start = Environment.TickCount;
       Scanner.Prepare(context, source);
+      context.Tokens.Clear(); 
+      //If we need to match braces then we need to ensure that we have BraceMatchFilter
+      if (context.OptionIsSet(CompilerOptions.MatchBraces)) 
+        EnsureBraceMatchFilter(); 
       IEnumerable<Token> tokenStream = Scanner.BeginScan();
       //chain all token filters
       foreach (TokenFilter filter in Grammar.TokenFilters) {
         tokenStream = filter.BeginFiltering(context, tokenStream);
       }
       //finally, parser takes token stream and produces root Ast node
+      int start = Environment.TickCount;
       AstNode rootNode = Parser.Parse(context, tokenStream);
       _compileTime = Environment.TickCount - start;
       if (context.Errors.Count > 0)
         context.Errors.Sort(SyntaxErrorList.ByLocation);
+      if (rootNode != null && context.OptionIsSet(CompilerOptions.AnalyzeCode))
+        AnalyzeCode(rootNode, context); 
       return rootNode;
     }//method
 
+    private void EnsureBraceMatchFilter() {
+      foreach (TokenFilter filter in Grammar.TokenFilters)
+        if (filter is BraceMatchFilter) return;
+      Grammar.TokenFilters.Add(new BraceMatchFilter()); 
+    }
     public void AnalyzeCode(AstNode astRoot, CompilerContext context) {
       RunAnalysisPhases(astRoot, context,
            CodeAnalysisPhase.Init, CodeAnalysisPhase.AssignScopes, CodeAnalysisPhase.Allocate,

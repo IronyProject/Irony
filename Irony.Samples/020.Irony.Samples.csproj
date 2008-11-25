@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CSharp\CSharpGrammar.cs" />
+    <Compile Include="Json\JsonGrammar.cs" />
     <Compile Include="OtherGrammars\GwBasicGrammar.cs" />
     <Compile Include="OtherGrammars\ExpressionEvaluatorGrammar.cs" />
     <Compile Include="Scheme\SchemeRuntime.cs" />
@@ -72,6 +73,9 @@
     <None Include="SourceSamples\99 bottles.py" />
     <None Include="SourceSamples\99 bottles.rb" />
     <None Include="SourceSamples\99 bottles with Errors.rb" />
+    <None Include="SourceSamples\JSON\Sample1.json" />
+    <None Include="SourceSamples\JSON\Sample2.json" />
+    <None Include="SourceSamples\JSON\Sample3.json" />
     <Content Include="CSharp\Notes.txt" />
     <Content Include="Ruby\Ruby_auth.txt" />
     <Content Include="SourceSamples\_about.txt" />

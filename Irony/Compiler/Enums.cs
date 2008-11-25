@@ -17,6 +17,7 @@ using System.Text;
 namespace Irony.Compiler {
 
   public enum TokenCategory {
+    Literal, 
     Content,
     Outline, //newLine, indent, dedent
     Comment,
@@ -47,8 +48,9 @@ namespace Irony.Compiler {
     IsPunctuation = 0x20,
     IsDelimiter   = 0x40, 
     IsList        = 0x80,
-    IsStarList =   0x100,   //Special case of list with 0 or more elements separated by delimiters. Produced by MakeStarRule method
-    IsNonGrammar = 0x0200,  // if set, parser would eliminate the token from the input stream; terms in Grammar.NonGrammarTerminals have this flag set
+    IsStarList   = 0x100,   //Special case of list with 0 or more elements separated by delimiters. Produced by MakeStarRule method
+    IsNonGrammar= 0x0200,  // if set, parser would eliminate the token from the input stream; terms in Grammar.NonGrammarTerminals have this flag set
+    IsTransient = 0x0400,  // Transient non-terminal - should be removed from the AST tree. 
     
     //Number flags 
     SpecialIgnoreCase = 0x010000,         //Ignore case in suffixes and prefixes

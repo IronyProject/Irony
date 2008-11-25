@@ -117,7 +117,8 @@ namespace Irony.Compiler.Lalr {
           if (t.Category == TokenCategory.Error) prod.Flags |= ProductionFlags.IsError; 
         }
         //Add the operand info and LR0 Item
-        LR0Item item = new LR0Item(prod, prod.RValues.Count, ref _itemID);
+        _itemID++;
+        LR0Item item = new LR0Item(prod, prod.RValues.Count, _itemID);
         prod.LR0Items.Add(item);
         prod.RValues.Add(operand);
       }//foreach operand
@@ -127,7 +128,8 @@ namespace Irony.Compiler.Lalr {
       if (prod.RValues.Count == 0)
         prod.Flags |= ProductionFlags.IsEmpty;
       //Add final LRItem
-      prod.LR0Items.Add(new LR0Item(prod, prod.RValues.Count, ref _itemID));
+      _itemID++;
+      prod.LR0Items.Add(new LR0Item(prod, prod.RValues.Count, _itemID));
       return prod; 
     }
     #endregion

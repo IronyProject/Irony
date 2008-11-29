@@ -16,8 +16,30 @@ using System.Text;
 
 namespace Irony.Compiler {
 
-
   public class StringLiteral : CompoundTerminalBase {
+
+    #region StringKindInfo, StringKindInfoTable classes 
+    class StringKindInfo {
+      internal readonly string Start, End;
+      internal readonly ScanFlags Flags;
+      internal StringKindInfo(string start, string end, ScanFlags flags) {
+        Start = start;
+        End = end;
+        Flags = flags; 
+      }
+      internal static int LongerStartFirst(StringKindInfo x, StringKindInfo y) {
+        try {//in case any of them is null
+          if (x.Start.Length > y.Start.Length) return -1;
+        } catch { }
+        return 0;
+      }
+    }
+    class StringKindInfoList : List<StringKindInfo> {
+      internal void Add(string start, string end, ScanFlags flags) {
+        base.Add(new StringKindInfo(start, end, flags)); 
+      }
+    } 
+    #endregion
 
     #region constructors and initialization
     public StringLiteral(string name) : this(name, "\"", ScanFlags.None, TermOptions.None) {
@@ -26,7 +48,7 @@ namespace Irony.Compiler {
       : this(name, startEndSymbol, stringFlags, TermOptions.SpecialIgnoreCase) { }
 
     public StringLiteral(string name, string startEndSymbol, ScanFlags stringFlags, TermOptions options) : this(name, options) {
-      this.StartEndSymbolTable.Add(startEndSymbol, stringFlags);
+      this._stringKinds.Add(startEndSymbol, startEndSymbol, stringFlags);
     }
     public StringLiteral(string name, TermOptions options) : base(name) {
       SetOption(options);
@@ -34,32 +56,31 @@ namespace Irony.Compiler {
       base.Category = TokenCategory.Literal;
     }
     public void AddStartEnd(string startEndSymbol, ScanFlags stringFlags) {
-      StartEndSymbolTable.Add(startEndSymbol, stringFlags);
+      _stringKinds.Add(startEndSymbol, startEndSymbol, stringFlags);
+    }
+    public void AddStartEnd(string startSymbol, string endSymbol, ScanFlags stringFlags) {
+      _stringKinds.Add(startSymbol, endSymbol, stringFlags);
     }
     #endregion
 
-    #region public Properties/Fields
-    protected readonly ScanFlagTable StartEndSymbolTable = new ScanFlagTable();
-    #endregion
-
-    #region private fields
-    string _startEndFirsts; //first chars  of start-end symbols
-    StringList _startEndSymbols = new StringList();
+    #region Properties/Fields
+    private readonly StringKindInfoList _stringKinds = new StringKindInfoList();
+    string _startSymbolsFirsts; //first chars  of start-end symbols
     #endregion
 
     #region overrides: Init, GetFirsts, ReadBody, etc...
     public override void Init(Grammar grammar) {
       base.Init(grammar);
       //collect all start-end symbols in lists and create strings of first chars for both
-      _startEndSymbols.Clear();
-      _startEndSymbols.AddRange(StartEndSymbolTable.Keys);
-      _startEndSymbols.Sort(StringList.LongerFirst);
-      _startEndFirsts = string.Empty;
-      foreach (string st in _startEndSymbols)
-        _startEndFirsts += st[0];
+      _stringKinds.Sort(StringKindInfo.LongerStartFirst); 
+      bool ignoreCase = IsSet(TermOptions.SpecialIgnoreCase);
+      _startSymbolsFirsts = string.Empty;
+      foreach (StringKindInfo info in _stringKinds) {
+        _startSymbolsFirsts += info.Start[0].ToString();
+      }
  
       if (IsSet(TermOptions.SpecialIgnoreCase)) 
-        _startEndFirsts = _startEndFirsts.ToLower() + _startEndFirsts.ToUpper();
+        _startSymbolsFirsts = _startSymbolsFirsts.ToLower() + _startSymbolsFirsts.ToUpper();
       if (this.EditorInfo == null)
         this.EditorInfo = new TokenEditorInfo(TokenType.String, TokenColor.String, TokenTriggers.None);
     }//method
@@ -68,7 +89,8 @@ namespace Irony.Compiler {
       StringList result = new StringList();
       result.AddRange(Prefixes);
       //we assume that prefix is always optional, so string can start with start-end symbol
-      result.AddRange(_startEndSymbols);
+      foreach (char ch in _startSymbolsFirsts)
+        result.Add(ch.ToString()); 
       return result;
     }
 
@@ -78,14 +100,14 @@ namespace Irony.Compiler {
       bool escapeEnabled = !details.IsSet(ScanFlags.DisableEscapes);
       bool ignoreCase = IsSet(TermOptions.SpecialIgnoreCase);
       int start = source.Position;
-      string quoteSymbol = details.ControlSymbol;
-      string quoteDoubled = quoteSymbol + quoteSymbol; //doubled quote symbol
+      string endQuoteSymbol = details.EndSymbol;
+      string endQuoteDoubled = endQuoteSymbol + endQuoteSymbol; //doubled quote symbol
       //1. Find the string end
       // first get the position of the next line break; we are interested in it to detect malformed string, 
       //  therefore do it only if linebreak is NOT allowed; if linebreak is allowed, set it to -1 (we don't care).  
       int nlPos = details.IsSet(ScanFlags.AllowLineBreak) ? -1 : source.Text.IndexOf('\n', source.Position);
       while (!source.EOF()) {
-        int endPos = source.Text.IndexOf(quoteSymbol, source.Position);
+        int endPos = source.Text.IndexOf(endQuoteSymbol, source.Position);
         //Check for malformed string: either EndSymbol not found, or LineBreak is found before EndSymbol
         bool malformed = endPos < 0 || nlPos >= 0 && nlPos < endPos;
         if (malformed) {
@@ -98,21 +120,21 @@ namespace Irony.Compiler {
         
         //We found EndSymbol - check if it is escaped; if yes, skip it and continue search
         if (escapeEnabled && IsEndQuoteEscaped(source.Text, endPos)) {
-          source.Position = endPos + quoteSymbol.Length;
+          source.Position = endPos + endQuoteSymbol.Length;
           continue; //searching for end symbol
         }
         
         //Check if it is doubled end symbol
         source.Position = endPos;
-        if (details.IsSet(ScanFlags.AllowDoubledQuote) && source.MatchSymbol(quoteDoubled, ignoreCase)) {
-          source.Position = endPos + quoteDoubled.Length;
+        if (details.IsSet(ScanFlags.AllowDoubledQuote) && source.MatchSymbol(endQuoteDoubled, ignoreCase)) {
+          source.Position = endPos + endQuoteDoubled.Length;
           continue;
         }//checking for doubled end symbol
         
         //Ok, this is normal endSymbol that terminates the string. 
         // Advance source position and get out from the loop
         details.Body = source.Text.Substring(start, endPos - start);
-        source.Position = endPos + quoteSymbol.Length;
+        source.Position = endPos + endQuoteSymbol.Length;
         return true; //if we come here it means we're done - we found string end.
       }  //end of loop to find string end; 
       return false;
@@ -128,16 +150,17 @@ namespace Irony.Compiler {
     }
 
     private bool ReadStartSymbol(ISourceStream source, ScanDetails details) {
-      if (_startEndFirsts.IndexOf(source.CurrentChar) < 0)
+      if (_startSymbolsFirsts.IndexOf(source.CurrentChar) < 0)
         return false;
       bool ignoreCase = IsSet(TermOptions.SpecialIgnoreCase);
-      foreach (string startEnd in _startEndSymbols) {
-        if (!source.MatchSymbol(startEnd, ignoreCase))
+      foreach (StringKindInfo stringKind in _stringKinds) {
+        if (!source.MatchSymbol(stringKind.Start, ignoreCase))
           continue; 
         //We found start symbol
-        details.ControlSymbol = startEnd;
-        details.Flags |= StartEndSymbolTable[startEnd];
-        source.Position += startEnd.Length;
+        details.StartSymbol = stringKind.Start;
+        details.EndSymbol = stringKind.End;
+        details.Flags |= stringKind.Flags;
+        source.Position += stringKind.Start.Length;
         return true;
       }//foreach
       return false; 
@@ -179,9 +202,9 @@ namespace Irony.Compiler {
       }// if EscapeEnabled 
 
       //Check for doubled end symbol
-      string startS = details.ControlSymbol;
-      if (details.IsSet(ScanFlags.AllowDoubledQuote) && value.IndexOf(startS) >= 0)
-        value = value.Replace(startS + startS, startS);
+      string endSymbol = details.EndSymbol;
+      if (details.IsSet(ScanFlags.AllowDoubledQuote) && value.IndexOf(endSymbol) >= 0)
+        value = value.Replace(endSymbol + endSymbol, endSymbol);
 
       if (details.IsSet(ScanFlags.IsChar))
 				details.TypeCodes = new TypeCode[] { TypeCode.Char };

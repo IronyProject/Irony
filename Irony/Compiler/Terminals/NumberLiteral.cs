@@ -172,7 +172,7 @@ namespace Irony.Compiler {
           continue;
         }
         //3. Check if it is int number followed by dot or exp symbol
-        bool isExpSymbol = (details.ControlSymbol == null) && ExponentSymbols.IndexOf(current) >= 0;
+        bool isExpSymbol = (details.ExponentSymbol == null) && ExponentSymbols.IndexOf(current) >= 0;
         if (!allowFloat && foundDigits && (isDot || isExpSymbol)) {
           //If no partial float allowed then return false - it is not integer, let float terminal recognize it as float
           if (IsSet(NumberFlags.AvoidPartialFloat)) return false;  
@@ -189,7 +189,7 @@ namespace Irony.Compiler {
           if (!nextIsSign && !nextIsDigit)
             break;  //Exponent should be followed by either sign or digit
           //ok, we've got real exponent
-          details.ControlSymbol = current.ToString(); //remember the exp char
+          details.ExponentSymbol = current.ToString(); //remember the exp char
           details.Flags |= ScanFlags.HasExp;
           source.Position++;
           if (nextIsSign)
@@ -281,8 +281,8 @@ namespace Irony.Compiler {
       string body = details.Body;
       //Some languages allow exp symbols other than E. Check if it is the case, and change it to E
       // - otherwise .NET conversion methods may fail
-      if (details.IsSet(ScanFlags.HasExp) && details.ControlSymbol.ToUpper() != "E")
-        body = body.Replace(details.ControlSymbol, "E");
+      if (details.IsSet(ScanFlags.HasExp) && details.ExponentSymbol.ToUpper() != "E")
+        body = body.Replace(details.ExponentSymbol, "E");
 
       //'.' decimal seperator required by invariant culture
       if (details.IsSet(ScanFlags.HasDot) && DecimalSeparator != '.')

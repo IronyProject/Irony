@@ -121,7 +121,8 @@ namespace Irony.Compiler {
 
     public void RegisterOperators(int precedence, Associativity associativity, params string[] opSymbols) {
       foreach (string op in opSymbols) {
-        SymbolTerminal opSymbol = SymbolTerminal.GetSymbol(op);
+        string opCased = this.CaseSensitive ? op : op.ToLower(); 
+        SymbolTerminal opSymbol = SymbolTerminal.GetSymbol(opCased);
         opSymbol.SetOption(TermOptions.IsOperator, true);
         opSymbol.Precedence = precedence;
         opSymbol.Associativity = associativity;

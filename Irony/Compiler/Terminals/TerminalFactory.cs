@@ -162,5 +162,12 @@ namespace Irony.Compiler {
       return id;
     }
 
+    public static StringLiteral CreateSqlExtIdentifier(string name) {
+      StringLiteral term = new StringLiteral(name, TermOptions.SpecialIgnoreCase);
+      term.AddStartEnd("[", "]", ScanFlags.DisableEscapes);
+      term.AddStartEnd("\"", ScanFlags.DisableEscapes);
+      return term;
+    }
+
   }//class
 }//namespace

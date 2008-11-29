@@ -46,7 +46,10 @@ namespace Irony.Compiler {
     public ScanFlags Flags;
     public string Error;
     public TypeCode[] TypeCodes;  
-    public string ControlSymbol;  //used in different ways: Exp symbol for numbers; quote symbol for strings; 
+    public string ControlSymbol_;  
+    public string ExponentSymbol;  //exponent symbol for Number literal
+    public string StartSymbol;     //string start and end symbols
+    public string EndSymbol;
     public object Value; 
     public bool IsSet(ScanFlags flag) {
       return (Flags & flag) != 0;

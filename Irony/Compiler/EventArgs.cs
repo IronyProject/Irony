@@ -27,15 +27,6 @@ namespace Irony.Compiler {
 
   }//class
 
-  public class ScannerConvertingValueEventArgs : EventArgs {
-    public ScannerConvertingValueEventArgs(ScanDetails details) {
-      this.Details = details;
-    }
-    public readonly ScanDetails Details;
-    public object Value;
-    public bool Converted;
-  }//class
-
   public class NodeCreatedEventArgs : EventArgs {
     public NodeCreatedEventArgs(AstNode node) {
       Node = node;

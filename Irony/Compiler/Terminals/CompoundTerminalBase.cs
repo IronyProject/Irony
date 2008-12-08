@@ -38,32 +38,27 @@ namespace Irony.Compiler {
   #endregion
 
 
-  public class ScanDetails {
-    public bool Negative;
-    public string Prefix;
-    public string Body;
-    public string Suffix;
-    public ScanFlags Flags;
-    public string Error;
-    public TypeCode[] TypeCodes;  
-    public string ControlSymbol_;  
-    public string ExponentSymbol;  //exponent symbol for Number literal
-    public string StartSymbol;     //string start and end symbols
-    public string EndSymbol;
-    public object Value; 
-    public bool IsSet(ScanFlags flag) {
-      return (Flags & flag) != 0;
-    }//method
-    public bool HasError() {
-      return !string.IsNullOrEmpty(Error);
-    }
-  }
-
   public abstract class CompoundTerminalBase : Terminal {
 
     #region Nested classes
-    public class ScanFlagTable : Dictionary<string, ScanFlags> { }
-    public class TypeCodeTable : Dictionary<string, TypeCode[]> { }
+    protected class ScanFlagTable : Dictionary<string, int> { }
+    protected class TypeCodeTable : Dictionary<string, TypeCode[]> { }
+
+    public class CompoundTokenDetails {
+      public string Prefix;
+      public string Body;
+      public string Suffix;
+      public string Sign;
+      public int Flags;
+      public string Error;
+      public TypeCode[] TypeCodes;
+      public string ControlSymbol_;
+      public string ExponentSymbol;  //exponent symbol for Number literal
+      public string StartSymbol;     //string start and end symbols
+      public string EndSymbol;
+      public object Value;
+    }
+
     #endregion 
 
     #region constructors and initialization
@@ -73,11 +68,11 @@ namespace Irony.Compiler {
     }
     public CompoundTerminalBase(string name)  : this(name, TermOptions.None) {  }
 
-    public void AddPrefixFlag(string prefix, ScanFlags flags) {
+    protected void AddPrefixFlag(string prefix, int flags) {
       PrefixFlags.Add(prefix, flags);
       Prefixes.Add(prefix);
     }
-		public void AddSuffixCodes(string suffix, params TypeCode[] codes) {
+    public void AddSuffixCodes(string suffix, params TypeCode[] codes) {
 			SuffixTypeCodes.Add(suffix, codes);
 			Suffixes.Add(suffix);
 		}
@@ -86,8 +81,6 @@ namespace Irony.Compiler {
     #region public Properties/Fields
     public Char EscapeChar = '\\';
     public EscapeTable Escapes = new EscapeTable();
-    public ScanFlags DefaultFlags = ScanFlags.None;
-    public TypeCode DefaultType;
     #endregion
 
 
@@ -96,20 +89,15 @@ namespace Irony.Compiler {
     protected readonly TypeCodeTable SuffixTypeCodes = new TypeCodeTable();
     protected StringList Prefixes = new StringList();
     protected StringList Suffixes = new StringList();
+    protected bool CaseSensitive; //case sensitivity for prefixes and suffixes
     string _prefixesFirsts; //first chars of all prefixes, for fast prefix detection
     string _suffixesFirsts; //first chars of all suffixes, for fast suffix detection
-    private TypeCode[] _defaultTypes;
-    #endregion
-
-    #region events: ConvertingValue
-    public event EventHandler<ScannerConvertingValueEventArgs> ConvertingValue;
     #endregion
 
 
     #region overrides: Init, TryMatch
     public override void Init(Grammar grammar) {
       base.Init(grammar);
-      _defaultTypes = new TypeCode[] { DefaultType };
       //collect all suffixes, prefixes in lists and create strings of first chars for both
       Prefixes.Sort(StringList.LongerFirst);
       _prefixesFirsts = string.Empty;
@@ -120,8 +108,7 @@ namespace Irony.Compiler {
       _suffixesFirsts = string.Empty;
       foreach (string sfx in Suffixes)
         _suffixesFirsts += sfx[0]; //we don't care if there are repetitions
-
-      if (IsSet(TermOptions.SpecialIgnoreCase)) {
+      if (!CaseSensitive) {
         _prefixesFirsts = _prefixesFirsts.ToLower() + _prefixesFirsts.ToUpper();
         _suffixesFirsts = _suffixesFirsts.ToLower() + _suffixesFirsts.ToUpper();
       }
@@ -132,21 +119,18 @@ namespace Irony.Compiler {
     }
 
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
-      Token token = null;
-      if (IsSet(TermOptions.EnableQuickParse)) {
-        token = QuickParse(context, source);
-        if (token != null) return token;
-      }
+      //Try quick parse first
+      Token token = QuickParse(context, source);
+      if (token != null) return token;
 
       source.Position = source.TokenStart.Position;
-      ScanDetails details = new ScanDetails();
-      details.Flags = DefaultFlags;
-			details.TypeCodes = _defaultTypes;
+      CompoundTokenDetails details = new CompoundTokenDetails();
+      InitDetails(details); 
 
       ReadPrefix(source, details);
       if (!ReadBody(source, details))
         return null;
-      if (details.HasError()) 
+      if (details.Error != null) 
         return context.CreateErrorTokenAndReportError(source.TokenStart, source.CurrentChar.ToString(), details.Error);
       ReadSuffix(source, details);
 
@@ -157,39 +141,44 @@ namespace Irony.Compiler {
       return token; 
     }
 
-    protected virtual Token CreateToken(CompilerContext context, ISourceStream source, ScanDetails details) {
+    protected virtual Token CreateToken(CompilerContext context, ISourceStream source, CompoundTokenDetails details) {
       string lexeme = source.GetLexeme();
       Token token = Token.Create(context, this, source.TokenStart, lexeme, details.Value);
       token.Details = details;
       return token;
     }
 
+    protected virtual void InitDetails(CompoundTokenDetails details) {
+    }
+
     protected virtual Token QuickParse(CompilerContext context, ISourceStream source) {
       return null;
     }
 
-    protected virtual void ReadPrefix(ISourceStream source, ScanDetails details) {
+    protected virtual void ReadPrefix(ISourceStream source, CompoundTokenDetails details) {
       if (_prefixesFirsts.IndexOf(source.CurrentChar) < 0)
         return;
-      bool ignoreCase = IsSet(TermOptions.SpecialIgnoreCase);
       foreach (string pfx in Prefixes) {
-        if (!source.MatchSymbol(pfx, ignoreCase)) continue; 
+        if (!source.MatchSymbol(pfx, !CaseSensitive)) continue; 
         //We found prefix
         details.Prefix = pfx;
         source.Position += pfx.Length;
-        //Set numeric base flag from prefix
-        ScanFlags pfxFlags;
+        //Set flag from prefix
+        int pfxFlags;
         if (!string.IsNullOrEmpty(details.Prefix) && PrefixFlags.TryGetValue(details.Prefix, out pfxFlags))
-          details.Flags |= pfxFlags;
+          details.Flags |= (int) pfxFlags;
         return;
       }//foreach
     }//method
 
-    protected virtual void ReadSuffix(ISourceStream source, ScanDetails details) {
+    protected virtual bool ReadBody(ISourceStream source, CompoundTokenDetails details) {
+      return false;
+    }
+
+    protected virtual void ReadSuffix(ISourceStream source, CompoundTokenDetails details) {
       if (_suffixesFirsts.IndexOf(source.CurrentChar) < 0) return;
-      bool ignoreCase = IsSet(TermOptions.SpecialIgnoreCase);
       foreach (string sfx in Suffixes) {
-        if (!source.MatchSymbol(sfx, ignoreCase)) continue;
+        if (!source.MatchSymbol(sfx, !CaseSensitive)) continue;
         //We found suffix
         details.Suffix = sfx;
         source.Position += sfx.Length;
@@ -201,24 +190,9 @@ namespace Irony.Compiler {
       }//foreach
     }//method
 
-    protected virtual bool ReadBody(ISourceStream source, ScanDetails details) {
-      return false;
-    }
-
-    protected virtual bool ConvertValue(ScanDetails details) {
+    protected virtual bool ConvertValue(CompoundTokenDetails details) {
       details.Value = details.Body;
-      //Fire event and give a chance to custom code to convert the value
-      if (ConvertingValue != null) {
-        bool result = OnConvertingValue(details);
-        return result; 
-      }
       return false; 
-    }
-    protected virtual bool OnConvertingValue(ScanDetails details) {
-      if (ConvertingValue == null) return false;
-      ScannerConvertingValueEventArgs args = new ScannerConvertingValueEventArgs(details);
-      ConvertingValue(this, args);
-      return args.Converted;
     }
 
 

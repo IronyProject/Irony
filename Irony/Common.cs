@@ -37,10 +37,6 @@ namespace Irony {
     public StringList(params string[] args) {
       AddRange(args);
     }
-    public new void AddRange(IEnumerable<string> keys) {
-      foreach (string key in keys)
-        this.Add(key);
-    }
     public override string ToString() {
       return ToString(" ");
     }
@@ -52,7 +48,8 @@ namespace Irony {
       try {//in case any of them is null
         if (x.Length > y.Length) return -1;
       } catch { }
-      return 0;
+      if (x == y) return 0;
+      return 1; 
     }
 
   }//KeyList class

@@ -56,6 +56,8 @@ namespace Irony.Compiler {
     public virtual IList<string> GetFirsts() {
       return null;
     }
+    public virtual void RegisterForMultilineScan(ScannerControlData data) {
+    }
     #endregion
 
     #region static comparison methods

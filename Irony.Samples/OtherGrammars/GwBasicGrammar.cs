@@ -33,7 +33,7 @@ namespace Irony.Samples
             var fileNumber = new NumberLiteral("NUMBER", NumberFlags.IntOnly);
             var number = new NumberLiteral("NUMBER", NumberFlags.AllowStartEndDot);
             var variable = new IdentifierTerminal("Identifier", "$%!", string.Empty);
-            var stringLiteral = new StringLiteral("STRING", "\"", ScanFlags.None);
+            var stringLiteral = new StringLiteral("STRING", "\"", StringFlags.None);
             //Important: do not add comment term to base.NonGrammarTerminals list - we do use this terminal in grammar rules
             var userFunctionName = variable;
             var comment = new CommentTerminal("Comment", "REM", "\n");

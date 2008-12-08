@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Irony.Runtime;
+using System.Runtime.InteropServices;
 
 namespace Irony.Compiler {
 
@@ -25,9 +26,22 @@ namespace Irony.Compiler {
   }
   public enum CompileMode {
     Module,       //default, continuous input file
-    Line,         // support for VS integration mode, syntax highlighting
+    VsLineScan,         // line-by-line scanning in VS integration for syntax highlighting
     //ConsoleInput, //line-by-line from console
   }
+  // A struct used for packing/unpacking ScannerState int value; used for VS integration.
+  [StructLayout(LayoutKind.Explicit)]
+  public struct VsScannerStateMap {
+    [FieldOffset(0)]
+    public int Value;
+    [FieldOffset(0)]
+    public byte TokenKind;   //Registered kind of the multi-line token
+    [FieldOffset(1)]
+    public byte Data1;
+    [FieldOffset(2)]
+    public short Data2;
+  }//struct
+
 
   // The purpose of this class is to provide a container for information shared 
   // between parser, scanner and token filters.
@@ -40,6 +54,12 @@ namespace Irony.Compiler {
     public readonly Dictionary<string, object> Values = new Dictionary<string, object>();
     public readonly LanguageRuntime Runtime;
     public int MaxErrors = 20;
+    //State variable used in line scanning mode for VS integration; when Terminal produces incomplete token, it sets 
+    // this state to non-zero value; this value identifies this terminal as the one who will continue scanning when
+    // it resumes, and the terminal's internal state when there may be several types of multi-line tokens for one terminal.
+    // For ex., there maybe several types of string literal like in Python. 
+    public VsScannerStateMap ScannerState; 
+
     //Tokens consumed by parser are added to this collection, but only if CompilerOptions.RetainTokens flag is set
     public readonly TokenList Tokens = new TokenList(); 
 

@@ -63,7 +63,7 @@ namespace Irony.Compiler {
     } string _valueString;
  
     //Details of scanning; optional
-    public ScanDetails Details;
+    public CompoundTerminalBase.CompoundTokenDetails Details;
 
     [System.Diagnostics.DebuggerStepThrough]
     public bool IsError() {

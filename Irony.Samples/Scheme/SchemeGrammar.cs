@@ -44,8 +44,8 @@ namespace Irony.Samples.Scheme {
 
       // TODO: build SchemeCharLiteral
       // the following is nonsense, just to put something there
-      var charLiteral = new StringLiteral("Char", "'", ScanFlags.None); 
-      var stringLiteral = new StringLiteral("String", "\"", ScanFlags.AllowAllEscapes);
+      var charLiteral = new StringLiteral("Char", "'", StringFlags.None); 
+      var stringLiteral = new StringLiteral("String", "\"", StringFlags.AllowsAllEscapes);
       //Identifiers. Note: added "-", just to allow IDs starting with "->" 
       var SimpleIdentifier = new IdentifierTerminal("SimpleIdentifier", "_+-*/.@?!<>=", "_+-*/.@?!<>=$%&:^~");
       //                                                           name                extraChars      extraFirstChars  

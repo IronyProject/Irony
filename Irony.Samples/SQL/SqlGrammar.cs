@@ -17,7 +17,7 @@ namespace Irony.Samples.SQL {
       NonGrammarTerminals.Add(comment);
       NonGrammarTerminals.Add(lineComment);
       var number = new NumberLiteral("number");
-      var string_literal = new StringLiteral("string", "'", ScanFlags.AllowDoubledQuote);
+      var string_literal = new StringLiteral("string", "'", StringFlags.AllowsDoubledQuote);
       var name = new IdentifierTerminal("name");
       var name_ext = TerminalFactory.CreateSqlExtIdentifier("name_ext");
       var comma = Symbol(",");

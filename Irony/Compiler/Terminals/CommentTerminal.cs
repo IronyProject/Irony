@@ -27,6 +27,7 @@ namespace Irony.Compiler {
     public StringList EndSymbols;
     private char[] _endSymbolsFirsts;
     private bool _isLineComment; //true if NewLine is one of EndSymbols; if yes, EOF is also considered a valid end symbol
+    private byte MultilineKind;
 
 
     #region overrides
@@ -44,15 +45,46 @@ namespace Irony.Compiler {
         this.EditorInfo = new TokenEditorInfo(ttype, TokenColor.Comment, TokenTriggers.None);
       }
     }
-
+    public override void RegisterForMultilineScan(ScannerControlData data) {
+      if (!_isLineComment) 
+        MultilineKind = data.RegisterMultiline(this); 
+    }
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
-      bool ignoreCase = !Grammar.CaseSensitive;
-      //Check starting symbol
-      if (!source.MatchSymbol(StartSymbol, ignoreCase)) return null;
-      //Find end symbol
-      source.Position += StartSymbol.Length;
+      Token result;
+      if (context.ScannerState.Value != 0) {
+        // we are continuing in line mode - restore internal env (none in this case)
+        context.ScannerState.Value = 0;
+      } else {
+        //we are starting from scratch
+        if (!BeginMatch(context, source)) return null;
+      }
+      result = CompleteMatch(context, source);
+      if (result != null) return result;
+      //if it is LineComment, it is ok to hit EOF without final line-break; just return all until end.
+      if (_isLineComment) 
+        return Token.Create(this, context, source.TokenStart, source.GetLexeme());
+      if (context.Mode == CompileMode.VsLineScan)
+        return CreateIncompleteToken(context, source);
+      return context.CreateErrorTokenAndReportError(source.TokenStart, string.Empty, "Unclosed comment block");
+    }
 
-      while(!source.EOF()) {
+    private Token CreateIncompleteToken(CompilerContext context, ISourceStream source) {
+      source.Position = source.Text.Length;
+      Token result = Token.Create(this, context, source.TokenStart, source.GetLexeme());
+      result.Flags |= AstNodeFlags.IsIncomplete;
+      context.ScannerState.TokenKind = this.MultilineKind; 
+      return result; 
+    }
+
+    private bool BeginMatch(CompilerContext context, ISourceStream source) {
+      //Check starting symbol
+      if (!source.MatchSymbol(StartSymbol, !Grammar.CaseSensitive)) return false;
+      source.Position += StartSymbol.Length;
+      return true; 
+    }
+    private Token CompleteMatch(CompilerContext context, ISourceStream source) {
+      //Find end symbol
+      while (!source.EOF()) {
         int firstCharPos;
         if (EndSymbols.Count == 1)
           firstCharPos = source.Text.IndexOf(EndSymbols[0], source.Position);
@@ -60,24 +92,22 @@ namespace Irony.Compiler {
           firstCharPos = source.Text.IndexOfAny(_endSymbolsFirsts, source.Position);
         if (firstCharPos < 0) {
           source.Position = source.Text.Length;
-          if (_isLineComment) //if it is LineComment, it is ok to hit EOF without final line-break; just return all until end.
-            return Token.Create(this, context, source.TokenStart, source.GetLexeme());
-          else 
-            return context.CreateErrorTokenAndReportError( source.TokenStart, string.Empty, "Unclosed comment block");
+          return null; //indicating error
         }
         //We found a character that might start an end symbol; let's see if it is true.
         source.Position = firstCharPos;
-        foreach (string endSymbol in EndSymbols)
-          if (source.MatchSymbol(endSymbol, ignoreCase)) {
+        foreach (string endSymbol in EndSymbols) {
+          if (source.MatchSymbol(endSymbol, !Grammar.CaseSensitive)) {
             //We found end symbol; eat end symbol only if it is not line comment.
             // For line comment, leave LF symbol there, it might be important to have a separate LF token
-            if (!_isLineComment) 
+            if (!_isLineComment)
               source.Position += endSymbol.Length;
             return Token.Create(this, context, source.TokenStart, source.GetLexeme());
           }//if
+        }//foreach endSymbol
         source.Position++; //move to the next char and try again    
       }//while
-      return null; //never happens
+      return null; //might happen if we found a start char of end symbol, but not the full endSymbol
     }//method
 
     public override IList<string> GetFirsts() {

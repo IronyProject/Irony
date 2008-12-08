@@ -18,13 +18,25 @@ using System.Text;
 namespace Irony.Compiler {
 
   public class TerminalLookupTable : Dictionary<char, TerminalList> { }
+  public class MultilineTokenInfo {
+    public readonly int Kind;
+    public readonly Terminal Terminal;
+    public MultilineTokenInfo(int kind, Terminal terminal) {
+      Kind = kind;
+      Terminal = terminal; 
+    }
+  }
+  public class MultilineInfoList : List<MultilineTokenInfo> { }
 
   public class ScannerControlData {
     public readonly Grammar Grammar;
     public readonly TerminalLookupTable TerminalsLookup = new TerminalLookupTable(); //hash table for fast terminal lookup by input char
     public readonly TerminalList FallbackTerminals = new TerminalList(); //terminals that have no explicit prefixes
-    public readonly string ScannerRecoverySymbols = "";
+    public readonly string ScannerRecoverySymbols;
     public readonly char[] LineTerminators; //used for line counting
+    //Table of terminals that produce tokens spanning multiple lines. 
+    // This is for support of line-by-line scanning in Visual Studio integration mode. 
+    public readonly MultilineInfoList MultilineKinds = new MultilineInfoList(); 
 
     public ScannerControlData(Grammar grammar) {
       Grammar = grammar;
@@ -32,7 +44,26 @@ namespace Irony.Compiler {
         Grammar.Init();
       LineTerminators = grammar.LineTerminators.ToCharArray();
       ScannerRecoverySymbols = grammar.WhitespaceChars + grammar.Delimiters;
+      BuildMultilineTerminalsTable(); 
       BuildTerminalsLookupTable();
+    }
+
+    private void BuildMultilineTerminalsTable() {
+      foreach (Terminal term in Grammar.Terminals) {
+        term.RegisterForMultilineScan(this); 
+      }
+    }
+    //Registers 
+    public byte RegisterMultiline(Terminal terminal) {
+      byte kind = (byte) (MultilineKinds.Count + 1);
+      MultilineKinds.Add(new MultilineTokenInfo(kind, terminal));
+      return kind;
+    }
+    public Terminal GetMultiline(short tokenKind) {
+      foreach (MultilineTokenInfo info in MultilineKinds) {
+        if (info.Kind == tokenKind) return info.Terminal;
+      }
+      return null; 
     }
 
     private void BuildTerminalsLookupTable() {

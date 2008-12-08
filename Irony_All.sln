@@ -1,14 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{64EF478E-7535-46A8-9047-5EBA5EFBF13E}"
-	ProjectSection(SolutionItems) = preProject
-		Irony_All4.vsmdi = Irony_All4.vsmdi
-		License.txt = License.txt
-		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
-		ReadMe.txt = ReadMe.txt
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "010.Irony", "Irony\010.Irony.csproj", "{D81F5C91-D7DB-46E5-BC99-49488FB6814C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "020.Irony.Samples", "Irony.Samples\020.Irony.Samples.csproj", "{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}"

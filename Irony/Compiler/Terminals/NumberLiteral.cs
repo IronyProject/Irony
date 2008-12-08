@@ -22,6 +22,7 @@ namespace Irony.Compiler {
   using BigInteger = Microsoft.Scripting.Math.BigInteger;
   using Complex64 = Microsoft.Scripting.Math.Complex64;
 
+  [Flags]
   public enum NumberFlags {
     None = 0,
     AllowStartEndDot  = 0x01,     //python : http://docs.python.org/ref/floating.html
@@ -29,26 +30,26 @@ namespace Irony.Compiler {
     AvoidPartialFloat = 0x04,     //for use with IntOnly flag; essentially tells terminal to avoid matching integer if 
                                   // it is followed by dot (or exp symbol) - leave to another terminal that will handle float numbers
     AllowSign   = 0x08,
+    DisableQuickParse = 0x10,
+
+    Binary = 0x0100, //e.g. GNU GCC C Extension supports binary number literals
+    Octal =  0x0200,
+    Hex =    0x0400,
+    HasDot = 0x1000,
+    HasExp = 0x2000,
   }
 
 
   //TODO: For VB, we may need to add a flag to automatically use long instead of int (default) when number is too large
   public class NumberLiteral : CompoundTerminalBase {
     #region Public Consts
-    //currently CompoundTerminalBase relies on TypeCode
+    //currently using TypeCodes for identifying numeric types
     public const TypeCode TypeCodeBigInt = (TypeCode)30;
     public const TypeCode TypeCodeImaginary = (TypeCode)31;
     #endregion
 
-    #region constructors
-    public NumberLiteral(string name, TermOptions options, NumberFlags flags)  : this(name) {
-      Flags |= flags;
-      SetOption(options);
-    }
-    public NumberLiteral(string name, TermOptions options)  : this(name) {
-      SetOption(options);
-    }
-    public NumberLiteral(string name, NumberFlags flags)    : this(name) {
+    #region constructors and initialization
+    public NumberLiteral(string name, NumberFlags flags)  : this(name) {
       Flags |= flags;
     }
     public NumberLiteral(string name, string displayName)  : this(name) {
@@ -58,6 +59,10 @@ namespace Irony.Compiler {
       base.Category = TokenCategory.Literal;
       base.MatchMode = TokenMatchMode.ByType;
     }
+    public void AddPrefix(string prefix, NumberFlags flags) {
+      PrefixFlags.Add(prefix, (int) flags);
+      Prefixes.Add(prefix);
+   }
     #endregion
 
     #region Public fields/properties: ExponentSymbols, Suffixes
@@ -88,6 +93,7 @@ namespace Irony.Compiler {
       if (this.EditorInfo == null) 
         this.EditorInfo = new TokenEditorInfo(TokenType.Literal, TokenColor.Number, TokenTriggers.None);
     }
+
     public override IList<string> GetFirsts() {
       StringList result = new StringList();
       result.AddRange(base.Prefixes);
@@ -104,6 +110,7 @@ namespace Irony.Compiler {
     //Most numbers in source programs are just one-digit instances of 0, 1, 2, and maybe others until 9
     // so we try to do a quick parse for these, without starting the whole general process
     protected override Token QuickParse(CompilerContext context, ISourceStream source) {
+      if (IsSet(NumberFlags.DisableQuickParse)) return null;
       char current = source.CurrentChar;
       if (char.IsDigit(current) && QuickParseTerminators.IndexOf(source.NextChar) >= 0) {
         int iValue = current - '0';
@@ -123,31 +130,35 @@ namespace Irony.Compiler {
       } else
         return null;
     }
+    protected override void InitDetails(CompoundTokenDetails details) {
+      base.InitDetails(details);
+      details.Flags = (int) this.Flags;
+    }
 
-    protected override void ReadPrefix(ISourceStream source, ScanDetails details) {
+    protected override void ReadPrefix(ISourceStream source, CompoundTokenDetails details) {
       //check that is not a  0 followed by dot; 
       //this may happen in Python for number "0.123" - we can mistakenly take "0" as octal prefix
       if (source.CurrentChar == '0' && source.NextChar == '.') return;
       base.ReadPrefix(source, details);
     }//method
 
-    protected override void ReadSuffix(ISourceStream source, ScanDetails details) {
+    protected override void ReadSuffix(ISourceStream source, CompoundTokenDetails details) {
       base.ReadSuffix(source, details);
       if (string.IsNullOrEmpty(details.Suffix))
-        details.TypeCodes = details.IsSet(ScanFlags.HasDotOrExp) ? _defaultFloatTypes : DefaultIntTypes;
+        details.TypeCodes = FlagIsSet(details, NumberFlags.HasDot | NumberFlags.HasExp) ? _defaultFloatTypes : DefaultIntTypes;
     }
 
-    protected override bool ReadBody(ISourceStream source, ScanDetails details) {
+    protected override bool ReadBody(ISourceStream source, CompoundTokenDetails details) {
       //remember start - it may be different from source.TokenStart, we may have skipped prefix
       int start = source.Position;
       char current = source.CurrentChar;
       if (current == '-' || current == '+') {
-        details.Negative = (current == '-');
+        details.Sign = current.ToString();
         source.Position++;
       }
       //Figure out digits set
       string digits = GetDigits(details);
-      bool isDecimal = !details.IsSet(ScanFlags.NonDecimal);
+      bool isDecimal = !FlagIsSet(details, NumberFlags.Binary | NumberFlags.Octal | NumberFlags.Hex);
       bool allowFloat = !IsSet(NumberFlags.IntOnly);
       bool foundDigits = false;
 
@@ -163,11 +174,13 @@ namespace Irony.Compiler {
         bool isDot = current == DecimalSeparator;
         if (allowFloat && isDot) {
           //If we had seen already a dot or exponent, don't accept this one;
+          bool hasDotOrExp = FlagIsSet(details, NumberFlags.HasDot | NumberFlags.HasExp);
+          if (hasDotOrExp) break; //from while loop
           //In python number literals (NumberAllowPointFloat) a point can be the first and last character,
-          //otherwise we accept dot only if it is followed by a digit
-          if (details.IsSet(ScanFlags.HasDotOrExp) || (digits.IndexOf(source.NextChar) < 0) && !IsSet(NumberFlags.AllowStartEndDot))
+          //We accept dot only if it is followed by a digit
+          if (digits.IndexOf(source.NextChar) < 0 && !IsSet(NumberFlags.AllowStartEndDot))
             break; //from while loop
-          details.Flags |= ScanFlags.HasDot;
+          details.Flags |= (int) NumberFlags.HasDot;
           source.Position++;
           continue;
         }
@@ -190,7 +203,7 @@ namespace Irony.Compiler {
             break;  //Exponent should be followed by either sign or digit
           //ok, we've got real exponent
           details.ExponentSymbol = current.ToString(); //remember the exp char
-          details.Flags |= ScanFlags.HasExp;
+          details.Flags |= (int) NumberFlags.HasExp;
           source.Position++;
           if (nextIsSign)
             source.Position++; //skip +/- explicitly so we don't have to deal with them on the next iteration
@@ -204,14 +217,11 @@ namespace Irony.Compiler {
       return true;
     }
 
-    protected override bool ConvertValue(ScanDetails details) {
+    protected override bool ConvertValue(CompoundTokenDetails details) {
       if (String.IsNullOrEmpty(details.Body)) {
         details.Error = "Invalid number.";
         return false;
       }
-      //base method fires event and lets custom code convert the value; if it returns true, the value was converted.
-      if (base.ConvertValue(details))
-        return true; 
 
       //Try quick paths
       switch (details.TypeCodes[0]) {
@@ -247,7 +257,7 @@ namespace Irony.Compiler {
     #endregion
 
     #region private utilities
-    private bool QuickConvertToInt32(ScanDetails details) {
+    private bool QuickConvertToInt32(CompoundTokenDetails details) {
       int radix = GetRadix(details);
       if (radix == 10 && details.Body.Length > 10) return false;    //10 digits is maximum for int32; int32.MaxValue = 2 147 483 647
       try {
@@ -264,28 +274,28 @@ namespace Irony.Compiler {
       }
     }//method
 
-    private bool QuickConvertToDouble(ScanDetails details) {
-      if (details.IsSet(ScanFlags.Binary | ScanFlags.Octal | ScanFlags.Hex | ScanFlags.HasExp)) return false; 
+    private bool QuickConvertToDouble(CompoundTokenDetails details) {
+      if (FlagIsSet(details, NumberFlags.Binary | NumberFlags.Octal | NumberFlags.Hex | NumberFlags.HasExp)) return false; 
       if (DecimalSeparator != '.') return false;
       double dvalue;
       if (!double.TryParse(details.Body, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out dvalue)) return false;
       details.Value = dvalue;
       return true; 
     }
-    private bool ConvertToFloat(TypeCode typeCode, ScanDetails details) {
+    private bool ConvertToFloat(TypeCode typeCode, CompoundTokenDetails details) {
       //only decimal numbers can be fractions
-      if (details.IsSet(ScanFlags.Binary | ScanFlags.Octal | ScanFlags.Hex)) {
+      if (FlagIsSet(details, NumberFlags.Binary | NumberFlags.Octal | NumberFlags.Hex)) {
         details.Error = "Invalid number.";
         return false;
       }
       string body = details.Body;
       //Some languages allow exp symbols other than E. Check if it is the case, and change it to E
       // - otherwise .NET conversion methods may fail
-      if (details.IsSet(ScanFlags.HasExp) && details.ExponentSymbol.ToUpper() != "E")
+      if (FlagIsSet(details, NumberFlags.HasExp) && details.ExponentSymbol.ToUpper() != "E")
         body = body.Replace(details.ExponentSymbol, "E");
 
       //'.' decimal seperator required by invariant culture
-      if (details.IsSet(ScanFlags.HasDot) && DecimalSeparator != '.')
+      if (FlagIsSet(details, NumberFlags.HasDot) && DecimalSeparator != '.')
         body = body.Replace(DecimalSeparator, '.');
 
       switch (typeCode) {
@@ -311,7 +321,7 @@ namespace Irony.Compiler {
       }//switch
       return false; 
     }
-    private bool TryCastToIntegerType(TypeCode typeCode, ScanDetails details) {
+    private bool TryCastToIntegerType(TypeCode typeCode, CompoundTokenDetails details) {
       if (details.Value == null) return false;
       try {
         if (typeCode != TypeCode.UInt64)
@@ -323,7 +333,7 @@ namespace Irony.Compiler {
       }
     }//method
 
-    private bool TryConvertToUlong(ScanDetails details) {
+    private bool TryConvertToUlong(CompoundTokenDetails details) {
       try {
         int radix = GetRadix(details);
         //workaround for .Net FX bug: http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=278448
@@ -338,7 +348,7 @@ namespace Irony.Compiler {
     }
 
 
-    private bool ConvertToBigInteger(ScanDetails details) {
+    private bool ConvertToBigInteger(CompoundTokenDetails details) {
       //ignore leading zeros and sign
       details.Body = details.Body.TrimStart('+').TrimStart('-').TrimStart('0');
       int bodyLength = details.Body.Length;
@@ -371,36 +381,36 @@ namespace Irony.Compiler {
       BigInteger bigIntegerValue = numberSections[0];
       for (int i = 1; i < sectionCount; i++)
         bigIntegerValue = checked(bigIntegerValue * safeWordRadix + numberSections[i]);
-      if (details.Negative)
+      if (details.Sign == "-")
         bigIntegerValue = -bigIntegerValue;
       details.Value = bigIntegerValue;
       return true;
     }
 
-    private int GetRadix(ScanDetails details) {
-      if (details.IsSet(ScanFlags.Hex))
+    private int GetRadix(CompoundTokenDetails details) {
+      if (FlagIsSet(details, NumberFlags.Hex))
         return 16;
-      if (details.IsSet(ScanFlags.Octal))
+      if (FlagIsSet(details, NumberFlags.Octal))
         return 8;
-      if (details.IsSet(ScanFlags.Binary))
+      if (FlagIsSet(details, NumberFlags.Binary))
         return 2;
       return 10;
     }
-    private string GetDigits(ScanDetails details) {
-      if (details.IsSet(ScanFlags.Hex))
+    private string GetDigits(CompoundTokenDetails details) {
+      if (FlagIsSet(details, NumberFlags.Hex))
         return TextUtils.HexDigits;
-      if (details.IsSet(ScanFlags.Octal))
+      if (FlagIsSet(details, NumberFlags.Octal))
         return TextUtils.OctalDigits;
-      if (details.IsSet(ScanFlags.Binary))
+      if (FlagIsSet(details, NumberFlags.Binary))
         return TextUtils.BinaryDigits;
       return TextUtils.DecimalDigits;
     }
-    private int GetSafeWordLength(ScanDetails details) {
-      if (details.IsSet(ScanFlags.Hex))
+    private int GetSafeWordLength(CompoundTokenDetails details) {
+      if (FlagIsSet(details, NumberFlags.Hex))
         return 15;
-      if (details.IsSet(ScanFlags.Octal))
+      if (FlagIsSet(details, NumberFlags.Octal))
         return 21; //maxWordLength 22
-      if (details.IsSet(ScanFlags.Binary))
+      if (FlagIsSet(details, NumberFlags.Binary))
         return 63;
       return 19; //maxWordLength 20
     }
@@ -410,12 +420,12 @@ namespace Irony.Compiler {
       return remainder == 0 ? quotient : quotient + 1;
     }
     //radix^safeWordLength
-    private ulong GetSafeWordRadix(ScanDetails details) {
-      if (details.IsSet(ScanFlags.Hex))
+    private ulong GetSafeWordRadix(CompoundTokenDetails details) {
+      if (FlagIsSet(details, NumberFlags.Hex))
         return 1152921504606846976;
-      if (details.IsSet(ScanFlags.Octal))
+      if (FlagIsSet(details, NumberFlags.Octal))
         return 9223372036854775808;
-      if (details.IsSet(ScanFlags.Binary))
+      if (FlagIsSet(details, NumberFlags.Binary))
         return 9223372036854775808;
       return 10000000000000000000;
     }
@@ -424,6 +434,12 @@ namespace Irony.Compiler {
     }
     #endregion
 
+
+    #region Utility methods: FlagIsSet
+    protected static bool FlagIsSet(CompoundTokenDetails details, NumberFlags flag) {
+      return (details.Flags & (int) flag ) != 0;
+    }
+    #endregion
 
   }//class
 

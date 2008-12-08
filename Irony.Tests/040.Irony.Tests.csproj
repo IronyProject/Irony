@@ -40,11 +40,14 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommentTerminalTests.cs" />
     <Compile Include="EvaluationTests.cs" />
     <Compile Include="IdentifierTerminalTests.cs" />
+    <Compile Include="ScannerTests.cs" />
     <Compile Include="NumberLiteralTests.cs" />
     <None Include="OperatorDispatchTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

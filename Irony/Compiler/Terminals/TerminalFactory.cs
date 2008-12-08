@@ -19,45 +19,43 @@ namespace Irony.Compiler {
   public static class TerminalFactory {
 
     public static StringLiteral CreateCSharpString(string name) {
-      StringLiteral term = new StringLiteral(name, TermOptions.None);
-      term.AddStartEnd("\"", ScanFlags.AllowAllEscapes);
-      term.AddPrefixFlag("@", ScanFlags.DisableEscapes | ScanFlags.AllowLineBreak | ScanFlags.AllowDoubledQuote);
+      StringLiteral term = new StringLiteral(name, "\"", StringFlags.AllowsAllEscapes);
+      term.AddPrefix("@", StringFlags.NoEscapes | StringFlags.AllowsLineBreak | StringFlags.AllowsDoubledQuote);
       return term;
     }
     public static StringLiteral CreateCSharpChar(string name) {
-      StringLiteral term = new StringLiteral(name, TermOptions.None);
-      term.AddStartEnd("'", ScanFlags.IsChar);
+      StringLiteral term = new StringLiteral(name, "'", StringFlags.IsChar);
       return term;
     }
 
     public static StringLiteral CreateVbString(string name) {
-      StringLiteral term = new StringLiteral(name, TermOptions.SpecialIgnoreCase);
-      term.AddStartEnd("\"", ScanFlags.DisableEscapes | ScanFlags.AllowDoubledQuote);
+      StringLiteral term = new StringLiteral(name);
+      term.AddStartEnd("\"", StringFlags.NoEscapes | StringFlags.AllowsDoubledQuote);
       term.AddSuffixCodes("$", TypeCode.String);
       term.AddSuffixCodes("c", TypeCode.Char);
       return term;
     }
 
     public static StringLiteral CreatePythonString(string name) {
-      StringLiteral term = new StringLiteral(name, TermOptions.SpecialIgnoreCase);
-      term.AddStartEnd("'", ScanFlags.AllowAllEscapes);
-      term.AddStartEnd("'''", ScanFlags.AllowAllEscapes | ScanFlags.AllowLineBreak);
-      term.AddStartEnd("\"", ScanFlags.AllowAllEscapes);
-      term.AddStartEnd("\"\"\"", ScanFlags.AllowAllEscapes | ScanFlags.AllowLineBreak);
+      StringLiteral term = new StringLiteral(name);
+      term.AddStartEnd("'", StringFlags.AllowsAllEscapes);
+      term.AddStartEnd("'''", StringFlags.AllowsAllEscapes | StringFlags.AllowsLineBreak);
+      term.AddStartEnd("\"", StringFlags.AllowsAllEscapes);
+      term.AddStartEnd("\"\"\"", StringFlags.AllowsAllEscapes | StringFlags.AllowsLineBreak);
 
-      term.AddPrefixFlag("u", ScanFlags.AllowAllEscapes);
-      term.AddPrefixFlag("r", ScanFlags.DisableEscapes );
-      term.AddPrefixFlag("ur", ScanFlags.DisableEscapes);
+      term.AddPrefix("u", StringFlags.AllowsAllEscapes);
+      term.AddPrefix("r", StringFlags.NoEscapes );
+      term.AddPrefix("ur", StringFlags.NoEscapes);
  
       return term;
     }
 
 		//http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-334.pdf section 9.4.4
     public static NumberLiteral CreateCSharpNumber(string name) {
-      NumberLiteral term = new NumberLiteral(name, TermOptions.EnableQuickParse | TermOptions.SpecialIgnoreCase);
+      NumberLiteral term = new NumberLiteral(name);
       term.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.UInt32, TypeCode.Int64, TypeCode.UInt64 };
       term.DefaultFloatType = TypeCode.Double;
-      term.AddPrefixFlag("0x", ScanFlags.Hex);
+      term.AddPrefix("0x", NumberFlags.Hex);
       term.AddSuffixCodes("u", TypeCode.UInt32, TypeCode.UInt64);
       term.AddSuffixCodes("l", TypeCode.Int64, TypeCode.UInt64);
       term.AddSuffixCodes("ul", TypeCode.UInt64);
@@ -68,11 +66,11 @@ namespace Irony.Compiler {
     }
     //http://www.microsoft.com/downloads/details.aspx?FamilyId=6D50D709-EAA4-44D7-8AF3-E14280403E6E&displaylang=en section 2
     public static NumberLiteral CreateVbNumber(string name) {
-      NumberLiteral term = new NumberLiteral(name, TermOptions.EnableQuickParse | TermOptions.SpecialIgnoreCase);
+      NumberLiteral term = new NumberLiteral(name);
       term.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.Int64 };
       //term.DefaultFloatType = TypeCode.Double; it is default
-      term.AddPrefixFlag("&H", ScanFlags.Hex);
-      term.AddPrefixFlag("&O", ScanFlags.Octal);
+      term.AddPrefix("&H", NumberFlags.Hex);
+      term.AddPrefix("&O", NumberFlags.Octal);
       term.AddSuffixCodes("S", TypeCode.Int16);
       term.AddSuffixCodes("I", TypeCode.Int32);
       term.AddSuffixCodes("%", TypeCode.Int32);
@@ -91,14 +89,14 @@ namespace Irony.Compiler {
     }
     //http://docs.python.org/ref/numbers.html
     public static NumberLiteral CreatePythonNumber(string name) {
-      NumberLiteral term = new NumberLiteral(name, TermOptions.EnableQuickParse | TermOptions.SpecialIgnoreCase, NumberFlags.AllowStartEndDot);
+      NumberLiteral term = new NumberLiteral(name, NumberFlags.AllowStartEndDot);
       //default int types are Integer (32bit) -> LongInteger (BigInt); Try Int64 before BigInt: Better performance?
       term.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.Int64, NumberLiteral.TypeCodeBigInt };
       // term.DefaultFloatType = TypeCode.Double; -- it is default
       //float type is implementation specific, thus try decimal first (higher precision)
       //term.DefaultFloatTypes = new TypeCode[] { TypeCode.Decimal, TypeCode.Double };
-      term.AddPrefixFlag("0x", ScanFlags.Hex);
-      term.AddPrefixFlag("0", ScanFlags.Octal);
+      term.AddPrefix("0x", NumberFlags.Hex);
+      term.AddPrefix("0", NumberFlags.Octal);
       term.AddSuffixCodes("L", TypeCode.Int64, NumberLiteral.TypeCodeBigInt);
       term.AddSuffixCodes("J", NumberLiteral.TypeCodeImaginary);
       return term;
@@ -110,25 +108,24 @@ namespace Irony.Compiler {
     //  ... representations of number objects may be written with an exponent marker that indicates the desired precision 
     // of the inexact representation. The letters s, f, d, and l specify the use of short, single, double, and long precision, respectively. 
     public static NumberLiteral CreateSchemeNumber(string name) {
-      NumberLiteral term = new NumberLiteral(name, TermOptions.EnableQuickParse | TermOptions.SpecialIgnoreCase);
+      NumberLiteral term = new NumberLiteral(name);
       term.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.Int64, NumberLiteral.TypeCodeBigInt };
       term.DefaultFloatType = TypeCode.Double; // it is default
       term.ExponentSymbols = "sfdl";
-      term.AddPrefixFlag("#b", ScanFlags.Binary);
-      term.AddPrefixFlag("#o", ScanFlags.Octal);
-      term.AddPrefixFlag("#x", ScanFlags.Hex);
-      term.AddPrefixFlag("#d", ScanFlags.None);
-      term.AddPrefixFlag("#i", ScanFlags.None); // inexact prefix, has no effect
-      term.AddPrefixFlag("#e", ScanFlags.None); // exact prefix, has no effect
+      term.AddPrefix("#b", NumberFlags.Binary);
+      term.AddPrefix("#o", NumberFlags.Octal);
+      term.AddPrefix("#x", NumberFlags.Hex);
+      term.AddPrefix("#d", NumberFlags.None);
+      term.AddPrefix("#i", NumberFlags.None); // inexact prefix, has no effect
+      term.AddPrefix("#e", NumberFlags.None); // exact prefix, has no effect
       term.AddSuffixCodes("J", NumberLiteral.TypeCodeImaginary);
       return term;
     }
 
 
     public static IdentifierTerminal CreateCSharpIdentifier(string name) {
-      IdentifierTerminal id = new IdentifierTerminal(name);
-      id.SetOption(TermOptions.CanStartWithEscape);
-      id.AddPrefixFlag("@", ScanFlags.IsNotKeyword | ScanFlags.DisableEscapes);
+      IdentifierTerminal id = new IdentifierTerminal(name, IdFlags.AllowsEscapes | IdFlags.CanStartWithEscape);
+      id.AddPrefix("@", IdFlags.IsNotKeyword);
       //From spec:
       //Start char is "_" or letter-character, which is a Unicode character of classes Lu, Ll, Lt, Lm, Lo, or Nl 
       id.StartCharCategories.AddRange(new UnicodeCategory[] {
@@ -163,9 +160,9 @@ namespace Irony.Compiler {
     }
 
     public static StringLiteral CreateSqlExtIdentifier(string name) {
-      StringLiteral term = new StringLiteral(name, TermOptions.SpecialIgnoreCase);
-      term.AddStartEnd("[", "]", ScanFlags.DisableEscapes);
-      term.AddStartEnd("\"", ScanFlags.DisableEscapes);
+      StringLiteral term = new StringLiteral(name);
+      term.AddStartEnd("[", "]", StringFlags.NoEscapes);
+      term.AddStartEnd("\"", StringFlags.NoEscapes);
       return term;
     }
 

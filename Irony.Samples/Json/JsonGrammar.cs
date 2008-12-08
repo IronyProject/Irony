@@ -9,7 +9,7 @@ namespace Irony.Samples.Json {
   public class JsonGrammar : Grammar {
     public JsonGrammar() {
       //Terminals
-      var jstring = new StringLiteral("string");
+      var jstring = new StringLiteral("string", "\"");
       var jnumber = new NumberLiteral("number");
       var comma = Symbol(","); 
       

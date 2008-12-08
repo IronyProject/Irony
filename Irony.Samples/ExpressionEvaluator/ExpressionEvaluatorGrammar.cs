@@ -71,6 +71,7 @@ namespace Irony.Samples {
       RegisterOperators(3, Associativity.Right, "**");
 
       RegisterPunctuation( "(", ")");
+      MarkTransient(Term, Expr, Statement);
 
       //automatically add NewLine before EOF so that our BNF rules work correctly when there's no final line break in source
       this.LanguageFlags |= LanguageFlags.NewLineBeforeEOF | LanguageFlags.SupportsInterpreter; 

@@ -30,8 +30,7 @@ namespace Irony.Samples.ScriptNET
                          "continue", "return", "function", "is",
                          "pre", "post", "invariant", "new"); */
 
-      StringLiteral s = new StringLiteral("String", TermOptions.None);
-      s.AddStartEnd("'", ScanFlags.AllowDoubledQuote);
+      StringLiteral s = new StringLiteral("String", "'", StringFlags.AllowsDoubledQuote);
 
       Terminal dot = Symbol(".", "dot");
       Terminal less = Symbol("<");

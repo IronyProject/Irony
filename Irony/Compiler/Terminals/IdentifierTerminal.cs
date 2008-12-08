@@ -22,23 +22,41 @@ namespace Irony.Compiler {
   // 
 
   #endregion
-  
+
+  public enum IdFlags {
+    None = 0,
+    AllowsEscapes = 0x01,
+    CanStartWithEscape = 0x03,  
+    
+    IsNotKeyword = 0x10,
+    NameIncludesPrefix = 0x20,
+
+    HasEscapes = 0x100,     
+  }
   public class UnicodeCategoryList : List<UnicodeCategory> { }
 
   public class IdentifierTerminal : CompoundTerminalBase {
 
-    //TODO: c# allows unicode escapes in identifiers, even in the first char; thus the "\" symbol should 
-    // be included in GetFirsts() list. IdentifierTerminal must provide for this!
 
     //Note that extraChars, extraFirstChars are used to form AllFirstChars and AllChars fields, which in turn 
     // are used in QuickParse. Only if QuickParse fails, the process switches to full version with checking every
     // char's category
-    public IdentifierTerminal(string name, string extraChars, string extraFirstChars)  : base(name) {
+    #region constructors and initialization
+    public IdentifierTerminal(string name) : this(name, IdFlags.None) {
+    }
+    public IdentifierTerminal(string name, IdFlags flags) : this(name, "_", "_") {
+      Flags = flags; 
+    }
+    public IdentifierTerminal(string name, string extraChars, string extraFirstChars): base(name) {
       AllFirstChars = TextUtils.AllLatinLetters + extraFirstChars;
       AllChars = TextUtils.AllLatinLetters + TextUtils.DecimalDigits + extraChars;
       MatchMode = TokenMatchMode.ByValueThenByType;
     }
-    public IdentifierTerminal(string name)  : this(name, "_", "_") {  }
+
+    public void AddPrefix(string prefix, IdFlags flags) {
+      base.AddPrefixFlag(prefix, (int)flags);
+    }
+    #endregion
 
     #region properties: ExtraChars, ExtraFirstChars
     //Used in QuickParse only!
@@ -46,6 +64,7 @@ namespace Irony.Compiler {
     public string AllFirstChars;
     private string _terminators;
     public TokenEditorInfo KeywordEditorInfo = new TokenEditorInfo(TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
+    public IdFlags Flags; //flags for the case when there are no prefixes
 
     public readonly UnicodeCategoryList StartCharCategories = new UnicodeCategoryList(); //categories of first char
     public readonly UnicodeCategoryList CharCategories = new UnicodeCategoryList();      //categories of all other chars
@@ -61,13 +80,30 @@ namespace Irony.Compiler {
       if (this.EditorInfo == null) 
         this.EditorInfo = new TokenEditorInfo(TokenType.Identifier, TokenColor.Identifier, TokenTriggers.None);
     }
+    //TODO: put into account non-Ascii aplhabets specified by means of Unicode categories!
+    public override IList<string> GetFirsts() {
+      StringList list = new StringList();
+      list.AddRange(Prefixes);
+      if (string.IsNullOrEmpty(AllFirstChars))
+        return list;
+      char[] chars = AllFirstChars.ToCharArray();
+      foreach (char ch in chars)
+        list.Add(ch.ToString());
+      if (FlagIsSet(Flags, IdFlags.CanStartWithEscape))
+        list.Add(this.EscapeChar.ToString());
+      return list;
+    }
+    protected override void InitDetails(CompoundTerminalBase.CompoundTokenDetails details) {
+      base.InitDetails(details);
+      details.Flags = (int)Flags;
+    }
 
     //Override to assign IsKeyword flag to keyword tokens
-    protected override Token CreateToken(CompilerContext context, ISourceStream source, ScanDetails details) {
-      if (details.IsSet(ScanFlags.IncludePrefix) && !string.IsNullOrEmpty(details.Prefix))
+    protected override Token CreateToken(CompilerContext context, ISourceStream source, CompoundTokenDetails details) {
+      if (FlagIsSet(details, IdFlags.NameIncludesPrefix) && !string.IsNullOrEmpty(details.Prefix))
         details.Value = details.Prefix + details.Body;
       Token token = base.CreateToken(context, source, details); 
-      if (details.IsSet(ScanFlags.IsNotKeyword))
+      if (FlagIsSet(details, IdFlags.IsNotKeyword))
         return token;
       //check if it is keyword
       string text = token.Text;
@@ -92,9 +128,9 @@ namespace Irony.Compiler {
       return Token.Create(this, context, source.TokenStart, text);
     }
 
-    protected override bool ReadBody(ISourceStream source, ScanDetails details) {
+    protected override bool ReadBody(ISourceStream source, CompoundTokenDetails details) {
       int start = source.Position;
-      bool allowEscapes = !details.IsSet(ScanFlags.DisableEscapes);
+      bool allowEscapes = FlagIsSet(details, IdFlags.AllowsEscapes);
       CharList outputChars = new CharList();
       while (!source.EOF()) {
         char current = source.CurrentChar;
@@ -105,7 +141,7 @@ namespace Irony.Compiler {
           //This is the char that we should process in next iteration, so we must backup one char, to pretend the escaped
           // char is at position of last digit of escape sequence. 
           source.Position--; 
-          if (details.HasError()) 
+          if (details.Error != null) 
             return false;
         }
         //Check if current character is OK
@@ -135,7 +171,7 @@ namespace Irony.Compiler {
       return false; 
     }
 
-    private char ReadUnicodeEscape(ISourceStream source, ScanDetails details) {
+    private char ReadUnicodeEscape(ISourceStream source, CompoundTokenDetails details) {
       //Position is currently at "\" symbol
       source.Position++; //move to U/u char
       int len;
@@ -154,33 +190,26 @@ namespace Irony.Compiler {
       string digits = source.Text.Substring(source.Position, len);
       char result = (char)Convert.ToUInt32(digits, 16);
       source.Position += len;
-      details.Flags |= ScanFlags.HasEscapes;
+      details.Flags |= (int) StringFlags.HasEscapes;
       return result;
     }
 
-    protected override bool ConvertValue(ScanDetails details) {
-      if (details.IsSet(ScanFlags.IncludePrefix))
+    protected override bool ConvertValue(CompoundTokenDetails details) {
+      if (FlagIsSet(details, IdFlags.NameIncludesPrefix))
         details.Value = details.Prefix + details.Body;
       else
         details.Value = details.Body;
       return true; 
     }
 
-    //TODO: put into account non-Ascii aplhabets specified by means of Unicode categories!
-    public override IList<string> GetFirsts() {
-      StringList list = new StringList();
-      list.AddRange(Prefixes);
-      if (string.IsNullOrEmpty(AllFirstChars)) 
-        return list;
-      char[] chars = AllFirstChars.ToCharArray();
-      foreach (char ch in chars)
-        list.Add(ch.ToString());
-      if (IsSet(TermOptions.CanStartWithEscape))
-        list.Add(this.EscapeChar.ToString());
-      return list;
-    }
     #endregion 
 
+    protected static bool FlagIsSet(CompoundTokenDetails details, IdFlags flag) {
+      return (details.Flags & (int)flag) != 0;
+    }
+    protected static bool FlagIsSet(IdFlags flags, IdFlags flag) {
+      return (flags & flag) != 0;
+    }
   }//class
 
 

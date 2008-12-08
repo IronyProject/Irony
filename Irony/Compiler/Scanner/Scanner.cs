@@ -16,7 +16,7 @@ using System.Text;
 
 namespace Irony.Compiler {
 
-  //Scanner class. The Scanner's function is to transform a stream of characters into bigger aggregates/words or lexemes, 
+  //Scanner class. The Scanner's function is to transform a stream of characters into aggregates/words or lexemes, 
   // like identifier, number, literal, etc. 
 
   public class Scanner  {
@@ -24,7 +24,7 @@ namespace Irony.Compiler {
       Data = data;
     }
 
-    #region Fields: _data, _source, _context, _caseSensitive, _currentToken
+    #region Properties and Fields: Data, _source, _context, _caseSensitive, _currentToken
     public readonly ScannerControlData Data;
     ISourceStream  _source;
     CompilerContext  _context;
@@ -55,7 +55,8 @@ namespace Irony.Compiler {
       _source = source;
       _currentToken = null;
       _bufferedTokens.Clear();
-      ResetSource();
+      if (_source != null)
+        ResetSource();
     }
 
     //Use this method in real compiler, in iterator-connected pipeline
@@ -72,13 +73,34 @@ namespace Irony.Compiler {
       }//while
     }// method
 
+    #region VS Integration methods
     //Use this method for VS integration; VS language package requires scanner that returns tokens one-by-one. 
     // Start and End positions required by this scanner may be derived from Token : 
     //   start=token.Location.Position; end=start + token.Length;
-    // state is not used now - maybe in the future
-    public Token GetNext(ref int state) {
-      return ReadToken();
+    public Token VsReadToken(ref int state) {
+      _context.ScannerState.Value = state;
+      if (_source.EOF()) return null;
+      
+      Token result;
+      if (state == 0)
+        result = ReadToken();
+      else {
+        Terminal term = Data.GetMultiline(_context.ScannerState.TokenKind);
+        result = term.TryMatch(_context, _source); 
+      }
+      //set state value from context
+      state = _context.ScannerState.Value;
+      if (result != null && result.Terminal == Grammar.Eof)
+        result = null; 
+      return result;
     }
+    public void VsSetSource(string text, int offset) {
+      if (offset > 0)
+        text = text.Substring(offset);
+      _source = new SourceFile(text, "source");
+      ResetSource(); 
+    }
+    #endregion
 
 
     private Token ReadToken() {
@@ -174,14 +196,18 @@ namespace Irony.Compiler {
       return _source.ToString(); //show 30 chars starting from current position
     }
 
-    #region TokenStart calculations
-    private int _nextNewLinePosition = -1; //private field to cache position of next \n character
+    #region Source-related methods
     public void ResetSource() {
       _source.Position = 0;
       _source.TokenStart = new SourceLocation();
       _nextNewLinePosition = _source.Text.IndexOf('\n');
     }
 
+
+    #endregion 
+
+    #region TokenStart calculations
+    private int _nextNewLinePosition = -1; //private field to cache position of next \n character
     //Calculates the _source.TokenStart values (row/column) for the token which starts at the current position.
     // We just skipped the whitespace and about to start scanning the next token.
     internal void SetTokenStartLocation() {

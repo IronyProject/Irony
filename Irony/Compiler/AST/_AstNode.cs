@@ -31,7 +31,6 @@ namespace Irony.Compiler {
     public readonly BnfTerm Term;
     public readonly SourceSpan Span;
     public readonly AstNodeList ChildNodes;
-    protected short EvaluationStackDiff;
 
     public NodeArgs(CompilerContext context, BnfTerm term, SourceSpan span, AstNodeList childNodes) {
       Context = context;
@@ -54,9 +53,7 @@ namespace Irony.Compiler {
     IsLValue         = 0x10,           // used in identifiers as indicators that this use is LValue assignment
     UsesOuterScope   = 0x020,   //the function uses values in outer(parent) scope(s), so it may need closure 
 
-//    IsStaticCall = 0x0200,   //the function call target is a fixed method, either defined in current module or is a global/external method
-
-
+    IsIncomplete        = 0x100,
   }
 
 

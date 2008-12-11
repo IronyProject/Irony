@@ -57,6 +57,11 @@ namespace Irony.Compiler {
       public string StartSymbol;     //string start and end symbols
       public string EndSymbol;
       public object Value;
+      //partial info - ugly, need to refactor
+      public bool PartialOk;
+      public bool IsPartial;
+      public bool PartialContinues;
+      public int PartialId; 
     }
 
     #endregion 
@@ -125,19 +130,30 @@ namespace Irony.Compiler {
 
       source.Position = source.TokenStart.Position;
       CompoundTokenDetails details = new CompoundTokenDetails();
-      InitDetails(details); 
+      InitDetails(context, details);
 
-      ReadPrefix(source, details);
+      if (context.ScannerState.Value == 0)
+        ReadPrefix(source, details);
       if (!ReadBody(source, details))
         return null;
       if (details.Error != null) 
         return context.CreateErrorTokenAndReportError(source.TokenStart, source.CurrentChar.ToString(), details.Error);
-      ReadSuffix(source, details);
+      if (details.IsPartial) {
+        details.Value = details.Body;
+      } else {
+        ReadSuffix(source, details);
 
-      if (!ConvertValue(details)) 
-        return context.CreateErrorTokenAndReportError(source.TokenStart, source.CurrentChar.ToString(), "Failed to convert the value: " + details.Error);
-
+        if (!ConvertValue(details))
+          return context.CreateErrorTokenAndReportError(source.TokenStart, source.CurrentChar.ToString(), "Failed to convert the value: " + details.Error);
+      }
       token = CreateToken(context, source, details);
+       
+      if (details.IsPartial) {
+        //Save terminal state so we can continue
+        context.ScannerState.TokenKind = (byte)details.PartialId;
+        context.ScannerState.Data2 = (short)details.Flags;
+      } else
+        context.ScannerState.Value = 0;
       return token; 
     }
 
@@ -145,10 +161,14 @@ namespace Irony.Compiler {
       string lexeme = source.GetLexeme();
       Token token = Token.Create(context, this, source.TokenStart, lexeme, details.Value);
       token.Details = details;
+      if (details.IsPartial) 
+        token.Flags |= AstNodeFlags.IsIncomplete;
       return token;
     }
 
-    protected virtual void InitDetails(CompoundTokenDetails details) {
+    protected virtual void InitDetails(CompilerContext context, CompoundTokenDetails details) {
+      details.PartialOk = (context.Mode == CompileMode.VsLineScan);
+      details.PartialContinues = (context.ScannerState.Value != 0); 
     }
 
     protected virtual Token QuickParse(CompilerContext context, ISourceStream source) {

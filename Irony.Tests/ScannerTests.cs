@@ -11,7 +11,7 @@ namespace Irony.Tests {
     public ScanTestGrammar() {
       var comment = new CommentTerminal("comment", "/*", "*/");
       base.NonGrammarTerminals.Add(comment);
-      var str = new StringLiteral("str", "'");
+      var str = new StringLiteral("str", "'", StringFlags.AllowsLineBreak);
       var stmt = new NonTerminal("stmt");
       stmt.Rule = str | Empty;
       this.Root = stmt; 
@@ -21,7 +21,6 @@ namespace Irony.Tests {
   [TestClass]
   public class ScannerTests {
     Grammar _grammar; 
-    Token _token;
     Scanner _scanner; 
     CompilerContext _context; 
     int _state; 
@@ -38,30 +37,57 @@ namespace Irony.Tests {
     private void SetSource(string text) {
       _scanner.VsSetSource(text, 0); 
     }
-    private void Read() {
-      _token = _scanner.VsReadToken(ref _state);
+    private Token Read() {
+      Token token = _scanner.VsReadToken(ref _state);
+      return token; 
     }
 
     [TestMethod]
-    public void TestVsScanning() {
+    public void TestVsScanningComment() {
       Init(new ScanTestGrammar());
       SetSource(" /*  ");
-      Read();
-      Assert.IsTrue(_token.IsSet(AstNodeFlags.IsIncomplete), "Expected incomplete token (line 1)");
-      Read();
-      Assert.IsNull(_token, "NULL expected");
+      Token token = Read();
+      Assert.IsTrue(token.IsSet(AstNodeFlags.IsIncomplete), "Expected incomplete token (line 1)");
+      token = Read();
+      Assert.IsNull(token, "NULL expected");
       SetSource(" comment ");
-      Read();
-      Assert.IsTrue(_token.IsSet(AstNodeFlags.IsIncomplete), "Expected incomplete token (line 2)");
-      Read();
-      Assert.IsNull(_token, "NULL expected");
-      SetSource(" */");
-      Read();
-      Assert.IsFalse(_token.IsSet(AstNodeFlags.IsIncomplete), "Expected complete token (line 3)");
-      Read();
-      Assert.IsNull(_token, "Null expected.");
+      token = Read();
+      Assert.IsTrue(token.IsSet(AstNodeFlags.IsIncomplete), "Expected incomplete token (line 2)");
+      token = Read();
+      Assert.IsNull(token, "NULL expected");
+      SetSource(" */ /*x*/");
+      token = Read();
+      Assert.IsFalse(token.IsSet(AstNodeFlags.IsIncomplete), "Expected complete token (line 3)");
+      token = Read();
+      Assert.IsFalse(token.IsSet(AstNodeFlags.IsIncomplete), "Expected complete token (line 3)");
+      token = Read();
+      Assert.IsNull(token, "Null expected.");
+    }
 
-      
+    [TestMethod]
+    public void TestVsScanningString() {
+      Init(new ScanTestGrammar());
+      SetSource(" 'abc");
+      Token token = Read();
+      Assert.IsTrue(token.ValueString == "abc", "Expected incomplete token 'abc' (line 1)");
+      Assert.IsTrue(token.IsSet(AstNodeFlags.IsIncomplete), "Expected incomplete token (line 1)");
+      token = Read();
+      Assert.IsNull(token, "NULL expected");
+      SetSource(" def ");
+      token = Read();
+      Assert.IsTrue(token.ValueString == " def ", "Expected incomplete token ' def ' (line 2)");
+      Assert.IsTrue(token.IsSet(AstNodeFlags.IsIncomplete), "Expected incomplete token (line 2)");
+      token = Read();
+      Assert.IsNull(token, "NULL expected");
+      SetSource("ghi' 'x'");
+      token = Read();
+      Assert.IsTrue(token.ValueString == "ghi", "Expected token 'ghi' (line 3)");
+      Assert.IsFalse(token.IsSet(AstNodeFlags.IsIncomplete), "Expected complete token (line 3)");
+      token = Read();
+      Assert.IsTrue(token.ValueString == "x", "Expected token 'x' (line 3)");
+      Assert.IsFalse(token.IsSet(AstNodeFlags.IsIncomplete), "Expected complete token (line 3)");
+      token = Read();
+      Assert.IsNull(token, "Null expected.");
     }
 
   }//class

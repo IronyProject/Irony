@@ -90,7 +90,8 @@ namespace Irony.Compiler {
             TerminalsLookup[hashKey] = currentList;
           }
           //add terminal to the list
-          currentList.Add(term);
+          if (!currentList.Contains(term)) 
+            currentList.Add(term);
         }
       }//foreach term
       //Sort all terminal lists by reverse priority, so that terminal with higher priority comes first in the list

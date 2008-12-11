@@ -130,8 +130,8 @@ namespace Irony.Compiler {
       } else
         return null;
     }
-    protected override void InitDetails(CompoundTokenDetails details) {
-      base.InitDetails(details);
+    protected override void InitDetails(CompilerContext context, CompoundTokenDetails details) {
+      base.InitDetails(context, details);
       details.Flags = (int) this.Flags;
     }
 

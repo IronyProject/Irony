@@ -22,9 +22,9 @@ namespace Irony.Compiler {
     IsChar = 0x01,
     AllowsDoubledQuote = 0x02, //Convert doubled start/end symbol to a single symbol; for ex. in SQL, '' -> '
     AllowsLineBreak = 0x04,
-    HasEscapes = 0x08,     //also used by IdentifierTerminal
-    NoEscapes = 0x10, //also used by IdentifierTerminal
-    AllowsUEscapes = 0x20, //also used by IdentifierTerminal
+    HasEscapes = 0x08,     
+    NoEscapes = 0x10, 
+    AllowsUEscapes = 0x20, 
     AllowsXEscapes = 0x40,
     AllowsOctalEscapes = 0x80,
     AllowsAllEscapes = AllowsUEscapes | AllowsXEscapes | AllowsOctalEscapes,
@@ -36,7 +36,7 @@ namespace Irony.Compiler {
     class StringKindInfo {
       internal readonly string Start, End;
       internal readonly StringFlags Flags;
-      internal int ScannerState = 0;
+      internal int KindId = 0;
       internal StringKindInfo(string start, string end, StringFlags flags) {
         Start = start;
         End = end;
@@ -91,7 +91,7 @@ namespace Irony.Compiler {
       if (_stringKinds.Count == 0) {
         grammar.Errors.Add("Error in string literal [" + this.Name + "]: No start/end symbols specified.");
       }
-      //collect all start-end symbols in lists and create strings of first chars for both
+      //collect all start-end symbols in lists and create strings of first chars
       _stringKinds.Sort(StringKindInfo.LongerStartFirst); 
       _startSymbolsFirsts = string.Empty;
       foreach (StringKindInfo info in _stringKinds) {
@@ -116,24 +116,35 @@ namespace Irony.Compiler {
     public override void RegisterForMultilineScan(ScannerControlData data) {
       foreach (StringKindInfo info in _stringKinds) {
         if ((info.Flags & StringFlags.AllowsLineBreak) != 0) {
-          info.ScannerState = data.RegisterMultiline(this); 
+          info.KindId = data.RegisterMultiline(this); 
         }
       }      
     }
 
     protected override bool ReadBody(ISourceStream source, CompoundTokenDetails details) {
-      if (!ReadStartSymbol(source, details)) return false;
+      if (!details.PartialContinues) {
+        if (!ReadStartSymbol(source, details)) return false;
+      }
+      return CompleteReadBody(source, details);
+    }
 
+    private bool CompleteReadBody(ISourceStream source, CompoundTokenDetails details) {
       bool escapeEnabled = !FlagIsSet(details, StringFlags.NoEscapes);
       int start = source.Position;
       string endQuoteSymbol = details.EndSymbol;
       string endQuoteDoubled = endQuoteSymbol + endQuoteSymbol; //doubled quote symbol
+      bool lineBreakAllowed = FlagIsSet(details, StringFlags.AllowsLineBreak);
       //1. Find the string end
       // first get the position of the next line break; we are interested in it to detect malformed string, 
       //  therefore do it only if linebreak is NOT allowed; if linebreak is allowed, set it to -1 (we don't care).  
-      int nlPos = FlagIsSet(details, StringFlags.AllowsLineBreak) ? -1 : source.Text.IndexOf('\n', source.Position);
+      int nlPos = lineBreakAllowed ? -1 : source.Text.IndexOf('\n', source.Position);
       while (!source.EOF()) {
         int endPos = source.Text.IndexOf(endQuoteSymbol, source.Position);
+        //Check for partial token in line-scanning mode
+        if (endPos < 0 && details.PartialOk && lineBreakAllowed) {
+          ProcessPartialBody(source, details); 
+          return true; 
+        }
         //Check for malformed string: either EndSymbol not found, or LineBreak is found before EndSymbol
         bool malformed = endPos < 0 || nlPos >= 0 && nlPos < endPos;
         if (malformed) {
@@ -141,8 +152,8 @@ namespace Irony.Compiler {
           if (nlPos > 0) endPos = nlPos;
           if (endPos > 0) source.Position = endPos + 1;
           details.Error = "Mal-formed  string literal - cannot find termination symbol.";
-          return true;
-        }
+          return true; //we did find start symbol, so it is definitely string, only malformed
+        }//if malformed
         
         //We found EndSymbol - check if it is escaped; if yes, skip it and continue search
         if (escapeEnabled && IsEndQuoteEscaped(source.Text, endPos)) {
@@ -163,9 +174,29 @@ namespace Irony.Compiler {
         source.Position = endPos + endQuoteSymbol.Length;
         return true; //if we come here it means we're done - we found string end.
       }  //end of loop to find string end; 
-      return false;
+      return true; //should never happen
     }
-
+    private void ProcessPartialBody(ISourceStream source, CompoundTokenDetails details) {
+      int from = source.Position;
+      source.Position = source.Text.Length;
+      details.Body = source.Text.Substring(from, source.Position - from);
+      details.IsPartial = true;
+    }
+    
+    protected override void InitDetails(CompilerContext context, CompoundTerminalBase.CompoundTokenDetails details) {
+      base.InitDetails(context, details);
+      if (context.ScannerState.Value != 0) {
+        //we are continuing partial string on the next line
+        details.Flags = context.ScannerState.Data2;
+        details.PartialId = context.ScannerState.TokenKind;
+        foreach(StringKindInfo info in _stringKinds)
+          if (info.KindId == details.PartialId) {
+            details.StartSymbol = info.Start;
+            details.EndSymbol = info.End;
+          }
+      }
+    }
+    
     protected override void ReadSuffix(ISourceStream source, CompoundTerminalBase.CompoundTokenDetails details) {
       base.ReadSuffix(source, details);
       //"char" type can be identified by suffix (like VB where c suffix identifies char)
@@ -199,6 +230,7 @@ namespace Irony.Compiler {
         details.StartSymbol = stringKind.Start;
         details.EndSymbol = stringKind.End;
         details.Flags |= (int) stringKind.Flags;
+        details.PartialId = stringKind.KindId;
         source.Position += stringKind.Start.Length;
         return true;
       }//foreach

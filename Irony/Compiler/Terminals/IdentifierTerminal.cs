@@ -93,8 +93,8 @@ namespace Irony.Compiler {
         list.Add(this.EscapeChar.ToString());
       return list;
     }
-    protected override void InitDetails(CompoundTerminalBase.CompoundTokenDetails details) {
-      base.InitDetails(details);
+    protected override void InitDetails(CompilerContext context, CompoundTokenDetails details) {
+      base.InitDetails(context, details);
       details.Flags = (int)Flags;
     }
 
@@ -190,7 +190,7 @@ namespace Irony.Compiler {
       string digits = source.Text.Substring(source.Position, len);
       char result = (char)Convert.ToUInt32(digits, 16);
       source.Position += len;
-      details.Flags |= (int) StringFlags.HasEscapes;
+      details.Flags |= (int) IdFlags.HasEscapes;
       return result;
     }
 

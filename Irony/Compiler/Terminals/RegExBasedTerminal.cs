@@ -20,10 +20,18 @@ namespace Irony.Compiler {
 
   //Note: this class was not tested at all
   // Based on contributions by CodePlex user sakana280
+  // 12.09.2008 - breaking change! added "name" parameter to the constructor
   public class RegexBasedTerminal : Terminal {
-    public RegexBasedTerminal(string pattern, params string[] prefixes) : base ("RegEx:{" + pattern + "}") {
+    public RegexBasedTerminal(string pattern, params string[] prefixes)
+      : base("name") {
       Pattern = pattern;
-      Prefixes.AddRange(prefixes);
+      if (prefixes != null)
+        Prefixes.AddRange(prefixes);
+    }
+    public RegexBasedTerminal(string name, string pattern, params string[] prefixes) : base(name) {
+      Pattern = pattern;
+      if (prefixes != null)
+        Prefixes.AddRange(prefixes);
     }
 
     #region public properties

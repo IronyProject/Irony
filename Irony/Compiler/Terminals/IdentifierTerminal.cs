@@ -106,6 +106,10 @@ namespace Irony.Compiler {
       if (FlagIsSet(details, IdFlags.IsNotKeyword))
         return token;
       //check if it is keyword
+      CheckKeyword(token);
+      return token; 
+    }
+    private void CheckKeyword(Token token) {
       string text = token.Text;
       if (!Grammar.CaseSensitive)
         text = text.ToLower();
@@ -113,7 +117,6 @@ namespace Irony.Compiler {
         token.IsKeyword = true;
         token.EditorInfo = KeywordEditorInfo; //overwrite identifier editor info copied by default by token constructor 
       }
-      return token; 
     }
 
     protected override Token QuickParse(CompilerContext context, ISourceStream source) {
@@ -125,7 +128,9 @@ namespace Irony.Compiler {
       //if it is not a terminator then cancel; we need to go through full algorithm
       if (_terminators.IndexOf(source.CurrentChar) < 0) return null; 
       string text = source.GetLexeme();
-      return Token.Create(this, context, source.TokenStart, text);
+      Token token = Token.Create(this, context, source.TokenStart, text);
+      CheckKeyword(token);
+      return token; 
     }
 
     protected override bool ReadBody(ISourceStream source, CompoundTokenDetails details) {

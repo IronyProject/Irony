@@ -168,7 +168,9 @@ namespace Irony.GrammarExplorer {
     }
     #endregion
 
+/* - looks like WndProc override is not needed
     #region overrides: WndProc
+    [DebuggerStepThrough]
     protected override void WndProc(ref Message m) {
       // pre-process the text control's messages
       switch (m.Msg) {
@@ -183,7 +185,7 @@ namespace Irony.GrammarExplorer {
       base.WndProc(ref m);
     }
     #endregion
-
+*/
     #region Colorizing tokens
     public void LockTextBox() {
       // Stop redrawing:  

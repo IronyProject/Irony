@@ -13,9 +13,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.Compiler;
-using Irony.Compiler.AST;
-using Irony.Runtime;
+using Irony.CompilerServices;
+using Irony.Scripting.Ast;
 
 namespace Irony.Tutorial.Part2 {
   // The grammar is an extension of expression grammar in Part 1. 
@@ -26,7 +25,7 @@ namespace Irony.Tutorial.Part2 {
   //  the result of calculation is the result of last expression or assignment (value of "y" in this case).
 
   [Language("TutorialGrammar", "2.0", "Sample tutorial grammar")]
-  public class CalcGrammar : Irony.Compiler.Grammar {
+  public class CalcGrammar : Irony.CompilerServices.Grammar {
     public CalcGrammar() {
       // 1. Terminals
       var number = new NumberLiteral("number");
@@ -70,7 +69,7 @@ namespace Irony.Tutorial.Part2 {
       RegisterPunctuation(NewLine); //remove all newLines - important, extra new lines in output tree can mess up calc result
 
       //automatically add newLine before EOF so that our grammar works
-      this.LanguageFlags = LanguageFlags.NewLineBeforeEOF | LanguageFlags.SupportsInterpreter | LanguageFlags.BubbleNodes; 
+      this.LanguageFlags = LanguageFlags.NewLineBeforeEOF | LanguageFlags.SupportsInterpreter | LanguageFlags.AutoDetectTransient; 
 
     }
   }

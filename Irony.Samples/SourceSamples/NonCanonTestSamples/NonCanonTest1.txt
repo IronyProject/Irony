@@ -1,0 +1,3 @@
+﻿public int IntField;
+public static string StringProp {}
+private object ObjMethod();

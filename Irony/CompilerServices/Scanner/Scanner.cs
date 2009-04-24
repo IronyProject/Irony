@@ -1,0 +1,279 @@
+#region License
+/* **********************************************************************************
+ * Copyright (c) Roman Ivantsov
+ * This source code is subject to terms and conditions of the MIT License
+ * for Irony. A copy of the license can be found in the License.txt file
+ * at the root of this distribution. 
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * MIT License.
+ * You must not remove this notice from this software.
+ * **********************************************************************************/
+#endregion
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Irony.CompilerServices {
+
+  //Scanner class. The Scanner's function is to transform a stream of characters into aggregates/words or lexemes, 
+  // like identifier, number, literal, etc. 
+
+  public class Scanner  {
+    #region Properties and Fields: Data, _source, _context, _caseSensitive, _currentToken
+    public readonly ScannerData Data;
+    Grammar _grammar;
+    CompilerContext _context;
+    //buffered tokens can come from expanding a multi-token, when Terminal.TryMatch() returns several tokens packed into one token
+    TokenList _bufferedTokens = new TokenList();
+    ISourceStream _source;
+    public IEnumerable<Token> UnfilteredStream;
+    public IEnumerable<Token> FilteredStream;
+    public IEnumerator<Token> FilteredTokenEnumerator; 
+
+    #endregion
+
+    public Scanner(ScannerData data) {
+      Data = data;
+      _grammar = Data.GrammarData.Grammar;
+    }
+
+    public void BeginScan(CompilerContext context) {
+      _context = context;
+      _bufferedTokens.Clear();
+      //create streams
+      FilteredStream = UnfilteredStream = CreateUnfilteredTokenStream();
+      //chain all token filters
+      foreach (TokenFilter filter in Data.TokenFilters) {
+        FilteredStream = filter.BeginFiltering(context, FilteredStream);
+      }
+      FilteredTokenEnumerator = FilteredStream.GetEnumerator(); 
+    }
+    public void SetSource(string text) {
+      _source = new SourceStream(text, 0);
+      _nextNewLinePosition = text.IndexOfAny(Data.LineTerminators);
+    }
+    public void SetPartialSource(string text, int offset) {
+      if (_source == null)
+        _source = new SourceStream(text, offset);
+      else {
+        _source.Text = text;
+        _source.Position = offset;
+      }
+      _nextNewLinePosition = _source.Text.IndexOf('\n', offset);
+    }
+
+    public Token GetToken() {
+      if (!FilteredTokenEnumerator.MoveNext())
+        return null; 
+      var token = FilteredTokenEnumerator.Current;
+      _context.CurrentParseTree.Tokens.Add(token);
+      return token; 
+    }
+
+    public void ScanAll() {
+      while (true) {
+        var token = GetToken();
+        if (token == null || token.Terminal == _grammar.Eof) return; 
+      }
+    }
+
+    //This is iterator method, so it returns immediately when called directly
+    private Token _currentToken; //it is used only in BeginScan iterator, but we define it as a field to avoid creating local state in iterator
+    private IEnumerable<Token> CreateUnfilteredTokenStream() {
+      //We don't do "while(!_source.EOF())... because on EOF() we need to continue and produce EOF token 
+      //  and then do "yield break" - see below
+      while (true) {  
+        _currentToken = ReadToken();
+        _context.OnTokenCreated(_currentToken);
+        yield return _currentToken;
+        if (_currentToken.Terminal == _grammar.Eof)
+          yield break;
+      }//while
+    }// method
+
+    #region VS Integration methods
+    //Use this method for VS integration; VS language package requires scanner that returns tokens one-by-one. 
+    // Start and End positions required by this scanner may be derived from Token : 
+    //   start=token.Location.Position; end=start + token.Length;
+    public Token VsReadToken(ref int state) {
+      _context.ScannerState.Value = state;
+      if (_source.EOF()) return null;
+      
+      Token result;
+      if (state == 0)
+        result = ReadToken();
+      else {
+        Terminal term = Data.MultilineTerminals[_context.ScannerState.TerminalIndex];
+        result = term.TryMatch(_context, _source); 
+      }
+      //set state value from context
+      state = _context.ScannerState.Value;
+      if (result != null && result.Terminal == _grammar.Eof)
+        result = null; 
+      return result;
+    }
+    public void VsSetSource(string text, int offset) {
+      SetPartialSource(text, offset); 
+    }
+    #endregion
+
+
+    private Token ReadToken() {
+      if (_bufferedTokens.Count > 0) {
+        Token tkn = _bufferedTokens[0];
+        _bufferedTokens.RemoveAt(0);
+        return tkn; 
+      }
+      //1. Skip whitespace. We don't need to check for EOF: at EOF we start getting 0-char, so we'll get out automatically
+      while (_grammar.WhitespaceChars.IndexOf(_source.CurrentChar) >= 0)
+        _source.Position++;
+      //That's the token start, calc location (line and column)
+      SetTokenStartLocation();
+      Token result = null; 
+      //Check for EOF
+      if (_source.EOF()) {
+        result = new Token(_grammar.Eof, _source.TokenStart, string.Empty, _grammar.Eof.Name);
+        //check if we need extra newline before EOF
+        bool currentIsNewLine = _currentToken != null && _currentToken.Terminal == _grammar.NewLine;
+        if (_grammar.FlagIsSet(LanguageFlags.NewLineBeforeEOF) && !currentIsNewLine) {
+          _bufferedTokens.Insert(0, result); //put it into buffer
+          result = new Token(_grammar.NewLine, _currentToken.Location, "\n", null);
+        }//if AutoNewLine
+        return result; 
+      }
+      //Find matching terminal
+      // First, try terminals with explicit "first-char" prefixes, selected by current char in source
+      var terms = SelectTerminals(_source.CurrentChar);
+      result = MatchTerminals(terms);
+      //If no token, try FallbackTerminals
+      if (result == null && Data.FallbackTerminals.Count > 0)
+        result = MatchTerminals(Data.FallbackTerminals); 
+      //If we don't have a token from registered terminals, try Grammar's method
+      if (result == null) 
+        result = _grammar.TryMatch(_context, _source);
+      //Check if we have a multi-token; if yes, copy all but first child tokens from ChildNodes to _bufferedTokens, 
+      //  and set result to the first child token
+      if (result != null && result.IsSet(TokenFlags.IsMultiToken)) {
+        var mtoken = result as MultiToken;
+        foreach (var tkn in mtoken.ChildTokens)
+          _bufferedTokens.Add(tkn);
+        result = _bufferedTokens[0];
+        _bufferedTokens.RemoveAt(0);
+      }
+      //If we have normal token then return it
+      if (result != null && !result.IsError()) {
+        //restore position to point after the result token
+        _source.Position = _source.TokenStart.Position + result.Length;
+        return result;
+      } 
+      //we have an error: either error token or no token at all
+      if (result == null)  //if no token then create error token
+        result = _context.CreateErrorTokenAndReportError(_source.TokenStart, _source.CurrentChar.ToString(), "Invalid character: '{0}'", _source.CurrentChar);
+      Recover();
+      return result;
+    }//method
+
+    private Token MatchTerminals(TerminalList terminals) {
+      Token result = null;
+      foreach (Terminal term in terminals) {
+        // Check if the term has lower priority that result token we already have; 
+        //  if term.Priority is lower then we don't need to check anymore, higher priority wins
+        // Note that terminals in the list are sorted in descending priority order
+        if (result != null && result.Terminal.Priority > term.Priority)
+          break;
+        //Reset source position and try to match
+        _source.Position = _source.TokenStart.Position;
+        Token token = term.TryMatch(_context, _source);
+        //Take this token as result only if we don't have anything yet, or if it is longer token than previous
+        if (token != null && (token.IsError() || result == null || token.Length > result.Length))
+          result = token;
+        if (result != null && result.IsError()) break;
+      }
+      return result; 
+    }
+
+    private TerminalList SelectTerminals(char current) {
+      TerminalList result;
+      if (!_grammar.CaseSensitive)
+        current = char.ToLower(current);
+      if (Data.TerminalsLookup.TryGetValue(current, out result))
+        return result;
+      else
+        return Data.FallbackTerminals;
+    }//Select
+
+    private void Recover() {
+      _source.Position++;
+      while (!_source.EOF() && Data.ScannerRecoverySymbols.IndexOf(_source.CurrentChar) < 0)
+        _source.Position++;
+    }
+
+    public override string ToString() {
+      return _source.ToString(); //show 30 chars starting from current position
+    }
+    #region TokenStart calculations
+    private int _nextNewLinePosition = -1; //private field to cache position of next \n character
+    //Calculates the _source.TokenStart values (row/column) for the token which starts at the current position.
+    // We just skipped the whitespace and about to start scanning the next token.
+    internal void SetTokenStartLocation() {
+      //cache values in local variables
+      SourceLocation tokenStart = _source.TokenStart;
+      int newPosition = _source.Position;
+      string text = _source.Text;
+
+      // Currently TokenStart field contains location (pos/line/col) of the last created token. 
+      // First, check if new position is in the same line; if so, just adjust column and return
+      //  Note that this case is not line start, so we do not need to check tab chars (and adjust column) 
+      if (newPosition <= _nextNewLinePosition || _nextNewLinePosition < 0) {
+        tokenStart.Column += newPosition - tokenStart.Position;
+        tokenStart.Position = newPosition;
+        _source.TokenStart = tokenStart;
+        return;
+      }
+      //So new position is on new line (beyond _nextNewLinePosition)
+      //First count \n chars in the string fragment
+      int lineStart = _nextNewLinePosition;
+      int nlCount = 1; //we start after old _nextNewLinePosition, so we count one NewLine char
+      CountCharsInText(text, Data.LineTerminators, lineStart + 1, newPosition - 1, ref nlCount, ref lineStart);
+      tokenStart.Line += nlCount;
+      //at this moment lineStart is at start of line where newPosition is located 
+      //Calc # of tab chars from lineStart to newPosition to adjust column#
+      int tabCount = 0;
+      int dummy = 0;
+      char[] tab_arr = { '\t' };
+      if (_source.TabWidth > 1)
+        CountCharsInText(text, tab_arr, lineStart, newPosition - 1, ref tabCount, ref dummy);
+
+      //adjust TokenStart with calculated information
+      tokenStart.Position = newPosition;
+      tokenStart.Column = newPosition - lineStart - 1;
+      if (tabCount > 0)
+        tokenStart.Column += (_source.TabWidth - 1) * tabCount; // "-1" to count for tab char itself
+
+      //finally cache new line and assign TokenStart
+      _nextNewLinePosition = text.IndexOfAny(Data.LineTerminators, newPosition);
+      _source.TokenStart = tokenStart;
+    }
+
+    private void CountCharsInText(string text, char[] chars, int from, int until, ref int count, ref int lastPosition) {
+      if (from > until) return;
+      while (true) {
+        int next = text.IndexOfAny(chars, from, until - from + 1);
+        if (next < 0) return;
+        //CR followed by LF is one line terminator, not two; we put it here, just to cover for special case; it wouldn't break
+        // the case when this function is called to count tabs
+        bool isCRLF = (text[next] == '\n' && next > 0 && text[next - 1] == '\r');
+        if (!isCRLF)
+          count++; //count
+        lastPosition = next;
+        from = next + 1;
+      }
+
+    }
+    #endregion
+
+
+  }//class
+
+}//namespace

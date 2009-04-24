@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.Compiler;
+using Irony.CompilerServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Irony.Tests {
@@ -13,21 +13,21 @@ namespace Irony.Tests {
     public void TestCSharpIdentifier() {
       SetTerminal(TerminalFactory.CreateCSharpIdentifier("Identifier"));
       TryMatch("x ");
-      Assert.IsTrue(_token.Term.Name == "Identifier", "Failed to parse identifier");
+      Assert.IsTrue(_token.Terminal.Name == "Identifier", "Failed to parse identifier");
       Assert.IsTrue((string)_token.Value == "x", "Failed to parse identifier");
       TryMatch("_a01 ");
-      Assert.IsTrue(_token.Term.Name == "Identifier", "Failed to parse identifier starting with _");
+      Assert.IsTrue(_token.Terminal.Name == "Identifier", "Failed to parse identifier starting with _");
       Assert.IsTrue((string)_token.Value == "_a01", "Failed to parse identifier starting with _");
 
       TryMatch("0abc ");
       Assert.IsTrue(_token == null, "Erroneously recognized an identifier.");
 
       TryMatch(@"_\u0061bc ");
-      Assert.IsTrue(_token.Term.Name == "Identifier", "Failed to parse identifier starting with _");
+      Assert.IsTrue(_token.Terminal.Name == "Identifier", "Failed to parse identifier starting with _");
       Assert.IsTrue((string)_token.Value == "_abc", "Failed to parse identifier containing escape sequence \\u");
 
       TryMatch(@"a\U00000062c_ ");
-      Assert.IsTrue(_token.Term.Name == "Identifier", "Failed to parse identifier starting with _");
+      Assert.IsTrue(_token.Terminal.Name == "Identifier", "Failed to parse identifier starting with _");
       Assert.IsTrue((string)_token.Value == "abc_", "Failed to parse identifier containing escape sequence \\U");
     }//method
 

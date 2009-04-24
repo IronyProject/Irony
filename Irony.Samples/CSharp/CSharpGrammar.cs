@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.Compiler;
+using Irony.CompilerServices;
 
 namespace Irony.Samples.CSharp {
-  using Irony.Compiler.Lalr;
 
   //Full c# 3.0 grammar; all but 2 features are not implemented:
   //  - preprocessor directives (currently treated as comment lines)
@@ -23,7 +22,9 @@ namespace Irony.Samples.CSharp {
   [Language("c#", "3.5", "Sample c# grammar")]
   public class CSharpGrammar : Grammar {
     public CSharpGrammar() {
-
+      this.GrammarComments = "NOTE: This grammar is just a demo, and it is a broken demo.\r\n" + 
+                             "Parser does not distinguish correctly '<' as comparison vs as angle bracket for type parameter, so some samples cannot be parsed.\r\n" +
+                             " NLALR method DOES NOT WORK for it. Will try to fix all these in the future.";
       #region Lexical structure
       StringLiteral StringLiteral = TerminalFactory.CreateCSharpString("StringLiteral");
       StringLiteral CharLiteral = TerminalFactory.CreateCSharpChar("CharLiteral");
@@ -59,45 +60,6 @@ namespace Irony.Samples.CSharp {
 
       SymbolTerminal Lparx = Symbol("(*");
 
-
-      #region operators, punctuation and delimiters 
-      RegisterOperators(1, "||");
-      RegisterOperators(2, "&&");
-      RegisterOperators(3, "|");
-      RegisterOperators(4, "^");
-      RegisterOperators(5, "&");
-      RegisterOperators(6, "==", "!=");
-      RegisterOperators(7, "<", ">", "<=", ">=", "is", "as");
-      RegisterOperators(8, "<<", ">>");
-      RegisterOperators(9, "+", "-");
-      RegisterOperators(10, "*", "/", "%");
-      RegisterOperators(11, ".");
-      // RegisterOperators(12, "++", "--");
-      #region comments
-      //The following makes sense, if you think about "?" in context of operator precedence. 
-      // What we say here is that "?" has the lowest priority among arithm operators.
-      // Therefore, the parser should prefer reduce over shift when input symbol is "?".
-      // For ex., when seeing ? in expression "a + b?...", the parser will perform Reduce:
-      //  (a + b)->expr
-      // and not shift the "?" symbol.  
-      // Same goes for ?? symbol
-      #endregion
-      RegisterOperators(-3, "=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=");
-      RegisterOperators(-2, "?");
-      RegisterOperators(-1, "??");
-
-      this.Delimiters = "{}[](),:;+-*/%&|^!~<>=";
-      this.RegisterPunctuation(";", ",", "(", ")", "{", "}", "[", "]", ":");
-      //Whitespace and NewLine characters
-      //TODO: 
-      // 1. In addition to "normal" whitespace chars, the spec mentions "any char of unicode class Z" -
-      //   need to create special comment-based terminal that simply eats these category-based whitechars and produces comment token. 
-      // 2. Add support for multiple line terminators to LineComment
-      this.LineTerminators = "\r\n\u2085\u2028\u2029"; //CR, linefeed, nextLine, LineSeparator, paragraphSeparator
-      this.WhitespaceChars = " \t\r\n\v\u2085\u2028\u2029"; //add extra line terminators
-      #endregion
-
-
       #endregion
 
       #region NonTerminals
@@ -107,8 +69,8 @@ namespace Irony.Samples.CSharp {
       NonTerminal generic_dimension_specifier = new NonTerminal("generic_dimension_specifier");
       NonTerminal qual_name_segment = new NonTerminal("qual_name_segment");
       NonTerminal qual_name_segments_opt = new NonTerminal("qual_name_segments_opt");
-      NonTerminal type_or_void = new NonTerminal("type_or_void");
-      NonTerminal builtin_type = new NonTerminal("builtin_type");
+      NonTerminal type_or_void = new NonTerminal("type_or_void", "type or void");
+      NonTerminal builtin_type = new NonTerminal("builtin_type", "built-in type");
       NonTerminal type_ref_list = new NonTerminal("type_ref_list");
       NonTerminal identifier_ext = new NonTerminal("identifier_ext");
       NonTerminal identifier_or_builtin = new NonTerminal("identifier_or_builtin");
@@ -124,7 +86,7 @@ namespace Irony.Samples.CSharp {
       NonTerminal argument = new NonTerminal("argument");
       NonTerminal argument_list = new NonTerminal("argument_list");
       NonTerminal argument_list_opt = new NonTerminal("argument_list_opt");
-      NonTerminal expression = new NonTerminal("expression");
+      NonTerminal expression = new NonTerminal("expression", "expression");
       NonTerminal expression_list = new NonTerminal("expression_list");
       NonTerminal expression_opt = new NonTerminal("expression_opt");
       NonTerminal conditional_expression = new NonTerminal("conditional_expression");
@@ -180,7 +142,7 @@ namespace Irony.Samples.CSharp {
       NonTerminal bin_op = new NonTerminal("bin_op");
 
       //B.2.5. Statements
-      NonTerminal statement = new NonTerminal("statement");
+      NonTerminal statement = new NonTerminal("statement", "statement");
       NonTerminal statement_list = new NonTerminal("statement_list");
       NonTerminal statement_list_opt = new NonTerminal("statement_list_opt");
       NonTerminal labeled_statement = new NonTerminal("labeled_statement");
@@ -203,7 +165,6 @@ namespace Irony.Samples.CSharp {
       NonTerminal local_variable_type = new NonTerminal("local_variable_type");
       NonTerminal local_variable_declarator = new NonTerminal("local_variable_declarator");
       NonTerminal local_variable_declarators = new NonTerminal("local_variable_declarators");
-      NonTerminal local_variable_initializer = new NonTerminal("local_variable_initializer");
       NonTerminal if_statement = new NonTerminal("if_statement");
       NonTerminal switch_statement = new NonTerminal("switch_statement");
       NonTerminal else_clause_opt = new NonTerminal("else_clause_opt");
@@ -305,7 +266,7 @@ namespace Irony.Samples.CSharp {
       NonTerminal fixed_parameters = new NonTerminal("fixed_parameters");
       NonTerminal parameter_modifier_opt = new NonTerminal("parameter_modifier_opt");
       NonTerminal parameter_array = new NonTerminal("parameter_array");
-      
+
       //B.2.8 struct
       NonTerminal struct_declaration = new NonTerminal("struct_declaration");
       NonTerminal struct_body = new NonTerminal("struct_body");
@@ -329,7 +290,7 @@ namespace Irony.Samples.CSharp {
       NonTerminal interface_property_declaration = new NonTerminal("interface_property_declaration");
       NonTerminal interface_event_declaration = new NonTerminal("interface_event_declaration");
       NonTerminal interface_indexer_declaration = new NonTerminal("interface_indexer_declaration");
-      NonTerminal new_opt = new NonTerminal("new_opt"); 
+      NonTerminal new_opt = new NonTerminal("new_opt");
       NonTerminal interface_accessor = new NonTerminal("interface_get_accessor");
       NonTerminal interface_accessors = new NonTerminal("interface_accessors");
 
@@ -342,7 +303,7 @@ namespace Irony.Samples.CSharp {
 
       //B.2.13 Attributes
       NonTerminal attribute_section = new NonTerminal("attribute_section");
-      NonTerminal attributes_opt = new NonTerminal("attributes_opt"); 
+      NonTerminal attributes_opt = new NonTerminal("attributes_opt");
       NonTerminal attribute_target_specifier_opt = new NonTerminal("attribute_target_specifier_opt");
       NonTerminal attribute_target = new NonTerminal("attribute_target");
       NonTerminal attribute = new NonTerminal("attribute");
@@ -352,9 +313,48 @@ namespace Irony.Samples.CSharp {
       NonTerminal attr_arg = new NonTerminal("attr_arg");
       NonTerminal attribute_arguments_par_opt = new NonTerminal("attribute_arguments_par_opt");
 
-      
+
       #endregion
 
+      #region operators, punctuation and delimiters
+      RegisterOperators(1, "||");
+      RegisterOperators(2, "&&");
+      RegisterOperators(3, "|");
+      RegisterOperators(4, "^");
+      RegisterOperators(5, "&");
+      RegisterOperators(6, "==", "!=");
+      RegisterOperators(7, "<", ">", "<=", ">=", "is", "as");
+      RegisterOperators(8, "<<", ">>");
+      RegisterOperators(9, "+", "-");
+      RegisterOperators(10, "*", "/", "%");
+      RegisterOperators(11, ".");
+      //RestrictPrecedence(bin_op, unary_operator); 
+      // RegisterOperators(12, "++", "--");
+      #region comments
+      //The following makes sense, if you think about "?" in context of operator precedence. 
+      // What we say here is that "?" has the lowest priority among arithm operators.
+      // Therefore, the parser should prefer reduce over shift when input symbol is "?".
+      // For ex., when seeing ? in expression "a + b?...", the parser will perform Reduce:
+      //  (a + b)->expr
+      // and not shift the "?" symbol.  
+      // Same goes for ?? symbol
+      #endregion
+      RegisterOperators(-3, "=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=");
+      RegisterOperators(-2, "?");
+      RegisterOperators(-1, "??");
+
+      this.Delimiters = "{}[](),:;+-*/%&|^!~<>=";
+      this.RegisterPunctuation(";", ",", "(", ")", "{", "}", "[", "]", ":");
+      //Whitespace and NewLine characters
+      //TODO: 
+      // 1. In addition to "normal" whitespace chars, the spec mentions "any char of unicode class Z" -
+      //   need to create special comment-based terminal that simply eats these category-based whitechars and produces comment token. 
+      // 2. Add support for multiple line terminators to LineComment
+      this.LineTerminators = "\r\n\u2085\u2028\u2029"; //CR, linefeed, nextLine, LineSeparator, paragraphSeparator
+      this.WhitespaceChars = " \t\r\n\v\u2085\u2028\u2029"; //add extra line terminators
+      #endregion
+
+/*
       #region Keywords
       string strKeywords =
             "abstract as base bool break byte case catch char checked " +
@@ -366,6 +366,7 @@ namespace Irony.Samples.CSharp {
             "volatile while";
       AddKeywordList(strKeywords);
       #endregion
+ */
 
 
       // RULES
@@ -377,15 +378,16 @@ namespace Irony.Samples.CSharp {
       generic_dimension_specifier.Rule = "<" + commas_opt + ">";
       qual_name_segments_opt.Rule = MakeStarRule(qual_name_segments_opt, null, qual_name_segment);
       identifier_or_builtin.Rule = identifier | builtin_type;
-      identifier_ext.Rule = identifier_or_builtin | "this" | "base"; 
+      identifier_ext.Rule = identifier_or_builtin | "this" | "base";
       qual_name_segment.Rule = dot + identifier
                               | "::" + identifier
                               | type_argument_list;
+      //generic_dimension_specifier.Rule = "<" + commas_opt + ">";
       generic_dimension_specifier.Rule = "<" + commas_opt + ">";
       qual_name_with_targs.Rule = identifier_or_builtin + qual_name_segments_opt;
 
-      type_argument_list.Rule = "<" + type_ref_list + ">";
-      type_argument_list_opt.Rule = Empty | type_argument_list; 
+      type_argument_list.Rule = "<"  + type_ref_list + ">";
+      type_argument_list_opt.Rule = Empty | type_argument_list;
 
       //B.2.2. Types
       type_or_void.Rule = qual_name_with_targs | "void";
@@ -395,7 +397,7 @@ namespace Irony.Samples.CSharp {
       type_ref_list.Rule = MakePlusRule(type_ref_list, comma, type_ref);
 
       var comma_list_opt = new NonTerminal("comma_list_opt");
-      comma_list_opt.Rule = MakeStarRule(comma_list_opt, comma); 
+      comma_list_opt.Rule = MakeStarRule(comma_list_opt, comma);
       rank_specifier.Rule = "[" + comma_list_opt + "]";
       rank_specifiers.Rule = MakePlusRule(rank_specifiers, null, rank_specifier);
       rank_specifiers_opt.Rule = rank_specifiers.Q();
@@ -411,9 +413,9 @@ namespace Irony.Samples.CSharp {
 
       //B.2.4. Expressions
       argument.Rule = expression | "ref" + identifier | "out" + identifier;
-      argument_list.Rule =  MakePlusRule(argument_list, comma, argument);
+      argument_list.Rule = MakePlusRule(argument_list, comma, argument);
       argument_list_opt.Rule = Empty | argument_list;
-      expression.Rule =  conditional_expression 
+      expression.Rule = conditional_expression
                     | bin_op_expression
                     | typecast_expression
                     | primary_expression;
@@ -421,49 +423,49 @@ namespace Irony.Samples.CSharp {
       expression_list.Rule = MakePlusRule(expression_list, comma, expression);
       unary_operator.Rule = Symbol("+") | "-" | "!" | "~" | "*";
       assignment_operator.Rule = Symbol("=") | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "<<=" | ">>=";
-      conditional_expression.Rule = expression + qmark + expression + colon + expression;
+      conditional_expression.Rule = expression + PreferShiftHere() + qmark + expression + colon + expression;// + ReduceThis();
       bin_op_expression.Rule = expression + bin_op + expression;
 
-      typecast_expression.Rule = parenthesized_expression + primary_expression; 
+      typecast_expression.Rule = parenthesized_expression + primary_expression;
       primary_expression.Rule =
         literal
         | unary_operator + primary_expression
         | parenthesized_expression
-        | member_access 
-        | pre_incr_decr_expression 
-        | post_incr_decr_expression 
+        | member_access
+        | pre_incr_decr_expression
+        | post_incr_decr_expression
         | object_creation_expression
         | anonymous_object_creation_expression
         | typeof_expression
         | checked_expression
         | unchecked_expression
-        | default_value_expression 
-        | anonymous_method_expression; 
+        | default_value_expression
+        | anonymous_method_expression;
       dim_specifier.Rule = "[" + expression_list + "]";
       dim_specifier_opt.Rule = dim_specifier.Q();
       literal.Rule = Number | StringLiteral | CharLiteral | "true" | "false" | "null";
       parenthesized_expression.Rule = Lpar + expression + Rpar;
       pre_incr_decr_expression.Rule = incr_or_decr + member_access;
-      post_incr_decr_expression.Rule = member_access + incr_or_decr; 
-            
+      post_incr_decr_expression.Rule = member_access + incr_or_decr;
+
       //joined invocation_expr and member_access; for member access left the most general variant
       member_access.Rule = identifier_ext + member_access_segments_opt;
       member_access_segments_opt.Rule = MakeStarRule(member_access_segments_opt, null, member_access_segment);
-      member_access_segment.Rule = dot + identifier  
+      member_access_segment.Rule = dot + identifier
                                  | array_indexer
                                  | argument_list_par
                                  | type_argument_list;
       array_indexer.Rule = "[" + expression_list + "]";
 
-      argument_list_par.Rule  = Lpar + argument_list_opt + Rpar;
-      
+      argument_list_par.Rule = Lpar + argument_list_opt + Rpar;
+
       argument_list_par_opt.Rule = Empty | argument_list_par;
 
       list_initializer.Rule = Lbr + elem_initializer_list_ext + Rbr;
       list_initializer_opt.Rule = list_initializer.Q();
 
       elem_initializer.Rule = initializer_value | identifier + "=" + initializer_value;
-      elem_initializer_list.Rule = MakePlusRule(elem_initializer_list, comma, elem_initializer); 
+      elem_initializer_list.Rule = MakePlusRule(elem_initializer_list, comma, elem_initializer);
       elem_initializer_list_ext.Rule = Empty | elem_initializer_list + comma_opt;
       initializer_value.Rule = expression | list_initializer;
 
@@ -490,7 +492,7 @@ namespace Irony.Samples.CSharp {
       // TODO: add after-parse check for this
       anonymous_method_expression.Rule = "delegate" + anonymous_function_signature_opt + block;
       lambda_expression.Rule = lambda_function_signature + "=>" + anonymous_function_body;
-      lambda_function_signature.Rule = anonymous_function_signature | identifier; 
+      lambda_function_signature.Rule = anonymous_function_signature | identifier;
       anonymous_function_signature.Rule = Lpar + anonymous_function_parameter_list_opt + Rpar;
       anonymous_function_signature_opt.Rule = anonymous_function_signature.Q();
       anonymous_function_parameter_modifier_opt.Rule = Empty | "ref" | "out";
@@ -505,11 +507,11 @@ namespace Irony.Samples.CSharp {
       //I think it's a mistake; there must be additional entry here for arithm expressions, so we put them here. 
       // We also have to add "is" and "as" expressions here, as we don't build entire hierarchy of elements for expressing
       // precedence (where they appear in original spec); so we put them here 
-      bin_op.Rule = Symbol("<")
+      bin_op.Rule =  Symbol("<")
                   | "||" | "&&" | "|" | "^" | "&" | "==" | "!=" | ">" | "<=" | ">=" | "<<" | ">>" | "+" | "-" | "*" | "/" | "%"
                   | "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "<<=" | ">>="
                   | "is" | "as" | "??";
-         
+
       //type_check_expression.Rule = expression + "is" + type_ref | expression + "as" + type_ref;
 
       //Queries
@@ -526,9 +528,8 @@ namespace Irony.Samples.CSharp {
       declaration_statement.Rule = local_variable_declaration + semi | local_constant_declaration + semi;
       local_variable_declaration.Rule = local_variable_type + local_variable_declarators; //!!!
       local_variable_type.Rule = member_access | "var"; // | builtin_type; //to fix the conflict, changing to member-access here
-      local_variable_declarator.Rule = identifier | identifier + "=" + local_variable_initializer;
+      local_variable_declarator.Rule = identifier | identifier + "=" + initializer_value;
       local_variable_declarators.Rule = MakePlusRule(local_variable_declarators, comma, local_variable_declarator);
-      local_variable_initializer.Rule = expression | list_initializer;
       local_constant_declaration.Rule = "const" + type_ref + constant_declarators;
       //embedded_statement
       embedded_statement.Rule = block | semi /*empty_statement*/ | statement_expression + semi | selection_statement
@@ -552,14 +553,14 @@ namespace Irony.Samples.CSharp {
       for_initializer_opt.Rule = Empty | local_variable_declaration | statement_expression_list;
       for_condition_opt.Rule = Empty | expression;
       for_iterator_opt.Rule = Empty | statement_expression_list;
-      foreach_statement.Rule = "foreach" + Lpar + local_variable_type  + identifier + "in" + expression + Rpar + embedded_statement;
+      foreach_statement.Rule = "foreach" + Lpar + local_variable_type + identifier + "in" + expression + Rpar + embedded_statement;
       //jump-statement
       jump_statement.Rule = break_statement | continue_statement | goto_statement | return_statement | throw_statement;
       break_statement.Rule = "break" + semi;
       continue_statement.Rule = "continue" + semi;
       goto_statement.Rule = tgoto + identifier + semi | tgoto + "case" + expression + semi | tgoto + "default" + semi;
       return_statement.Rule = "return" + expression_opt + semi;
-      throw_statement.Rule = "throw" + expression_opt + semi; 
+      throw_statement.Rule = "throw" + expression_opt + semi;
       //try-statement
       //changed to avoid conflicts; need to check correct ordering of catch/finally clause in after-parse validation
       try_statement.Rule = "try" + block + try_clauses;
@@ -568,7 +569,7 @@ namespace Irony.Samples.CSharp {
       catch_clause.Rule = "catch" + catch_specifier_opt + block;
       finally_clause.Rule = "finally" + block;
       catch_specifier_opt.Rule = Empty | Lpar + qual_name_with_targs + identifier_opt + Rpar;
-      identifier_opt.Rule = Empty | identifier;  
+      identifier_opt.Rule = Empty | identifier;
       //checked, unchecked, locked, using
       checked_statement.Rule = "checked" + block;
       unchecked_statement.Rule = "unchecked" + block;
@@ -579,9 +580,9 @@ namespace Irony.Samples.CSharp {
       yield_statement.Rule = yld + "return" + expression + semi | yld + "break" + semi;
 
       //expression statement
-     // expression_statement.Rule = statement_expression + semi;
-      statement_expression.Rule =  object_creation_expression 
-                                | member_access |  member_access + assignment_operator + expression
+      // expression_statement.Rule = statement_expression + semi;
+      statement_expression.Rule = object_creation_expression
+                                | member_access | member_access + assignment_operator + expression
                                 | pre_incr_decr_expression | post_incr_decr_expression
                                 ;
       statement_expression_list.Rule = MakePlusRule(statement_expression_list, comma, statement_expression);
@@ -590,9 +591,9 @@ namespace Irony.Samples.CSharp {
 
       //B.2.6. Namespaces
       this.Root = compilation_unit;
-      compilation_unit.Rule = extern_alias_directives_opt 
-                            + using_directives_opt 
-                            + attributes_opt + namespace_declarations_opt; 
+      compilation_unit.Rule = extern_alias_directives_opt
+                            + using_directives_opt
+                            + attributes_opt + namespace_declarations_opt;
       extern_alias_directive.Rule = Symbol("extern") + "alias" + identifier + semi;
       extern_alias_directives_opt.Rule = MakeStarRule(extern_alias_directives_opt, null, extern_alias_directive);
       namespace_declaration.Rule = "namespace" + qualified_identifier + namespace_body + semi_opt;
@@ -603,7 +604,7 @@ namespace Irony.Samples.CSharp {
 
       using_directive.Rule = using_alias_directive | using_ns_directive;
       using_directives.Rule = MakePlusRule(using_directives, null, using_directive);
-      using_directives_opt.Rule = Empty | using_directives; 
+      using_directives_opt.Rule = Empty | using_directives;
 
       using_alias_directive.Rule = "using" + identifier + "=" + qual_name_with_targs + semi;
       using_ns_directive.Rule = "using" + qual_name_with_targs + semi;
@@ -624,7 +625,7 @@ namespace Irony.Samples.CSharp {
       type_parameters.Rule = MakePlusRule(type_parameters, comma, type_parameter);
       type_parameter_list_opt.Rule = Empty | "<" + type_parameters + ">";
       type_parameter_constraints_clause.Rule = "where" + type_parameter + colon + type_parameter_constraints;
-      type_parameter_constraints.Rule = MakePlusRule(type_parameter_constraints, comma, type_parameter_constraint); 
+      type_parameter_constraints.Rule = MakePlusRule(type_parameter_constraints, comma, type_parameter_constraint);
       type_parameter_constraints_clauses_opt.Rule = MakeStarRule(type_parameter_constraints_clauses_opt, null, type_parameter_constraints_clause);
       //Note for post-processing - make sure the order is correct: new() is always last, etc. See p.503 of the spec 
       type_parameter_constraint.Rule = qual_name_with_targs | "class" | "struct" | Symbol("new") + Lpar + Rpar;
@@ -671,14 +672,14 @@ namespace Irony.Samples.CSharp {
                            Symbol("protected") + "internal" | Symbol("internal") + "protected";
 
       event_declaration.Rule = member_header + "event" + type_ref + event_body;
-      event_body.Rule =   variable_declarators + semi | qual_name_with_targs + Lbr + event_accessor_declarations + Rbr;
+      event_body.Rule = variable_declarators + semi | qual_name_with_targs + Lbr + event_accessor_declarations + Rbr;
       event_accessor_declarations.Rule = add_accessor_declaration + remove_accessor_declaration |
                                          remove_accessor_declaration + add_accessor_declaration;
       add_accessor_declaration.Rule = attributes_opt + "add" + block;
       remove_accessor_declaration.Rule = attributes_opt + "remove" + block;
-      
+
       //indexer
-      indexer_declaration.Rule = member_header + type_ref + indexer_name + "[" + formal_parameter_list + "]" +  
+      indexer_declaration.Rule = member_header + type_ref + indexer_name + "[" + formal_parameter_list + "]" +
                                      Lbr + accessor_declarations + Rbr;
       indexer_name.Rule = "this" | qual_name_with_targs + dot + "this";
 
@@ -690,14 +691,14 @@ namespace Irony.Samples.CSharp {
                                  | "*" | "/" | "%" | "&" | "|" | "^" | "<<" | ">>" | "==" | "!=" | ">" | "<" | ">=" | "<=";
       operator_parameters.Rule = operator_parameter | operator_parameter + comma + operator_parameter;
       operator_parameter.Rule = type_ref + identifier;
-      conversion_operator_declaration.Rule = member_header + conversion_operator_kind + 
+      conversion_operator_declaration.Rule = member_header + conversion_operator_kind +
            "operator" + type_ref + Lpar + operator_parameter + Rpar + block;
       conversion_operator_kind.Rule = Symbol("implicit") | "explicit";
 
       //constructor - also covers static constructor; the only difference is the word static
       constructor_declaration.Rule = member_header + identifier + formal_parameter_list_par +
-        constructor_initializer_opt + block; 
-      constructor_initializer_opt.Rule = Empty | colon + constructor_base + Lpar + argument_list_opt + Rpar;
+        constructor_initializer_opt + block;
+      constructor_initializer_opt.Rule = Empty | colon + constructor_base + argument_list_par;
       constructor_base.Rule = Symbol("this") | "base";
 
       destructor_declaration.Rule = member_header + // changed from Symbol("extern").Q() 
@@ -706,7 +707,7 @@ namespace Irony.Samples.CSharp {
       //B.2.8
       struct_declaration.Rule = member_header + "struct" + identifier + type_parameter_list_opt + bases_opt
         + type_parameter_constraints_clauses_opt + struct_body;
-      struct_body.Rule = Lbr + member_declarations_opt + Rbr;   
+      struct_body.Rule = Lbr + member_declarations_opt + Rbr;
 
 
       //B.2.9. Arrays
@@ -726,7 +727,7 @@ namespace Irony.Samples.CSharp {
       interface_accessor.Rule = attributes_opt + accessor_name + semi;
       interface_accessors.Rule = MakePlusRule(interface_accessors, null, interface_accessor);
       interface_event_declaration.Rule = attributes_opt + new_opt + "event" + type_ref + identifier;
-      interface_indexer_declaration.Rule = attributes_opt + new_opt + type_ref + "this" + 
+      interface_indexer_declaration.Rule = attributes_opt + new_opt + type_ref + "this" +
                                             "[" + formal_parameter_list + "]" + Lbr + interface_accessors + Rbr;
       new_opt.Rule = Empty | "new";
 
@@ -748,8 +749,8 @@ namespace Irony.Samples.CSharp {
       attribute_section.Rule = "[" + attribute_target_specifier_opt + attribute_list + comma_opt + "]";
       attribute_list.Rule = MakePlusRule(attribute_list, comma, attribute);
       attribute.Rule = qual_name_with_targs + attribute_arguments_par_opt;
-      
-      attribute_target_specifier_opt.Rule = Empty  | attribute_target + colon;
+
+      attribute_target_specifier_opt.Rule = Empty | attribute_target + colon;
       attribute_target.Rule = Symbol("field") | "event" | "method" | "param" | "property" | "return" | "type";
       attribute_arguments_par_opt.Rule = Empty | Lpar + attribute_arguments_opt + Rpar;
       attribute_arguments_opt.Rule = MakeStarRule(attribute_arguments_opt, comma, attr_arg);
@@ -757,16 +758,17 @@ namespace Irony.Samples.CSharp {
 
     }
 
+/*
     private StringList _previewTokens = new StringList(
-          ";", "{", 
-          "||" , "&&" , "|" , "^" , "&" , "==" , "!=" , ">" , "<=" , ">=" , "<<" , ">>" , 
-          "+" , "-" , "*" , "/" , "%", "=" , "+=" , "-=" , "*=" , "/=" , "%=" , "&=" , ",=" , 
-          "^=" , "<<=" , ">>=" , "is" , "as");
-    
+          ";", "{",
+          "||", "&&", "|", "^", "&", "==", "!=", ">", "<=", ">=", "<<", ">>",
+          "+", "-", "*", "/", "%", "=", "+=", "-=", "*=", "/=", "%=", "&=", ",=",
+          "^=", "<<=", ">>=", "is", "as");
+
     public override object OnActionConflict(IParser iparser, Token input, object action) {
       if (input.Text != "<") return action;
       ActionRecord actionRec = (ActionRecord)action;
-      Parser parser = iparser as Parser; 
+      Parser parser = iparser as Parser;
       Token preview = parser.PreviewSymbols(_previewTokens);
       //if we see closing angle bracket before anything else, it is type arguments, so we must do shift!
       if (preview != null && preview.Text == ">") {
@@ -778,7 +780,7 @@ namespace Irony.Samples.CSharp {
         return actionRec.CreateDerived(ParserActionType.Reduce, actionRec.Production);
       }
     }
-  
+*/
   }//class
 }//namespace
 

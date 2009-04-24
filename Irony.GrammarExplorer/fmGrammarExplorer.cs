@@ -22,8 +22,9 @@ using System.Configuration;
 using System.Text.RegularExpressions;
 using System.Reflection;
 using System.Xml;
-using Irony.Compiler;
-using Irony.Runtime;
+using Irony.CompilerServices;
+using Irony.Diagnostics;
+using Irony.Scripting.Runtime;
 using Irony.EditorServices;
 using Irony.GrammarExplorer.Properties;
 
@@ -33,11 +34,13 @@ namespace Irony.GrammarExplorer {
     public fmGrammarExplorer() {
       InitializeComponent();
     }
-    LanguageCompiler _compiler;
-    CompilerContext _compilerContext;
-    AstNode _rootNode;
-    RichTextBoxHighligter _highlighter;
 
+    //fields
+    Compiler _compiler;
+    CompilerContext _compilerContext;
+    ParseTree _parseTree;
+
+    #region Form load/unload events
     private void fmExploreGrammar_Load(object sender, EventArgs e) {
       try {
         txtSource.Text = Settings.Default.SourceSample;
@@ -55,384 +58,157 @@ namespace Irony.GrammarExplorer {
       Settings.Default.Grammars = grammars.ToXml(); 
       Settings.Default.Save();
     }//method
+    #endregion 
 
-    private void StartHighligter() {
-      if (_highlighter != null) 
-        StopHighlighter(); 
-      var adapter = new EditorAdapter(_compiler);
-      var viewAdapter = new EditorViewAdapter(adapter, txtSource);
-      _highlighter = new RichTextBoxHighligter(txtSource, viewAdapter);
-      adapter.Activate();
-    }
-    private void StopHighlighter() {
-      _highlighter.Dispose();
-      _highlighter = null;
-      txtSource.Text = txtSource.Text; //remove all old highlighting
-    }
-
-
-    private void btnParse_Click(object sender, EventArgs e) {
-      ParseSample();
-  /* test for opening braces
-        //don't forget to set the flags on compiler context before parsing/scanning: 
-        //         _compilerContext.Options |= CompilerOptions.MatchBraces | CompilerOptions.CollectTokens;
-        var braces = EditorUtilities.GetOpeningBraces(_compilerContext.Tokens); 
-        string text = string.Empty;
-        foreach (Token brace in braces)
-          text += brace.Text + ":" + brace.OtherBrace.Text + " at " + brace.Location.ToString() + Environment.NewLine;
-        txtOutput.Text = text; 
-   */
-    }
-
-    private void ParseSample() {
-      _rootNode = null;
-      _compilerContext = new CompilerContext(_compiler);
-      //Just for testing purposes
-      _compilerContext.Options |= CompilerOptions.MatchBraces | CompilerOptions.CollectTokens;
-      if (_compiler.Grammar.FlagIsSet(LanguageFlags.SupportsInterpreter))
-        _compilerContext.Options |= CompilerOptions.AnalyzeCode;
-      ResetResultPanels();
-      if (chkShowTrace.Checked) {
-        _compiler.LalrParser.ActionSelected += Parser_ParserAction;
-        _compiler.LalrParser.TokenReceived +=  Parser_TokenReceived; 
-        _tokens.Clear();
-      }
-      SourceFile source = new SourceFile(txtSource.Text, "source", 8);
-      try {
-        _rootNode = _compiler.Parse(_compilerContext, source);
-      } catch (Exception ex) {
-        lstErrors.Items.Add(ex);
-        lstErrors.Items.Add("Parser state: " + _compiler.LalrParser.CurrentState);
-        tabResults.SelectedTab = pageParseErrors;
-        ShowParseStack();
-        throw;
-      } finally {
-        _compiler.LalrParser.ActionSelected -= Parser_ParserAction;
-        _compiler.LalrParser.TokenReceived -= Parser_TokenReceived;
-      }
-      ShowCompilerErrors();
-      if (chkShowTrace.Checked)
-        foreach (Token tkn in _tokens)
-          lstTokens.Items.Add(tkn);
-      ShowStats();
-      ShowAstNodes(_rootNode);
-    }
-
-    private void ShowCompilerErrors() {
-      if (_compilerContext.Errors.Count > 0) {
-        lstErrors.Items.Clear();
-        if (tabResults.SelectedTab == pageResult)
-          tabResults.SelectedTab = pageParseErrors;
-        foreach (SyntaxError err in _compilerContext.Errors)
-          lstErrors.Items.Add(err);
-      }
-    }
-
+    #region Show... methods
+    //Show... methods ######################################################################################################################
     private void ResetResultPanels() {
-      _tokens.Clear();
       lblStatLines.Text = "compiling...";
       lblStatTokens.Text = "";
       lblStatTime.Text = "";
       lstTokens.Items.Clear();
-      lstErrors.Items.Clear();
-      lstParseTrace.Items.Clear();
-      lstParseStack.Items.Clear();
+      gridCompileErrors.Rows.Clear();
+      gridParserTrace.Rows.Clear();
       lstTokens.Items.Clear();
-      tvAstNodes.Nodes.Clear();
+      tvParseTree.Nodes.Clear();
       lblErrCount.Text = "";
-      txtErrDetails.Text = "";
       Application.DoEvents();
     }
+
+    private void ShowCompilerErrors() {
+      gridCompileErrors.Rows.Clear();
+      if (_parseTree == null || _parseTree.Errors.Count == 0) return; 
+      foreach (var err in _parseTree.Errors) 
+        gridCompileErrors.Rows.Add(err.Location, err, err.ParserState);
+      if (tabBottom.SelectedTab != pageErrors)
+        tabBottom.SelectedTab = pageErrors;
+    }
+
+    private void ShowParseTrace() {
+      gridParserTrace.Rows.Clear();
+      foreach (var entry in _compilerContext.ParserTrace) {
+        int index = gridParserTrace.Rows.Add(entry.State, entry.StackTop.ToString(), entry.Input.ToString(),
+            entry.Message, entry.NewState); 
+        if (entry.IsError)
+          gridParserTrace.Rows[gridParserTrace.Rows.Count - 1].DefaultCellStyle.ForeColor = Color.Red;
+      }
+      //Show tokens
+      foreach (Token tkn in _parseTree.Tokens) {
+        if (chkExcludeComments.Checked && tkn.Category == TokenCategory.Comment) continue; 
+        lstTokens.Items.Add(tkn);
+      }
+    }//method
+
     private void ShowStats() {
-      lblStatLines.Text = _compiler.LalrParser.LineCount.ToString();
-      lblStatTokens.Text = _compiler.LalrParser.TokenCount.ToString();
-      lblStatTime.Text = _compiler.CompileTime.ToString();
-      lblErrCount.Text = _compilerContext.Errors.Count.ToString();
+      if (_parseTree == null) return;
+      lblStatLines.Text = string.Empty;
+      if (_parseTree.Tokens.Count > 0)
+        lblStatLines.Text = (_parseTree.Tokens[_parseTree.Tokens.Count - 1].Location.Line + 1).ToString();
+      lblStatTokens.Text = _parseTree.Tokens.Count.ToString();
+      lblStatTime.Text = _parseTree.ParseTime.ToString();
+      lblErrCount.Text = _parseTree.Errors.Count.ToString();
       Application.DoEvents();
       //Note: this time is "pure" compile time; actual delay after cliking "Compile" includes time to fill TreeView control 
       //  showing compiled syntax tree. 
     }
 
-    private TokenList _tokens = new TokenList();
-    void Parser_TokenReceived(object sender, TokenEventArgs e) {
-      _tokens.Add(e.Token);
+    private void ShowParseTree(ParseTree parseTree) {
+      tvParseTree.Nodes.Clear();
+      if (parseTree == null) return; 
+      AddParseNodeRec(null, parseTree.Root);
     }
-
-
-    void Parser_ParserAction(object sender, Irony.Compiler.Lalr.ParserActionEventArgs e) {
-      lstParseTrace.Items.Add(e.ToString());
-    }
-
-    private void ShowParseStack() {
-      lstParseStack.Items.Clear();
-      for (int i = 0; i < _compiler.LalrParser.Stack.Count; i++ ) {
-        lstParseStack.Items.Add(_compiler.LalrParser.Stack[i]);
-      }
-    }
-
-    private void ShowAstNodes(AstNode rootNode) {
-      tvAstNodes.Nodes.Clear();
-      AddAstNode(null, rootNode);
-    }
-    private void AddAstNode(TreeNode parent, AstNode node) {
-      if (node == null) return;
-      if (node is Token) {
-        Token token = node as Token;
+    private void AddParseNodeRec(TreeNode parent, ParseTreeNode nodeInfo) {
+      if (nodeInfo == null) return;
+      Token token = nodeInfo.AstNode as Token;
+      if (token != null) {
         if (token.Terminal.Category != TokenCategory.Content && token.Terminal.Category != TokenCategory.Literal) return; 
       }
-      string txt = node.ToString();
-      TreeNode tn = (parent == null? 
-        tvAstNodes.Nodes.Add(txt) : parent.Nodes.Add(txt) );
-      tn.Tag = node; 
-      foreach(AstNode child in node.ChildNodes)
-        AddAstNode(tn, child);
-     
+      string txt = nodeInfo.ToString();
+      TreeNode newNode = (parent == null? 
+        tvParseTree.Nodes.Add(txt) : parent.Nodes.Add(txt) );
+      newNode.Tag = nodeInfo; 
+      foreach(var child in nodeInfo.ChildNodes)
+        AddParseNodeRec(newNode, child);
     }
-    private void RefreshGrammarInfo() {
+
+    private void ShowGrammarInfo() {
       txtParserStates.Text = "" ;
       txtGrammarErrors.Text = "(no errors found)";
       if (_compiler == null) return;
 
-      txtTerms.Text = TextUtils.TerminalsToText(_compiler.Grammar.Terminals);
-      txtNonTerms.Text = TextUtils.NonTerminalsToText(_compiler.Grammar.NonTerminals);
+      txtTerms.Text = DiagnosticUtils.PrintTerminals(_compiler.Language);
+      txtNonTerms.Text = DiagnosticUtils.PrintNonTerminals(_compiler.Language);
       //States
-      txtParserStates.Text = _compiler.Parser.GetStateList();
+      txtParserStates.Text = DiagnosticUtils.PrintStateList(_compiler.Language);
       //Validation errors
-      StringSet errors = _compiler.Grammar.Errors;
+      StringSet errors = _compiler.Language.Errors;
       if (errors.Count > 0) {
         txtGrammarErrors.Text = errors.ToString(Environment.NewLine);
         txtGrammarErrors.Text += "\r\n\r\nTotal errors: " + errors.Count;
         tabGrammar.SelectedTab = pageGrErrors;
       }
-    }//methold
-    
-    public string LoadFile(string fileName) {
-      StreamReader rdr = new StreamReader(fileName);
-      string result = rdr.ReadToEnd();
-      return result;
-    }
+      if (!string.IsNullOrEmpty(_compiler.Language.Grammar.GrammarComments)) {
+        txtGrammarErrors.Text += "\r\n\r\nComments:\r\n" + _compiler.Language.Grammar.GrammarComments;
+      }
+    }//method
 
-    private void lstErrors_SelectedIndexChanged(object sender, EventArgs e) {
-      ShowError();
-    }
-
-    private void ShowError() {
-      txtErrDetails.Text = "";
-      if (lstErrors.SelectedItem == null) return;
-      SyntaxError se = lstErrors.SelectedItem as SyntaxError;
-      if (se == null) return;
-      ShowLocation(se.Location, 1);
-      txtErrDetails.Text = se.Message + "\r\n (L:C = " + se.Location + ")";
-    }
-
-    private void lstTokens_Click(object sender, EventArgs e) {
-      ShowSelectedToken();
-    }
-    private void ShowSelectedToken() {
-      if (lstTokens.SelectedIndex < 0)
-        return;
-      Token token = (Token) lstTokens.SelectedItem;
-      ShowLocation(token.Location, token.Length);
-    }
-    private void ShowLocation(SourceLocation location, int length) {
+    private void ShowSourceLocation(SourceLocation location, int length) {
       if (location.Position < 0) return;
       txtSource.SelectionStart = location.Position;
       txtSource.SelectionLength = length;
       //txtSource.Select(location.Position, length);
       txtSource.ScrollToCaret();
-      txtSource.Focus(); 
+      if (tabGrammar.SelectedTab != pageTest)
+        tabGrammar.SelectedTab = pageTest;
+      txtSource.Focus();
       //lblLoc.Text = location.ToString();
     }
-
-    private void lstTokens_SelectedIndexChanged(object sender, EventArgs e) {
-      ShowSelectedToken();
+    private void ShowSourceLocationAndTraceToken(SourceLocation location, int length) {
+      ShowSourceLocation(location, length);
+      //find token in trace
+      for (int i = 0; i < lstTokens.Items.Count; i++) {
+        var tkn = lstTokens.Items[i] as Token;
+        if (tkn.Location.Position == location.Position) {
+          lstTokens.SelectedIndex = i;
+          return;
+        }//if
+      }//for i
+    }
+    private void LocateParserState(ParserState state) {
+      if (state == null) return;
+      if (tabGrammar.SelectedTab != pageParserStates)
+        tabGrammar.SelectedTab = pageParserStates;
+      //first scroll to the bottom, so that scrolling to needed position brings it to top
+      txtParserStates.SelectionStart = txtParserStates.Text.Length - 1;
+      txtParserStates.ScrollToCaret();
+      DoSearch(txtParserStates, "State " + state.Name, 0);
     }
 
-    private void ShowNode(TreeNode node) {
-      if (node == null) return;
-      AstNode ast = node.Tag as AstNode;
-      if (ast == null) return;
-      ShowLocation(ast.Location, 1); 
-    }
+    #endregion 
 
-    private void tvAstNodes_AfterSelect(object sender, TreeViewEventArgs e) {
-      ShowNode(tvAstNodes.SelectedNode);
-    }
-
-    private void cboLanguage_SelectedIndexChanged(object sender, EventArgs e) {
-      SymbolTerminal.ClearSymbols();
-      Grammar grammar = null;
-      btnRun.Enabled = false;
-      txtOutput.Text = string.Empty;
-      _rootNode = null;
-
-      GrammarItem selItem = cboGrammars.SelectedItem as GrammarItem;
-      grammar = selItem.CreateGrammar();
-      btnRun.Enabled = grammar.FlagIsSet(LanguageFlags.SupportsInterpreter);
-      Stopwatch sw = new Stopwatch();
-      try {
-        sw.Start();
-        _compiler = new LanguageCompiler(grammar);
-        _compilerContext = new CompilerContext(_compiler); 
-        sw.Stop();
-        StartHighligter();
-      } finally {
-        RefreshGrammarInfo();
-        lblInitTime.Text = sw.ElapsedMilliseconds.ToString();
-      }//finally
-    }
-
-    private void btnFileOpen_Click(object sender, EventArgs e) {
-      if (dlgOpenFile.ShowDialog() != DialogResult.OK) return;
-      LoadSourceFile(dlgOpenFile.FileName);
-      
-    }
-    private void LoadSourceFile(string path) {
-      _rootNode = null;
-      StreamReader reader = null;
-      try {
-        reader = new StreamReader(path);
-        txtSource.Text = null;  //to clear any old formatting
-        txtSource.Text = reader.ReadToEnd();
-        txtSource.Select(0, 0);
-      } catch (Exception e) {
-        MessageBox.Show(e.Message);
-      } finally {
-        if (reader != null)
-          reader.Close();
-      }
-    }
-
-
-    #region Search
-    //The following methods are contributed by Andrew Bradnan; pasted here with minor changes
-    private void btnSearch_Click(object sender, EventArgs e) {
-      DoSearch();
-    }//method
-
-    private void txtSearch_KeyPress(object sender, KeyPressEventArgs e) {
-      if (e.KeyChar == '\r')  // <Enter> key
-        DoSearch();
-    }
-
-    private void DoSearch() {
-      lblSearchError.Visible = false; 
-      TextBoxBase textBox = GetSearchContentBox();
-      if (textBox == null) return;
-
-      int idxStart = textBox.SelectionStart + textBox.SelectionLength;
-      // Compile the regular expression.
-      Regex r = new Regex(txtSearch.Text, RegexOptions.IgnoreCase);
-      // Match the regular expression pattern against a text string.
-      Match m = r.Match(textBox.Text.Substring(idxStart));
-      if (m.Success) {
-        int i = 0;
-        Group g = m.Groups[i];
-        CaptureCollection cc = g.Captures;
-        Capture c = cc[0];
-
-        textBox.SelectionStart = c.Index + idxStart + 100;
-        textBox.ScrollToCaret();
-        textBox.SelectionStart = c.Index + idxStart;
-        textBox.SelectionLength = c.Length;
-        textBox.Focus();
-        return;
-      } else {
-        lblSearchError.Text = "Not found.";
-        lblSearchError.Visible = true; 
-      }
-    }//method
-
-    public TextBoxBase GetSearchContentBox()		{
-      switch (tabGrammar.SelectedIndex) {
-        case 0:
-          return txtTerms;
-        case 1:
-          return txtNonTerms;
-        case 2:
-          return txtParserStates;
-        case 3:
-          return txtGrammarErrors;
-        case 4:
-          return txtSource;
-        default:
-          return null;
-      }//switch
-	  }
-
-    #endregion
-
-    StringBuilder _outBuffer;
-    private void btnRun_Click(object sender, EventArgs e) {
-      Stopwatch sw = new Stopwatch();
-      txtOutput.Text = "";
-      _outBuffer = new StringBuilder();
-      EvaluationContext evalContext = null;
-      try {
-        if (_rootNode == null)
-          ParseSample();
-        if (_compilerContext.Errors.Count > 0) return;
-        
-        //_compiler.AnalyzeCode(_rootNode, _compilerContext); -- code should be analyzed already
-        if (_compilerContext.Errors.Count > 0) return;
-
-        evalContext = new EvaluationContext(_compilerContext.Runtime, _rootNode);
-        evalContext.Runtime.ConsoleWrite += Ops_ConsoleWrite;
-        sw.Start();
-        _rootNode.Evaluate(evalContext);
-        sw.Stop();
-        lblRunTime.Text = sw.ElapsedMilliseconds.ToString();
-      } catch(RuntimeException rex) {
-        //catch and add runtime to compiler context, so they will be shown in the form
-        _compilerContext.ReportError(rex.Location, rex.Message);
-      } finally {
-        sw.Stop();
-        if (evalContext != null) {
-          evalContext.Runtime.ConsoleWrite -= Ops_ConsoleWrite;
-          txtOutput.Text = _outBuffer.ToString();
-          if (evalContext.CurrentResult != Unassigned.Value)
-            txtOutput.Text += evalContext.CurrentResult;
-        }
-        if (_compilerContext.Errors.Count > 0)
-          ShowCompilerErrors();
-
-      }//finally
-    }//method
-
-    void Ops_ConsoleWrite(object sender, ConsoleWriteEventArgs e) {
-      _outBuffer.Append(e.Text);
-    }
-
-    private void txtSource_TextChanged(object sender, EventArgs e) {
-      _rootNode = null; //force it to recompile on run
-    }
-
-    private void btnManageGrammars_Click(object sender, EventArgs e) {
-      menuGrammars.Show(btnManageGrammars, 0, btnManageGrammars.Height); 
-    }
-
+    #region Grammar combo menu commands
     private void menuGrammars_Opening(object sender, CancelEventArgs e) {
-      miRemove.Enabled = cboGrammars.Items.Count > 0; 
+      miRemove.Enabled = cboGrammars.Items.Count > 0;
     }
 
     private void miAdd_Click(object sender, EventArgs e) {
-       if (dlgSelectAssembly.ShowDialog() != DialogResult.OK) return;
-       string location = dlgSelectAssembly.FileName;
+      if (dlgSelectAssembly.ShowDialog() != DialogResult.OK) return;
+      string location = dlgSelectAssembly.FileName;
       Assembly asm = Assembly.LoadFrom(location);
       var types = asm.GetTypes();
-      GrammarItemList grammars = new GrammarItemList(); 
-      foreach(Type t in types) {
+      GrammarItemList grammars = new GrammarItemList();
+      foreach (Type t in types) {
         if (!t.IsSubclassOf(typeof(Grammar))) continue;
         grammars.Add(new GrammarItem(t, location));
       }
       if (grammars.Count == 0) {
         MessageBox.Show("No classes derived from Irony.Grammar were found in the assembly.");
-        return; 
+        return;
       }
       grammars = fmSelectGrammars.SelectGrammars(grammars);
       if (grammars == null) return;
       foreach (GrammarItem item in grammars)
-        cboGrammars.Items.Add(item); 
+        cboGrammars.Items.Add(item);
     }
 
     private void miRemove_Click(object sender, EventArgs e) {
@@ -452,14 +228,299 @@ namespace Irony.GrammarExplorer {
         _compiler = null;
       }
     }
+    #endregion
 
-    private void btnToXml_Click(object sender, EventArgs e) {
-      if (_rootNode == null) ParseSample();
-      if (_rootNode == null) return;
-      txtOutput.Text = _rootNode.XmlGetXmlString();
+    #region Parsing and running
+    private void ConstructParser() {
+      StopHighlighter();
+      btnRun.Enabled = false;
+      txtOutput.Text = string.Empty;
+      _parseTree = null;
+
+      GrammarItem selItem = cboGrammars.SelectedItem as GrammarItem;
+      Grammar grammar = selItem.CreateGrammar();
+      btnRun.Enabled = false;// grammar.FlagIsSet(LanguageFlags.SupportsInterpreter); //temp, interpreter does not work
+      ParseMethod method;
+      if (_changingGrammar) {
+        method = grammar.ParseMethod;
+        cboParseMethod.SelectedIndex = (int)method;
+      } else {
+        method = (ParseMethod)cboParseMethod.SelectedIndex;
+      }
+      Stopwatch sw = new Stopwatch();
+      try {
+        sw.Start();
+        _compiler = new Compiler(grammar, method);
+        _compilerContext = new CompilerContext(_compiler);
+        sw.Stop();
+        StartHighligter();
+      } finally {
+        ShowGrammarInfo();
+        lblInitTime.Text = sw.ElapsedMilliseconds.ToString();
+      }//finally
+    }
+
+    private void ParseSample() {
+      _parseTree = null;
+      _compilerContext = new CompilerContext(_compiler);
+      _compilerContext.SetOption(CompilerOptions.TraceParser, chkParserTrace.Checked);
+      ResetResultPanels();
+      try {
+        _compiler.Parse(_compilerContext, txtSource.Text, "<source>");
+      } catch (Exception ex) {
+        gridCompileErrors.Rows.Add(null, ex.Message, null);
+        tabBottom.SelectedTab = pageErrors;
+        throw;
+      } finally {
+        _parseTree = _compilerContext.CurrentParseTree;
+        ShowCompilerErrors();
+        if (chkParserTrace.Checked) {
+          ShowParseTrace();
+        }
+        ShowStats();
+        ShowParseTree(_parseTree);
+      }
+    }
+
+
+    StringBuilder _outBuffer;
+    private void RunSample() {
+      Stopwatch sw = new Stopwatch();
+      txtOutput.Text = "";
+      _outBuffer = new StringBuilder();
+      EvaluationContext evalContext = null;
+      try {
+        if (_parseTree == null)
+          ParseSample();
+        if (_parseTree.Errors.Count > 0) return;
+        
+        //_compiler.AnalyzeCode(_rootNode, _compilerContext); -- code should be analyzed already
+        if (_parseTree.Errors.Count > 0) return;
+/*
+        AstNode rootNode = _parseTree.Root.AstNode as AstNode;
+        if (rootNode == null)
+          throw new Exception("Root node info has no custom root node - cannot evaluate."); 
+        evalContext = new EvaluationContext(_compilerContext.Runtime, rootNode);
+        evalContext.Runtime.ConsoleWrite += Ops_ConsoleWrite;
+        sw.Start();
+        rootNode.Evaluate(evalContext);
+        sw.Stop();
+        lblRunTime.Text = sw.ElapsedMilliseconds.ToString();
+ */ 
+      } catch(RuntimeException rex) {
+        //catch and add runtime to compiler context, so they will be shown in the form
+        _compilerContext.ReportError(rex.Location, rex.Message);
+      } finally {
+        sw.Stop();
+        if (evalContext != null) {
+          evalContext.Runtime.ConsoleWrite -= Ops_ConsoleWrite;
+          txtOutput.Text = _outBuffer.ToString();
+          if (evalContext.CurrentResult != Unassigned.Value)
+            txtOutput.Text += evalContext.CurrentResult;
+        }
+        if (_parseTree.Errors.Count > 0)
+          ShowCompilerErrors();
+
+      }//finally
     }//method
 
+    void Ops_ConsoleWrite(object sender, ConsoleWriteEventArgs e) {
+      _outBuffer.Append(e.Text);
+    }
 
+    #endregion
+
+    #region miscellaneous: LoadSourceFile, Search, Source highlighting
+    private void LoadSourceFile(string path) {
+      _parseTree = null;
+      StreamReader reader = null;
+      try {
+        reader = new StreamReader(path);
+        txtSource.Text = null;  //to clear any old formatting
+        txtSource.Text = reader.ReadToEnd();
+        txtSource.Select(0, 0);
+      } catch (Exception e) {
+        MessageBox.Show(e.Message);
+      } finally {
+        if (reader != null)
+          reader.Close();
+      }
+    }
+
+    //Source highlighting 
+    RichTextBoxHighligter _highlighter;
+    private void StartHighligter() {
+      if (_highlighter != null)
+        StopHighlighter();
+      var adapter = new EditorAdapter(_compiler);
+      var viewAdapter = new EditorViewAdapter(adapter, txtSource);
+      _highlighter = new RichTextBoxHighligter(txtSource, viewAdapter);
+      adapter.Activate();
+    }
+    private void StopHighlighter() {
+      if (_highlighter == null) return;
+      _highlighter.Dispose();
+      _highlighter = null;
+      txtSource.Text = txtSource.Text; //remove all old highlighting
+    }
+
+    //The following methods are contributed by Andrew Bradnan; pasted here with minor changes
+    private void DoSearch() {
+      lblSearchError.Visible = false;
+      TextBoxBase textBox = GetSearchContentBox();
+      if (textBox == null) return;
+      int idxStart = textBox.SelectionStart + textBox.SelectionLength;
+      if (!DoSearch(textBox, txtSearch.Text, idxStart)) {
+        lblSearchError.Text = "Not found.";
+        lblSearchError.Visible = true;
+      }
+    }//method
+
+    private bool DoSearch(TextBoxBase textBox, string fragment, int start) {
+      textBox.SelectionLength = 0;
+      // Compile the regular expression.
+      Regex r = new Regex(fragment, RegexOptions.IgnoreCase);
+      // Match the regular expression pattern against a text string.
+      Match m = r.Match(textBox.Text.Substring(start));
+      if (m.Success) {
+        int i = 0;
+        Group g = m.Groups[i];
+        CaptureCollection cc = g.Captures;
+        Capture c = cc[0];
+        textBox.SelectionStart = c.Index + start;
+        textBox.SelectionLength = c.Length;
+        textBox.Focus();
+        textBox.ScrollToCaret();
+        return true;
+      }
+      return false;
+    }//method
+
+    public TextBoxBase GetSearchContentBox() {
+      switch (tabGrammar.SelectedIndex) {
+        case 0:
+          return txtTerms;
+        case 1:
+          return txtNonTerms;
+        case 2:
+          return txtParserStates;
+        case 3:
+          return txtGrammarErrors;
+        case 4:
+          return txtSource;
+        default:
+          return null;
+      }//switch
+    }
+
+    #endregion
+
+    #region Controls event handlers
+    //Controls event handlers ###################################################################################################
+    private void btnParse_Click(object sender, EventArgs e) {
+      ParseSample();
+    }
+    private void btnRun_Click(object sender, EventArgs e) {
+      RunSample();
+    }
+
+    private void tvAstNodes_AfterSelect(object sender, TreeViewEventArgs e) {
+      var vtreeNode = tvParseTree.SelectedNode;
+      if (vtreeNode == null) return;
+      var parseNode = vtreeNode.Tag as ParseTreeNode;
+      if (parseNode == null) return;
+      ShowSourceLocation(parseNode.Span.Start, 1);
+    }
+
+    bool _changingGrammar;
+    private void cboLanguage_SelectedIndexChanged(object sender, EventArgs e) {
+      try {
+        _changingGrammar = true;
+        ConstructParser();
+      } finally {
+        _changingGrammar = false; //in case of exception
+      }
+    }
+    private void btnFileOpen_Click(object sender, EventArgs e) {
+      if (dlgOpenFile.ShowDialog() != DialogResult.OK) return;
+      LoadSourceFile(dlgOpenFile.FileName);
+
+    }
+    private void txtSource_TextChanged(object sender, EventArgs e) {
+      _parseTree = null; //force it to recompile on run
+    }
+
+    private void btnManageGrammars_Click(object sender, EventArgs e) {
+      menuGrammars.Show(btnManageGrammars, 0, btnManageGrammars.Height);
+    }
+    private void btnToXml_Click(object sender, EventArgs e) {
+      /*      if (_parseTree == null) ParseSample();
+            if (_parseTree == null) return;
+            var rootNode = _parseTree.Root.AstNode as AstNode;
+            if (rootNode == null) return; 
+            txtOutput.Text = rootNode.XmlGetXmlString();
+      */
+    }
+
+    private void cboParseMethod_SelectedIndexChanged(object sender, EventArgs e) {
+      if (!_changingGrammar)
+        ConstructParser();
+    }
+
+    private void gridParserTrace_CellDoubleClick(object sender, DataGridViewCellEventArgs e) {
+      if (_compilerContext == null || e.RowIndex < 0 || e.RowIndex >= _compilerContext.ParserTrace.Count) return;
+      var entry = _compilerContext.ParserTrace[e.RowIndex];
+      switch (e.ColumnIndex) {
+        case 0: //state
+          LocateParserState(entry.State);
+          break;
+        case 1: //stack top
+          if (entry.StackTop != null)
+            ShowSourceLocationAndTraceToken(entry.StackTop.Span.Start, entry.StackTop.Span.Length);
+          break;
+        case 2: //input
+          if (entry.Input != null)
+            ShowSourceLocationAndTraceToken(entry.Input.Span.Start, entry.Input.Span.Length);
+          break;
+        case 3: //action
+          break;
+        case 4: //state
+          LocateParserState(entry.NewState);
+          break;
+      }//switch
+    }
+
+    private void lstTokens_DoubleClick(object sender, EventArgs e) {
+      if (lstTokens.SelectedIndex < 0)
+        return;
+      Token token = (Token)lstTokens.SelectedItem;
+      ShowSourceLocation(token.Location, token.Length);
+    }
+    private void gridCompileErrors_CellDoubleClick(object sender, DataGridViewCellEventArgs e) {
+      if (_parseTree == null || e.RowIndex < 0 || e.RowIndex >= _parseTree.Errors.Count) return;
+      var err = gridCompileErrors.Rows[e.RowIndex].Cells[1].Value as SyntaxError;
+      switch (e.ColumnIndex) {
+        case 0: //state
+        case 1: //stack top
+          ShowSourceLocation(err.Location, 1);
+          break;
+        case 2: //input
+          if (err.ParserState != null)
+            LocateParserState(err.ParserState);
+          break;
+      }//switch
+    }
+
+    private void btnSearch_Click(object sender, EventArgs e) {
+      DoSearch();
+    }//method
+
+    private void txtSearch_KeyPress(object sender, KeyPressEventArgs e) {
+      if (e.KeyChar == '\r')  // <Enter> key
+        DoSearch();
+    }
+
+    #endregion
 
   }//class
 }

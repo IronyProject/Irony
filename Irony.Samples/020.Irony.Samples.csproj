@@ -49,24 +49,29 @@
   <ItemGroup>
     <Compile Include="CSharp\CSharpGrammar.cs" />
     <Compile Include="Json\JsonGrammar.cs" />
-    <Compile Include="OtherGrammars\GwBasicGrammar.cs" />
+    <Compile Include="NonCanonTestGrammars\NonCanonTestGrammar3.cs" />
+    <Compile Include="NonCanonTestGrammars\NonCanonTestGrammar2.cs" />
+    <Compile Include="NonCanonTestGrammars\NonCanonTestGrammar4.cs" />
+    <Compile Include="GWBasic\GwBasicGrammar.cs" />
     <Compile Include="ExpressionEvaluator\ExpressionEvaluatorGrammar.cs" />
+    <Compile Include="NonCanonTestGrammars\NonCanonTestGrammar1.cs" />
     <Compile Include="Scheme\SchemeRuntime.cs" />
     <Compile Include="Script.NET\ScriptDotNetGrammar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Python\PythonGrammar.cs" />
     <None Include="Ruby\RubyGrammar.cs" />
     <Compile Include="Scheme\SchemeGrammar.cs" />
-    <Compile Include="SQL\SqlGrammar.cs" />
     <None Include="SourceSamples\c#\bottles-v11-long.cs" />
     <None Include="SourceSamples\c#\bottles-v11-short.cs" />
     <None Include="SourceSamples\c#\bottles-v20.cs" />
     <None Include="SourceSamples\c#\bottles-v30.cs" />
     <None Include="SourceSamples\c#\escapes_in_IDs.cs" />
     <None Include="SourceSamples\c#\ParserControlDataBuilder.cs" />
-    <None Include="OtherGrammars\GrammarEx434.cs" />
-    <None Include="OtherGrammars\GrammarEx446.cs" />
-    <None Include="OtherGrammars\GrammarExL514.cs" />
+    <None Include="SourceSamples\c#\TestLessThanOp.cs" />
+    <Compile Include="SQL\SqlGrammar.cs" />
+    <None Include="TestGrammars\GrammarEx434.cs" />
+    <None Include="TestGrammars\GrammarEx446.cs" />
+    <None Include="TestGrammars\GrammarExL514.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Irony\010.Irony.csproj">
@@ -76,9 +81,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Python\Python_auth_svn.txt" />
+    <None Include="SourceSamples\99 bottles with Errors.rb" />
     <None Include="SourceSamples\99 bottles.py" />
     <None Include="SourceSamples\99 bottles.rb" />
-    <None Include="SourceSamples\99 bottles with Errors.rb" />
+    <None Include="SourceSamples\fib.py" />
     <None Include="SourceSamples\JSON\Sample1.json" />
     <None Include="SourceSamples\JSON\Sample2.json" />
     <None Include="SourceSamples\JSON\Sample3.json" />
@@ -87,7 +93,11 @@
     <None Include="SourceSamples\Scheme\cadr.scm" />
     <None Include="SourceSamples\Scheme\Fib.scm" />
     <Content Include="CSharp\Notes.txt" />
+    <Content Include="NonCanonTestGrammars\_about_noncanon_grammars.txt" />
     <Content Include="Ruby\Ruby_auth.txt" />
+    <Content Include="SourceSamples\99 bottles.bas" />
+    <Content Include="SourceSamples\ExprSample.txt" />
+    <Content Include="SourceSamples\NonCanonTestSamples\NonCanonTest1.txt" />
     <Content Include="SourceSamples\Script.NET\Arithmetic.txt" />
     <Content Include="SourceSamples\Script.NET\ArraysGenerics.txt" />
     <Content Include="SourceSamples\Script.NET\bubblesort.txt" />
@@ -104,11 +114,11 @@
     <Content Include="SourceSamples\Script.NET\RSS.txt" />
     <Content Include="SourceSamples\Script.NET\UIAutomation_FW3.txt" />
     <Content Include="SourceSamples\Script.NET\WinForms.txt" />
+    <Content Include="SourceSamples\SQL\sql_op_test.txt" />
     <Content Include="SourceSamples\SQL\sql_sample1.txt" />
     <Content Include="SourceSamples\SQL\sql_sample2.txt" />
     <Content Include="SourceSamples\SQL\sql_sample3.txt" />
     <Content Include="SourceSamples\_about.txt" />
-    <Content Include="SourceSamples\ExprSample.txt" />
     <Content Include="SQL\Sql89-GoldParser.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irony.Compiler {
+namespace Irony.CompilerServices {
 
   public class GrammarErrorException : Exception {
     public GrammarErrorException(string message) : base(message) { }

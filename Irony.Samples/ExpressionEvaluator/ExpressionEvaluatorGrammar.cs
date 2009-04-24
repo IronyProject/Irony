@@ -13,8 +13,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.Compiler;
-using Irony.Compiler.AST;
+using Irony.CompilerServices;
+using Irony.Scripting.Ast;
 
 namespace Irony.Samples {
   // This grammar describes programs that consist of simple expressions and assignments,
@@ -28,7 +28,7 @@ namespace Irony.Samples {
   //  for arguments 2 and 3. 
 
   [Language("ExpressionEvaluator", "1.0", "Multi-line expression evaluator")]
-  public class ExpressionEvaluatorGrammar : Irony.Compiler.Grammar {
+  public class ExpressionEvaluatorGrammar : Irony.CompilerServices.Grammar {
     public ExpressionEvaluatorGrammar() {
       // 1. Terminals
       var number = new NumberLiteral("number");
@@ -71,10 +71,10 @@ namespace Irony.Samples {
       RegisterOperators(3, Associativity.Right, "**");
 
       RegisterPunctuation( "(", ")");
-      MarkTransient(Term, Expr, Statement);
+      MarkTransient(Term, Expr, Statement, BinOp, Variable);
 
       //automatically add NewLine before EOF so that our BNF rules work correctly when there's no final line break in source
-      this.LanguageFlags |= LanguageFlags.NewLineBeforeEOF | LanguageFlags.SupportsInterpreter; 
+      this.LanguageFlags |= LanguageFlags.NewLineBeforeEOF | LanguageFlags.SupportsInterpreter | LanguageFlags.AutoDetectTransient; 
 
     }
   }

@@ -23,7 +23,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Threading;
 using System.Runtime.InteropServices;
-using Irony.Compiler;
+using Irony.CompilerServices;
 using Irony.EditorServices;
 using System.Diagnostics;
 
@@ -211,9 +211,10 @@ namespace Irony.GrammarExplorer {
       int selLength = TextBox.SelectionLength;
       LockTextBox();
       try {
-        foreach (Token t in args.Tokens) {
-          TextBox.Select(t.Location.Position, t.Span.Length);
-          TextBox.SelectionColor = GetTokenColor(t);
+        foreach (Token tkn in args.Tokens) {
+          Color color = GetTokenColor(tkn);
+          TextBox.Select(tkn.Location.Position, tkn.Length);
+          TextBox.SelectionColor = color;
         }
       } finally {
         TextBox.Select(selstart, selLength);
@@ -226,9 +227,16 @@ namespace Irony.GrammarExplorer {
     }
 
     private Color GetTokenColor(Token token) {
+      if (token.EditorInfo == null) return Color.Black; 
+      //Right now we scan source, not parse; initially all keywords are recognized as Identifiers; then they are "backpatched"
+      // by parser when it detects that it is in fact keyword from Grammar. So now this backpatching does not happen, 
+      // so we have to detect keywords here
+      var colorIndex = token.EditorInfo.Color;
+      if (token.AsSymbol != null && token.AsSymbol.EditorInfo != null && token.AsSymbol.IsSet(TermOptions.IsKeyword)) {
+        colorIndex = token.AsSymbol.EditorInfo.Color;
+      }//if
       Color result;
-      if (token.EditorInfo != null && TokenColors.TryGetValue(token.EditorInfo.Color, out result))
-        return result;
+      if (TokenColors.TryGetValue(colorIndex, out result)) return result;
       return Color.Black;
     }
     #endregion

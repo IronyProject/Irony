@@ -17,33 +17,36 @@ using System.Text;
 using System.Xml; 
 using System.Windows.Forms;
 using System.Reflection;
-using Irony.Compiler; 
+using Irony.CompilerServices; 
 
 namespace Irony.GrammarExplorer {
 
   //Helper classes for supporting showing grammar list in top combo, saving list on exit and loading on start
   public class GrammarItem {
     public readonly string Caption;
+    public readonly string LongCaption;
     public readonly string Location; //location of assembly containing the grammar
     public readonly string TypeName; //full type name
-    public GrammarItem(string name, string location, string typeName) {
-      Caption = name;
+    internal bool _loading; 
+    public GrammarItem(string caption, string location, string typeName) {
+      Caption = caption;
       Location = location;
       TypeName = typeName;
     }
     public GrammarItem(Type grammarClass, string assemblyLocation) {
+      _loading = true; 
       Location = assemblyLocation;
       TypeName = grammarClass.FullName;
       //Get language name from Language attribute
       Caption = grammarClass.Name; //default caption
-      object[] attrs = grammarClass.GetCustomAttributes(typeof(LanguageAttribute), true);
-      if (attrs != null && attrs.Length > 0) {
-        LanguageAttribute la = attrs[0] as LanguageAttribute;
-        if (la != null) {
-          Caption = la.LanguageName;
-          if (!string.IsNullOrEmpty(la.Version))
-            Caption += ", version " + la.Version;
-        }
+      var langAttr = LanguageAttribute.GetValue(grammarClass); 
+      if (langAttr != null) {
+        Caption = langAttr.LanguageName;
+        if (!string.IsNullOrEmpty(langAttr.Version))
+          Caption += ", version " + langAttr.Version;
+        LongCaption = Caption;
+        if (!string.IsNullOrEmpty(langAttr.Description))
+          LongCaption += ": " + langAttr.Description;
       }
     }
 
@@ -64,7 +67,7 @@ namespace Irony.GrammarExplorer {
       return grammar; 
     }
     public override string  ToString() {
- 	    return Caption; 
+ 	    return _loading ? LongCaption : Caption; 
     }
   
   }//class

@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.Compiler;
+using Irony.CompilerServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Irony.Tests {

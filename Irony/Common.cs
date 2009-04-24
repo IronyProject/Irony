@@ -17,13 +17,16 @@ using System.Text;
 namespace Irony {
   //Some common classes
 
+  internal static class Utils {
+    public static void NotImplemented(string methodName) {
+      throw new ApplicationException("Member " + methodName + " not implemented.");
+    }
+  }//class
+
   public class StringDictionary : Dictionary<string, string> { }
   public class CharList : List<char> { }
 
   public class StringSet : HashSet<string> {
-    public void AddRange(IEnumerable<string> values) {
-      foreach (string value in values) Add(value);
-    }
     public override string ToString() {
       return ToString(" ");
     }
@@ -52,6 +55,6 @@ namespace Irony {
       return 1; 
     }
 
-  }//KeyList class
+  }//class
 
 }

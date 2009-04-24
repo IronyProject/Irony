@@ -16,7 +16,7 @@ using System.Text;
 using System.Collections;
 using System.Diagnostics;
 
-namespace Irony.Compiler.Lalr {
+namespace Irony.CompilerServices.Lalr {
   
   // This class contains all complex logic of constructing LALR parser tables and other control information
   // from the language grammar. 

@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Irony.Compiler;
+using Irony.CompilerServices;
+using Irony.Scripting.Ast;
 
 namespace Irony.Tests {
 
@@ -27,7 +28,7 @@ namespace Irony.Tests {
 
     private void Init(Grammar grammar) {
       _grammar = grammar; 
-      var cmp = new LanguageCompiler(grammar);
+      var cmp = new Compiler(grammar);
       _scanner = cmp.Scanner;
       _context = new CompilerContext(cmp);
       _context.Mode = CompileMode.VsLineScan;

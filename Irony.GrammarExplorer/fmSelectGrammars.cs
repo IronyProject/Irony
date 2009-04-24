@@ -35,10 +35,19 @@ namespace Irony.GrammarExplorer {
       if (form.ShowDialog() != DialogResult.OK) return null;
       GrammarItemList result = new GrammarItemList();
       for (int i = 0; i < listbox.Items.Count; i++) {
-        if (listbox.GetItemChecked(i))
-          result.Add(listbox.Items[i] as GrammarItem); 
+        if (listbox.GetItemChecked(i)) {
+          var item = listbox.Items[i] as GrammarItem;
+          item._loading = false; 
+          result.Add(item);
+        }
       }
       return result;
+    }
+
+    private void btnCheckUncheck_Click(object sender, EventArgs e) {
+      bool check = sender == btnCheckAll;
+      for (int i = 0; i < lstGrammars.Items.Count; i++)
+        lstGrammars.SetItemChecked(i, check); 
     }
 
   }//class

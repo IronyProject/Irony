@@ -16,7 +16,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Threading;
-using Irony.Compiler;
+using Irony.CompilerServices;
 
 namespace Irony.EditorServices {
 
@@ -44,10 +44,10 @@ namespace Irony.EditorServices {
     // ColoredTokens + NotColoredTokens == Source.Tokens
     public readonly TokenList ColoredTokens = new TokenList();
     public readonly TokenList NotColoredTokens = new TokenList(); //tokens not colored yet
-    public ParsedSource Source;
-    public ViewData(ParsedSource source) {
-      this.Source = source;
-      NotColoredTokens.AddRange(source.Tokens); 
+    public ParseTree Tree;
+    public ViewData(ParseTree tree) {
+      this.Tree = tree;
+      NotColoredTokens.AddRange(tree.Tokens); 
     }
   }
 
@@ -96,13 +96,13 @@ namespace Irony.EditorServices {
     }
 
     //Called by EditorAdapter to provide the latest parsed source 
-    public void UpdateParsedSource(ParsedSource newSource) {
+    public void UpdateParsedSource(ParseTree newTree) {
       lock (this) {
         var oldData = _data;
-        _data = new ViewData(newSource);
+        _data = new ViewData(newTree);
         //Now try to figure out tokens that match old Colored tokens
         if (oldData != null) {
-          DetectAlreadyColoredTokens(oldData.ColoredTokens, _data.Source.Text.Length - oldData.Source.Text.Length);
+          DetectAlreadyColoredTokens(oldData.ColoredTokens, _data.Tree.SourceText.Length - oldData.Tree.SourceText.Length);
         }
         _wantsColorize = true;
       }//lock
@@ -166,17 +166,17 @@ namespace Irony.EditorServices {
     }
     public bool TokensMatch(Token x, Token y, int shift) {
       if (x.Location.Position + shift != y.Location.Position) return false;
-      if (x.Term != y.Term) return false;
+      if (x.Terminal != y.Terminal) return false;
       if (x.Text != y.Text) return false;
       //Note: be careful comparing x.Value and y.Value - if value is "ValueType", it is boxed and erroneously reports non-equal
-      if (x.ValueString != y.ValueString) return false;
+      //if (x.ValueString != y.ValueString) return false;
       return true;
     }
     public TokenList ExtractTokensInRange(TokenList tokens, int from, int until) {
       TokenList result = new TokenList();
       for (int i = tokens.Count - 1; i >= 0; i--) {
         var tkn = tokens[i];
-        if (tkn.Location.Position > until || tkn.Span.EndPos < from) continue;
+        if (tkn.Location.Position > until || (tkn.Location.Position + tkn.Length < from)) continue;
         result.Add(tkn);
         tokens.RemoveAt(i);
       }
@@ -186,7 +186,7 @@ namespace Irony.EditorServices {
     public TokenList GetTokensInRange(int from, int until) {
       ViewData data = _data; 
       if (data == null) return null; 
-      return GetTokensInRange(data.Source.Tokens, from, until); 
+      return GetTokensInRange(data.Tree.Tokens, from, until); 
     }
     public TokenList GetTokensInRange(TokenList tokens, int from, int until) {
       TokenList result = new TokenList();
@@ -203,7 +203,9 @@ namespace Irony.EditorServices {
     //TODO: find better place for these methods
     public int LocateToken(TokenList tokens,  int position) {
       if (tokens == null || tokens.Count == 0) return -1;
-      if (position < tokens[0].Location.Position || position > tokens[tokens.Count - 1].Span.EndPos) return -1; 
+      var lastToken = tokens[tokens.Count - 1];
+      var lastTokenEnd = lastToken.Location.Position + lastToken.Length;
+      if (position < tokens[0].Location.Position || position > lastTokenEnd) return -1; 
       return LocateTokenExt(tokens, position, 0, tokens.Count - 1);
     }
     private int LocateTokenExt(TokenList tokens, int position, int fromIndex, int untilIndex) {

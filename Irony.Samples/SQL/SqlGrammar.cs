@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Irony.Compiler;
+using Irony.CompilerServices;
 
 namespace Irony.Samples.SQL {
   // Loosely based on SQL89 grammar from Gold parser. Supports some extra TSQL constructs.
@@ -10,7 +10,7 @@ namespace Irony.Samples.SQL {
 
   [Language("SQL", "89", "SQL 89 grammar")]
   public class SqlGrammar : Grammar {
-    public SqlGrammar() {
+    public SqlGrammar() : base(false) { //SQL is case insensitive
       //Terminals
       var comment = new CommentTerminal("comment", "/*", "*/");
       var lineComment = new CommentTerminal("line_comment", "--", "\n", "\r\n");
@@ -229,7 +229,6 @@ namespace Irony.Samples.SQL {
       inStmt.Rule = expression + "IN" + "(" + exprList + ")";
 
       //Operators
-      this.CaseSensitive = false;
       RegisterOperators(10, "*", "/", "%"); 
       RegisterOperators(9, "+", "-");
       RegisterOperators(8, "=" , ">" , "<" , ">=" , "<=" , "<>" , "!=" , "!<" , "!>");
@@ -240,11 +239,12 @@ namespace Irony.Samples.SQL {
 
       RegisterPunctuation(",", "(", ")");
       RegisterPunctuation(semiOpt);
-      base.MarkTransient(stmt, Id_simple, asOpt, aliasOpt, stmtLine);
+      base.MarkTransient(stmt, Id_simple, term, asOpt, aliasOpt, stmtLine, binOp);
 
+      /*
       AddKeywords("SELECT", "CREATE", "ALTER", "UPDATE", "INSERT", "DELETE", "FROM", "WHERE", "GROUP", "ORDER", "BY", 
                   "INNER", "LEFT", "RIGHT", "JOIN", "ON"); 
-
+      */
     }//constructor
 
   }//class

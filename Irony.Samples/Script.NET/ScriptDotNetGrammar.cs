@@ -8,7 +8,7 @@
  */
 
 using System;
-using Irony.Compiler;
+using Irony.CompilerServices;
 
 namespace Irony.Samples.ScriptNET
 {
@@ -153,7 +153,7 @@ namespace Irony.Samples.ScriptNET
 
       Statement.Rule =  semicolon
                       | "if" + Condition + Statement
-                      | "if" + Condition + Statement + "else" + Statement
+                      | "if" + Condition + Statement + PreferShiftHere() + "else" + Statement
                       | "while" + Condition + Statement
                       | "for" + LCb + Expr.Q() + semicolon + Expr.Q() + semicolon + Expr.Q() + RCb + Statement
                       | "foreach" + LCb + v + "in" + Expr + RCb + Statement
@@ -181,7 +181,7 @@ namespace Irony.Samples.ScriptNET
                       RSb;
 
       ParameterListOpt.Rule = MakeStarRule(ParameterListOpt, comma, v);
-      FuncDef.Rule = "function" + v + LCb + ParameterListOpt.Q() + RCb + FuncContract.Q() + CompoundStatement;
+      FuncDef.Rule = "function" + v + LCb + ParameterListOpt + RCb + FuncContract.Q() + CompoundStatement;
 
       Element.Rule = Statement | FuncDef;
 

@@ -61,9 +61,7 @@ namespace Irony.GrammarExplorer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("<Grammars><Grammar Caption=\"Scheme\" Location=\"C:\\Users\\v-roivan\\_Irony\\Source_onC" +
-            "odePlex\\Irony.Samples\\bin\\Debug\\Irony.Samples.dll\" TypeName=\"Irony.Samples.Schem" +
-            "e.SchemeGrammar\"/></Grammars>")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string Grammars {
             get {
                 return ((string)(this["Grammars"]));

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.Compiler;
+using Irony.CompilerServices;
 using Irony.Samples;
 using Irony.Samples.Scheme;
-using Irony.Runtime;
+using Irony.RuntimeServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Irony.Tests {
@@ -13,9 +13,9 @@ namespace Irony.Tests {
   public class EvaluationTests  {
 
     private void Evaluate(Grammar grammar, string script, bool expectError, object result) {
-      var compiler = new LanguageCompiler(grammar);
+      var compiler = new Compiler(grammar);
       var context = new CompilerContext(compiler);
-      var source = new SourceFile(script, "source"); 
+      var source = new SourceStream(script, "source"); 
       AstNode root = compiler.Parse(context, source);
       compiler.AnalyzeCode(root, context); 
       if (!expectError && context.Errors.Count > 0)
@@ -26,9 +26,9 @@ namespace Irony.Tests {
     }
 
     private void Parse(Grammar grammar, string script, bool expectError) {
-      var compiler = new LanguageCompiler(grammar);
+      var compiler = new Compiler(grammar);
       var context = new CompilerContext(compiler);
-      var source = new SourceFile(script, "source");
+      var source = new SourceStream(script, "source");
       AstNode root = compiler.Parse(context, source);
       compiler.AnalyzeCode(root, context);
       if (!expectError && context.Errors.Count > 0)

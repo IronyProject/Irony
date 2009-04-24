@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Irony.Compiler;
-using Irony.Runtime;
+using Irony.CompilerServices;
+using Irony.Scripting.Runtime;
 
 namespace Irony.Samples.Scheme {
 
@@ -19,7 +19,7 @@ namespace Irony.Samples.Scheme {
     }
   }//class Pair
 
-  public sealed class SchemeRuntime : Irony.Runtime.LanguageRuntime {
+  public sealed class SchemeRuntime : LanguageRuntime {
     public override bool IsTrue(object value) {
       return value != null;
     }

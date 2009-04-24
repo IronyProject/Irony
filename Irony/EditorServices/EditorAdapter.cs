@@ -16,27 +16,15 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Runtime.InteropServices;
-using Irony.Compiler;
+using Irony.CompilerServices;
 
 namespace Irony.EditorServices {
 
-  public class ParsedSource {
-    public readonly string Text;
-    public readonly TokenList Tokens;
-    public AstNode Root;
-    internal ParsedSource(string text, TokenList tokens, AstNode root) {
-      Text = text;
-      Tokens = tokens;
-      Root = root;
-    }
-
-  }//class
-
-
   public class EditorAdapter {
     CompilerContext _context;
-    LanguageCompiler _compiler;
-    ParsedSource _parsedSource;
+    Compiler _compiler;
+    Scanner _scanner;
+    ParseTree _parseTree;
     string _newText;
     EditorViewAdapterList _views = new EditorViewAdapterList();
     EditorViewAdapterList _viewsCopy; //copy used in refresh loop; set to null when views are added/removed
@@ -44,11 +32,12 @@ namespace Irony.EditorServices {
     Thread _colorizerThread;
     bool _stopped;
 
-    public EditorAdapter(LanguageCompiler compiler) {
+    public EditorAdapter(Compiler compiler) {
       _compiler = compiler;
-      _context = new CompilerContext(_compiler); 
-      _context.Options |= CompilerOptions.CollectTokens | CompilerOptions.MatchBraces;
-      _parsedSource = new ParsedSource(string.Empty, new TokenList(), null);
+      _context = new CompilerContext(_compiler);
+      _scanner = compiler.Parser.Scanner;
+      _scanner.BeginScan(_context);
+      _parseTree = new ParseTree(string.Empty, "Source");
       _colorizerThread = new Thread(ColorizerLoop);
       _colorizerThread.IsBackground = true;
       _parserThread = new Thread(ParserLoop);
@@ -76,27 +65,21 @@ namespace Irony.EditorServices {
       _newText = text;
     }
 
-    public ParsedSource ParsedSource {
-      get { return _parsedSource; }
+    public ParseTree ParseTree {
+      get { return _parseTree; }
     }
 
     //Note: we don't actually parse in current version, only scan. Will implement full parsing in the future, 
     // to support all intellisense operations
     private  void ParseSource(string newText) {
-      TokenList newTokens = new TokenList();
       //Explicitly catch the case when new text is empty
       if (newText != string.Empty) {
-        SourceFile srcFile = new SourceFile(newText, "source");
-        _compiler.Scanner.Prepare(_context, srcFile);
-        IEnumerable<Token> tokenStream = _compiler.Scanner.BeginScan();
-        newTokens.AddRange(tokenStream);
+        _parseTree = _compiler.ScanOnly(newText, "Source");
       }
-      //finally create new contents object and replace the existing _contents value
-      _parsedSource = new ParsedSource(newText, newTokens, null);
       //notify views
       var views = GetViews();
       foreach (var view in views)
-        view.UpdateParsedSource(_parsedSource);
+        view.UpdateParsedSource(_parseTree);
     }
 
 
@@ -128,7 +111,6 @@ namespace Irony.EditorServices {
 
     private void ParserLoop() {
       while (!_stopped) {
-        ParsedSource source = _parsedSource; 
         string newtext = Interlocked.Exchange(ref _newText, null);
         if (newtext != null)  {
           ParseSource(newtext);

@@ -1,26 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.Compiler;
+using Irony.CompilerServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Irony.Tests {
   public class TerminalTestsBase {
+    protected TestGrammar _grammar;
+    protected Compiler _compiler; 
     protected CompilerContext _context;
     protected Terminal _terminal;
     protected Token _token;
 
     [TestInitialize()]
     public void Setup() {
-      _context = CompilerContext.CreateDummy();
+      _grammar = new TestGrammar();
+      _compiler = new Compiler(_grammar); 
+      _context = new CompilerContext(_compiler);
+      _context.CurrentParseTree = new ParseTree(string.Empty, "source"); 
     }
     protected void SetTerminal(Terminal term) {
       _terminal = term;
-      _terminal.Init(_context.Compiler.Grammar);
+      _terminal.Init(_compiler.Language.GrammarData);
     }
     //Utilities
     public void TryMatch(string input) {
-      SourceFile source = new SourceFile(input, "test");
+      SourceStream source = new SourceStream(input);
       _token = _terminal.TryMatch(_context, source);
     }
     public void CheckType(Type type) {

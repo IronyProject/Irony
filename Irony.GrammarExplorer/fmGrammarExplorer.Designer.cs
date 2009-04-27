@@ -558,7 +558,6 @@ namespace Irony.GrammarExplorer {
       // 
       // tabBottom
       // 
-      this.tabBottom.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
       this.tabBottom.Controls.Add(this.pageStats);
       this.tabBottom.Controls.Add(this.pageOutput);
       this.tabBottom.Controls.Add(this.pageErrors);
@@ -573,10 +572,10 @@ namespace Irony.GrammarExplorer {
       // pageStats
       // 
       this.pageStats.Controls.Add(this.groupBox4);
-      this.pageStats.Location = new System.Drawing.Point(4, 25);
+      this.pageStats.Location = new System.Drawing.Point(4, 22);
       this.pageStats.Name = "pageStats";
       this.pageStats.Padding = new System.Windows.Forms.Padding(3);
-      this.pageStats.Size = new System.Drawing.Size(1096, 158);
+      this.pageStats.Size = new System.Drawing.Size(1096, 161);
       this.pageStats.TabIndex = 1;
       this.pageStats.Text = "Statistics";
       this.pageStats.UseVisualStyleBackColor = true;
@@ -716,10 +715,10 @@ namespace Irony.GrammarExplorer {
       // pageOutput
       // 
       this.pageOutput.Controls.Add(this.txtOutput);
-      this.pageOutput.Location = new System.Drawing.Point(4, 25);
+      this.pageOutput.Location = new System.Drawing.Point(4, 22);
       this.pageOutput.Name = "pageOutput";
       this.pageOutput.Padding = new System.Windows.Forms.Padding(3);
-      this.pageOutput.Size = new System.Drawing.Size(1096, 158);
+      this.pageOutput.Size = new System.Drawing.Size(1096, 161);
       this.pageOutput.TabIndex = 0;
       this.pageOutput.Text = "Output";
       this.pageOutput.UseVisualStyleBackColor = true;
@@ -733,16 +732,16 @@ namespace Irony.GrammarExplorer {
       this.txtOutput.Name = "txtOutput";
       this.txtOutput.ReadOnly = true;
       this.txtOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-      this.txtOutput.Size = new System.Drawing.Size(1090, 152);
+      this.txtOutput.Size = new System.Drawing.Size(1090, 155);
       this.txtOutput.TabIndex = 1;
       // 
       // pageErrors
       // 
       this.pageErrors.Controls.Add(this.gridCompileErrors);
-      this.pageErrors.Location = new System.Drawing.Point(4, 25);
+      this.pageErrors.Location = new System.Drawing.Point(4, 22);
       this.pageErrors.Name = "pageErrors";
       this.pageErrors.Padding = new System.Windows.Forms.Padding(3);
-      this.pageErrors.Size = new System.Drawing.Size(1096, 158);
+      this.pageErrors.Size = new System.Drawing.Size(1096, 161);
       this.pageErrors.TabIndex = 2;
       this.pageErrors.Text = "Compile Errors";
       this.pageErrors.UseVisualStyleBackColor = true;
@@ -765,7 +764,7 @@ namespace Irony.GrammarExplorer {
       this.gridCompileErrors.ReadOnly = true;
       this.gridCompileErrors.RowHeadersVisible = false;
       this.gridCompileErrors.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-      this.gridCompileErrors.Size = new System.Drawing.Size(1090, 152);
+      this.gridCompileErrors.Size = new System.Drawing.Size(1090, 155);
       this.gridCompileErrors.TabIndex = 2;
       this.gridCompileErrors.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridCompileErrors_CellDoubleClick);
       // 
@@ -809,10 +808,10 @@ namespace Irony.GrammarExplorer {
       this.pageParserTrace.Controls.Add(this.splitter1);
       this.pageParserTrace.Controls.Add(this.grpTokens);
       this.pageParserTrace.Controls.Add(this.pnlParserTraceTop);
-      this.pageParserTrace.Location = new System.Drawing.Point(4, 25);
+      this.pageParserTrace.Location = new System.Drawing.Point(4, 22);
       this.pageParserTrace.Name = "pageParserTrace";
       this.pageParserTrace.Padding = new System.Windows.Forms.Padding(3);
-      this.pageParserTrace.Size = new System.Drawing.Size(1096, 158);
+      this.pageParserTrace.Size = new System.Drawing.Size(1096, 161);
       this.pageParserTrace.TabIndex = 3;
       this.pageParserTrace.Text = "Parser Trace";
       this.pageParserTrace.UseVisualStyleBackColor = true;
@@ -823,7 +822,7 @@ namespace Irony.GrammarExplorer {
       this.grpParserActions.Dock = System.Windows.Forms.DockStyle.Fill;
       this.grpParserActions.Location = new System.Drawing.Point(3, 28);
       this.grpParserActions.Name = "grpParserActions";
-      this.grpParserActions.Size = new System.Drawing.Size(804, 125);
+      this.grpParserActions.Size = new System.Drawing.Size(804, 128);
       this.grpParserActions.TabIndex = 4;
       this.grpParserActions.TabStop = false;
       // 
@@ -847,7 +846,7 @@ namespace Irony.GrammarExplorer {
       this.gridParserTrace.ReadOnly = true;
       this.gridParserTrace.RowHeadersVisible = false;
       this.gridParserTrace.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-      this.gridParserTrace.Size = new System.Drawing.Size(798, 106);
+      this.gridParserTrace.Size = new System.Drawing.Size(798, 109);
       this.gridParserTrace.TabIndex = 0;
       this.gridParserTrace.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridParserTrace_CellDoubleClick);
       // 
@@ -911,7 +910,7 @@ namespace Irony.GrammarExplorer {
       this.splitter1.Dock = System.Windows.Forms.DockStyle.Right;
       this.splitter1.Location = new System.Drawing.Point(807, 28);
       this.splitter1.Name = "splitter1";
-      this.splitter1.Size = new System.Drawing.Size(6, 125);
+      this.splitter1.Size = new System.Drawing.Size(6, 128);
       this.splitter1.TabIndex = 15;
       this.splitter1.TabStop = false;
       // 
@@ -921,7 +920,7 @@ namespace Irony.GrammarExplorer {
       this.grpTokens.Dock = System.Windows.Forms.DockStyle.Right;
       this.grpTokens.Location = new System.Drawing.Point(813, 28);
       this.grpTokens.Name = "grpTokens";
-      this.grpTokens.Size = new System.Drawing.Size(278, 125);
+      this.grpTokens.Size = new System.Drawing.Size(278, 128);
       this.grpTokens.TabIndex = 3;
       this.grpTokens.TabStop = false;
       this.grpTokens.Text = "Tokens";

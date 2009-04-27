@@ -15,6 +15,15 @@ namespace Irony.Tests {
       TryMatch(input);
     }
 
+    //The following test method and a fix are contributed by ashmind codeplex user
+    [TestMethod]
+    public void TestStringQuoteJustBeforeEofIsHandledCorrectly() {
+      SetTerminal(new StringLiteral("String", "'"));
+      TryMatch(@"'");
+      Assert.AreEqual(base._grammar.SyntaxError, _token.Terminal, "Incorrect string was not parsed as syntax error.");
+    }
+
+
     [TestMethod]
     public void TestPythonString() {
       SetTerminal(TerminalFactory.CreatePythonString("String"));

@@ -27,6 +27,31 @@ namespace Irony.Tests {
       Assert.IsTrue(_token.Value.ToString() == sbig, "Failed to read big integer value");
     }//method
 
+    //The following "sign" test methods and a fix are contributed by ashmind codeplex user
+     [TestMethod]
+    public void TestSignedDoesNotMatchSingleMinus() {
+      var number = new NumberLiteral("number", NumberFlags.AllowSign);
+      SetTerminal(number);
+      TryMatch("-");
+      Assert.IsNull(_token, "Parsed single '-' as a number value.");
+    }
+
+    [TestMethod]
+    public void TestSignedDoesNotMatchSinglePlus() {
+       var number = new NumberLiteral("number", NumberFlags.AllowSign);
+       SetTerminal(number);
+       TryMatch("+");
+       Assert.IsNull(_token, "Parsed single '+' as a number value.");
+     }
+    
+    [TestMethod]
+    public void TestSignedMatchesNegativeCorrectly() {
+      var number = new NumberLiteral("number", NumberFlags.AllowSign);
+      SetTerminal(number);
+      TryMatch("-500");
+      Assert.AreEqual(-500, _token.Value, "Negative number was parsed incorrectly; expected: {0}, scanned: {1}", "-500", _token.Value);
+    }
+
     [TestMethod]
     public void TestCSharpNumber() {
       double eps = 0.0001;

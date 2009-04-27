@@ -212,6 +212,8 @@ namespace Irony.CompilerServices {
         break; //from while loop
       }//while
       int end = source.Position;
+      if (!foundDigits) 
+        return false; 
       details.Body = source.Text.Substring(start, end - start);
       return true;
     }

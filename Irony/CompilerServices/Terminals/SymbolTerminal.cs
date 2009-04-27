@@ -71,6 +71,8 @@ namespace Irony.CompilerServices {
       TokenTriggers triggers = TokenTriggers.None;
       if (this.IsSet(TermOptions.IsBrace))
         triggers |= TokenTriggers.MatchBraces;
+      if (this.IsSet(TermOptions.IsMemberSelect))
+        triggers |= TokenTriggers.MemberSelect;
       TokenColor color = TokenColor.Text; 
       if (IsSet(TermOptions.IsKeyword))
         color = TokenColor.Keyword;

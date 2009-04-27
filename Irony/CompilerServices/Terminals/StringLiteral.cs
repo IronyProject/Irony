@@ -140,7 +140,8 @@ namespace Irony.CompilerServices {
       // first get the position of the next line break; we are interested in it to detect malformed string, 
       //  therefore do it only if linebreak is NOT allowed; if linebreak is allowed, set it to -1 (we don't care).  
       int nlPos = lineBreakAllowed ? -1 : source.Text.IndexOf('\n', source.Position);
-      while (!source.EOF()) {
+      //fix by ashmind for EOF right after opening symbol
+      while (true) {
         int endPos = source.Text.IndexOf(endQuoteSymbol, source.Position);
         //Check for partial token in line-scanning mode
         if (endPos < 0 && details.PartialOk && lineBreakAllowed) {
@@ -156,7 +157,10 @@ namespace Irony.CompilerServices {
           details.Error = "Mal-formed  string literal - cannot find termination symbol.";
           return true; //we did find start symbol, so it is definitely string, only malformed
         }//if malformed
-        
+
+        if (source.EOF())
+          return true; 
+
         //We found EndSymbol - check if it is escaped; if yes, skip it and continue search
         if (escapeEnabled && IsEndQuoteEscaped(source.Text, endPos)) {
           source.Position = endPos + endQuoteSymbol.Length;

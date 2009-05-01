@@ -368,10 +368,7 @@ namespace Irony.Samples.CSharp {
       #endregion
  */
 
-
       // RULES
-
-
       //B.2.1. Basic concepts
       //qual_name_with_targs is an alias for namespace-name, namespace-or-type-name, type-name,
 

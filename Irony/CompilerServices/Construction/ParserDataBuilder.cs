@@ -320,18 +320,13 @@ namespace Irony.CompilerServices.Construction {
     private void ComputeLookaheads() {
       foreach (var state in Data.States) {
         ComputeLookaheads(state);
-        bool computeExpected = _grammar.FlagIsSet(LanguageFlags.ComputeExpectedTerms);
-        if (computeExpected)
-          ComputeStateExpectedLists(state);
+        ComputeStateExpectedLists(state);
       }//foreach state
     }
 
     // Initial lookahead computation
     private void ComputeLookaheads(ParserState state) {
       var stateData = state.BuilderData;
-      bool computeExpected = _grammar.FlagIsSet(LanguageFlags.ComputeExpectedTerms);
-      var needCompute = state.BuilderData.IsInadequate || computeExpected;
-      if (!needCompute) return; 
 
         //if (!stateData.IsInadequate) return;
       stateData.InitialLookaheadsComputed = true; 

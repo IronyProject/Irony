@@ -8,7 +8,7 @@ namespace Irony.Samples {
   public class ScannerTestGrammar : Grammar {
     public ScannerTestGrammar() {
       var distance = new NumberLiteral("distance", NumberFlags.AllowSign);
-      var name = new IdentifierTerminal("name", TextUtils.DecimalDigits, TextUtils.DecimalDigits);
+      var name = new IdentifierTerminal("name", TextUtils.DecimalDigits, TextUtils.DecimalDigits + "-");
 
       var Tree = new NonTerminal("Tree");
       var SubTree = new NonTerminal("SubTree");
@@ -30,7 +30,6 @@ namespace Irony.Samples {
 
       this.Root = Tree;       // Set grammar root
       RegisterPunctuation("(", ")");
-      this.LanguageFlags |= LanguageFlags.ComputeExpectedTerms;
 
     }//constructor
 

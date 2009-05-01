@@ -19,13 +19,26 @@ namespace Irony.Samples {
 
         public GWBasicGrammar() : base(false)  // BASIC is not case sensitive...
         {
-
+          this.GrammarComments = "This grammar uses one new Irony feature - Scanner-Parser link. Parser helps Scanner to disambiguate " +
+                             "similar but different token types when more than one terminal matches the current input char.\r\n" +
+                             "See comments in GwBasicGrammar.cs file.";
+          /*
+           Scanner-Parser link. 
+           The grammar defines 3 terminals for numbers: number, lineNumber and fileNumber. All three return decimal 
+           digits in GetFirsts() method. So when current input is a digit, the scanner has 3 potential candidate terminals
+           to match the input. However, because each of the 3 terminals can appear in specific "places" in grammar, 
+           the parser is able to assist scanner to pick the correct terminal, depending on the current parser state. 
+           The disambiguation happens in Scanner.SelectTerminals method. When the terminal list for current input char
+           has more than 1 terminal, the scanner code gets the current parser state from core parser (through compilerContext), 
+           and then checks the terminals agains the ExpectedTerms set in the parser state. 
+           As you might see in Grammar Explorer, the conflict is resolved successfully. 
+           */
             #region Initialisation
 
 
             // Define the Terminals
-            //var lineNumber = new NumberLiteral("NUMBER", NumberFlags.IntOnly);
-            //var fileNumber = new NumberLiteral("NUMBER", NumberFlags.IntOnly);
+            var lineNumber = new NumberLiteral("LINE_NUMBER", NumberFlags.IntOnly);
+            var fileNumber = new NumberLiteral("FILE_NUMBER", NumberFlags.IntOnly);
             var number = new NumberLiteral("NUMBER", NumberFlags.AllowStartEndDot);
             var variable = new IdentifierTerminal("Identifier", "$%!", string.Empty);
             var stringLiteral = new StringLiteral("STRING", "\"", StringFlags.None);
@@ -105,7 +118,7 @@ namespace Irony.Samples {
             PROGRAM.Rule = MakePlusRule(PROGRAM, LINE);
 
             // A line can be an empty line, or it's a number followed by a statement list ended by a new-line.
-            LINE.Rule = NewLine | number + LINE_CONTENT + SHORT_COMMENT_OPT + NewLine | SyntaxError + NewLine;
+            LINE.Rule = NewLine | lineNumber + LINE_CONTENT + SHORT_COMMENT_OPT + NewLine | SyntaxError + NewLine;
 
             // A statement list is 1 or more statements separated by the ':' character
             LINE_CONTENT.Rule = IF_STMT | COMMENT_STMT | STATEMENT_LIST;
@@ -127,27 +140,27 @@ namespace Irony.Samples {
             PRINT_ARG.Rule = EXPR + semi_opt;
             INPUT_STMT.Rule = "input" + semi_opt + stringLiteral + ";" + VARIABLES;
             OPEN_STMT.Rule = "open" + EXPR + (Empty | "for" + OPEN_STMT_MODE) +
-                (Empty | "access" + OPEN_STMT_ACCESS) + "as" + pound_opt + number;
+                (Empty | "access" + OPEN_STMT_ACCESS) + "as" + pound_opt + fileNumber;
             OPEN_STMT_ACCESS.Rule = "read" + (Empty | "write") | "write";
             OPEN_STMT_MODE.Rule = Symbol("o") | "i" | "a" | "output" | "input" | "append";
-            CLOSE_STMT.Rule = "close" + pound_opt + number;
+            CLOSE_STMT.Rule = "close" + pound_opt + fileNumber;
             LINE_INPUT_STMT.Rule = Symbol("line") + "input" + semi_opt + stringLiteral + ";" + VARIABLE_OR_FUNCTION_EXPR;
-            LINE_INPUT_POUND_STMT.Rule = Symbol("line") + "input" + Symbol("#") + number + comma + VARIABLE_OR_FUNCTION_EXPR;
+            LINE_INPUT_POUND_STMT.Rule = Symbol("line") + "input" + Symbol("#") + fileNumber + comma + VARIABLE_OR_FUNCTION_EXPR;
             DIM_STMT.Rule = "dim" + VARIABLES;
             DEF_FN_STMT.Rule = "def" + userFunctionName + (Empty | "(" + ARG_LIST + ")") + "=" + EXPR;
             VARIABLES.Rule = VARIABLE_OR_FUNCTION_EXPR | VARIABLE_OR_FUNCTION_EXPR + "," + VARIABLES;
 
             IF_STMT.Rule = "if" + EXPR + THEN_CLAUSE + ELSE_CLAUSE_OPT;
-            THEN_CLAUSE.Rule = "then" + STATEMENT_LIST | "goto" + number;
+            THEN_CLAUSE.Rule = "then" + STATEMENT_LIST | GOTO_STMT;
 
             //Inject PreferShift hint here to explicitly set shift as preferred action. Suppresses warning message about conflict. 
             ELSE_CLAUSE_OPT.Rule = Empty | PreferShiftHere()  + "else" + STATEMENT_LIST;
 
-            GOTO_STMT.Rule = "goto" + number;
-            GOSUB_STMT.Rule = "gosub" + number;
+            GOTO_STMT.Rule = "goto" + lineNumber;
+            GOSUB_STMT.Rule = "gosub" + lineNumber;
             RETURN_STMT.Rule = "return";
             ON_STMT.Rule = "on" + EXPR + (Symbol("goto") | "gosub") + LINE_NUMBERS;
-            LINE_NUMBERS.Rule = number + (Empty | "," + LINE_NUMBERS);
+            LINE_NUMBERS.Rule = MakePlusRule(LINE_NUMBERS, comma, lineNumber);
             ASSIGN_STMT.Rule = VARIABLE_OR_FUNCTION_EXPR + "=" + EXPR;
             LOCATE_STMT.Rule = "locate" + EXPR + comma + EXPR;
             SWAP_STMT.Rule = "swap" + EXPR + comma + EXPR;

@@ -79,6 +79,7 @@ namespace Irony.CompilerServices {
     }
 
     //This is iterator method, so it returns immediately when called directly
+    // returns unfiltered, "raw" token stream
     private Token _currentToken; //it is used only in BeginScan iterator, but we define it as a field to avoid creating local state in iterator
     private IEnumerable<Token> CreateUnfilteredTokenStream() {
       //We don't do "while(!_source.EOF())... because on EOF() we need to continue and produce EOF token 
@@ -120,59 +121,67 @@ namespace Irony.CompilerServices {
 
 
     private Token ReadToken() {
-      if (_bufferedTokens.Count > 0) {
-        Token tkn = _bufferedTokens[0];
-        _bufferedTokens.RemoveAt(0);
-        return tkn; 
-      }
+      if (_bufferedTokens.Count > 0) 
+        return ReadBufferedToken(); 
       //1. Skip whitespace. We don't need to check for EOF: at EOF we start getting 0-char, so we'll get out automatically
       while (_grammar.WhitespaceChars.IndexOf(_source.CurrentChar) >= 0)
         _source.Position++;
       //That's the token start, calc location (line and column)
       SetTokenStartLocation();
-      Token result = null; 
       //Check for EOF
-      if (_source.EOF()) {
-        result = new Token(_grammar.Eof, _source.TokenStart, string.Empty, _grammar.Eof.Name);
-        //check if we need extra newline before EOF
-        bool currentIsNewLine = _currentToken != null && _currentToken.Terminal == _grammar.NewLine;
-        if (_grammar.FlagIsSet(LanguageFlags.NewLineBeforeEOF) && !currentIsNewLine) {
-          _bufferedTokens.Insert(0, result); //put it into buffer
-          result = new Token(_grammar.NewLine, _currentToken.Location, "\n", null);
-        }//if AutoNewLine
-        return result; 
-      }
+      if (_source.EOF())
+        return CreateFinalToken(); 
       //Find matching terminal
       // First, try terminals with explicit "first-char" prefixes, selected by current char in source
       var terms = SelectTerminals(_source.CurrentChar);
-      result = MatchTerminals(terms);
+      var token = MatchTerminals(terms);
       //If no token, try FallbackTerminals
-      if (result == null && Data.FallbackTerminals.Count > 0)
-        result = MatchTerminals(Data.FallbackTerminals); 
+      if (token == null && Data.FallbackTerminals.Count > 0)
+        token = MatchTerminals(Data.FallbackTerminals); 
       //If we don't have a token from registered terminals, try Grammar's method
-      if (result == null) 
-        result = _grammar.TryMatch(_context, _source);
-      //Check if we have a multi-token; if yes, copy all but first child tokens from ChildNodes to _bufferedTokens, 
-      //  and set result to the first child token
-      if (result != null && result.IsSet(TokenFlags.IsMultiToken)) {
-        var mtoken = result as MultiToken;
-        foreach (var tkn in mtoken.ChildTokens)
-          _bufferedTokens.Add(tkn);
-        result = _bufferedTokens[0];
-        _bufferedTokens.RemoveAt(0);
-      }
+      if (token == null) 
+        token = _grammar.TryMatch(_context, _source);
+      if (token is MultiToken)
+        token = UnpackMultiToken(token); 
       //If we have normal token then return it
-      if (result != null && !result.IsError()) {
-        //restore position to point after the result token
-        _source.Position = _source.TokenStart.Position + result.Length;
-        return result;
+      if (token != null && !token.IsError()) {
+        //set position to point after the result token
+        _source.Position = _source.TokenStart.Position + token.Length;
+        return token;
       } 
       //we have an error: either error token or no token at all
-      if (result == null)  //if no token then create error token
-        result = _context.CreateErrorTokenAndReportError(_source.TokenStart, _source.CurrentChar.ToString(), "Invalid character: '{0}'", _source.CurrentChar);
+      if (token == null)  //if no token then create error token
+        token = _context.CreateErrorTokenAndReportError(_source.TokenStart, _source.CurrentChar.ToString(), "Invalid character: '{0}'", _source.CurrentChar);
       Recover();
-      return result;
+      return token;
     }//method
+
+    private Token ReadBufferedToken() {
+      Token tkn = _bufferedTokens[0];
+      _bufferedTokens.RemoveAt(0);
+      return tkn;
+    }
+
+    //If token is MultiToken then push all its child tokens into _bufferdTokens and return first token in buffer
+    private Token UnpackMultiToken(Token token) {
+      var mtoken = token as MultiToken;
+      if (mtoken == null) return null; 
+      for (int i = mtoken.ChildTokens.Count-1; i >= 0; i--)
+        _bufferedTokens.Insert(0, mtoken.ChildTokens[i]);
+      return ReadBufferedToken(); 
+    }
+    
+    //returns EOF token or NewLine token if flag NewLineBeforeEOF set
+    private Token CreateFinalToken() {
+      var result = new Token(_grammar.Eof, _source.TokenStart, string.Empty, _grammar.Eof.Name);
+      //check if we need extra newline before EOF
+      bool currentIsNewLine = _currentToken != null && _currentToken.Terminal == _grammar.NewLine;
+      if (_grammar.FlagIsSet(LanguageFlags.NewLineBeforeEOF) && !currentIsNewLine) {
+        _bufferedTokens.Insert(0, result); //put it into buffer
+        result = new Token(_grammar.NewLine, _currentToken.Location, "\n", null);
+      }//if AutoNewLine
+      return result;
+    }
 
     private Token MatchTerminals(TerminalList terminals) {
       Token result = null;
@@ -193,14 +202,28 @@ namespace Irony.CompilerServices {
       return result; 
     }
 
+    //list for filterered terminals
+    private TerminalList _filteredTerminals = new TerminalList();
+    
     private TerminalList SelectTerminals(char current) {
-      TerminalList result;
+      TerminalList termList;
       if (!_grammar.CaseSensitive)
         current = char.ToLower(current);
-      if (Data.TerminalsLookup.TryGetValue(current, out result))
-        return result;
-      else
-        return Data.FallbackTerminals;
+      if (!Data.TerminalsLookup.TryGetValue(current, out termList))
+        termList = Data.FallbackTerminals;
+      if (termList.Count <= 1)
+        return termList;
+      //If we have more than one candidate, try filter them by checking with parser which terms it expects
+      var parserState = _context.GetCurrentParserState();
+      if (parserState == null) 
+        return termList;
+      //we cannot modify termList - it will corrupt the list in TerminalsLookup table; we make a copy
+      _filteredTerminals.Clear();
+      foreach(var term in termList) {
+        if (parserState.ExpectedTerms.Contains(term))
+          _filteredTerminals.Add(term);
+      }
+      return _filteredTerminals;
     }//Select
 
     private void Recover() {

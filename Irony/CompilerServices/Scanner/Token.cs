@@ -19,7 +19,6 @@ namespace Irony.CompilerServices {
 
   public enum TokenFlags {
     IsIncomplete = 0x01,
-    IsMultiToken = 0x02, 
   }
 
   public enum TokenCategory {
@@ -125,10 +124,8 @@ namespace Irony.CompilerServices {
   //Some terminals may need to return a bunch of tokens in one call to TryMatch; MultiToken is a container for these tokens
   public class MultiToken : Token {
     public TokenList ChildTokens;
-    public MultiToken(Terminal term, SourceLocation location, TokenList childTokens) 
-      : base(term, location, string.Empty, null)   {
+    public MultiToken(Terminal term, SourceLocation location, TokenList childTokens) : base(term, location, string.Empty, null) {
       ChildTokens = childTokens;
-      Flags |= TokenFlags.IsMultiToken; 
     }
   }//class
 

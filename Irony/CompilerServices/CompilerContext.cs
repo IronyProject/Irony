@@ -44,15 +44,36 @@ namespace Irony.CompilerServices {
     // it resumes, and the terminal's internal state when there may be several types of multi-line tokens for one terminal.
     // For ex., there maybe several types of string literal like in Python. 
     public VsScannerStateMap ScannerState;
+    public ParseTree CurrentParseTree;
     public ParserTrace ParserTrace = new ParserTrace(); 
 
-    public ParseTree CurrentParseTree;
+    #region constructors and factory methods
+    public CompilerContext(Compiler compiler) {
+      this.Compiler = compiler;
+#if DEBUG
+      Options |= CompilerOptions.GrammarDebugging;
+#endif
+    }
+    #endregion
 
+    #region Helper methods: GetParserState
+    public ParserState GetCurrentParserState() {
+      try {
+        return this.Compiler.Parser.CoreParser.CurrentState;
+      } catch {
+        return null; 
+      }
+    }
+
+    #endregion
+
+    #region ParserTracing
     internal ParserTraceEntry AddParserTrace(ParserState state, ParseTreeNode stackTop, ParseTreeNode input) {
       var entry = new ParserTraceEntry(state, stackTop, input);
       ParserTrace.Add(entry);
-      return entry; 
+      return entry;
     }
+    #endregion
 
     #region Events: TokenCreated
     //Note that scanner's output stream may not contain all tokens received by parser. Additional tokens
@@ -65,16 +86,6 @@ namespace Irony.CompilerServices {
       if (TokenCreated == null) return;
       _tokenArgs.Token = token;
       TokenCreated(this, _tokenArgs);
-    }
-    #endregion
-
-
-    #region constructors and factory methods
-    public CompilerContext(Compiler compiler) {
-      this.Compiler = compiler;
-#if DEBUG
-      Options |= CompilerOptions.GrammarDebugging;
-#endif
     }
     #endregion
 

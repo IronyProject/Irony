@@ -34,6 +34,7 @@ namespace Irony.CompilerServices {
     // nodes for these terminals would be eliminated from parse tree. Formerly this stuff was called "node bubbling"
     AutoDetectTransient = 0x02,
     AutoDetectKeywords = 0x04, //automatically mark all words found in grammar as keywords
+    ComputeExpectedTerms = 0x08, 
 
     //Runtime
     SupportsInterpreter = 0x0100,

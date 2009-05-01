@@ -319,15 +319,21 @@ namespace Irony.CompilerServices.Construction {
     #region Computing lookaheads proper
     private void ComputeLookaheads() {
       foreach (var state in Data.States) {
-        if (state.BuilderData.IsInadequate)
-          ComputeLookaheads(state); 
+        ComputeLookaheads(state);
+        bool computeExpected = _grammar.FlagIsSet(LanguageFlags.ComputeExpectedTerms);
+        if (computeExpected)
+          ComputeStateExpectedLists(state);
       }//foreach state
     }
 
     // Initial lookahead computation
     private void ComputeLookaheads(ParserState state) {
       var stateData = state.BuilderData;
-      if (!stateData.IsInadequate) return;
+      bool computeExpected = _grammar.FlagIsSet(LanguageFlags.ComputeExpectedTerms);
+      var needCompute = state.BuilderData.IsInadequate || computeExpected;
+      if (!needCompute) return; 
+
+        //if (!stateData.IsInadequate) return;
       stateData.InitialLookaheadsComputed = true; 
       foreach (var reduceItem in stateData.ReduceItems) {
         //ReducedLookaheadSources
@@ -353,10 +359,9 @@ namespace Irony.CompilerServices.Construction {
             reduceItem.Lookaheads.Add(lkh);
           }
         //Sanity check
-        if (reduceItem.Lookaheads.Count == 0)
+        if (reduceItem.Lookaheads.Count == 0 && reduceItem.Core.Production.LValue != _language.GrammarData.AugmentedRoot)
           AddError("ParserBuilder error: inadequate state {0}, reduce item '{1}' has no lookaheads.", state.Name, reduceItem.Core.Production);
       }
-      ComputeStateExpectedLists(state); 
     }
 
     private void ComputeStateExpectedLists(ParserState state) {

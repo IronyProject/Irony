@@ -39,6 +39,7 @@ namespace Irony.GrammarExplorer {
       TypeName = grammarClass.FullName;
       //Get language name from Language attribute
       Caption = grammarClass.Name; //default caption
+      LongCaption = Caption;
       var langAttr = LanguageAttribute.GetValue(grammarClass); 
       if (langAttr != null) {
         Caption = langAttr.LanguageName;

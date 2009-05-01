@@ -69,6 +69,7 @@
     <None Include="SourceSamples\c#\ParserControlDataBuilder.cs" />
     <None Include="SourceSamples\c#\TestLessThanOp.cs" />
     <Compile Include="SQL\SqlGrammar.cs" />
+    <Compile Include="TestGrammars\ScannerTestGrammar.cs" />
     <None Include="TestGrammars\GrammarEx434.cs" />
     <None Include="TestGrammars\GrammarEx446.cs" />
     <None Include="TestGrammars\GrammarExL514.cs" />

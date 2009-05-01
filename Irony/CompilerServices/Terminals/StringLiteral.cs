@@ -180,7 +180,6 @@ namespace Irony.CompilerServices {
         source.Position = endPos + endQuoteSymbol.Length;
         return true; //if we come here it means we're done - we found string end.
       }  //end of loop to find string end; 
-      return true; //should never happen
     }
     private void ProcessPartialBody(ISourceStream source, CompoundTokenDetails details) {
       int from = source.Position;

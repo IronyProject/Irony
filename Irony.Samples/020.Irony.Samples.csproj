@@ -69,7 +69,7 @@
     <None Include="SourceSamples\c#\ParserControlDataBuilder.cs" />
     <None Include="SourceSamples\c#\TestLessThanOp.cs" />
     <Compile Include="SQL\SqlGrammar.cs" />
-    <Compile Include="TestGrammars\ScannerTestGrammar.cs" />
+    <Compile Include="TestGrammars\NewickGrammar.cs" />
     <None Include="TestGrammars\GrammarEx434.cs" />
     <None Include="TestGrammars\GrammarEx446.cs" />
     <None Include="TestGrammars\GrammarExL514.cs" />
@@ -98,6 +98,7 @@
     <Content Include="Ruby\Ruby_auth.txt" />
     <Content Include="SourceSamples\99 bottles.bas" />
     <Content Include="SourceSamples\ExprSample.txt" />
+    <Content Include="SourceSamples\Newick.txt" />
     <Content Include="SourceSamples\NonCanonTestSamples\NonCanonTest1.txt" />
     <Content Include="SourceSamples\Script.NET\Arithmetic.txt" />
     <Content Include="SourceSamples\Script.NET\ArraysGenerics.txt" />

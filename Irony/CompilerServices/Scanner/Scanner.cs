@@ -220,7 +220,7 @@ namespace Irony.CompilerServices {
       //we cannot modify termList - it will corrupt the list in TerminalsLookup table; we make a copy
       _filteredTerminals.Clear();
       foreach(var term in termList) {
-        if (parserState.ExpectedTerms.Contains(term))
+        if (parserState.ExpectedTerms.Contains(term) || _grammar.NonGrammarTerminals.Contains(term))
           _filteredTerminals.Add(term);
       }
       return _filteredTerminals;

@@ -48,11 +48,11 @@ namespace Irony.CompilerServices.Construction {
     private void RecomputeLookaheadsAndResolveConflicts(int startIndex) {
       for (int i = startIndex; i < Data.States.Count; i++) {
         var state = Data.States[i];
+        if (state.BuilderData.InitialLookaheadsComputed)
+          RecomputeLookaheads(state);
+        else
+          ComputeLookaheads(state);//if it is the first time, then use full compute
         if (state.BuilderData.IsInadequate) {
-          if (state.BuilderData.InitialLookaheadsComputed)  
-            RecomputeLookaheads(state);
-          else 
-            ComputeLookaheads(state);//if it is the first time, then use full compute
           RecomputeAndResolveConflicts(state);
           if (state.BuilderData.Conflicts.Count > 0) {
             DetectConflictsUnresolvableByRestructuring(state);

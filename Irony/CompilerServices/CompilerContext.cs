@@ -103,7 +103,9 @@ namespace Irony.CompilerServices {
 
     #region Error handling
     public Token CreateErrorTokenAndReportError(SourceLocation location, string content, string message, params object[] args) {
-      ReportError(this.Compiler.Parser.CoreParser.CurrentState,location, message, args);
+      if (args != null && args.Length > 0)
+        message = string.Format(message, args);
+      ReportError(this.Compiler.Parser.CoreParser.CurrentState, location, message);
       var grammar = Compiler.Language.Grammar;
       Token result = new Token(grammar.SyntaxError, location, content, message);
       return result; 

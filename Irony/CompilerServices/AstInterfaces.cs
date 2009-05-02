@@ -21,7 +21,6 @@ namespace Irony.CompilerServices {
   // related information gathered during parsing
   public interface IAstNodeInit {
     void Init(CompilerContext context, ParseTreeNode parseNode);
-    void SetParent(object node);
   }
 
 

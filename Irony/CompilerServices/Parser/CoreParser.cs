@@ -330,8 +330,11 @@ namespace Irony.CompilerServices {
         InputStack.Push(_currentInput);
       }
       while (Stack.Count > 1) {
-        var errorShiftAction = GetAction();
-        if (errorShiftAction != null) return errorShiftAction;
+        ParserAction errorShiftAction;
+        if (_currentState.Actions.TryGetValue(_grammar.SyntaxError, out errorShiftAction) && errorShiftAction.ActionType == ParserActionType.Shift)
+          return errorShiftAction;
+        if (Stack.Count == 1) 
+          return null; //don't pop the initial state
         Stack.Pop();
         _currentState = Stack.Top.State;
       }

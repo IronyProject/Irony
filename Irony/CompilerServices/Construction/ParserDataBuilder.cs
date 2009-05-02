@@ -62,7 +62,8 @@ namespace Irony.CompilerServices.Construction {
       }
       var i13 = sw.ElapsedMilliseconds;
       ReportAndSetDefaultActionsForRemainingConflicts();
-      CreateReduceActions(); 
+      CreateReduceActions();
+      ComputeStateExpectedLists(); 
 
       ValidateGrammar();
     }//method
@@ -320,7 +321,6 @@ namespace Irony.CompilerServices.Construction {
     private void ComputeLookaheads() {
       foreach (var state in Data.States) {
         ComputeLookaheads(state);
-        ComputeStateExpectedLists(state);
       }//foreach state
     }
 
@@ -357,6 +357,12 @@ namespace Irony.CompilerServices.Construction {
         if (reduceItem.Lookaheads.Count == 0 && reduceItem.Core.Production.LValue != _language.GrammarData.AugmentedRoot)
           AddError("ParserBuilder error: inadequate state {0}, reduce item '{1}' has no lookaheads.", state.Name, reduceItem.Core.Production);
       }
+    }
+
+    private void ComputeStateExpectedLists() {
+      foreach (var state in Data.States) {
+        ComputeStateExpectedLists(state);
+      }//foreach state
     }
 
     private void ComputeStateExpectedLists(ParserState state) {

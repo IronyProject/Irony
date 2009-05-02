@@ -87,7 +87,7 @@ namespace Irony.GrammarExplorer {
     private void ShowParseTrace() {
       gridParserTrace.Rows.Clear();
       foreach (var entry in _compilerContext.ParserTrace) {
-        int index = gridParserTrace.Rows.Add(entry.State, entry.StackTop.ToString(), entry.Input.ToString(),
+        int index = gridParserTrace.Rows.Add(entry.State, entry.StackTop, entry.Input.ToString(),
             entry.Message, entry.NewState); 
         if (entry.IsError)
           gridParserTrace.Rows[gridParserTrace.Rows.Count - 1].DefaultCellStyle.ForeColor = Color.Red;

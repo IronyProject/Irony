@@ -279,66 +279,7 @@ namespace Irony.CompilerServices.Construction {
           result.Add(item);
       return result;
     }
-
-
   }
-
-  internal class TermItemTable : Dictionary<BnfTerm, LR0ItemSet> {
-    public void AddAll(TermItemTable from) {
-      foreach (var kv in from) {
-        LR0ItemSet sources = new LR0ItemSet();
-        sources.UnionWith(kv.Value);
-        Add(kv.Key, sources);
-      }
-    }
-    public bool AddItem(LR0Item item) {
-      BnfTerm lkh = item.Current;
-      LR0ItemSet items;
-      if (!base.TryGetValue(lkh, out items)) {
-        items = new LR0ItemSet();
-        base.Add(lkh, items);
-      }
-      return items.Add(item);
-    }
-
-    //returns true if at least single item was actually added
-    public bool AddItems(TermItemTable from) {
-      bool result = false;
-      foreach (var kv in from) {
-        foreach (var item in kv.Value)
-          result |= AddItem(item);
-      }
-      return result;
-    }
-
-    public LR0ItemSet GetAll() {
-      var result = new LR0ItemSet();
-      foreach (var kv in this)
-        result.UnionWith(kv.Value);
-      return result;
-    }
-
-    public bool ContainsItem(LR0Item item) {
-      BnfTerm lkh = item.Current;
-      LR0ItemSet items;
-      if (!base.TryGetValue(lkh, out items))
-        return false;
-      return items.Contains(item);
-    }
-    public bool RemoveItem(LR0Item item) {
-      BnfTerm lkh = item.Current;
-      LR0ItemSet items;
-      if (!base.TryGetValue(lkh, out items))
-        return false;
-      if (!items.Contains(item))
-        return false;
-      items.Remove(item);
-      if (items.Count == 0)
-        base.Remove(lkh);
-      return true;
-    }
-  } //class
-
 
   public partial class LR0Item {
     public Production Production;

@@ -87,7 +87,7 @@ namespace Irony.GrammarExplorer {
     private void ShowParseTrace() {
       gridParserTrace.Rows.Clear();
       foreach (var entry in _compilerContext.ParserTrace) {
-        int index = gridParserTrace.Rows.Add(entry.State, entry.StackTop, entry.Input.ToString(),
+        int index = gridParserTrace.Rows.Add(entry.State, entry.StackTop, entry.Input,
             entry.Message, entry.NewState); 
         if (entry.IsError)
           gridParserTrace.Rows[gridParserTrace.Rows.Count - 1].DefaultCellStyle.ForeColor = Color.Red;
@@ -497,7 +497,7 @@ namespace Irony.GrammarExplorer {
       ShowSourceLocation(token.Location, token.Length);
     }
     private void gridCompileErrors_CellDoubleClick(object sender, DataGridViewCellEventArgs e) {
-      if (_parseTree == null || e.RowIndex < 0 || e.RowIndex >= _parseTree.Errors.Count) return;
+      if (e.RowIndex < 0 || e.RowIndex >= gridCompileErrors.Rows.Count) return;
       var err = gridCompileErrors.Rows[e.RowIndex].Cells[1].Value as SyntaxError;
       switch (e.ColumnIndex) {
         case 0: //state

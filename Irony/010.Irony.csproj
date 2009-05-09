@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common.cs" />
+    <Compile Include="CompilerServices\Parser\CoreParser_ErrorHandling.cs" />
     <Compile Include="Diagnostics\ParserTraceEntry.cs" />
     <Compile Include="Scripting\CodeAnalysis.cs" />
     <Compile Include="CompilerServices\Grammar\GrammarData.cs" />

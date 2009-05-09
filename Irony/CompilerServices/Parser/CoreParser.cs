@@ -22,7 +22,7 @@ namespace Irony.CompilerServices {
   // CoreParser class implements NLALR parser automaton. Its behavior is controlled by the state transition graph
   // with root in Data.InitialState. Each state contains a dictionary of parser actions indexed by input 
   // element (terminal or non-terminal). 
-  public class CoreParser {
+  public partial class CoreParser {
 
     #region Constructors
     public CoreParser(ParserData parserData, Scanner scanner) {
@@ -40,7 +40,7 @@ namespace Irony.CompilerServices {
     public readonly ParserStack Stack = new ParserStack();
     readonly ParserStack InputStack = new ParserStack();
     Scanner _scanner;
-    bool _traceOn; 
+    bool _traceOn;
     
     //"current" stuff
     public ParserState CurrentState {
@@ -54,27 +54,29 @@ namespace Irony.CompilerServices {
     private ParserTraceEntry _currentTraceEntry; 
     #endregion
 
+    #region Parse method
     public void Parse(CompilerContext context) {
       _context = context;
       _traceOn = _context.OptionIsSet(CompilerOptions.TraceParser); 
-      InitParser(); 
+      Reset(); 
       //main loop
       while (ExecuteAction()) { }
       context.CurrentParseTree.Root = Stack.Top;
     }//Parse
 
-    private void InitParser() {
-      Stack.Clear();
+    private void Reset() {
+      _currentInput = null;
       InputStack.Clear();
+      Stack.Clear();
       _currentState = Data.InitialState; //set the current state to InitialState
-      FetchToken();
       Stack.Push(new ParseTreeNode(Data.InitialState));
-      if (_currentInput.IsError)
-        Recover();
     }
+    #endregion
+
     #region reading input
     private void ReadInput() {
-      InputStack.Pop(); //pop _currentInput from the stack
+      if (InputStack.Count > 0)
+        InputStack.Pop(); 
       if (InputStack.Count == 0)
         FetchToken();
       _currentInput = InputStack.Top;
@@ -88,12 +90,14 @@ namespace Irony.CompilerServices {
       _currentInput = new ParseTreeNode(token);
       InputStack.Push(_currentInput);
       if (_currentInput.IsError)
-        Recover(); 
+        TryRecover(); 
     }
     #endregion
 
     #region execute actions
     private bool ExecuteAction() {
+      if (_currentInput == null)
+        ReadInput();
       //Trace current state if tracing is on
       if (_traceOn)
         _currentTraceEntry = _context.AddParserTrace(_currentState, Stack.Top, _currentInput);
@@ -101,7 +105,7 @@ namespace Irony.CompilerServices {
       ParserAction action = GetAction();
       if (action == null) {
           ReportParseError();
-          return Recover();
+          return TryRecover();
       }
       //write trace
       if (_currentTraceEntry != null)
@@ -211,8 +215,8 @@ namespace Irony.CompilerServices {
           if (child.Term.IsSet(TermOptions.IsPunctuation)) continue;
           AddChildNode(newNodeInfo.ChildNodes, child); 
         }//for i
-        if (!newNodeInfo.Term.IsSet(TermOptions.IsTransient))
-          _grammar.CreateAstNode(_context, newNodeInfo);
+        if (_grammar.FlagIsSet(LanguageFlags.CreateAst) && !newNodeInfo.Term.IsSet(TermOptions.IsTransient))
+          SafeCreateAstNode(newNodeInfo); 
       }//else
       //Remove nodes from stack
       if (nodeCount > 0)
@@ -236,6 +240,14 @@ namespace Irony.CompilerServices {
         childNodes.AddRange(child.ChildNodes);
       } else
         childNodes.Add(child);
+    }
+    
+    private void SafeCreateAstNode(ParseTreeNode nodeInfo) {
+      try {
+        _grammar.CreateAstNode(_context, nodeInfo);
+      } catch (Exception ex) {
+        _context.ReportError(nodeInfo.Span.Start, "Failed to create AST node for non-terminal [{0}], error: " + ex.Message, nodeInfo.Term.Name); 
+      }
     }
 
     private void ExecuteNonCanonicalJump(ParserAction action) {
@@ -269,84 +281,6 @@ namespace Irony.CompilerServices {
       }
       //If no operators found on the stack, do simple shift
       return ParserActionType.Shift;
-    }
-    #endregion
-
-    #region error reporting and recovery
-    private void ReportParseError() {
-      string msg;
-      if (_currentInput.Term == _grammar.Eof)
-        msg = "Unexpected end of file.";
-      else {
-        msg = _grammar.GetSyntaxErrorMessage(_context, _currentState, _currentInput);
-        if (msg == null) {
-          var expSet = _currentState.ReducedExpectedSet;
-          msg = "Syntax error" + (expSet.Count == 0 ? "." : ", expected: " + expSet.ToErrorString());
-        }
-      }
-      _context.ReportError(_currentState, _currentInput.Span.Start, msg);
-      if (_currentTraceEntry != null) {
-        _currentTraceEntry.Message = msg;
-        _currentTraceEntry.IsError = true; 
-      }
-    }
-
-
-    private bool Recover() {
-      if (_traceOn)
-        AddTraceEntry("*** RECOVERING - searching for state with error shift ***", _currentState); //add new trace entry
-      //2. We need to find a state in the stack that has a shift item based on error production (with error token), 
-      // and error terminal is current. This state would have a shift action on error token. 
-      ParserAction errorShiftAction = FindErrorShiftActionInStack();
-      if (errorShiftAction == null) return false; //we failed to recover
-      //3. Shift error token - execute shift action
-      if (_traceOn) AddTraceEntry();
-      ExecuteShift(errorShiftAction); 
-      //4. Now we need to go along error production until the end, shifting tokens that CAN be shifted and ignoring others.
-      //   We shift until we can reduce
-      while (_currentInput.Term != _grammar.Eof) {
-        //Check if we can reduce
-        ParserAction action = FindReduceActionInCurrentState(); 
-        if (action != null) {
-          ExecuteReduce(action.ReduceProduction);
-          InputStack.Top.IsError = true; //mark it as error node
-          if (_traceOn)   AddTraceEntry("*** RECOVERED ***", _currentState); //add new trace entry
-          return true; //we recovered 
-        }
-        //No reduce action in current state. Try to shift current token or throw it away or reduce
-        action = GetAction();
-        if (action != null && action.ActionType == ParserActionType.Shift)
-          ExecuteShift(action); //shift input token
-        else 
-          ReadInput(); //throw away input token
-      }
-      return false; 
-    }//method
-
-    private ParserAction FindErrorShiftActionInStack() {
-      // We may have current error token (if it came from scanner), or normal token - in this case we create it and push back. 
-      if (_currentInput.Term != _grammar.SyntaxError) {
-        _currentInput = new ParseTreeNode(_grammar.SyntaxError);
-        InputStack.Push(_currentInput);
-      }
-      while (Stack.Count > 1) {
-        ParserAction errorShiftAction;
-        if (_currentState.Actions.TryGetValue(_grammar.SyntaxError, out errorShiftAction) && errorShiftAction.ActionType == ParserActionType.Shift)
-          return errorShiftAction;
-        if (Stack.Count == 1) 
-          return null; //don't pop the initial state
-        Stack.Pop();
-        _currentState = Stack.Top.State;
-      }
-      return null; 
-    }
-
-    private ParserAction FindReduceActionInCurrentState() {
-      if (_currentState.DefaultReduceAction != null) return _currentState.DefaultReduceAction;
-      foreach(var action in _currentState.Actions.Values)
-        if (action.ActionType == ParserActionType.Reduce)
-          return action; 
-      return null;
     }
     #endregion
 

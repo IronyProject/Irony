@@ -74,7 +74,7 @@ namespace Irony.Samples {
       MarkTransient(Term, Expr, Statement, BinOp, Variable);
 
       //automatically add NewLine before EOF so that our BNF rules work correctly when there's no final line break in source
-      this.LanguageFlags |= LanguageFlags.NewLineBeforeEOF | LanguageFlags.SupportsInterpreter | LanguageFlags.AutoDetectTransient; 
+      this.SetLanguageFlags(LanguageFlags.NewLineBeforeEOF | LanguageFlags.SupportsInterpreter | LanguageFlags.AutoDetectTransient); 
 
     }
   }

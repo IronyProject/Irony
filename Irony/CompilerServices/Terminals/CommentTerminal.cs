@@ -21,6 +21,7 @@ namespace Irony.CompilerServices {
       this.StartSymbol = startSymbol;
       this.EndSymbols = new StringList();
       EndSymbols.AddRange(endSymbols);
+      Priority = Terminal.HighestPriority; //assign max priority
     }
 
     public string StartSymbol;

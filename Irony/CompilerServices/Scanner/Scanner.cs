@@ -88,8 +88,9 @@ namespace Irony.CompilerServices {
         _currentToken = ReadToken();
         _context.OnTokenCreated(_currentToken);
         yield return _currentToken;
-        if (_currentToken.Terminal == _grammar.Eof)
-          yield break;
+        //Don't yield break, continue returning EOF
+       // if (_currentToken != null && _currentToken.Terminal == _grammar.Eof)
+         // yield break;
       }//while
     }// method
 
@@ -119,7 +120,6 @@ namespace Irony.CompilerServices {
     }
     #endregion
 
-
     private Token ReadToken() {
       if (_bufferedTokens.Count > 0) 
         return ReadBufferedToken(); 
@@ -136,7 +136,7 @@ namespace Irony.CompilerServices {
       var terms = SelectTerminals(_source.CurrentChar);
       var token = MatchTerminals(terms);
       //If no token, try FallbackTerminals
-      if (token == null && Data.FallbackTerminals.Count > 0)
+      if (token == null && terms != Data.FallbackTerminals && Data.FallbackTerminals.Count > 0)
         token = MatchTerminals(Data.FallbackTerminals); 
       //If we don't have a token from registered terminals, try Grammar's method
       if (token == null) 
@@ -214,6 +214,8 @@ namespace Irony.CompilerServices {
       if (termList.Count <= 1)
         return termList;
       //If we have more than one candidate, try filter them by checking with parser which terms it expects
+      if (_context.ParserIsRecovering)
+        return termList;
       var parserState = _context.GetCurrentParserState();
       if (parserState == null) 
         return termList;
@@ -223,18 +225,42 @@ namespace Irony.CompilerServices {
         if (parserState.ExpectedTerms.Contains(term) || _grammar.NonGrammarTerminals.Contains(term))
           _filteredTerminals.Add(term);
       }
-      return _filteredTerminals;
+      //Now, if filtered list is empty then ran into error. Don't report it as scanner error - scanner still has options, 
+      // let parser report it
+      if (_filteredTerminals.Count == 0)
+        return termList;
+      else 
+        return _filteredTerminals;
     }//Select
 
-    private void Recover() {
-      _source.Position++;
-      while (!_source.EOF() && Data.ScannerRecoverySymbols.IndexOf(_source.CurrentChar) < 0)
-        _source.Position++;
+    private bool Recover() {
+      try {
+        _context.ScannerIsRecovering = true;
+        return ScrollUntil(Data.ScannerRecoverySymbols); 
+      } finally {
+        _context.ScannerIsRecovering = false; 
+      }
     }
 
-    public override string ToString() {
-      return _source.ToString(); //show 30 chars starting from current position
+    public void ResetSourceLocation(SourceLocation location) {
+      _source.TokenStart = location;
+      _source.Position = location.Position;
+      _bufferedTokens.Clear();
+      _currentToken = null; 
+      foreach(var filter in Data.TokenFilters)
+        filter.OnResetSourceLocation(location);
     }
+
+
+    public bool ScrollUntil(string untilChars) {
+      _source.Position++;
+      while (!_source.EOF()) { 
+        if(untilChars.IndexOf(_source.CurrentChar) >= 0) return true; 
+        _source.Position++;
+      }
+      return false; 
+    }
+
     #region TokenStart calculations
     private int _nextNewLinePosition = -1; //private field to cache position of next \n character
     //Calculates the _source.TokenStart values (row/column) for the token which starts at the current position.
@@ -244,6 +270,8 @@ namespace Irony.CompilerServices {
       SourceLocation tokenStart = _source.TokenStart;
       int newPosition = _source.Position;
       string text = _source.Text;
+      if (newPosition > text.Length - 1) 
+        newPosition = text.Length - 1; 
 
       // Currently TokenStart field contains location (pos/line/col) of the last created token. 
       // First, check if new position is in the same line; if so, just adjust column and return
@@ -280,7 +308,8 @@ namespace Irony.CompilerServices {
     }
 
     private void CountCharsInText(string text, char[] chars, int from, int until, ref int count, ref int lastPosition) {
-      if (from > until) return;
+      if (from >= until) return;
+      if (until >= text.Length) until = text.Length - 1;
       while (true) {
         int next = text.IndexOfAny(chars, from, until - from + 1);
         if (next < 0) return;

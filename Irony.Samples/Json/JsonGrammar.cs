@@ -33,7 +33,7 @@ namespace Irony.Samples.Json {
       this.Root = jvalue;
       RegisterPunctuation("{", "}", "[", "]", ":", ",");
       this.MarkTransient(jvalue, jlist, jproplist); 
-      this.LanguageFlags = LanguageFlags.None; //.BubbleNodes;
+      this.SetLanguageFlags(LanguageFlags.None);
 
     }//constructor
   }//class

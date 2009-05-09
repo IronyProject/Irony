@@ -139,7 +139,7 @@ namespace Irony.Samples.CSharp {
       NonTerminal lambda_function_signature = new NonTerminal("lambda_function_signature");
       NonTerminal bin_op_expression = new NonTerminal("bin_op_expression");
       NonTerminal typecast_expression = new NonTerminal("typecast_expression");
-      NonTerminal bin_op = new NonTerminal("bin_op");
+      NonTerminal bin_op = new NonTerminal("bin_op", "operator symbol");
 
       //B.2.5. Statements
       NonTerminal statement = new NonTerminal("statement", "statement");

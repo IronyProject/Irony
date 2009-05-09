@@ -239,7 +239,7 @@ namespace Irony.Samples.SQL {
 
       RegisterPunctuation(",", "(", ")");
       RegisterPunctuation(semiOpt);
-      base.MarkTransient(stmt, Id_simple, term, asOpt, aliasOpt, stmtLine, binOp);
+      base.MarkTransient(stmt, Id_simple, term, asOpt, aliasOpt, stmtLine, binOp, expression);
 
       /*
       AddKeywords("SELECT", "CREATE", "ALTER", "UPDATE", "INSERT", "DELETE", "FROM", "WHERE", "GROUP", "ORDER", "BY", 

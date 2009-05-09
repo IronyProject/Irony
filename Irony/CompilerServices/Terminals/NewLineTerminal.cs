@@ -20,6 +20,7 @@ namespace Irony.CompilerServices {
   // instead of more complex alternative of using CodeOutlineFilter. 
   public class NewLineTerminal : Terminal {
     public NewLineTerminal(string name) : base(name, TokenCategory.Outline) {
+      base.DisplayName = "Line break";
     }
 
     public string LineTerminators = "\n\r\v";

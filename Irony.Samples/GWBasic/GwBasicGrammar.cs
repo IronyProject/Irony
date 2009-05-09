@@ -37,9 +37,9 @@ namespace Irony.Samples {
 
 
             // Define the Terminals
-            var lineNumber = new NumberLiteral("LINE_NUMBER", NumberFlags.IntOnly);
-            var fileNumber = new NumberLiteral("FILE_NUMBER", NumberFlags.IntOnly);
-            var number = new NumberLiteral("NUMBER", NumberFlags.AllowStartEndDot);
+            var lineNumber = new NumberLiteral("LINE_NUMBER", "line number",  NumberFlags.IntOnly);
+            var fileNumber = new NumberLiteral("FILE_NUMBER", "number", NumberFlags.IntOnly);
+            var number = new NumberLiteral("NUMBER", "number", NumberFlags.AllowStartEndDot);
             var variable = new IdentifierTerminal("Identifier", "$%!", string.Empty);
             var stringLiteral = new StringLiteral("STRING", "\"", StringFlags.None);
             //Important: do not add comment term to base.NonGrammarTerminals list - we do use this terminal in grammar rules
@@ -60,8 +60,8 @@ namespace Irony.Samples {
             // Define the non-terminals
             var PROGRAM = new NonTerminal("PROGRAM");
             var LINE = new NonTerminal("LINE");
-            var LINE_CONTENT = new NonTerminal("LINE_CONTENT");
-            var SHORT_COMMENT_OPT = new NonTerminal("SHORT_COMMENT_OPT");
+            var LINE_CONTENT_OPT = new NonTerminal("LINE_CONTENT_OPT");
+            var COMMENT_OPT = new NonTerminal("COMMENT_OPT");
             var STATEMENT_LIST = new NonTerminal("STATEMENT_LIST");
             var STATEMENT = new NonTerminal("STATEMENT");
             var PRINT_STMT = new NonTerminal("PRINT_STMT");
@@ -93,7 +93,6 @@ namespace Irony.Samples {
             var FUN_CALL = new NonTerminal("FUN_CALL");
             var VARIABLE_OR_FUNCTION_EXPR = new NonTerminal("VARIABLE_OR_FUNCTION_EXPR");
             var ARG_LIST = new NonTerminal("ARG_LIST");
-            var COMMENT_STMT = new NonTerminal("COMMENT_STMT");
             var LINE_INPUT_STMT = new NonTerminal("LINE_INPUT_STMT");
             var LINE_INPUT_POUND_STMT = new NonTerminal("LINE_INPUT_POUND_STMT");
             var END_STMT = new NonTerminal("END_STMT");
@@ -118,12 +117,12 @@ namespace Irony.Samples {
             PROGRAM.Rule = MakePlusRule(PROGRAM, LINE);
 
             // A line can be an empty line, or it's a number followed by a statement list ended by a new-line.
-            LINE.Rule = NewLine | lineNumber + LINE_CONTENT + SHORT_COMMENT_OPT + NewLine | SyntaxError + NewLine;
+            LINE.Rule = NewLine | lineNumber + LINE_CONTENT_OPT + COMMENT_OPT + NewLine | SyntaxError + NewLine;
 
             // A statement list is 1 or more statements separated by the ':' character
-            LINE_CONTENT.Rule = IF_STMT | COMMENT_STMT | STATEMENT_LIST;
+            LINE_CONTENT_OPT.Rule = Empty | IF_STMT | STATEMENT_LIST;
             STATEMENT_LIST.Rule = MakePlusRule(STATEMENT_LIST, colon, STATEMENT);
-            SHORT_COMMENT_OPT.Rule = short_comment | Empty; 
+            COMMENT_OPT.Rule = short_comment | comment | Empty; 
 
             // A statement can be one of a number of types
             STATEMENT.Rule = ASSIGN_STMT | PRINT_STMT | INPUT_STMT | OPEN_STMT | CLOSE_STMT
@@ -167,7 +166,6 @@ namespace Irony.Samples {
             END_STMT.Rule = "end";
             CLS_STMT.Rule = "cls";
             CLEAR_STMT.Rule = Symbol("clear") + comma + (Empty | number) + (Empty | comma + number) | "clear" + number | "clear";
-            COMMENT_STMT.Rule = comment | short_comment;
             RANDOMIZE_STMT.Rule = "randomize" + EXPR;
 
             // An expression is a number, or a variable, a string, or the result of a binary comparison.
@@ -208,6 +206,8 @@ namespace Irony.Samples {
             RegisterPunctuation("(", ")", ",");
             MarkTransient(EXPR, PRINT_ARG); 
             #endregion
+
+            this.SetLanguageFlags(LanguageFlags.NewLineBeforeEOF); 
 
       }//constructor
 

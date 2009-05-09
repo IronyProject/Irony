@@ -65,6 +65,7 @@ namespace Irony.CompilerServices {
     #endregion
 
     public const int LowestPriority = -1000;
+    public const int HighestPriority = 1000;
   }//class
 
 

@@ -375,22 +375,6 @@ namespace Irony.CompilerServices.Construction {
       foreach (var reduceItem in stateData.ReduceItems) 
         foreach(var term in reduceItem.AllLookaheads)
           state.ExpectedTerms.Add(term);
-      //2. Compute reduced expected terms - to be used in error reporting
-      //2.1. First find named non-terminals among expected, and collect all their firsts
-      var reducedSet = state.ReducedExpectedSet;
-      var allFirsts = new BnfTermSet();
-      foreach (var term in state.ExpectedTerms) {
-        var nt = term as NonTerminal;
-        if (nt != null && !reducedSet.Contains(nt) && !string.IsNullOrEmpty(nt.DisplayName) && !allFirsts.Contains(nt)) {
-          reducedSet.Add(nt);
-          allFirsts.UnionWith(nt.Firsts);
-        }
-      }
-      //2.2. Now go thru all expected terms and add only those that are NOT in the allFirsts set.
-      foreach (var term in state.ExpectedTerms) {
-        if (!reducedSet.Contains(term) && !allFirsts.Contains(term))
-          reducedSet.Add(term);
-      }
     }//method
 
     #endregion

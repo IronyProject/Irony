@@ -133,15 +133,22 @@ namespace Irony.CompilerServices {
     #endregion
 
     public override string ToString() {
-      //show just 30 chars from current position
-      string result;
-      if (Position + 30 < Text.Length)
-        result = Text.Substring(Position, 30);
-      else
-        result = Text.Substring(Position);
-      return result;
+      return SourceToString(this);
     }
-    
+
+    internal static string SourceToString(ISourceStream source) {
+      try {
+        string text = source.Text;
+        var pos = source.Position;
+        //show just 30 chars from current position
+        if (pos + 30 < text.Length)
+          return text.Substring(pos, 30);
+        else
+          return text.Substring(pos);
+      } catch (Exception) {
+        return "Scanner, current =" + source.CurrentChar;
+      }
+    }
 
   }//class
   #endregion

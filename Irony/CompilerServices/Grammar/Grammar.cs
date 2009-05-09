@@ -37,11 +37,27 @@ namespace Irony.CompilerServices {
     //Used for line counting in source file
     public string LineTerminators = "\n\r\v";
 
-    //Language options
-    public LanguageFlags LanguageFlags = LanguageFlags.Default;
+    #region Language Flags
+    public LanguageFlags LanguageFlags {
+      get { return _languageFlags; }
+    } LanguageFlags _languageFlags = LanguageFlags.Default;
+
+    public void SetLanguageFlags(LanguageFlags flag) {
+      SetLanguageFlags(flag, true); 
+    }
+    public void SetLanguageFlags(LanguageFlags flag, bool value) {
+      if (value)
+        _languageFlags |= flag;
+      else
+        _languageFlags &= ~flag;
+    }
     public bool FlagIsSet(LanguageFlags flag) {
       return (LanguageFlags & flag) != 0;
     }
+    public void ResetFlags() {
+      _languageFlags = LanguageFlags.None;
+    }
+    #endregion
 
     //Terminals not present in grammar expressions and not reachable from the Root
     // (Comment terminal is usually one of them)
@@ -180,7 +196,6 @@ namespace Irony.CompilerServices {
     }
 
     public virtual void CreateAstNode(CompilerContext context, ParseTreeNode nodeInfo) {
-/*  //Interpreter is broken, so this is disabled for now
       NonTerminal nt = (NonTerminal) nodeInfo.Term;
       if (nt.NodeCreator != null) {
         nt.NodeCreator(context, nodeInfo);
@@ -195,7 +210,6 @@ namespace Irony.CompilerServices {
       var iInit = nodeInfo.AstNode as IAstNodeInit;
       if (iInit != null)
         iInit.Init(context, nodeInfo); 
- */ 
    }
 
     //The method is called after GrammarData is constructed 

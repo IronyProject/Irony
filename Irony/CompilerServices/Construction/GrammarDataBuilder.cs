@@ -27,7 +27,8 @@ namespace Irony.CompilerServices.Construction {
       ComputeNonTerminalsNullability(_grammarData);
       ComputeTailsNullability(_grammarData);
       ComputeFirsts(_grammarData);
-      DetectTransientNonTerminals(_grammarData);
+      if (_grammar.FlagIsSet(LanguageFlags.AutoDetectTransient)) return;
+        DetectTransientNonTerminals(_grammarData);
     }
 
     private void CollectTermsFromGrammar() {
@@ -87,12 +88,13 @@ namespace Irony.CompilerServices.Construction {
       }
       data.Terminals.Sort(Terminal.ByName);
       //Mark keywords - any "word" symbol directly mentioned in the grammar
-      foreach (var term in data.Terminals) {
-        var symTerm = term as SymbolTerminal;
-        if (symTerm == null) continue;
-        if (symTerm.Symbol.Length > 0 && char.IsLetter(symTerm.Symbol[0]))
-          symTerm.SetOption(TermOptions.IsKeyword); 
-      }//foreach term
+      if (data.Grammar.FlagIsSet(LanguageFlags.AutoDetectKeywords)) 
+        foreach (var term in data.Terminals) {
+          var symTerm = term as SymbolTerminal;
+          if (symTerm == null) continue;
+          if (symTerm.Symbol.Length > 0 && char.IsLetter(symTerm.Symbol[0]))
+            symTerm.SetOption(TermOptions.IsKeyword); 
+        }//foreach term
       //Init all terms
       foreach (BnfTerm term in data.AllTerms)
         term.Init(data);
@@ -270,7 +272,6 @@ namespace Irony.CompilerServices.Construction {
 
 
     private static void DetectTransientNonTerminals(GrammarData data) {
-      if (!data.Grammar.FlagIsSet(LanguageFlags.AutoDetectTransient)) return;
       foreach (NonTerminal nt in data.NonTerminals) {
         var transient = true;
         foreach (var prod in nt.Productions)

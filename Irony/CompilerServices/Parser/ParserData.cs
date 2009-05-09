@@ -38,8 +38,9 @@ namespace Irony.CompilerServices {
     //   it can ask Parser to filter the list using the ExpectedTerminals in current Parser state. 
     public readonly BnfTermSet ExpectedTerms = new BnfTermSet();
     //Used for error reporting, we would use it to include list of expected terms in error message 
-    // It is reduced, to "merge" multiple terminals into non-terminals (with non-empty DisplayName) to make message shorter and cleaner
-    public readonly BnfTermSet ReducedExpectedSet = new BnfTermSet();
+    // It is reduced compared to ExpectedTerms - some terms are "merged" into other non-terminals (with non-empty DisplayName)
+    //   to make message shorter and cleaner. It is computed on-demand in CoreParser
+    public BnfTermSet ReportedExpectedSet;
     internal ParserStateData BuilderData; //transient, used only during automaton construction and may be cleared after that
 
     public ParserState(string name) {

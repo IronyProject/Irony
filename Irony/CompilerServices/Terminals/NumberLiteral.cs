@@ -49,13 +49,15 @@ namespace Irony.CompilerServices {
     #endregion
 
     #region constructors and initialization
-    public NumberLiteral(string name, NumberFlags flags)  : this(name) {
-      Flags |= flags;
+    public NumberLiteral(string name) : this(name, null, NumberFlags.None) {
     }
-    public NumberLiteral(string name, string displayName)  : this(name) {
+    public NumberLiteral(string name, NumberFlags flags)  : this(name, null, flags) {
+    }
+    public NumberLiteral(string name, string displayName)  : this(name, displayName, NumberFlags.None) {
+    }
+    public NumberLiteral(string name, string displayName, NumberFlags flags) : base(name) {
       base.DisplayName = displayName;
-    }
-    public NumberLiteral(string name)  : base(name) {
+      Flags |= flags;
       base.Category = TokenCategory.Literal;
     }
     public void AddPrefix(string prefix, NumberFlags flags) {

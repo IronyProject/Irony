@@ -50,6 +50,9 @@ namespace Irony.CompilerServices {
       GrammarData = grammarData;
       Grammar = GrammarData.Grammar;
     }
+    public virtual void OnResetSourceLocation(SourceLocation location) {
+    }
+
   }//class
 
   public class TokenFilterList : List<TokenFilter> { }

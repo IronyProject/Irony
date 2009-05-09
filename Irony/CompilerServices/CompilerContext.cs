@@ -45,7 +45,9 @@ namespace Irony.CompilerServices {
     // For ex., there maybe several types of string literal like in Python. 
     public VsScannerStateMap ScannerState;
     public ParseTree CurrentParseTree;
-    public ParserTrace ParserTrace = new ParserTrace(); 
+    public ParserTrace ParserTrace = new ParserTrace();
+    public bool ParserIsRecovering;
+    public bool ScannerIsRecovering;
 
     #region constructors and factory methods
     public CompilerContext(Compiler compiler) {

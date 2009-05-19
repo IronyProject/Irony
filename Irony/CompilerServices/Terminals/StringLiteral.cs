@@ -61,7 +61,6 @@ namespace Irony.CompilerServices {
     #region constructors and initialization
     //12/07/2008 - Attention - breaking change! Constructor with a single parameter no longer adds default startEnd symbol!
     public StringLiteral(string name) : base(name) {
-      base.Escapes = TextUtils.GetDefaultEscapes();
       base.Category = TokenCategory.Literal;
     }
     public StringLiteral(string name, string startEndSymbol, StringFlags stringFlags) : this(name) {
@@ -290,7 +289,6 @@ namespace Irony.CompilerServices {
         details.TypeCodes = new TypeCode[] { TypeCode.String };
         details.Value = value; 
       }
-      //Check char length - must be exactly 1
       return true; 
     }
 
@@ -319,7 +317,7 @@ namespace Irony.CompilerServices {
             //x-escape allows variable number of digits, from one to 4; let's count them
             p = 1; //current position
             while (p < 5 && p < segment.Length) {
-              if (TextUtils.HexDigits.IndexOf(segment[p]) < 0) break;
+              if (Strings.HexDigits.IndexOf(segment[p]) < 0) break;
               p++;
             }
             //p now point to char right after the last digit
@@ -338,7 +336,7 @@ namespace Irony.CompilerServices {
             //octal escape allows variable number of digits, from one to 3; let's count them
             p = 0; //current position
             while (p < 3 && p < segment.Length) {
-              if (TextUtils.OctalDigits.IndexOf(segment[p]) < 0) break;
+              if (Strings.OctalDigits.IndexOf(segment[p]) < 0) break;
               p++;
             }
             //p now point to char right after the last digit

@@ -14,8 +14,11 @@ namespace Irony.Samples.SQL {
       //Terminals
       var comment = new CommentTerminal("comment", "/*", "*/");
       var lineComment = new CommentTerminal("line_comment", "--", "\n", "\r\n");
+      //TODO: remove block comment, added for testing LUA-style comments
+      var blockComment = new CommentTerminal("block_comment", "--[[", "]]");
       NonGrammarTerminals.Add(comment);
       NonGrammarTerminals.Add(lineComment);
+      NonGrammarTerminals.Add(blockComment);
       var number = new NumberLiteral("number");
       var string_literal = new StringLiteral("string", "'", StringFlags.AllowsDoubledQuote);
       var name = new IdentifierTerminal("name");

@@ -42,7 +42,7 @@ namespace Irony.CompilerServices {
     [FieldOffset(0)]
     public int Value;
     [FieldOffset(0)]
-    public byte TerminalIndex;   //Index in MultilineTerminals
+    public byte TerminalIndex;   //1-based index of active multiline term in MultilineTerminals
     [FieldOffset(1)]
     public byte TokenSubType;         //terminal subtype (used in StringLiteral to identify string kind)
     [FieldOffset(2)]

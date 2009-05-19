@@ -12,7 +12,7 @@ namespace Irony.Samples {
       this.GrammarComments = "See http://en.wikipedia.org/wiki/Newick_format for more info.";
 
       var distance = new NumberLiteral("distance", NumberFlags.AllowSign);
-      var name = new IdentifierTerminal("name", TextUtils.DecimalDigits, TextUtils.DecimalDigits + "-");
+      var name = new IdentifierTerminal("name", Strings.DecimalDigits, Strings.DecimalDigits + "-");
 
       var Tree = new NonTerminal("Tree");
       var SubTree = new NonTerminal("SubTree");

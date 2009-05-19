@@ -401,12 +401,12 @@ namespace Irony.CompilerServices {
     }
     private string GetDigits(CompoundTokenDetails details) {
       if (details.IsSet((short)NumberFlags.Hex))
-        return TextUtils.HexDigits;
+        return Strings.HexDigits;
       if (details.IsSet((short)NumberFlags.Octal))
-        return TextUtils.OctalDigits;
+        return Strings.OctalDigits;
       if (details.IsSet((short)NumberFlags.Binary))
-        return TextUtils.BinaryDigits;
-      return TextUtils.DecimalDigits;
+        return Strings.BinaryDigits;
+      return Strings.DecimalDigits;
     }
     private int GetSafeWordLength(CompoundTokenDetails details) {
       if (details.IsSet((short)NumberFlags.Hex))

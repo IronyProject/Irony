@@ -76,6 +76,9 @@ namespace Irony.Diagnostics {
       return sb.ToString();
     }
 
+    public static void NotImplemented(string methodName) {
+      throw new ApplicationException("Member " + methodName + " not implemented.");
+    }
 
   }//class
 }//namespace

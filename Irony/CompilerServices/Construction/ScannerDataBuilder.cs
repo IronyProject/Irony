@@ -26,7 +26,7 @@ namespace Irony.CompilerServices.Construction {
       foreach (var terminal in data.GrammarData.Terminals) {
         if (terminal.IsSet(TermOptions.IsMultiline)) {
           data.MultilineTerminals.Add(terminal);
-          terminal.MultilineIndex = (byte)(data.MultilineTerminals.Count - 1);
+          terminal.MultilineIndex = (byte)(data.MultilineTerminals.Count);
         }
       }
     }

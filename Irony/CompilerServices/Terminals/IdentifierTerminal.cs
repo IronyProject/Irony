@@ -48,8 +48,8 @@ namespace Irony.CompilerServices {
       Flags = flags; 
     }
     public IdentifierTerminal(string name, string extraChars, string extraFirstChars): base(name) {
-      AllFirstChars = TextUtils.AllLatinLetters + extraFirstChars;
-      AllChars = TextUtils.AllLatinLetters + TextUtils.DecimalDigits + extraChars;
+      AllFirstChars = Strings.AllLatinLetters + extraFirstChars;
+      AllChars = Strings.AllLatinLetters + Strings.DecimalDigits + extraChars;
       SetOption(TermOptions.AllowConvertToSymbol);
     }
 

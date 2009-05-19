@@ -38,6 +38,8 @@ namespace Irony.CompilerServices {
   #endregion
 
 
+  public class EscapeTable : Dictionary<char, char> { }
+
   public abstract class CompoundTerminalBase : Terminal {
 
     #region Nested classes
@@ -73,7 +75,7 @@ namespace Irony.CompilerServices {
     #region constructors and initialization
     public CompoundTerminalBase(string name, TermOptions options) : base(name) {
       SetOption(options);
-      Escapes = TextUtils.GetDefaultEscapes();
+      Escapes = GetDefaultEscapes();
     }
     public CompoundTerminalBase(string name)  : this(name, TermOptions.None) {  }
 
@@ -128,11 +130,14 @@ namespace Irony.CompilerServices {
     }
 
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
-      //Try quick parse first
-      Token token = QuickParse(context, source);
-      if (token != null) return token;
+      Token token;
+      //Try quick parse first, but only if we're not continuing
+      if (context.ScannerState.Value == 0) {
+        token = QuickParse(context, source);
+        if (token != null) return token;
+        source.Position = source.TokenStart.Position; //revert the position
+      }
 
-      source.Position = source.TokenStart.Position;
       CompoundTokenDetails details = new CompoundTokenDetails();
       InitDetails(context, details);
 
@@ -156,6 +161,7 @@ namespace Irony.CompilerServices {
         //Save terminal state so we can continue
         context.ScannerState.TokenSubType = (byte)details.SubTypeIndex;
         context.ScannerState.TerminalFlags = (short)details.Flags;
+        context.ScannerState.TerminalIndex = this.MultilineIndex;
       } else
         context.ScannerState.Value = 0;
       return token; 
@@ -222,7 +228,25 @@ namespace Irony.CompilerServices {
 
     #endregion
 
-
+    #region utils: GetDefaultEscapes
+    public static EscapeTable GetDefaultEscapes() {
+      EscapeTable escapes = new EscapeTable();
+      escapes.Add('a', '\u0007');
+      escapes.Add('b', '\b');
+      escapes.Add('t', '\t');
+      escapes.Add('n', '\n');
+      escapes.Add('v', '\v');
+      escapes.Add('f', '\f');
+      escapes.Add('r', '\r');
+      escapes.Add('"', '"');
+      escapes.Add('\'', '\'');
+      escapes.Add('\\', '\\');
+      escapes.Add(' ', ' ');
+      escapes.Add('\n', '\n'); //this is a special escape of the linebreak itself, 
+      // when string ends with "\" char and continues on the next line
+      return escapes;
+    }
+    #endregion
 
   }//class
 

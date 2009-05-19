@@ -106,7 +106,7 @@ namespace Irony.CompilerServices {
       if (state == 0)
         result = ReadToken();
       else {
-        Terminal term = Data.MultilineTerminals[_context.ScannerState.TerminalIndex];
+        Terminal term = Data.MultilineTerminals[_context.ScannerState.TerminalIndex - 1];
         result = term.TryMatch(_context, _source); 
       }
       //set state value from context

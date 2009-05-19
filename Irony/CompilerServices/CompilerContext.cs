@@ -116,6 +116,7 @@ namespace Irony.CompilerServices {
       ReportError(null, location, message, args); 
     }
     public void ReportError(ParserState state, SourceLocation location, string message, params object[] args) {
+      if (CurrentParseTree == null) return; 
       if (CurrentParseTree.Errors.Count >= MaxErrors) return;
       if (args != null && args.Length > 0)
         message = string.Format(message, args);

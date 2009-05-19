@@ -49,7 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common.cs" />
+    <Compile Include="CompilerServices\StringUtils.cs" />
     <Compile Include="CompilerServices\Parser\CoreParser_ErrorHandling.cs" />
     <Compile Include="Diagnostics\ParserTraceEntry.cs" />
     <Compile Include="Scripting\CodeAnalysis.cs" />
@@ -113,7 +113,6 @@
     <Compile Include="Scripting\AST\VarRefNode.cs" />
     <Compile Include="Scripting\AST\_AstNode.cs" />
     <Compile Include="Scripting\ScriptEngine.cs" />
-    <Compile Include="TextUtils.cs" />
     <Compile Include="CompilerServices\TokenFilters\BraceMatchFilter.cs" />
     <Compile Include="CompilerServices\TokenFilters\CodeOutlineFilter.cs" />
     <Compile Include="CompilerServices\TokenFilters\TokenFilter.cs" />

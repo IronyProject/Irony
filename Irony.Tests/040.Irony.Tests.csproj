@@ -47,7 +47,7 @@
     <Compile Include="CommentTerminalTests.cs" />
     <None Include="EvaluationTests.cs" />
     <Compile Include="IdentifierTerminalTests.cs" />
-    <None Include="ScannerTests.cs" />
+    <Compile Include="IntegrationTests.cs" />
     <Compile Include="NumberLiteralTests.cs" />
     <None Include="OperatorDispatchTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

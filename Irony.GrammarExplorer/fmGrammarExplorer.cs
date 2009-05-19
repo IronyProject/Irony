@@ -141,7 +141,7 @@ namespace Irony.GrammarExplorer {
       //States
       txtParserStates.Text = DiagnosticUtils.PrintStateList(_compiler.Language);
       //Validation errors
-      StringSet errors = _compiler.Language.Errors;
+      var errors = _compiler.Language.Errors;
       if (errors.Count > 0) {
         txtGrammarErrors.Text = errors.ToString(Environment.NewLine);
         txtGrammarErrors.Text += "\r\n\r\nTotal errors: " + errors.Count;

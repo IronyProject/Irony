@@ -28,9 +28,17 @@ namespace Irony.CompilerServices.Construction {
       sbld.Build();
       var pbld = new ParserDataBuilder(Language);
       pbld.Build(method);
+      Validate(); 
       //call grammar method, a chance to tweak the automaton
       _grammar.OnParserDataConstructed(Language); 
     }
+
+    #region Language Data Validation
+    private void Validate() {
+
+    }//method
+    #endregion
+
   
   }//class
 }

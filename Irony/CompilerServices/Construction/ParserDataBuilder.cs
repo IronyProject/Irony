@@ -64,8 +64,6 @@ namespace Irony.CompilerServices.Construction {
       ReportAndSetDefaultActionsForRemainingConflicts();
       CreateReduceActions();
       ComputeStateExpectedLists(); 
-
-      ValidateGrammar();
     }//method
 
     private void CleanupStateData() {
@@ -517,12 +515,6 @@ namespace Irony.CompilerServices.Construction {
         }//foreach item
       }//foreach state
     }
-    #endregion
-
-    #region Grammar Validation
-    private void ValidateGrammar() {
-
-    }//method
     #endregion
 
     #region error reporting

@@ -27,8 +27,9 @@ namespace Irony.CompilerServices.Construction {
       ComputeNonTerminalsNullability(_grammarData);
       ComputeTailsNullability(_grammarData);
       ComputeFirsts(_grammarData);
-      if (_grammar.FlagIsSet(LanguageFlags.AutoDetectTransient)) return;
+      if (_grammar.FlagIsSet(LanguageFlags.AutoDetectTransient))
         DetectTransientNonTerminals(_grammarData);
+      ValidateGrammar(); 
     }
 
     private void CollectTermsFromGrammar() {
@@ -283,6 +284,23 @@ namespace Irony.CompilerServices.Construction {
           nt.SetOption(TermOptions.IsTransient);
       }
     }
-  
+
+    #region Grammar Validation
+    private void ValidateGrammar() {
+      //Check CreateAst flag and give a warning if this flag is not set, but node types or NodeCreator methods are assigned
+      // in any of non-terminals
+      if (!_grammar.FlagIsSet(LanguageFlags.CreateAst)) {
+        var ntSet = new BnfTermSet();
+        foreach (var nt in _grammarData.NonTerminals)
+          if (nt.NodeCreator != null || nt.NodeType != null)
+            ntSet.Add(nt); 
+        if (ntSet.Count > 0)
+          this._language.Errors.Add("Warning: LanguageFlags.CreateAst flag is not set in grammar's Flags, but there are" +
+            " non-terminals that have NodeType or NodeCreator property set. If you want Irony to construct AST tree during parsing," +
+            " set CreateAst flag in Grammar. Non-terminals: " + ntSet.ToString()); 
+      }
+    }//method
+    #endregion
+
   }//class
 }

@@ -37,11 +37,12 @@ namespace Irony.CompilerServices {
     public Associativity Associativity;
     public SourceSpan Span;
     public Production ReduceProduction;
-    public ParseTreeNode FirstChild; 
+    public ParseTreeNodeList ChildNodes = new ParseTreeNodeList();
     /* Used by NLALR parser to search for action based on "expanded" version of the lookahead
       when actual lookahead is non-canonical (reduced non-terminal) and action for it does not exist.
-     This might happen in non-canonical parser */
-    public ParseTreeNodeList ChildNodes = new ParseTreeNodeList();
+     This might happen in non-canonical parser. Not necessarily the same as ChildNodes[0], because 
+     it can be punctuation symbol, so it might be removed from ChildNodes, so we need to keep it in a separate field.*/
+    public ParseTreeNode FirstChild; 
     public bool IsError;
     internal ParserState State;      //used by parser to store current state when node is pushed into the parser stack
 

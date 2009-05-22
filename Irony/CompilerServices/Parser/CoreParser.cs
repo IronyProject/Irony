@@ -61,7 +61,8 @@ namespace Irony.CompilerServices {
       Reset(); 
       //main loop
       while (ExecuteAction()) { }
-      context.CurrentParseTree.Root = Stack.Top;
+      //root is on top of the stack, so pop it; PopChildNode will also create AST node if needed
+      context.CurrentParseTree.Root = PopChildNode(null); 
     }//Parse
 
     private void Reset() {
@@ -131,12 +132,18 @@ namespace Irony.CompilerServices {
       if (inputToken != null && inputToken.AsSymbol != null) {
         var asSym = inputToken.AsSymbol;
         if (CurrentState.Actions.TryGetValue(asSym, out action)) {
+          #region comments
           // Ok, we found match as a symbol
           // Backpatch the token's term. For example in most cases keywords would be recognized as Identifiers by Scanner.
           // Identifier would also check with SymbolTerms table and set AsSymbol field to SymbolTerminal if there exist
           // one for token content. So we first find action by Symbol if there is one; if we find action, then we 
           // patch token's main terminal to AsSymbol value.  This is important for recognizing keywords (for colorizing), 
           // and for operator precedence algorithm to work when grammar uses operators like "AND", "OR", etc. 
+          //TODO: This is not quite correct action, and we can run into trouble with some languages that have keywords that 
+          // are not reserved words. But proper implementation would require substantial addition to parser code: 
+          // when running into errors, we need to check the stack for places where we made this "interpret as Symbol"
+          // decision, roll back the stack and try to reinterpret as identifier
+          #endregion
           inputToken.SetTerminal(asSym);
           _currentInput.Term = asSym;
           _currentInput.Precedence = asSym.Precedence;
@@ -161,14 +168,17 @@ namespace Irony.CompilerServices {
       return _currentState.JumpAction;
     }
 
+    //For NLALR, when non-canonical lookahead had been already reduced, the action for the input in some state
+    // might be still for its child term.
     private ParserAction GetActionFromChildRec(ParseTreeNode input) {
-      if (input.FirstChild == null) return null; 
+      var firstChild = input.FirstChild;
+      if (firstChild == null) return null;
       ParserAction action;
-      if (_currentState.Actions.TryGetValue(input.FirstChild.Term, out action)) {
+      if (_currentState.Actions.TryGetValue(firstChild.Term, out action)) {
         if (action.ActionType == ParserActionType.Reduce) //it applies only to reduce actions
           return action;
       }
-      action = GetActionFromChildRec(input.FirstChild);
+      action = GetActionFromChildRec(firstChild);
       return action; 
     }
 
@@ -176,70 +186,93 @@ namespace Irony.CompilerServices {
       Stack.Push(_currentInput, action.NewState);
       _currentState = action.NewState;
       if (_traceOn) SetTraceDetails("Shift", _currentState); 
-      ReadInput(); 
+      ReadInput();
     }
+
+    #region ExecuteReduce
     private void ExecuteReduce(Production reduceProduction) {
-      //compute new node span
-      SourceSpan span;
-      ParseTreeNode first = null, last = null; 
-      int nodeCount = reduceProduction.RValues.Count;
-      if (reduceProduction.RValues.Count == 0)
-        span = new SourceSpan(InputStack.Top.Span.Start, 0);
-      else {
-        first = Stack[Stack.Count - nodeCount];
-        last = Stack.Top;
-        span = new SourceSpan(first.Span.Start, last.Span.EndPos - first.Span.Start.Position);
-      }
-      ParseTreeNode newNodeInfo;
-      int firstChildIndex = Stack.Count - nodeCount;
-      //check if we have a list and it was already created 
-      bool alreadyCreatedList = reduceProduction.LValue.IsSet(TermOptions.IsList) && 
-         reduceProduction.RValues.Count > 0 && reduceProduction.RValues[0] == reduceProduction.LValue; 
-      if (alreadyCreatedList) {
-        newNodeInfo = Stack[firstChildIndex]; //get the list already created
-        newNodeInfo.Span = span;
-        AddChildNode(newNodeInfo.ChildNodes, Stack.Top);
-      } else {
-        newNodeInfo = new ParseTreeNode(reduceProduction);
-        newNodeInfo.Span = span;
-        newNodeInfo.FirstChild = first; 
-        //Pop child nodes one-by-one
-        for (int i = 0; i < nodeCount ; i++) {
-          var child = Stack[firstChildIndex + i];
-          //check precedence
-          if (nodeCount == 1 && child.Precedence != BnfTerm.NoPrecedence) {
-            newNodeInfo.Precedence = child.Precedence;
-            newNodeInfo.Associativity = child.Associativity;
-          }
-          child.State = null; //clear the State field, we need only when node is in the stack
-          if (child.Term.IsSet(TermOptions.IsPunctuation)) continue;
-          AddChildNode(newNodeInfo.ChildNodes, child); 
-        }//for i
-        if (_grammar.FlagIsSet(LanguageFlags.CreateAst) && !newNodeInfo.Term.IsSet(TermOptions.IsTransient))
-          SafeCreateAstNode(newNodeInfo); 
-      }//else
-      //Remove nodes from stack
-      if (nodeCount > 0)
-        Stack.RemoveRange(firstChildIndex, nodeCount);//pop these nodes from the stack
-      //Read the state from top of the stack, and shift to new state (LALR) or push new node into input stack(NLALR, NLALRT)
+      var newNode = CreateParseTreeNodeForReduce(reduceProduction);
+      //Prepare switching to the new state. First read the state from top of the stack 
       _currentState = Stack.Top.State;
       //write to trace
-      if (_traceOn) SetTraceDetails("Reduce on '" + reduceProduction.ToString() + "'", _currentState);
+      if (_traceOn)
+        SetTraceDetails("Reduce on '" + reduceProduction.ToString() + "'", _currentState);
+      // Shift to new state (LALR) or push new node into input stack(NLALR, NLALRT)
       if (Data.ParseMethod == ParseMethod.Lalr) {
         //execute shift over non-terminal
         var action = _currentState.Actions[reduceProduction.LValue];
-        Stack.Push(newNodeInfo, action.NewState);
-        _currentState = action.NewState; 
+        Stack.Push(newNode, action.NewState);
+        _currentState = action.NewState;
       } else {
-        InputStack.Push(newNodeInfo);
-        _currentInput = newNodeInfo;
+        //NLALR - push it back into input stack
+        InputStack.Push(newNode);
+        _currentInput = newNode;
       }
     }
-    private void AddChildNode(ParseTreeNodeList childNodes, ParseTreeNode child) {
-      if (child.Term.IsSet(TermOptions.IsTransient) && child.ChildNodes != null) {
-        childNodes.AddRange(child.ChildNodes);
-      } else
-        childNodes.Add(child);
+    
+    private ParseTreeNode CreateParseTreeNodeForReduce(Production reduceProduction) {
+      int childCount = reduceProduction.RValues.Count;
+      ParseTreeNode newNode; 
+      //Check if it is an existing list node
+      if (CheckReducingExistingList(reduceProduction, out newNode)) 
+        return newNode; 
+      //"normal" node
+      newNode = new ParseTreeNode(reduceProduction);
+      newNode.Span = ComputeNewNodeSpan(childCount);
+      if (childCount == 0) 
+        return newNode; 
+      newNode.FirstChild = Stack[Stack.Count - childCount]; //remember first child; it might be thrown away later if it's punctuation
+      //copy precedence field if there's one child only
+      if (childCount == 1 && newNode.FirstChild.Precedence != BnfTerm.NoPrecedence) {
+        newNode.Precedence = newNode.FirstChild.Precedence;
+        newNode.Associativity = newNode.FirstChild.Associativity;
+      }
+      //Pop child nodes one-by-one
+      foreach(var rvalue in reduceProduction.RValues) {
+        PopChildNode(newNode); 
+      }//for i
+      return newNode;
+    }
+    
+    private SourceSpan ComputeNewNodeSpan(int childCount) {
+      if (childCount == 0)
+        return new SourceSpan(_currentInput.Span.Start, 0);
+      var first = Stack[Stack.Count - childCount];
+      var last = Stack.Top;
+      return new SourceSpan(first.Span.Start, last.Span.EndPos - first.Span.Start.Position);
+    }
+
+    private bool CheckReducingExistingList(Production reduceProduction, out ParseTreeNode listNode) {
+      listNode = null;
+      var childCount = reduceProduction.RValues.Count;
+      bool isExistingList = childCount > 0 && reduceProduction.LValue.IsSet(TermOptions.IsList) &&
+          reduceProduction.RValues[0] == reduceProduction.LValue;
+      if (!isExistingList) return false;
+      listNode = Stack[Stack.Count - childCount]; //get the list already created - it is first child node
+      listNode.Span = ComputeNewNodeSpan(childCount);
+      PopChildNode(listNode); //new list element sits on top, so pop it into child list
+      //now pop the rest one or two nodes
+      var poppedNode = Stack.Pop();
+      while (poppedNode != listNode)
+        poppedNode = Stack.Pop();
+      return true; 
+    }
+
+    // 
+    private ParseTreeNode PopChildNode(ParseTreeNode addToParent) {
+      var poppedNode = Stack.Pop();
+      poppedNode.State = null; //clear the State field, we need only when node is in the stack
+      if (poppedNode.Term.IsSet(TermOptions.IsPunctuation)) return null;
+      if (poppedNode.Term.IsSet(TermOptions.IsTransient)) {
+        if (addToParent != null) 
+          addToParent.ChildNodes.InsertRange(0, poppedNode.ChildNodes);
+      } else {
+        if (_grammar.FlagIsSet(LanguageFlags.CreateAst))
+          SafeCreateAstNode(poppedNode);
+        if (addToParent != null)
+          addToParent.ChildNodes.Insert(0, poppedNode);
+      }
+      return poppedNode;
     }
     
     private void SafeCreateAstNode(ParseTreeNode nodeInfo) {
@@ -249,6 +282,7 @@ namespace Irony.CompilerServices {
         _context.ReportError(nodeInfo.Span.Start, "Failed to create AST node for non-terminal [{0}], error: " + ex.Message, nodeInfo.Term.Name); 
       }
     }
+    #endregion
 
     private void ExecuteNonCanonicalJump(ParserAction action) {
       _currentState = action.NewState;

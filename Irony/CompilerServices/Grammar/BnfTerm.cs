@@ -56,7 +56,9 @@ namespace Irony.CompilerServices {
     }
 
     public override string ToString() {
-      return DisplayName;
+      if (!string.IsNullOrEmpty(DisplayName)) 
+          return DisplayName;
+      return Name;
     }
     public override int GetHashCode() {
       if (Name == null) return 0;

@@ -38,7 +38,7 @@ namespace Irony.Diagnostics {
           if (!headerPrinted)
             sb.Append("  Shifts: ");
           headerPrinted = true;
-          sb.Append(key.DisplayName);
+          sb.Append(key.ToString());
           if (action.ActionType == ParserActionType.Shift)
             sb.Append("->"); //shift
           sb.Append(action.NewState.Name);

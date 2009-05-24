@@ -61,8 +61,6 @@ namespace Irony.CompilerServices {
       Reset(); 
       //main loop
       while (ExecuteAction()) { }
-      //root is on top of the stack, so pop it; PopChildNode will also create AST node if needed
-      context.CurrentParseTree.Root = PopChildNode(null); 
     }//Parse
 
     private void Reset() {
@@ -117,7 +115,7 @@ namespace Irony.CompilerServices {
         case ParserActionType.Operator: ExecuteOperatorAction(action); break;
         case ParserActionType.Reduce: ExecuteReduce(action.ReduceProduction); break;
         case ParserActionType.Jump: ExecuteNonCanonicalJump(action); break;
-        case ParserActionType.Accept: return false; 
+        case ParserActionType.Accept: ExecuteAccept(action); return false; 
       }
       //add info to trace
       return true; 
@@ -259,20 +257,17 @@ namespace Irony.CompilerServices {
     }
 
     // 
-    private ParseTreeNode PopChildNode(ParseTreeNode addToParent) {
+    private void PopChildNode(ParseTreeNode addToParent) {
       var poppedNode = Stack.Pop();
       poppedNode.State = null; //clear the State field, we need only when node is in the stack
-      if (poppedNode.Term.IsSet(TermOptions.IsPunctuation)) return null;
+      if (poppedNode.Term.IsSet(TermOptions.IsPunctuation)) return;
       if (poppedNode.Term.IsSet(TermOptions.IsTransient)) {
-        if (addToParent != null) 
-          addToParent.ChildNodes.InsertRange(0, poppedNode.ChildNodes);
+        addToParent.ChildNodes.InsertRange(0, poppedNode.ChildNodes);
       } else {
         if (_grammar.FlagIsSet(LanguageFlags.CreateAst))
           SafeCreateAstNode(poppedNode);
-        if (addToParent != null)
-          addToParent.ChildNodes.Insert(0, poppedNode);
+        addToParent.ChildNodes.Insert(0, poppedNode);
       }
-      return poppedNode;
     }
     
     private void SafeCreateAstNode(ParseTreeNode nodeInfo) {
@@ -286,6 +281,14 @@ namespace Irony.CompilerServices {
 
     private void ExecuteNonCanonicalJump(ParserAction action) {
       _currentState = action.NewState;
+    }
+    private void ExecuteAccept(ParserAction action) {
+      //AST nodes are created when we pop them from the stack to add to parent's child list
+      // for top node we do it here
+      var rootNode = Stack.Pop();
+      if (_grammar.FlagIsSet(LanguageFlags.CreateAst))
+        SafeCreateAstNode(rootNode);
+      _context.CurrentParseTree.Root = rootNode; 
     }
 
     private void ExecuteOperatorAction(ParserAction action) {

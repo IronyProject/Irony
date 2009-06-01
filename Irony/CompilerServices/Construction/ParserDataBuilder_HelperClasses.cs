@@ -270,13 +270,13 @@ namespace Irony.CompilerServices.Construction {
           result.Add(item);
       return result;
     }
-    public LRItemSet SelectByHintType(HintType hintType) {
-      var result = new LRItemSet();
+    public GrammarHintList GetHints(HintType hintType) {
+      var result = new GrammarHintList();
       foreach (var item in this)
         if (item.Core.HasHints())
           foreach(var hint in item.Core.Hints)
             if (hint.HintType == hintType)
-          result.Add(item);
+          result.Add(hint);
       return result;
     }
   }

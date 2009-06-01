@@ -17,7 +17,6 @@ using System.Reflection;
 
 namespace Irony.CompilerServices {
 
-  public delegate void AstNodeCreator(CompilerContext context, ParseTreeNode parseNode);
 
   public class NonTerminalList : List<NonTerminal> { }
   public class NonTerminalSet : HashSet<NonTerminal> {}
@@ -25,27 +24,19 @@ namespace Irony.CompilerServices {
   public class NonTerminal : BnfTerm {
 
     #region constructors
-    public NonTerminal(string name)  : base(name, null) { //by default display name is null
-    }
-    public NonTerminal(string name, AstNodeCreator nodeCreator)  : base(name) {
-      NodeCreator = nodeCreator;
-    }
-    public NonTerminal(string name, string displayName) : base(name, displayName) {
-    }
-    public NonTerminal(string name, Type nodeType) : this(name) { 
-      NodeType = nodeType;
-    }
-    public NonTerminal(Type nodeType) : this(nodeType.Name) {
-      NodeType = nodeType;
-    }
+    public NonTerminal(string name)  : base(name, null) { }  //by default display name is null
+    public NonTerminal(string name, string displayName) : base(name, displayName) { }
+    public NonTerminal(string name, string displayName, Type nodeType) : base(name, displayName, nodeType ) { }
+    public NonTerminal(string name, string displayName,  AstNodeCreator nodeCreator) : base(name, displayName, nodeCreator) {}
+    public NonTerminal(string name, Type nodeType) : base(name, null, nodeType) { }
+    public NonTerminal(string name, AstNodeCreator nodeCreator) : base(name, null, nodeCreator) { }
     public NonTerminal(string name, BnfExpression expression)
       : this(name) { 
       Rule = expression;
     }
     #endregion
 
-    #region properties/fields: NodeType, Rule, ErrorRule 
-    public Type NodeType;
+    #region properties/fields: Rule, ErrorRule 
     
     public BnfExpression Rule; 
     //Separate property for specifying error expressions. This allows putting all such expressions in a separate section
@@ -53,17 +44,6 @@ namespace Irony.CompilerServices {
     // in YACC
     public BnfExpression ErrorRule;
 
-    #endregion
-
-    #region events and delegates: NodeCreator, NodeCreated
-    public AstNodeCreator NodeCreator;
-    public event EventHandler<NodeCreatedEventArgs> NodeCreated;
-
-    protected internal void OnNodeCreated(object node) {
-      if (NodeCreated == null) return;
-      NodeCreatedEventArgs args = new NodeCreatedEventArgs(node);
-      NodeCreated(this, args);
-    }
     #endregion
 
     #region overrids: ToString

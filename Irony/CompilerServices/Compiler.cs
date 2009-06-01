@@ -59,7 +59,10 @@ namespace Irony.CompilerServices {
       context.CurrentParseTree = new ParseTree(sourceText, fileName);
       Parser.Scanner.SetSource(sourceText);
       Parser.Scanner.BeginScan(context);
-      Parser.Scanner.ScanAll(); 
+      while (true) {
+        var token = Parser.Scanner.GetToken();
+        if (token == null || token.Terminal == Language.Grammar.Eof) break;
+      }
       return context.CurrentParseTree;
     }
 

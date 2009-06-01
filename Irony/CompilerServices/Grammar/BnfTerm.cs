@@ -42,14 +42,25 @@ namespace Irony.CompilerServices {
     // Identifier terminal is an example
   }
 
+  public delegate void AstNodeCreator(CompilerContext context, ParseTreeNode parseNode);
 
   //Basic Backus-Naur Form element. Base class for Terminal, NonTerminal, BnfExpression, GrammarHint
-  public abstract class BnfTerm  {
+  public abstract class BnfTerm {
+    #region consructors
     public BnfTerm(string name) : this(name, name) { }
     public BnfTerm(string name, string displayName) {
       Name = name;
       DisplayName = displayName;
     }
+    public BnfTerm(string name, string displayName, Type nodeType) : this(name, displayName) {
+      NodeType = nodeType;
+    }
+    public BnfTerm(string name, string displayName, AstNodeCreator nodeCreator) : this(name, displayName) {
+      NodeCreator = nodeCreator;  
+    }
+    #endregion
+
+
     public virtual void Init(GrammarData grammarData) {
       GrammarData = grammarData;
       OwnerGrammar = grammarData.Grammar;
@@ -94,6 +105,18 @@ namespace Irony.CompilerServices {
         Options &= ~option;
     }
 
+    #endregion
+
+    #region AST node creations: NodeType, NodeCreator, NodeCreated
+    public Type NodeType;
+    public AstNodeCreator NodeCreator;
+    public event EventHandler<NodeCreatedEventArgs> NodeCreated;
+
+    protected internal void OnNodeCreated(ParseTreeNode parseNode) {
+      if (NodeCreated == null) return;
+      NodeCreatedEventArgs args = new NodeCreatedEventArgs(parseNode);
+      NodeCreated(this, args);
+    }
     #endregion
 
 

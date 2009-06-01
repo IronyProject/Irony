@@ -70,7 +70,7 @@ namespace Irony.CompilerServices {
       yield break;
     }//method
 
-    public override void OnResetSourceLocation(SourceLocation location) {
+    public override void OnSetSourceLocation(SourceLocation location) {
       while (_braces.Count > 0 && _braces.Peek().Location.Position >= location.Position)
         _braces.Pop(); 
     }

@@ -57,5 +57,4 @@ namespace Irony.CompilerServices {
     Neutral  //don't know what that means 
   }
 
-
 }//namespace

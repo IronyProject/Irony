@@ -19,36 +19,38 @@ namespace Irony.CompilerServices {
 
   public enum HintType {
     /// <summary>
-    /// Instructs the parser to go for shift action in case of shift/reduce conflicts. Use Grammar.PreferShiftHere() method to create
-    /// the hint of this type and insert it right before the symbol to be shifted. Shift is default preferred action for shift-reduce
-    /// conflicts, so effectively this hint suppresses the warning message  reported in Grammar errors list
+    /// Instruction to resolve conflict to shift
     /// </summary>
-    PreferShift = 1,
+    ResolveToShift,
     /// <summary>
-    /// Instructs the parser to opt for reduce operation on particular production in case of conflicts. Use Grammar.ReduceThis() method
-    /// to create a hint of this type, and place it at the end of the production to be preferred.
+    /// Instruction to resolve conflict to reduce
     /// </summary>
-    ReduceThis = 2,
+    ResolveToReduce,
+    /// <summary>
+    /// Instruction to resolve conflict to operator
+    /// </summary>
+    ResolveToOperator,
+    /// <summary>
+    /// Instruction to resolve the conflict using special code in grammar in OnResolvingConflict method.
+    /// </summary>
+    ResolveInCode,
     /// <summary>
     /// Currently ignored by Parser, may be used in the future to set specific precedence value of the following terminal operator.
     /// One example where it can be used is setting higher precedence value for unary + or - operators. This hint would override 
     /// precedence set for these operators for cases when they are used as unary operators. (YACC has this feature).
     /// </summary>
-    Precedence = 3,
+    Precedence,
     /// <summary>
     /// An instruction to NLALR parser builder to wrap production tail into new transient non-terminal to resolve 
     /// parsing conflicts.
     /// </summary>
-    WrapTail = 4, 
-    /// <summary>
-    /// Grammar provides custom method that will be called to resolve the parsing conflict.
-    /// </summary>
-    CustomAction = 5, 
+    WrapTail, 
     /// <summary>
     /// Provided for all custom hints that derived solutions may introduce 
     /// </summary>
     Custom
   }
+
 
   public class GrammarHintList : List<GrammarHint> {}
 
@@ -61,10 +63,8 @@ namespace Irony.CompilerServices {
     public readonly HintType HintType;
     public readonly object Data;
 
-    public GrammarHint(HintType hintType) : base("hint_" + hintType.ToString()) {
+    public GrammarHint(HintType hintType, object data) : base("HINT") {
       HintType = hintType;
-    }
-    public GrammarHint(HintType hintType, object data) : this(hintType) {
       Data = data; 
     }
   }//class

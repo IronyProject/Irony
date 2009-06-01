@@ -28,10 +28,13 @@ namespace Irony.CompilerServices {
   }//class
 
   public class NodeCreatedEventArgs : EventArgs {
-    public NodeCreatedEventArgs(object node) {
-      Node = node;
+    public NodeCreatedEventArgs(ParseTreeNode parseTreeNode) {
+      ParseTreeNode = parseTreeNode;
     }
-    public readonly object Node;
+    public readonly ParseTreeNode ParseTreeNode;
+    public object AstNode { 
+      get { return ParseTreeNode.AstNode; } 
+    }
   }
 
 }//namespace

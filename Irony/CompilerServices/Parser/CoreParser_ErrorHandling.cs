@@ -30,7 +30,7 @@ namespace Irony.CompilerServices {
       if (errorShiftAction == null) return false; //we failed to recover
       //2. Shift error token - execute shift action
       if (_traceOn) AddTraceEntry();
-      ExecuteShift(errorShiftAction);
+      ExecuteShift(errorShiftAction.NewState);
       //4. Now we need to go along error production until the end, shifting tokens that CAN be shifted and ignoring others.
       //   We shift until we can reduce
       while (_currentInput.Term != _grammar.Eof) {
@@ -39,24 +39,24 @@ namespace Irony.CompilerServices {
         if (action != null) {
           //Now reset scanner's position to current input position and clear all token queues; do it before ExecuteReduce
           // as reset would clear the input stack
-          ResetSourceLocation(_currentInput.Span.Start);
+          ResetSourceLocation(_currentInput.Span.Start, _currentInput.Span.EndPos);
           ExecuteReduce(action.ReduceProduction);
           return true; //we recovered 
         }
         //No reduce action in current state. Try to shift current token or throw it away or reduce
         action = GetShiftActionInCurrentState();
         if (action != null)
-          ExecuteShift(action); //shift input token
+          ExecuteShift(action.NewState); //shift input token
         else
           ReadInput(); //throw away input token
       }
       return false;
     }//method
 
-    public void ResetSourceLocation(SourceLocation location) {
+    public void ResetSourceLocation(SourceLocation tokenStart, int position) {
       _currentInput = null;
       InputStack.Clear();
-      _scanner.ResetSourceLocation(location);
+      _scanner.SetSourceLocation(tokenStart, position);
     }
 
     private ParserAction FindErrorShiftActionInStack() {

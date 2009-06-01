@@ -196,29 +196,35 @@ namespace Irony.CompilerServices {
     }
 
     public virtual void CreateAstNode(CompilerContext context, ParseTreeNode nodeInfo) {
-      NonTerminal nt = (NonTerminal) nodeInfo.Term;
-      if (nt.NodeCreator != null) {
-        nt.NodeCreator(context, nodeInfo);
+      var term = nodeInfo.Term;
+      if (term.NodeCreator != null) {
+        term.NodeCreator(context, nodeInfo);
         //We assume that Node creator method creates node and initializes it, so parser does not need to call 
         // IAstNodeInit.InitNode() method on node object.
         return;
       }
-      Type ntNodeType = nt.NodeType ?? this.DefaultNodeType;
-      if (ntNodeType == null) return; 
-      nodeInfo.AstNode =  Activator.CreateInstance(ntNodeType);
+      Type nodeType = term.NodeType ?? this.DefaultNodeType;
+      if (nodeType == null) return; 
+      nodeInfo.AstNode =  Activator.CreateInstance(nodeType);
       //Initialize node
       var iInit = nodeInfo.AstNode as IAstNodeInit;
       if (iInit != null)
         iInit.Init(context, nodeInfo); 
-   }
+    }
+
+    /// <summary>
+    /// Override this method to provide custom conflict resolution; for example, custom code may decide proper shift or reduce
+    /// action based on preview of tokens ahead. 
+    /// </summary>
+    public virtual void OnResolvingConflict(ConflictResolutionArgs args) {
+      //args.Result is Shift by default
+    }
 
     //The method is called after GrammarData is constructed 
     public virtual void OnGrammarDataConstructed(LanguageData language) {
-
     }
 
     public virtual void OnParserDataConstructed(LanguageData language) {
-
     }
 
     public virtual string GetSyntaxErrorMessage(CompilerContext context, ParserState state, ParseTreeNode currentInput) {
@@ -268,14 +274,18 @@ namespace Irony.CompilerServices {
     #endregion
 
     #region Hint utilities
+    //[Obsolete("Deprecated. Use ResolveBy(ResolutionType.Shift) method instead")]
     protected GrammarHint PreferShiftHere() {
-      return new GrammarHint(HintType.PreferShift);
+      return new GrammarHint(HintType.ResolveToShift, null); 
     }
-    protected GrammarHint ReduceThis() {
-      return new GrammarHint(HintType.ReduceThis);
+    protected GrammarHint ReduceHere() {
+      return new GrammarHint(HintType.ResolveToReduce, null);
+    }
+    protected GrammarHint ResolveInCode() {
+      return new GrammarHint(HintType.ResolveInCode, null); 
     }
     protected GrammarHint WrapTail() {
-      return new GrammarHint(HintType.WrapTail);
+      return new GrammarHint(HintType.WrapTail, null);
     }
     #endregion
 

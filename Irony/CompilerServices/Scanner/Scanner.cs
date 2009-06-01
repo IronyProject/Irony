@@ -21,21 +21,24 @@ namespace Irony.CompilerServices {
 
   public class Scanner  {
     #region Properties and Fields: Data, _source, _context, _caseSensitive, _currentToken
-    public readonly ScannerData Data;
+    ScannerData _data;
     Grammar _grammar;
     CompilerContext _context;
     //buffered tokens can come from expanding a multi-token, when Terminal.TryMatch() returns several tokens packed into one token
     TokenList _bufferedTokens = new TokenList();
-    ISourceStream _source;
     public IEnumerable<Token> UnfilteredStream;
     public IEnumerable<Token> FilteredStream;
-    public IEnumerator<Token> FilteredTokenEnumerator; 
+    public IEnumerator<Token> FilteredTokenEnumerator;
+    bool _disableParserLink;
 
+    public ISourceStream Source {
+      get { return _source; }
+    } ISourceStream _source;
     #endregion
 
     public Scanner(ScannerData data) {
-      Data = data;
-      _grammar = Data.GrammarData.Grammar;
+      _data = data;
+      _grammar = _data.GrammarData.Grammar;
     }
 
     public void BeginScan(CompilerContext context) {
@@ -44,14 +47,15 @@ namespace Irony.CompilerServices {
       //create streams
       FilteredStream = UnfilteredStream = CreateUnfilteredTokenStream();
       //chain all token filters
-      foreach (TokenFilter filter in Data.TokenFilters) {
+      foreach (TokenFilter filter in _data.TokenFilters) {
         FilteredStream = filter.BeginFiltering(context, FilteredStream);
       }
       FilteredTokenEnumerator = FilteredStream.GetEnumerator(); 
     }
+
     public void SetSource(string text) {
       _source = new SourceStream(text, 0);
-      _nextNewLinePosition = text.IndexOfAny(Data.LineTerminators);
+      _nextNewLinePosition = text.IndexOfAny(_data.LineTerminators);
     }
     public void SetPartialSource(string text, int offset) {
       if (_source == null)
@@ -69,13 +73,6 @@ namespace Irony.CompilerServices {
       var token = FilteredTokenEnumerator.Current;
       _context.CurrentParseTree.Tokens.Add(token);
       return token; 
-    }
-
-    public void ScanAll() {
-      while (true) {
-        var token = GetToken();
-        if (token == null || token.Terminal == _grammar.Eof) return; 
-      }
     }
 
     //This is iterator method, so it returns immediately when called directly
@@ -106,7 +103,7 @@ namespace Irony.CompilerServices {
       if (state == 0)
         result = ReadToken();
       else {
-        Terminal term = Data.MultilineTerminals[_context.ScannerState.TerminalIndex - 1];
+        Terminal term = _data.MultilineTerminals[_context.ScannerState.TerminalIndex - 1];
         result = term.TryMatch(_context, _source); 
       }
       //set state value from context
@@ -120,6 +117,32 @@ namespace Irony.CompilerServices {
     }
     #endregion
 
+
+    #region TokenPreview
+    SourceLocation _savedTokenStart;
+    int _savedPosition;
+    public void BeginPreview() {
+      _savedTokenStart = _source.TokenStart;
+      _savedPosition = _source.Position;
+      _disableParserLink = true; 
+    }
+    public Token Preview(TerminalSet skipTerms) {
+      Token tkn;
+      while (true) {
+        tkn = ReadToken();
+        if (tkn.Terminal == _grammar.Eof || !skipTerms.Contains(tkn.Terminal)) break;
+      }
+      return tkn;
+    }
+
+    public void EndPreview() {
+      _disableParserLink = false; 
+      _source.TokenStart = _savedTokenStart;
+      _source.Position = _savedPosition;
+    }
+    #endregion
+
+    #region Reading token
     private Token ReadToken() {
       if (_bufferedTokens.Count > 0) 
         return ReadBufferedToken(); 
@@ -127,7 +150,7 @@ namespace Irony.CompilerServices {
       while (_grammar.WhitespaceChars.IndexOf(_source.CurrentChar) >= 0)
         _source.Position++;
       //That's the token start, calc location (line and column)
-      SetTokenStartLocation();
+      ComputeNewTokenLocation();
       //Check for EOF
       if (_source.EOF())
         return CreateFinalToken(); 
@@ -136,8 +159,8 @@ namespace Irony.CompilerServices {
       var terms = SelectTerminals(_source.CurrentChar);
       var token = MatchTerminals(terms);
       //If no token, try FallbackTerminals
-      if (token == null && terms != Data.FallbackTerminals && Data.FallbackTerminals.Count > 0)
-        token = MatchTerminals(Data.FallbackTerminals); 
+      if (token == null && terms != _data.FallbackTerminals && _data.FallbackTerminals.Count > 0)
+        token = MatchTerminals(_data.FallbackTerminals); 
       //If we don't have a token from registered terminals, try Grammar's method
       if (token == null) 
         token = _grammar.TryMatch(_context, _source);
@@ -209,12 +232,13 @@ namespace Irony.CompilerServices {
       TerminalList termList;
       if (!_grammar.CaseSensitive)
         current = char.ToLower(current);
-      if (!Data.TerminalsLookup.TryGetValue(current, out termList))
-        termList = Data.FallbackTerminals;
+      if (!_data.TerminalsLookup.TryGetValue(current, out termList))
+        termList = _data.FallbackTerminals;
       if (termList.Count <= 1)
         return termList;
       //If we have more than one candidate, try filter them by checking with parser which terms it expects
-      if (_context.ParserIsRecovering)
+      // but do it only if we're not recovering or previewing
+      if (_context.ParserIsRecovering || _disableParserLink)
         return termList;
       var parserState = _context.GetCurrentParserState();
       if (parserState == null) 
@@ -232,40 +256,37 @@ namespace Irony.CompilerServices {
       else 
         return _filteredTerminals;
     }//Select
+    #endregion
 
+    #region Error recovery
     private bool Recover() {
       try {
         _context.ScannerIsRecovering = true;
-        return ScrollUntil(Data.ScannerRecoverySymbols); 
+        _source.Position++;
+        while (!_source.EOF()) {
+          if (_data.ScannerRecoverySymbols.IndexOf(_source.CurrentChar) >= 0) return true;
+          _source.Position++;
+        }
+        return false; 
       } finally {
         _context.ScannerIsRecovering = false; 
       }
     }
+    #endregion 
 
-    public void ResetSourceLocation(SourceLocation location) {
-      _source.TokenStart = location;
-      _source.Position = location.Position;
-      _bufferedTokens.Clear();
-      _currentToken = null; 
-      foreach(var filter in Data.TokenFilters)
-        filter.OnResetSourceLocation(location);
-    }
-
-
-    public bool ScrollUntil(string untilChars) {
-      _source.Position++;
-      while (!_source.EOF()) { 
-        if(untilChars.IndexOf(_source.CurrentChar) >= 0) return true; 
-        _source.Position++;
-      }
-      return false; 
+    //TODO: this is messed up, need to fix all code related to TokenStart and position and resetting it
+    public void SetSourceLocation(SourceLocation tokenStart, int position) {
+      foreach (var filter in _data.TokenFilters)
+        filter.OnSetSourceLocation(tokenStart); 
+      _source.TokenStart = tokenStart;
+      _source.Position = position; 
     }
 
     #region TokenStart calculations
     private int _nextNewLinePosition = -1; //private field to cache position of next \n character
     //Calculates the _source.TokenStart values (row/column) for the token which starts at the current position.
     // We just skipped the whitespace and about to start scanning the next token.
-    internal void SetTokenStartLocation() {
+    internal void ComputeNewTokenLocation() {
       //cache values in local variables
       SourceLocation tokenStart = _source.TokenStart;
       int newPosition = _source.Position;
@@ -286,7 +307,7 @@ namespace Irony.CompilerServices {
       //First count \n chars in the string fragment
       int lineStart = _nextNewLinePosition;
       int nlCount = 1; //we start after old _nextNewLinePosition, so we count one NewLine char
-      CountCharsInText(text, Data.LineTerminators, lineStart + 1, newPosition - 1, ref nlCount, ref lineStart);
+      CountCharsInText(text, _data.LineTerminators, lineStart + 1, newPosition - 1, ref nlCount, ref lineStart);
       tokenStart.Line += nlCount;
       //at this moment lineStart is at start of line where newPosition is located 
       //Calc # of tab chars from lineStart to newPosition to adjust column#
@@ -303,7 +324,7 @@ namespace Irony.CompilerServices {
         tokenStart.Column += (_source.TabWidth - 1) * tabCount; // "-1" to count for tab char itself
 
       //finally cache new line and assign TokenStart
-      _nextNewLinePosition = text.IndexOfAny(Data.LineTerminators, newPosition);
+      _nextNewLinePosition = text.IndexOfAny(_data.LineTerminators, newPosition);
       _source.TokenStart = tokenStart;
     }
 

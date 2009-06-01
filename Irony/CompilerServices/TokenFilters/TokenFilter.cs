@@ -50,7 +50,7 @@ namespace Irony.CompilerServices {
       GrammarData = grammarData;
       Grammar = GrammarData.Grammar;
     }
-    public virtual void OnResetSourceLocation(SourceLocation location) {
+    public virtual void OnSetSourceLocation(SourceLocation location) {
     }
 
   }//class

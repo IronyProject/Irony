@@ -405,8 +405,8 @@ namespace Irony.CompilerServices.Construction {
       state.BuilderData.Conflicts.ExceptWith(state.BuilderData.ResolvedConflicts);
       state.BuilderData.Conflicts.ExceptWith(state.BuilderData.JumpLookaheads);
       //Now resolve conflicts by hints and precedence
-      ResolveConflictsByPrecedence(state);
       ResolveConflictsByHints(state);
+      ResolveConflictsByPrecedence(state);
     }//method
 
     private void ResolveConflictsByPrecedence(ParserState state) {
@@ -437,28 +437,65 @@ namespace Irony.CompilerServices.Construction {
     private void ResolveConflictsByHints(ParserState state) {
       var stateData = state.BuilderData;
       var oldCount = stateData.ResolvedConflicts.Count;
-      foreach (var conflict in stateData.Conflicts) {
-        ResolveConflictByHints(state, conflict); 
-      }//foreach conflict
+      foreach (var conflict in stateData.Conflicts)
+        ResolveConflictByHints(state, conflict);
       if (stateData.ResolvedConflicts.Count > oldCount)
         stateData.Conflicts.ExceptWith(stateData.ResolvedConflicts);
     }
-    private bool ResolveConflictByHints(ParserState state, BnfTerm conflict) {
+
+    private void ResolveConflictByHints(ParserState state, BnfTerm conflict) {
+      if (TryResolveConflictByHints(state, conflict))
+        state.BuilderData.ResolvedConflicts.Add(conflict);
+    }
+
+    private bool TryResolveConflictByHints(ParserState state, BnfTerm conflict) {
       var stateData = state.BuilderData;
-      var preferredShifts = stateData.ShiftItems.SelectByCurrent(conflict).SelectByHintType(HintType.PreferShift);
-      var preferredReduces = stateData.ReduceItems.SelectByLookahead(conflict).SelectByHintType(HintType.ReduceThis);
-      if (preferredShifts.Count == 0 && preferredReduces.Count == 0) return false;
-      if (preferredReduces.Count > 1) {
-        AddError("More than one 'ReduceThis' hint for reduce items in state {0}", state.Name);
+      //reduce hints
+      var reduceItems = stateData.ReduceItems.SelectByLookahead(conflict);
+      foreach(var reduceItem in reduceItems) 
+        if (reduceItem.Core.Hints != null) 
+          foreach (var hint in reduceItem.Core.Hints) 
+            if (hint.HintType == HintType.ResolveToReduce) {
+              var newAction = ParserAction.CreateReduce(reduceItem.Core.Production);
+              state.Actions[conflict] = newAction; //replace/add reduce action
+              return true; 
+            }          
+      
+      //Shift hints
+      var shiftItems = stateData.ShiftItems.SelectByCurrent(conflict);
+      foreach (var shiftItem in shiftItems)
+        if (shiftItem.Core.Hints != null)
+          foreach (var hint in shiftItem.Core.Hints)
+            if (hint.HintType == HintType.ResolveToShift) {
+              //shift action is already there
+              return true;
+            }
+
+      //code hints
+      // first prepare data for conflict action: reduceProduction (for possible reduce) and newState (for possible shift)
+      var reduceProduction = reduceItems.First().Core.Production; //take first of reduce productions
+      ParserState newState = (state.Actions.ContainsKey(conflict) ? state.Actions[conflict].NewState : null); 
+      // Get all items that might contain hints; first take all shift items and reduce items in conflict;
+      // we should also add lookahead sources of reduce items. Lookahead source is an LR item that produces the lookahead, 
+      // so if it contains a code hint right before the lookahead term, then it applies to this conflict as well. 
+      var allItems = new LRItemList();
+      allItems.AddRange(shiftItems);
+      foreach (var reduceItem in reduceItems) {
+        allItems.Add(reduceItem);
+        allItems.AddRange(reduceItem.ReducedLookaheadSources);
       }
-      if (preferredShifts.Count > 0) {
-        //Nothing to do, shift action should exist under this key
-      } else if (preferredReduces.Count > 0) {
-        var newAction = ParserAction.CreateReduce(preferredReduces.First().Core.Production);
-        state.Actions[conflict] = newAction; //replace/add reduce action
-      }//else if
-      stateData.ResolvedConflicts.Add(conflict);
-      return true; 
+      // Scan all items and try to find hint with resolution type Code
+      foreach (var item in allItems)
+        if (item.Core.Hints != null)
+          foreach (var hint in item.Core.Hints)
+            if (hint.HintType == HintType.ResolveInCode) {
+              //found hint with resolution type "code" - this is instruction to use custom code here to resolve the conflict
+              // create new ConflictAction and place it into Actions table
+              var newAction = ParserAction.CreateCodeAction(newState, reduceProduction);
+              state.Actions[conflict] = newAction; //replace/add reduce action
+              return true;
+            }
+      return false; 
     }
 
     private void ReportAndSetDefaultActionsForRemainingConflicts() {

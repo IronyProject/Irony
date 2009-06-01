@@ -47,7 +47,7 @@ namespace Irony.CompilerServices {
       get { return _currentState; }
     } ParserState _currentState;
 
-    private ParseTreeNode CurrentInput {
+    public ParseTreeNode CurrentInput {
       get { return _currentInput; }
     }  ParseTreeNode _currentInput;
 
@@ -57,19 +57,15 @@ namespace Irony.CompilerServices {
     #region Parse method
     public void Parse(CompilerContext context) {
       _context = context;
-      _traceOn = _context.OptionIsSet(CompilerOptions.TraceParser); 
-      Reset(); 
-      //main loop
-      while (ExecuteAction()) { }
-    }//Parse
-
-    private void Reset() {
+      _traceOn = _context.OptionIsSet(CompilerOptions.TraceParser);
       _currentInput = null;
       InputStack.Clear();
       Stack.Clear();
       _currentState = Data.InitialState; //set the current state to InitialState
       Stack.Push(new ParseTreeNode(Data.InitialState));
-    }
+      //main loop
+      while (ExecuteAction()) {}
+    }//Parse
     #endregion
 
     #region reading input
@@ -111,9 +107,10 @@ namespace Irony.CompilerServices {
         _currentTraceEntry.SetDetails(action.ToString(), _currentState);
       //Execute it
       switch (action.ActionType) {
-        case ParserActionType.Shift: ExecuteShift(action); break;
-        case ParserActionType.Operator: ExecuteOperatorAction(action); break;
+        case ParserActionType.Shift: ExecuteShift(action.NewState); break;
+        case ParserActionType.Operator: ExecuteOperatorAction(action.NewState, action.ReduceProduction); break;
         case ParserActionType.Reduce: ExecuteReduce(action.ReduceProduction); break;
+        case ParserActionType.Code: ExecuteConflictAction (action); break;
         case ParserActionType.Jump: ExecuteNonCanonicalJump(action); break;
         case ParserActionType.Accept: ExecuteAccept(action); return false; 
       }
@@ -180,9 +177,9 @@ namespace Irony.CompilerServices {
       return action; 
     }
 
-    private void ExecuteShift(ParserAction action) {
-      Stack.Push(_currentInput, action.NewState);
-      _currentState = action.NewState;
+    private void ExecuteShift(ParserState newState) {
+      Stack.Push(_currentInput, newState);
+      _currentState = newState;
       if (_traceOn) SetTraceDetails("Shift", _currentState); 
       ReadInput();
     }
@@ -227,7 +224,7 @@ namespace Irony.CompilerServices {
       }
       //Pop child nodes one-by-one
       foreach(var rvalue in reduceProduction.RValues) {
-        PopChildNode(newNode); 
+        PopChildNode(newNode, ListAddMode.Start); 
       }//for i
       return newNode;
     }
@@ -248,7 +245,7 @@ namespace Irony.CompilerServices {
       if (!isExistingList) return false;
       listNode = Stack[Stack.Count - childCount]; //get the list already created - it is first child node
       listNode.Span = ComputeNewNodeSpan(childCount);
-      PopChildNode(listNode); //new list element sits on top, so pop it into child list
+      PopChildNode(listNode, ListAddMode.End); //new list element sits on top, so add it to the end of child list
       //now pop the rest one or two nodes
       var poppedNode = Stack.Pop();
       while (poppedNode != listNode)
@@ -257,27 +254,48 @@ namespace Irony.CompilerServices {
     }
 
     // 
-    private void PopChildNode(ParseTreeNode addToParent) {
+    private void PopChildNode(ParseTreeNode addToParent, ListAddMode mode) {
       var poppedNode = Stack.Pop();
       poppedNode.State = null; //clear the State field, we need only when node is in the stack
       if (poppedNode.Term.IsSet(TermOptions.IsPunctuation)) return;
       if (poppedNode.Term.IsSet(TermOptions.IsTransient)) {
-        addToParent.ChildNodes.InsertRange(0, poppedNode.ChildNodes);
+        addToParent.ChildNodes.Add(poppedNode.ChildNodes, mode);
       } else {
+        //TODO: make it possible to create AST nodes for terminals (Number, StringLiteral).
         if (_grammar.FlagIsSet(LanguageFlags.CreateAst))
           SafeCreateAstNode(poppedNode);
-        addToParent.ChildNodes.Insert(0, poppedNode);
+        addToParent.ChildNodes.Add(poppedNode, mode);
       }
     }
     
-    private void SafeCreateAstNode(ParseTreeNode nodeInfo) {
+    private void SafeCreateAstNode(ParseTreeNode parseNode) {
       try {
-        _grammar.CreateAstNode(_context, nodeInfo);
+        _grammar.CreateAstNode(_context, parseNode);
+        if (parseNode.AstNode != null && parseNode.Term != null)
+          parseNode.Term.OnNodeCreated(parseNode);
       } catch (Exception ex) {
-        _context.ReportError(nodeInfo.Span.Start, "Failed to create AST node for non-terminal [{0}], error: " + ex.Message, nodeInfo.Term.Name); 
+        _context.ReportError(parseNode.Span.Start, "Failed to create AST node for non-terminal [{0}], error: " + ex.Message, parseNode.Term.Name); 
       }
     }
     #endregion
+
+    private void ExecuteConflictAction(ParserAction action) {
+      var args = new ConflictResolutionArgs(_context, action);
+      _grammar.OnResolvingConflict(args);
+      switch(args.Result) {
+        case ParserActionType.Reduce:
+          ExecuteReduce(args.ReduceProduction);
+          break; 
+        case ParserActionType.Operator:
+          ExecuteOperatorAction(action.NewState, args.ReduceProduction);
+          break;
+        case ParserActionType.Shift:
+        default:
+          ExecuteShift(action.NewState); 
+          break; 
+      }
+    }
+
 
     private void ExecuteNonCanonicalJump(ParserAction action) {
       _currentState = action.NewState;
@@ -291,11 +309,11 @@ namespace Irony.CompilerServices {
       _context.CurrentParseTree.Root = rootNode; 
     }
 
-    private void ExecuteOperatorAction(ParserAction action) {
+    private void ExecuteOperatorAction(ParserState newShiftState, Production reduceProduction) {
       var realActionType = GetActionTypeForOperation();
       switch (realActionType) {
-        case ParserActionType.Shift: ExecuteShift(action); break;
-        case ParserActionType.Reduce: ExecuteReduce(action.ReduceProduction); break; 
+        case ParserActionType.Shift: ExecuteShift(newShiftState); break;
+        case ParserActionType.Reduce: ExecuteReduce(reduceProduction); break; 
       }//switch
       if (_currentTraceEntry != null) {
         _currentTraceEntry.Message = "(Operator)" + _currentTraceEntry.Message;

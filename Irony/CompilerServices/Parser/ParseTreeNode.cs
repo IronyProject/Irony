@@ -89,7 +89,27 @@ namespace Irony.CompilerServices {
     }
   }
 
-  public class ParseTreeNodeList : List<ParseTreeNode> { }
+  public enum ListAddMode {
+    Start, 
+    End
+  }
+
+  public class ParseTreeNodeList : List<ParseTreeNode> {
+    public void Add(ParseTreeNode node, ListAddMode mode) {
+      if (mode == ListAddMode.Start)
+        base.Insert(0, node);
+      else
+        base.Add(node);
+
+    }
+    public void Add(ParseTreeNodeList nodes, ListAddMode mode) {
+      if (mode == ListAddMode.Start)
+        base.InsertRange(0, nodes);
+      else
+        base.AddRange(nodes);
+
+    }
+  }
 
 
 }

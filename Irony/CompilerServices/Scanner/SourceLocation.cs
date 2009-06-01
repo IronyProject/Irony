@@ -15,8 +15,9 @@ namespace Irony.CompilerServices {
       Line = line;
       Column = column;
     }
+    //Line and Column displayed to user should be 1-based
     public override string ToString() {
-      return Line + ", " + Column;
+      return (Line + 1).ToString() + ", " + (Column + 1).ToString();
     }
     public static int Compare(SourceLocation x, SourceLocation y) {
       if (x.Position < y.Position) return -1;

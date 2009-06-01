@@ -12,8 +12,9 @@ namespace Irony.Samples.CSharp {
   #region current conflicts explanations
   /*  
       Shift-reduce conflict in state S88, reduce production: using_directives_opt ->  on inputs: extern 
-           - the cause is double-use of "extern" keyword - in "extern alias someName;" and as modifier of class members
-             prefering shift is a default and correct behavior
+           - because of use of "extern" two places: in "extern alias someName;" and as modifier of class members;
+             this conflict is not in original c# grammar, it is a result of grammar tweaking (merging modifiers definitions)
+             prefering shift is correct behavior
       Shift-reduce conflict in state S518, reduce production: else_clause_opt ->  on inputs: else 
            - "dangling ELSE conflict" well described in textbooks; preferring shift is a correct behavior
        */
@@ -21,6 +22,7 @@ namespace Irony.Samples.CSharp {
 
   [Language("c#", "3.5", "Sample c# grammar")]
   public class CSharpGrammar : Grammar {
+    TerminalSet _skipTokensInPreview = new TerminalSet(); //used in token preview for conflict resolution
     public CSharpGrammar() {
       this.GrammarComments = "NOTE: This grammar is just a demo, and it is a broken demo.\r\n" + 
                              "Parser does not distinguish correctly '<' as comparison vs as angle bracket for type parameter, so some samples cannot be parsed.\r\n" +
@@ -59,7 +61,6 @@ namespace Irony.Samples.CSharp {
       SymbolTerminal yld = Symbol("yield");
 
       SymbolTerminal Lparx = Symbol("(*");
-
       #endregion
 
       #region NonTerminals
@@ -354,7 +355,11 @@ namespace Irony.Samples.CSharp {
       this.WhitespaceChars = " \t\r\n\v\u2085\u2028\u2029"; //add extra line terminators
       #endregion
 
-/*
+      #region "<" conflict resolution
+      var lt = new NonTerminal("_<_");
+      lt.Rule = ResolveInCode() + "<";
+      #endregion
+      /*
       #region Keywords
       string strKeywords =
             "abstract as base bool break byte case catch char checked " +
@@ -372,18 +377,18 @@ namespace Irony.Samples.CSharp {
       //B.2.1. Basic concepts
       //qual_name_with_targs is an alias for namespace-name, namespace-or-type-name, type-name,
 
-      generic_dimension_specifier.Rule = "<" + commas_opt + ">";
+      generic_dimension_specifier.Rule = lt + commas_opt + ">";
       qual_name_segments_opt.Rule = MakeStarRule(qual_name_segments_opt, null, qual_name_segment);
       identifier_or_builtin.Rule = identifier | builtin_type;
       identifier_ext.Rule = identifier_or_builtin | "this" | "base";
       qual_name_segment.Rule = dot + identifier
                               | "::" + identifier
                               | type_argument_list;
-      //generic_dimension_specifier.Rule = "<" + commas_opt + ">";
-      generic_dimension_specifier.Rule = "<" + commas_opt + ">";
+      //generic_dimension_specifier.Rule = lt + commas_opt + ">";
+      generic_dimension_specifier.Rule = lt + commas_opt + ">";
       qual_name_with_targs.Rule = identifier_or_builtin + qual_name_segments_opt;
 
-      type_argument_list.Rule = "<"  + type_ref_list + ">";
+      type_argument_list.Rule = lt + type_ref_list + ">";
       type_argument_list_opt.Rule = Empty | type_argument_list;
 
       //B.2.2. Types
@@ -476,7 +481,7 @@ namespace Irony.Samples.CSharp {
       member_declarator_list.Rule = MakePlusRule(member_declarator_list, comma, member_declarator);
       //typeof
       typeof_expression.Rule = "typeof" + Lpar + type_ref + Rpar;
-      generic_dimension_specifier_opt.Rule = Empty | "<" + commas_opt + ">";
+      generic_dimension_specifier_opt.Rule = Empty | lt + commas_opt + ">";
       //checked, unchecked
       checked_expression.Rule = "checked" + parenthesized_expression;
       unchecked_expression.Rule = "unchecked" + parenthesized_expression;
@@ -504,7 +509,7 @@ namespace Irony.Samples.CSharp {
       //I think it's a mistake; there must be additional entry here for arithm expressions, so we put them here. 
       // We also have to add "is" and "as" expressions here, as we don't build entire hierarchy of elements for expressing
       // precedence (where they appear in original spec); so we put them here 
-      bin_op.Rule =  Symbol("<")
+      bin_op.Rule = lt   
                   | "||" | "&&" | "|" | "^" | "&" | "==" | "!=" | ">" | "<=" | ">=" | "<<" | ">>" | "+" | "-" | "*" | "/" | "%"
                   | "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "<<=" | ">>="
                   | "is" | "as" | "??";
@@ -536,7 +541,7 @@ namespace Irony.Samples.CSharp {
       //selection (if and switch)
       selection_statement.Rule = if_statement | switch_statement;
       if_statement.Rule = Symbol("if") + Lpar + expression + Rpar + embedded_statement + else_clause_opt;
-      else_clause_opt.Rule = Empty | PreferShiftHere() + "else" + embedded_statement;
+      else_clause_opt.Rule = Empty |  PreferShiftHere() + "else" + embedded_statement;
       switch_statement.Rule = "switch" + parenthesized_expression + Lbr + switch_sections_opt + Rbr;
       switch_section.Rule = switch_labels + statement_list;
       switch_sections_opt.Rule = MakeStarRule(switch_sections_opt, null, switch_section);
@@ -591,7 +596,7 @@ namespace Irony.Samples.CSharp {
       compilation_unit.Rule = extern_alias_directives_opt
                             + using_directives_opt
                             + attributes_opt + namespace_declarations_opt;
-      extern_alias_directive.Rule = Symbol("extern") + "alias" + identifier + semi;
+      extern_alias_directive.Rule = PreferShiftHere() + Symbol("extern") + "alias" + identifier + semi;
       extern_alias_directives_opt.Rule = MakeStarRule(extern_alias_directives_opt, null, extern_alias_directive);
       namespace_declaration.Rule = "namespace" + qualified_identifier + namespace_body + semi_opt;
       namespace_declarations_opt.Rule = MakeStarRule(namespace_declarations_opt, null, namespace_declaration);
@@ -620,7 +625,7 @@ namespace Irony.Samples.CSharp {
       //Type parameters
       type_parameter.Rule = attributes_opt + identifier;
       type_parameters.Rule = MakePlusRule(type_parameters, comma, type_parameter);
-      type_parameter_list_opt.Rule = Empty | "<" + type_parameters + ">";
+      type_parameter_list_opt.Rule = Empty | lt + type_parameters + ">";
       type_parameter_constraints_clause.Rule = "where" + type_parameter + colon + type_parameter_constraints;
       type_parameter_constraints.Rule = MakePlusRule(type_parameter_constraints, comma, type_parameter_constraint);
       type_parameter_constraints_clauses_opt.Rule = MakeStarRule(type_parameter_constraints_clauses_opt, null, type_parameter_constraints_clause);
@@ -753,31 +758,64 @@ namespace Irony.Samples.CSharp {
       attribute_arguments_opt.Rule = MakeStarRule(attribute_arguments_opt, comma, attr_arg);
       attr_arg.Rule = identifier + "=" + expression | expression;
 
+      //Prepare term set for conflict resolution
+      _skipTokensInPreview.UnionWith(new Terminal[] { dot, identifier, comma, Symbol("::"), comma, Symbol("["), Symbol("]") });
+    
     }
 
-/*
-    private StringList _previewTokens = new StringList(
-          ";", "{",
-          "||", "&&", "|", "^", "&", "==", "!=", ">", "<=", ">=", "<<", ">>",
-          "+", "-", "*", "/", "%", "=", "+=", "-=", "*=", "/=", "%=", "&=", ",=",
-          "^=", "<<=", ">>=", "is", "as");
+    #region conflict resolution for "<"
+/* The shift-reduce conflict for "<" symbol is the problem of deciding what is "<" symbol in the input - is it 
+ * opening brace for generic reference, or logical operator. The following is a printout of parser state that has a conflict
+ * The handling code need to run ahead and decide a proper action: if we see ">", then it is a generic bracket and we do shift; 
+ * otherwise, it is an operator and we make Reduce
+ * 
+State S188 (Inadequate)
+  Shift items:
+    member_access_segments_opt -> member_access_segments_opt ·member_access_segment 
+    member_access_segment -> ·. Identifier 
+    member_access_segment -> ·array_indexer 
+    array_indexer -> ·[ expression_list ] 
+    member_access_segment -> ·argument_list_par 
+    argument_list_par -> ·( argument_list_opt ) 
+    member_access_segment -> ·type_argument_list 
+    type_argument_list -> ·_<_ type_ref_list > 
+    _<_ -> ·< 
+  Reduce items:
+    member_access -> identifier_ext member_access_segments_opt · [? , ) : ; } ] Identifier ++ -- || && | ^ & == != > <= >= << >> + - * / % = += -= *= /= %= &= |= ^= <<= >>= is as ?? <]
+  Shifts: member_access_segment->S220, .->S221, array_indexer->S222, [->S223, argument_list_par->S224, (->S225, type_argument_list->S226, _<_->S59, 
+   
+*/
 
-    public override object OnActionConflict(IParser iparser, Token input, object action) {
-      if (input.Text != "<") return action;
-      ActionRecord actionRec = (ActionRecord)action;
-      Parser parser = iparser as Parser;
-      Token preview = parser.PreviewSymbols(_previewTokens);
-      //if we see closing angle bracket before anything else, it is type arguments, so we must do shift!
-      if (preview != null && preview.Text == ">") {
-        if (actionRec.ActionType == ParserActionType.Shift) return action;
-        return actionRec.CreateDerived(ParserActionType.Shift, null);
-      } else {
-        //otherwise, return reduce action on member_access production
-        // it is hard to explain, just look at productions in parser state for which this method is invoked (S186 but might change) 
-        return actionRec.CreateDerived(ParserActionType.Reduce, actionRec.Production);
+    
+    public override void OnResolvingConflict(ConflictResolutionArgs args) {
+      switch(args.CurrentParserInput.Term.Name) {
+        case "<":
+          args.Scanner.BeginPreview(); 
+          int ltCount = 0;
+          string previewSym;
+          while(true) {
+            Token preview  = args.Scanner.Preview(_skipTokensInPreview); 
+            previewSym = preview.Terminal.Name; 
+            if (previewSym == "<")
+              ltCount++;
+            else if (previewSym == ">" && ltCount > 0) {
+              ltCount--;
+              continue;               
+            } else 
+              break; 
+          }
+          //if we see ">", then it is type argument, not operator
+          if (previewSym == ">")
+            args.Result = ParserActionType.Shift;
+          else
+            args.Result = ParserActionType.Reduce;
+          args.Scanner.EndPreview(); 
+          return; 
       }
     }
-*/
+    #endregion
+
+
   }//class
 }//namespace
 

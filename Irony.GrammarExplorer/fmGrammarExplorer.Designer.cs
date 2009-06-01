@@ -281,6 +281,7 @@ namespace Irony.GrammarExplorer {
       // btnToXml
       // 
       this.btnToXml.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.btnToXml.Enabled = false;
       this.btnToXml.Location = new System.Drawing.Point(655, 3);
       this.btnToXml.Name = "btnToXml";
       this.btnToXml.Size = new System.Drawing.Size(65, 23);

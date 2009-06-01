@@ -66,6 +66,7 @@ namespace Irony.CompilerServices {
     Shift,
     Reduce,
     Operator,  //shift or reduce depending on operator associativity and precedence
+    Code, //conflict resolution made in resolution method in grammar;  
     Jump, // transition to non-canonical state
     Accept,
   }
@@ -88,6 +89,10 @@ namespace Irony.CompilerServices {
     }
     public static ParserAction CreateOperator(ParserState newState, Production reduceProduction) {
       return new ParserAction(ParserActionType.Operator, newState, reduceProduction);
+    }
+    public static ParserAction CreateCodeAction(ParserState newState, Production reduceProduction) {
+      var action = new ParserAction(ParserActionType.Code, newState, reduceProduction);
+      return action; 
     }
     public static ParserAction CreateAccept() {
       return new ParserAction(ParserActionType.Accept, null, null);
@@ -155,6 +160,31 @@ namespace Irony.CompilerServices {
   }//Production class
 
   public class ProductionList : List<Production> { }
+
+  /// <summary>
+  /// The class provides arguments for custom conflict resolution grammar method.
+  /// </summary>
+  public class ConflictResolutionArgs {
+    public readonly CompilerContext Context;
+    public readonly Scanner Scanner; 
+    public readonly ParserState CurrentParserState;
+    public readonly ParseTreeNode CurrentParserInput;
+    public readonly ParserState NewShiftState;
+    //Results 
+    public ParserActionType Result; //shift, reduce or operator
+    public Production ReduceProduction; //defaulted to  
+    //constructor
+    internal ConflictResolutionArgs(CompilerContext context, ParserAction conflictAction) {
+      Context = context;
+      Scanner = context.Compiler.Parser.Scanner; 
+      var coreParser = context.Compiler.Parser.CoreParser;
+      CurrentParserState = coreParser.CurrentState;
+      CurrentParserInput = coreParser.CurrentInput;
+      NewShiftState = conflictAction.NewState;
+      ReduceProduction = conflictAction.ReduceProduction;
+      Result = ParserActionType.Shift;
+    }
+  }//class
 
 
 }//namespace

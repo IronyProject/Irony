@@ -73,11 +73,11 @@ namespace Irony.CompilerServices {
     #endregion 
 
     #region constructors and initialization
+    public CompoundTerminalBase(string name) : this(name, TermOptions.None) { }
     public CompoundTerminalBase(string name, TermOptions options) : base(name) {
       SetOption(options);
       Escapes = GetDefaultEscapes();
     }
-    public CompoundTerminalBase(string name)  : this(name, TermOptions.None) {  }
 
     protected void AddPrefixFlag(string prefix, short flags) {
       PrefixFlags.Add(prefix, flags);

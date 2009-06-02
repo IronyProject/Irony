@@ -37,9 +37,9 @@ namespace Irony.Samples {
 
 
             // Define the Terminals
-            var lineNumber = new NumberLiteral("LINE_NUMBER", "line number",  NumberFlags.IntOnly);
-            var fileNumber = new NumberLiteral("FILE_NUMBER", "number", NumberFlags.IntOnly);
-            var number = new NumberLiteral("NUMBER", "number", NumberFlags.AllowStartEndDot);
+            var lineNumber = new NumberLiteral("LINE_NUMBER", NumberFlags.IntOnly);
+            var fileNumber = new NumberLiteral("FILE_NUMBER", NumberFlags.IntOnly);
+            var number = new NumberLiteral("NUMBER", NumberFlags.AllowStartEndDot);
             var variable = new IdentifierTerminal("Identifier", "$%!", string.Empty);
             var stringLiteral = new StringLiteral("STRING", "\"", StringFlags.None);
             //Important: do not add comment term to base.NonGrammarTerminals list - we do use this terminal in grammar rules

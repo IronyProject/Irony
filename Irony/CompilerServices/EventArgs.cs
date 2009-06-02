@@ -27,8 +27,8 @@ namespace Irony.CompilerServices {
 
   }//class
 
-  public class NodeCreatedEventArgs : EventArgs {
-    public NodeCreatedEventArgs(ParseTreeNode parseTreeNode) {
+  public class AstNodeEventArgs : EventArgs {
+    public AstNodeEventArgs(ParseTreeNode parseTreeNode) {
       ParseTreeNode = parseTreeNode;
     }
     public readonly ParseTreeNode ParseTreeNode;

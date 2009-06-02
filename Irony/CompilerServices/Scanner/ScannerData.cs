@@ -49,4 +49,19 @@ namespace Irony.CompilerServices {
     public short TerminalFlags;  //Terminal flags
   }//struct
 
+  public class SelectTerminalArgs : EventArgs {
+    public CompilerContext Context;
+    public Scanner Scanner;
+    public char Current;
+    public TerminalList Terminals;
+    public Terminal SelectedTerminal;
+    internal void SetData(CompilerContext context, char current, TerminalList terminals) {
+      Context = context;
+      Scanner = Context.Compiler.Parser.Scanner; 
+      Current = current;
+      Terminals = terminals;
+      SelectedTerminal = null; 
+    }
+
+  }
 }//namespace

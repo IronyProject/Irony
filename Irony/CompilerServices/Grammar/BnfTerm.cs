@@ -53,10 +53,10 @@ namespace Irony.CompilerServices {
       DisplayName = displayName;
     }
     public BnfTerm(string name, string displayName, Type nodeType) : this(name, displayName) {
-      NodeType = nodeType;
+      AstNodeType = nodeType;
     }
     public BnfTerm(string name, string displayName, AstNodeCreator nodeCreator) : this(name, displayName) {
-      NodeCreator = nodeCreator;  
+      AstNodeCreator = nodeCreator;  
     }
     #endregion
 
@@ -107,15 +107,15 @@ namespace Irony.CompilerServices {
 
     #endregion
 
-    #region AST node creations: NodeType, NodeCreator, NodeCreated
-    public Type NodeType;
-    public AstNodeCreator NodeCreator;
-    public event EventHandler<NodeCreatedEventArgs> NodeCreated;
+    #region AST node creations: AstNodeType, AstNodeCreator, AstNodeCreated
+    public Type AstNodeType;
+    public AstNodeCreator AstNodeCreator;
+    public event EventHandler<AstNodeEventArgs> AstNodeCreated;
 
-    protected internal void OnNodeCreated(ParseTreeNode parseNode) {
-      if (NodeCreated == null) return;
-      NodeCreatedEventArgs args = new NodeCreatedEventArgs(parseNode);
-      NodeCreated(this, args);
+    protected internal void OnAstNodeCreated(ParseTreeNode parseNode) {
+      if (this.AstNodeCreated == null || parseNode.AstNode == null) return;
+      AstNodeEventArgs args = new AstNodeEventArgs(parseNode);
+      AstNodeCreated(this, args);
     }
     #endregion
 

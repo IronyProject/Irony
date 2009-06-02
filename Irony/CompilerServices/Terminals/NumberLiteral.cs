@@ -25,6 +25,8 @@ namespace Irony.CompilerServices {
   [Flags]
   public enum NumberFlags {
     None = 0,
+    Default = None,
+
     AllowStartEndDot  = 0x01,     //python : http://docs.python.org/ref/floating.html
     IntOnly           = 0x02,
     AvoidPartialFloat = 0x04,     //for use with IntOnly flag; essentially tells terminal to avoid matching integer if 
@@ -32,13 +34,13 @@ namespace Irony.CompilerServices {
     AllowSign   = 0x08,
     DisableQuickParse = 0x10,
 
+    //The following should be used with 
     Binary = 0x0100, //e.g. GNU GCC C Extension supports binary number literals
     Octal =  0x0200,
     Hex =    0x0400,
     HasDot = 0x1000,
     HasExp = 0x2000,
   }
-
 
   //TODO: For VB, we may need to add a flag to automatically use long instead of int (default) when number is too large
   public class NumberLiteral : CompoundTerminalBase {
@@ -49,15 +51,16 @@ namespace Irony.CompilerServices {
     #endregion
 
     #region constructors and initialization
-    public NumberLiteral(string name) : this(name, null, NumberFlags.None) {
+    public NumberLiteral(string name) : this(name, NumberFlags.Default) {
     }
-    public NumberLiteral(string name, NumberFlags flags)  : this(name, null, flags) {
+    public NumberLiteral(string name, NumberFlags flags, Type astNodeType)  : this(name, flags) {
+      base.AstNodeType = astNodeType;
     }
-    public NumberLiteral(string name, string displayName)  : this(name, displayName, NumberFlags.None) {
+    public NumberLiteral(string name, NumberFlags flags, AstNodeCreator astNodeCreator)  : this(name, flags) {
+      base.AstNodeCreator = astNodeCreator;
     }
-    public NumberLiteral(string name, string displayName, NumberFlags flags) : base(name) {
-      base.DisplayName = displayName;
-      Flags |= flags;
+    public NumberLiteral(string name, NumberFlags flags) : base(name) {
+      Flags = flags;
       base.Category = TokenCategory.Literal;
     }
     public void AddPrefix(string prefix, NumberFlags flags) {

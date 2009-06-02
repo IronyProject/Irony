@@ -785,8 +785,9 @@ State S188 (Inadequate)
   Shifts: member_access_segment->S220, .->S221, array_indexer->S222, [->S223, argument_list_par->S224, (->S225, type_argument_list->S226, _<_->S59, 
    
 */
-
-    
+    //Here is an elaborate generic declaration which can be used as a good test. Perfectly legal, uncomment it to check that c#
+    // accepts it
+    // List<Dictionary<string, object[,]>> genericVar; 
     public override void OnResolvingConflict(ConflictResolutionArgs args) {
       switch(args.CurrentParserInput.Term.Name) {
         case "<":
@@ -809,8 +810,17 @@ State S188 (Inadequate)
             args.Result = ParserActionType.Shift;
           else
             args.Result = ParserActionType.Reduce;
-          args.Scanner.EndPreview(); 
+          args.Scanner.EndPreview(true); //keep previewed tokens; important to keep ">>" matched to two ">" symbols, not one combined symbol (see method below)
           return; 
+      }
+    }
+    //In preview, we may run into combination '>>' which is a comletion of nested generic parameters.
+    // It should be recognized as two ">" symbols, not a single ">>" operator
+    // By default, the ">>" has higher priority over single ">" symbol because it is longer. 
+    // When this method is called we force the selection to a single ">"
+    public override void OnScannerSelectTerminal(SelectTerminalArgs args) {
+      if (args.Current == '>' && args.Scanner.InPreview) {
+        args.SelectedTerminal = Symbol(">"); //select the ">" terminal
       }
     }
     #endregion

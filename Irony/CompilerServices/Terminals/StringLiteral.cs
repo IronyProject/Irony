@@ -68,9 +68,15 @@ namespace Irony.CompilerServices {
     }    
     public StringLiteral(string name, string startEndSymbol) : this(name, startEndSymbol, StringFlags.None) {
     }
+    public StringLiteral(string name, Type astNodeType) : this(name) {
+      base.AstNodeType = astNodeType;
+    }
+    public StringLiteral(string name, AstNodeCreator  astNodeCreator) : this(name) {
+      base.AstNodeCreator = astNodeCreator;
+    }
 
     public void AddStartEnd(string startEndSymbol, StringFlags stringFlags) {
-      _subtypes.Add(startEndSymbol, startEndSymbol, stringFlags);
+      AddStartEnd(startEndSymbol, startEndSymbol, stringFlags);
     }
     public void AddStartEnd(string startSymbol, string endSymbol, StringFlags stringFlags) {
       _subtypes.Add(startSymbol, endSymbol, stringFlags);

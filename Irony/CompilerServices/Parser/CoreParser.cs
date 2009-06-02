@@ -272,7 +272,7 @@ namespace Irony.CompilerServices {
       try {
         _grammar.CreateAstNode(_context, parseNode);
         if (parseNode.AstNode != null && parseNode.Term != null)
-          parseNode.Term.OnNodeCreated(parseNode);
+          parseNode.Term.OnAstNodeCreated(parseNode);
       } catch (Exception ex) {
         _context.ReportError(parseNode.Span.Start, "Failed to create AST node for non-terminal [{0}], error: " + ex.Message, parseNode.Term.Name); 
       }
@@ -294,6 +294,10 @@ namespace Irony.CompilerServices {
           ExecuteShift(action.NewState); 
           break; 
       }
+      if (_currentTraceEntry != null) {
+        _currentTraceEntry.Message = "(Conflict resolved in code) " + _currentTraceEntry.Message;
+      }
+
     }
 
 

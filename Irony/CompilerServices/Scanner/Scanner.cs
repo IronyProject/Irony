@@ -29,11 +29,15 @@ namespace Irony.CompilerServices {
     public IEnumerable<Token> UnfilteredStream;
     public IEnumerable<Token> FilteredStream;
     public IEnumerator<Token> FilteredTokenEnumerator;
-    bool _disableParserLink;
 
     public ISourceStream Source {
       get { return _source; }
     } ISourceStream _source;
+
+    public bool InPreview {
+      get { return _inPreview; }
+    } bool _inPreview; 
+
     #endregion
 
     public Scanner(ScannerData data) {
@@ -119,26 +123,35 @@ namespace Irony.CompilerServices {
 
 
     #region TokenPreview
+    TokenList _previewTokens = new TokenList(); 
     SourceLocation _savedTokenStart;
     int _savedPosition;
     public void BeginPreview() {
+      _inPreview = true; 
       _savedTokenStart = _source.TokenStart;
       _savedPosition = _source.Position;
-      _disableParserLink = true; 
+      _previewTokens.Clear(); 
     }
     public Token Preview(TerminalSet skipTerms) {
       Token tkn;
       while (true) {
         tkn = ReadToken();
+        _previewTokens.Add(tkn); 
         if (tkn.Terminal == _grammar.Eof || !skipTerms.Contains(tkn.Terminal)) break;
       }
       return tkn;
     }
 
-    public void EndPreview() {
-      _disableParserLink = false; 
-      _source.TokenStart = _savedTokenStart;
-      _source.Position = _savedPosition;
+    public void EndPreview(bool keepPreviewTokens) {
+      if (keepPreviewTokens)
+        _bufferedTokens.InsertRange(0, _previewTokens); //insert previewed tokens into buffered list, so we don't recreate them again
+      else {
+        //Clear previewed list and restore saved position
+        _previewTokens.Clear(); 
+        _source.TokenStart = _savedTokenStart;
+        _source.Position = _savedPosition;
+      }
+      _inPreview = false; 
     }
     #endregion
 
@@ -227,6 +240,8 @@ namespace Irony.CompilerServices {
 
     //list for filterered terminals
     private TerminalList _filteredTerminals = new TerminalList();
+    //reuse single instance to avoid garbage generation
+    private SelectTerminalArgs _selectedTerminalArgs = new SelectTerminalArgs(); 
     
     private TerminalList SelectTerminals(char current) {
       TerminalList termList;
@@ -234,11 +249,19 @@ namespace Irony.CompilerServices {
         current = char.ToLower(current);
       if (!_data.TerminalsLookup.TryGetValue(current, out termList))
         termList = _data.FallbackTerminals;
-      if (termList.Count <= 1)
-        return termList;
-      //If we have more than one candidate, try filter them by checking with parser which terms it expects
-      // but do it only if we're not recovering or previewing
-      if (_context.ParserIsRecovering || _disableParserLink)
+      if (termList.Count <= 1)  return termList;
+
+      //We have more than one candidate
+      //First try calling grammar method
+      _selectedTerminalArgs.SetData(_context, current, termList); 
+      _grammar.OnScannerSelectTerminal(_selectedTerminalArgs);
+      if (_selectedTerminalArgs.SelectedTerminal != null) {
+        _filteredTerminals.Clear();
+        _filteredTerminals.Add(_selectedTerminalArgs.SelectedTerminal);
+        return _filteredTerminals;
+      }
+      // Now try filter them by checking with parser which terms it expects but do it only if we're not recovering or previewing
+      if (_context.ParserIsRecovering || _inPreview)
         return termList;
       var parserState = _context.GetCurrentParserState();
       if (parserState == null) 

@@ -197,19 +197,27 @@ namespace Irony.CompilerServices {
 
     public virtual void CreateAstNode(CompilerContext context, ParseTreeNode nodeInfo) {
       var term = nodeInfo.Term;
-      if (term.NodeCreator != null) {
-        term.NodeCreator(context, nodeInfo);
+      if (term.AstNodeCreator != null) {
+        term.AstNodeCreator(context, nodeInfo);
         //We assume that Node creator method creates node and initializes it, so parser does not need to call 
         // IAstNodeInit.InitNode() method on node object.
         return;
       }
-      Type nodeType = term.NodeType ?? this.DefaultNodeType;
+      Type nodeType = term.AstNodeType ?? this.DefaultNodeType;
       if (nodeType == null) return; 
       nodeInfo.AstNode =  Activator.CreateInstance(nodeType);
       //Initialize node
       var iInit = nodeInfo.AstNode as IAstNodeInit;
       if (iInit != null)
         iInit.Init(context, nodeInfo); 
+    }
+
+    /// <summary>
+    /// Override this method to help scanner select a terminal to create token when there are more than one candidates
+    /// for an input char
+    /// </summary>
+    public virtual void OnScannerSelectTerminal(SelectTerminalArgs args) {
+
     }
 
     /// <summary>

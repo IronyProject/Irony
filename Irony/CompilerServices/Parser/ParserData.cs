@@ -164,7 +164,7 @@ namespace Irony.CompilerServices {
   /// <summary>
   /// The class provides arguments for custom conflict resolution grammar method.
   /// </summary>
-  public class ConflictResolutionArgs {
+  public class ConflictResolutionArgs : EventArgs {
     public readonly CompilerContext Context;
     public readonly Scanner Scanner; 
     public readonly ParserState CurrentParserState;

@@ -292,7 +292,7 @@ namespace Irony.CompilerServices.Construction {
       if (!_grammar.FlagIsSet(LanguageFlags.CreateAst)) {
         var ntSet = new BnfTermSet();
         foreach (var nt in _grammarData.NonTerminals)
-          if (nt.NodeCreator != null || nt.NodeType != null)
+          if (nt.AstNodeCreator != null || nt.AstNodeType != null)
             ntSet.Add(nt); 
         if (ntSet.Count > 0)
           this._language.Errors.Add("Warning: LanguageFlags.CreateAst flag is not set in grammar's Flags, but there are" +

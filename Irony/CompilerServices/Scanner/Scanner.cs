@@ -34,10 +34,6 @@ namespace Irony.CompilerServices {
       get { return _source; }
     } ISourceStream _source;
 
-    public bool InPreview {
-      get { return _inPreview; }
-    } bool _inPreview; 
-
     #endregion
 
     public Scanner(ScannerData data) {
@@ -72,11 +68,20 @@ namespace Irony.CompilerServices {
     }
 
     public Token GetToken() {
-      if (!FilteredTokenEnumerator.MoveNext())
-        return null; 
+      //not in preview; check if there are previewed tokens
+      if (!_inPreview && _previewTokens.Count > 0) {
+        var result = _previewTokens[0];
+        _previewTokens.RemoveAt(0);
+        return result;
+      }
+      //get new token from pipeline
+      if (!FilteredTokenEnumerator.MoveNext()) return null;
       var token = FilteredTokenEnumerator.Current;
-      _context.CurrentParseTree.Tokens.Add(token);
-      return token; 
+      if (_inPreview)
+        _previewTokens.Add(token);
+      else 
+        _context.CurrentParseTree.Tokens.Add(token);
+      return token;
     }
 
     //This is iterator method, so it returns immediately when called directly
@@ -118,40 +123,6 @@ namespace Irony.CompilerServices {
     }
     public void VsSetSource(string text, int offset) {
       SetPartialSource(text, offset); 
-    }
-    #endregion
-
-
-    #region TokenPreview
-    TokenList _previewTokens = new TokenList(); 
-    SourceLocation _savedTokenStart;
-    int _savedPosition;
-    public void BeginPreview() {
-      _inPreview = true; 
-      _savedTokenStart = _source.TokenStart;
-      _savedPosition = _source.Position;
-      _previewTokens.Clear(); 
-    }
-    public Token Preview(TerminalSet skipTerms) {
-      Token tkn;
-      while (true) {
-        tkn = ReadToken();
-        _previewTokens.Add(tkn); 
-        if (tkn.Terminal == _grammar.Eof || !skipTerms.Contains(tkn.Terminal)) break;
-      }
-      return tkn;
-    }
-
-    public void EndPreview(bool keepPreviewTokens) {
-      if (keepPreviewTokens)
-        _bufferedTokens.InsertRange(0, _previewTokens); //insert previewed tokens into buffered list, so we don't recreate them again
-      else {
-        //Clear previewed list and restore saved position
-        _previewTokens.Clear(); 
-        _source.TokenStart = _savedTokenStart;
-        _source.Position = _savedPosition;
-      }
-      _inPreview = false; 
     }
     #endregion
 
@@ -297,7 +268,42 @@ namespace Irony.CompilerServices {
     }
     #endregion 
 
+
+    #region TokenPreview
+    //Preview mode allows custom code in grammar to help parser decide on appropriate action in case of conflict
+    // In preview mode, tokens returned by ReadToken are collected in _previewTokens list; after finishing preview
+    //  the scanner "rolls back" to original position - either by directly restoring the position, or moving the preview
+    //  tokens into _bufferedTokens list, so that they will read again by parser in normal mode.
+    // See c# grammar sample for an example of using preview methods
+    TokenList _previewTokens = new TokenList();
+    SourceLocation _savedTokenStart;
+    int _savedPosition;
+
+    public bool InPreview {
+      get { return _inPreview; }
+    } bool _inPreview;
+
+    //Switches Scanner into preview mode
+    public void BeginPreview() {
+      _inPreview = true;
+      _savedTokenStart = _source.TokenStart;
+      _savedPosition = _source.Position;
+      _previewTokens.Clear();
+    }
+
+    //Ends preview mode
+    public void EndPreview(bool keepPreviewTokens) {
+      if (keepPreviewTokens)
+        _bufferedTokens.InsertRange(0, _previewTokens); //insert previewed tokens into buffered list, so we don't recreate them again
+      else 
+        SetSourceLocation(_savedTokenStart, _savedPosition);
+      _previewTokens.Clear();
+      _inPreview = false;
+    }
+    #endregion
+
     //TODO: this is messed up, need to fix all code related to TokenStart and position and resetting it
+    // problem: tokenStart is the position of "last" (previous) token, while position parameter is a position where next token will start
     public void SetSourceLocation(SourceLocation tokenStart, int position) {
       foreach (var filter in _data.TokenFilters)
         filter.OnSetSourceLocation(tokenStart); 

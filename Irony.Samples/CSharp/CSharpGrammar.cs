@@ -25,8 +25,7 @@ namespace Irony.Samples.CSharp {
     TerminalSet _skipTokensInPreview = new TerminalSet(); //used in token preview for conflict resolution
     public CSharpGrammar() {
       this.GrammarComments = "NOTE: This grammar is just a demo, and it is a broken demo.\r\n" + 
-                             "Parser does not distinguish correctly '<' as comparison vs as angle bracket for type parameter, so some samples cannot be parsed.\r\n" +
-                             " NLALR method DOES NOT WORK for it. Will try to fix all these in the future.";
+                             "Demonstrates token preview technique to help parser resolve conflicts.\r\n";
       #region Lexical structure
       StringLiteral StringLiteral = TerminalFactory.CreateCSharpString("StringLiteral");
       StringLiteral CharLiteral = TerminalFactory.CreateCSharpChar("CharLiteral");
@@ -786,7 +785,7 @@ State S188 (Inadequate)
    
 */
     //Here is an elaborate generic declaration which can be used as a good test. Perfectly legal, uncomment it to check that c#
-    // accepts it
+    // accepts it:
     // List<Dictionary<string, object[,]>> genericVar; 
     public override void OnResolvingConflict(ConflictResolutionArgs args) {
       switch(args.CurrentParserInput.Term.Name) {
@@ -795,7 +794,12 @@ State S188 (Inadequate)
           int ltCount = 0;
           string previewSym;
           while(true) {
-            Token preview  = args.Scanner.Preview(_skipTokensInPreview); 
+            //Find first token ahead (using preview mode) that is either end of generic parameter (">") or something else
+            Token preview;
+            do {
+              preview = args.Scanner.GetToken();
+            } while (_skipTokensInPreview.Contains(preview.Terminal) && preview.Terminal != base.Eof);
+            //See what did we find
             previewSym = preview.Terminal.Name; 
             if (previewSym == "<")
               ltCount++;
@@ -814,6 +818,8 @@ State S188 (Inadequate)
           return; 
       }
     }
+
+
     //In preview, we may run into combination '>>' which is a comletion of nested generic parameters.
     // It should be recognized as two ">" symbols, not a single ">>" operator
     // By default, the ">>" has higher priority over single ">" symbol because it is longer. 

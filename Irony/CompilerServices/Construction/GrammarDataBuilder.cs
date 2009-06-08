@@ -271,12 +271,13 @@ namespace Irony.CompilerServices.Construction {
       }//foreach nt
     }//method
 
-
+    //Automatically detect transient non-terminals; these are nonterminals that have rules with single-element productions:
+    //  N.rule = A | B | C;
     private static void DetectTransientNonTerminals(GrammarData data) {
       foreach (NonTerminal nt in data.NonTerminals) {
         var transient = true;
         foreach (var prod in nt.Productions)
-          if (prod.RValues.Count > 1) {
+          if (prod.RValues.Count != 1) {
             transient = false;
             break;
           }

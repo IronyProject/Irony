@@ -60,18 +60,20 @@ namespace Irony.CompilerServices {
 
     #region constructors and initialization
     //12/07/2008 - Attention - breaking change! Constructor with a single parameter no longer adds default startEnd symbol!
-    public StringLiteral(string name) : base(name) {
+    public StringLiteral(string name, string startEndSymbol, StringFlags stringFlags) : base(name) {
       base.Category = TokenCategory.Literal;
-    }
-    public StringLiteral(string name, string startEndSymbol, StringFlags stringFlags) : this(name) {
       this._subtypes.Add(startEndSymbol, startEndSymbol, stringFlags);
-    }    
-    public StringLiteral(string name, string startEndSymbol) : this(name, startEndSymbol, StringFlags.None) {
     }
-    public StringLiteral(string name, Type astNodeType) : this(name) {
+    public StringLiteral(string name): this(name, "\"") {
+    }
+    public StringLiteral(string name, string startEndSymbol)  : this(name, startEndSymbol, StringFlags.None) {
+    }
+    public StringLiteral(string name, string startEndSymbol, StringFlags flags, Type astNodeType) 
+          : this(name, startEndSymbol, flags) {
       base.AstNodeType = astNodeType;
     }
-    public StringLiteral(string name, AstNodeCreator  astNodeCreator) : this(name) {
+    public StringLiteral(string name, string startEndSymbol, StringFlags flags, AstNodeCreator astNodeCreator) 
+         : this(name, startEndSymbol, flags) {
       base.AstNodeCreator = astNodeCreator;
     }
 

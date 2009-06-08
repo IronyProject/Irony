@@ -261,7 +261,6 @@ namespace Irony.CompilerServices {
       if (poppedNode.Term.IsSet(TermOptions.IsTransient)) {
         addToParent.ChildNodes.Add(poppedNode.ChildNodes, mode);
       } else {
-        //TODO: make it possible to create AST nodes for terminals (Number, StringLiteral).
         if (_grammar.FlagIsSet(LanguageFlags.CreateAst))
           SafeCreateAstNode(poppedNode);
         addToParent.ChildNodes.Add(poppedNode, mode);
@@ -304,12 +303,18 @@ namespace Irony.CompilerServices {
     private void ExecuteNonCanonicalJump(ParserAction action) {
       _currentState = action.NewState;
     }
+
     private void ExecuteAccept(ParserAction action) {
-      //AST nodes are created when we pop them from the stack to add to parent's child list
-      // for top node we do it here
       var rootNode = Stack.Pop();
-      if (_grammar.FlagIsSet(LanguageFlags.CreateAst))
-        SafeCreateAstNode(rootNode);
+      //it might be transient node; if yes, take it's first child
+      if (rootNode.Term.IsSet(TermOptions.IsTransient)) {
+        rootNode = rootNode.ChildNodes[0];
+      } else {
+        //otherwise, create AST node if necessary
+        if (_grammar.FlagIsSet(LanguageFlags.CreateAst))
+          SafeCreateAstNode(rootNode);
+      }
+      rootNode.State = null; //clear the State field, we need only when node is in the stack
       _context.CurrentParseTree.Root = rootNode; 
     }
 

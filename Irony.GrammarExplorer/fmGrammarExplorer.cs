@@ -20,7 +20,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Configuration;
 using System.Text.RegularExpressions;
-using System.Reflection;
 using System.Xml;
 using Irony.CompilerServices;
 using Irony.Diagnostics;
@@ -28,6 +27,7 @@ using Irony.Scripting.Runtime;
 using Irony.EditorServices;
 using Irony.GrammarExplorer.Properties;
 
+using Irony.Samples.Apress.Examples;
 
 namespace Irony.GrammarExplorer {
   public partial class fmGrammarExplorer : Form {
@@ -194,18 +194,11 @@ namespace Irony.GrammarExplorer {
     private void miAdd_Click(object sender, EventArgs e) {
       if (dlgSelectAssembly.ShowDialog() != DialogResult.OK) return;
       string location = dlgSelectAssembly.FileName;
-      Assembly asm = Assembly.LoadFrom(location);
-      var types = asm.GetTypes();
-      GrammarItemList grammars = new GrammarItemList();
-      foreach (Type t in types) {
-        if (!t.IsSubclassOf(typeof(Grammar))) continue;
-        grammars.Add(new GrammarItem(t, location));
-      }
-      if (grammars.Count == 0) {
-        MessageBox.Show("No classes derived from Irony.Grammar were found in the assembly.");
-        return;
-      }
-      grammars = fmSelectGrammars.SelectGrammars(grammars);
+      if (string.IsNullOrEmpty(location)) return; 
+      var oldGrammars = new GrammarItemList(); 
+      foreach(var item in cboGrammars.Items)
+        oldGrammars.Add((GrammarItem) item);
+      var grammars = fmSelectGrammars.SelectGrammars(location, oldGrammars);
       if (grammars == null) return;
       foreach (GrammarItem item in grammars)
         cboGrammars.Items.Add(item);

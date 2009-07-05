@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
   public class ParseTree {
     public readonly string SourceText;
     public readonly string FileName; 

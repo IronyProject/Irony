@@ -17,7 +17,7 @@ using System.Text;
 using System.Xml; 
 using System.Windows.Forms;
 using System.Reflection;
-using Irony.CompilerServices; 
+using Irony.Parsing; 
 
 namespace Irony.GrammarExplorer {
 

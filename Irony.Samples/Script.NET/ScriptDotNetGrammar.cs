@@ -8,7 +8,7 @@
  */
 
 using System;
-using Irony.CompilerServices;
+using Irony.Parsing;
 
 namespace Irony.Samples.ScriptNET
 {

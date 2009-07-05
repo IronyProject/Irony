@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace Irony.CompilerServices.Construction {
+namespace Irony.Parsing.Construction {
   
   // Methods constructing LALR automaton
   internal partial class ParserDataBuilder {
@@ -32,13 +32,13 @@ namespace Irony.CompilerServices.Construction {
       _grammar = _language.Grammar;
     }
 
-    public void Build(ParseMethod method) {
+    public void Build() {
       _stateHash.Clear();
       Stopwatch sw = new Stopwatch();
       sw.Start(); 
       var i1 = sw.ElapsedMilliseconds;
-      Data = _language.ParserData = new ParserData(_language.Grammar, method);
-      CheckPrecedenceSettings(_language.GrammarData, method); 
+      Data = _language.ParserData;
+      CheckPrecedenceSettings(_language.GrammarData, Data.ParseMethod); 
       var i2 = sw.ElapsedMilliseconds;
       var i3 = sw.ElapsedMilliseconds;
       CreateLalrParserStates(); 
@@ -61,7 +61,7 @@ namespace Irony.CompilerServices.Construction {
         SwitchConflictingStatesToNonCanonicalLookaheads();
       }
       var i13 = sw.ElapsedMilliseconds;
-      ReportAndSetDefaultActionsForRemainingConflicts();
+      ReportAndSetDefaultActionsForConflicts();
       CreateReduceActions();
       ComputeStateExpectedLists(); 
     }//method
@@ -353,7 +353,7 @@ namespace Irony.CompilerServices.Construction {
           }
         //Sanity check
         if (reduceItem.Lookaheads.Count == 0 && reduceItem.Core.Production.LValue != _language.GrammarData.AugmentedRoot)
-          AddError("ParserBuilder error: inadequate state {0}, reduce item '{1}' has no lookaheads.", state.Name, reduceItem.Core.Production);
+          _language.Errors.Add(GrammarErrorLevel.InternalError, state, "ParserBuilder error: inadequate state {0}, reduce item '{1}' has no lookaheads.", state.Name, reduceItem.Core.Production);
       }
     }
 
@@ -498,32 +498,32 @@ namespace Irony.CompilerServices.Construction {
       return false; 
     }
 
-    private void ReportAndSetDefaultActionsForRemainingConflicts() {
-      foreach (var state in Data.States) {
-        var stateData = state.BuilderData;
-        if (stateData.Conflicts.Count == 0) continue;
-        //Shift-reduce
-        var srConflicts = stateData.GetShiftReduceConflicts(); 
-        if (srConflicts.Count > 0)
-          ReportParseConflicts("Shift-reduce conflict.", state, srConflicts);
-        //Reduce-reduce
-        var rrConflicts = stateData.GetReduceReduceConflicts(); 
-        if (rrConflicts.Count > 0)  
-          ReportParseConflicts("Reduce-reduce conflict.",  state, rrConflicts);
-        CreateDefaultActionsForConflicts(state, srConflicts, rrConflicts); 
-      }
-
+    private void ReportAndSetDefaultActionsForConflicts() {
+      foreach (var state in Data.States) 
+        ReportAndCreateDefaultActionsForConflicts(state); 
     }//method
 
-    private void CreateDefaultActionsForConflicts(ParserState state, 
+    private void ReportAndCreateDefaultActionsForConflicts(ParserState state) {
+      if (state.BuilderData.Conflicts.Count > 0)
+        ReportAndCreateDefaultActionsForConflicts(state, state.BuilderData.GetShiftReduceConflicts(), state.BuilderData.GetReduceReduceConflicts());
+    }
+
+    private void ReportAndCreateDefaultActionsForConflicts(ParserState state, 
                                                    BnfTermSet shiftReduceConflicts, BnfTermSet reduceReduceConflicts) {
       var stateData = state.BuilderData;
+      if (shiftReduceConflicts.Count > 0) 
+        _language.Errors.Add(GrammarErrorLevel.Conflict, state,
+            "Shift-reduce conflict. State {0}, lookaheads [{1}]. Set to shift as preferred action.", state, shiftReduceConflicts.ToString());
+      if (reduceReduceConflicts.Count > 0)
+        _language.Errors.Add(GrammarErrorLevel.Conflict, state,
+          "Reduce-reduce conflict. State {0}, lookaheads: {1}. Set to reduce on first production in conflict set.", state, reduceReduceConflicts.ToString());
       //Create default actions for these conflicts. For shift-reduce, default action is shift, and shift action already
-      // exist for all shifts from the state, so we don't need to do anything. For reduce-reduce create reduce actions
-      // for the first reduce item (whatever comes first in the set). 
+      // exist for all shifts from the state, so we don't need to do anything, only report it
+      //For reduce-reduce create reduce actions for the first reduce item (whatever comes first in the set). 
       foreach (var conflict in reduceReduceConflicts) {
         var reduceItems = stateData.ReduceItems.SelectByLookahead(conflict);
-        var action = ParserAction.CreateReduce(reduceItems.First().Core.Production);
+        var firstProd = reduceItems.First().Core.Production;
+        var action = ParserAction.CreateReduce(firstProd);
         state.Actions[conflict] = action;
       }
       //Update ResolvedConflicts and Conflicts sets
@@ -555,24 +555,10 @@ namespace Irony.CompilerServices.Construction {
     #endregion
 
     #region error reporting
-    private void ReportParseConflicts(ParserState state, BnfTermSet shiftReduceConflicts, BnfTermSet reduceReduceConflicts) {
-      if (shiftReduceConflicts.Count > 0)
-        ReportParseConflicts("Shift-reduce conflict.", state, shiftReduceConflicts);
-      if (reduceReduceConflicts.Count > 0)
-        ReportParseConflicts("Reduce-reduce conflict.", state, reduceReduceConflicts);
+    private void __ReportParseConflicts(string message, ParserState state, BnfTermSet conflicts) {
+      if (conflicts.Count > 0) 
+        _language.Errors.Add(GrammarErrorLevel.Conflict, state, message + " State {0} on inputs: {1}", state, conflicts);
     }
-
-    private void ReportParseConflicts(string description, ParserState state, BnfTermSet lookaheads) {
-      string msg = description + " State " + state.Name + ", lookaheads: " + lookaheads.ToString();
-      AddError(msg);
-    }
-
-    private void AddError(string message, params object[] args) {
-      if (args != null && args.Length > 0)
-        message = string.Format(message, args);
-      _language.Errors.Add(message);
-    }
-
     #endregion
   }//class
 

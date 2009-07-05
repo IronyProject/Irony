@@ -14,18 +14,19 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using Irony.Parsing.Construction;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
 
   public class Compiler {
 
-    public Compiler(Grammar grammar) : this(grammar, grammar.ParseMethod) { }
-
-    public Compiler(Grammar grammar, ParseMethod parseMethod) {
-      var builder = new Construction.LanguageDataBuilder(grammar);
-      builder.Build(parseMethod);
+    public Compiler(Grammar grammar) {
+      Language = new LanguageData(grammar); 
+      var builder = new LanguageDataBuilder(Language);
+      builder.Build();
       this.Language = builder.Language;
-      Parser = new Parser(Language);
+      if (Language.CanParse())
+        Parser = new Parser(Language);
     }
     public Compiler(LanguageData language) {
       this.Language = language;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Irony.CompilerServices.Construction {
+namespace Irony.Parsing.Construction {
 
   internal class GrammarDataBuilder {
     LanguageData _language;
@@ -18,7 +18,7 @@ namespace Irony.CompilerServices.Construction {
     }
 
     internal void Build() {
-      _grammarData = _language.GrammarData = new GrammarData(_language);
+      _grammarData = _language.GrammarData;
       _grammarData.AugmentedRoot = new NonTerminal(_grammar.Root.Name + "'");
       _grammarData.AugmentedRoot.Rule = _grammar.Root + _grammar.Eof;
       CollectTermsFromGrammar();
@@ -59,16 +59,14 @@ namespace Irony.CompilerServices.Construction {
         else
           nt.Name = "NT" + (_unnamedCount++);
       }
-      if (nt.Rule == null) {
-        _language.Errors.Add("Non-terminal " + nt.Name + " has uninitialized Rule property.");
-        return;
-      }
+      if (nt.Rule == null)
+        _language.Errors.AddAndThrow(GrammarErrorLevel.Error, null, "Non-terminal {0} has uninitialized Rule property.", nt.Name);
       //check all child elements
       foreach (BnfTermList elemList in nt.Rule.Data)
         for (int i = 0; i < elemList.Count; i++) {
           BnfTerm child = elemList[i];
           if (child == null) {
-            _language.Errors.Add("Rule for NonTerminal " + nt.Name + " contains null as an operand in position " + i.ToString() + " in one of productions.");
+            _language.Errors.Add(GrammarErrorLevel.Error, null, "Rule for NonTerminal {0} contains null as an operand in position {1} in one of productions.", nt.Name, i);
             continue; //for i loop 
           }
           //Check for nested expression - convert to non-terminal
@@ -294,11 +292,9 @@ namespace Irony.CompilerServices.Construction {
         var ntSet = new BnfTermSet();
         foreach (var nt in _grammarData.NonTerminals)
           if (nt.AstNodeCreator != null || nt.AstNodeType != null)
-            ntSet.Add(nt); 
+            ntSet.Add(nt);
         if (ntSet.Count > 0)
-          this._language.Errors.Add("Warning: LanguageFlags.CreateAst flag is not set in grammar's Flags, but there are" +
-            " non-terminals that have NodeType or NodeCreator property set. If you want Irony to construct AST tree during parsing," +
-            " set CreateAst flag in Grammar. Non-terminals: " + ntSet.ToString()); 
+          this._language.Errors.Add(GrammarErrorLevel.Warning, null, "Warning: AstNodeType or AstNodeCreator is set in some non-terminals, but LanguageFlags.CreateAst flag is not set.");
       }
     }//method
     #endregion

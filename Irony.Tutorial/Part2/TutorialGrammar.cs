@@ -13,7 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.CompilerServices;
+using Irony.Parsing;
 using Irony.Scripting.Ast;
 
 namespace Irony.Tutorial.Part2 {
@@ -25,7 +25,7 @@ namespace Irony.Tutorial.Part2 {
   //  the result of calculation is the result of last expression or assignment (value of "y" in this case).
 
   [Language("TutorialGrammar", "2.0", "Sample tutorial grammar")]
-  public class CalcGrammar : Irony.CompilerServices.Grammar {
+  public class CalcGrammar : Irony.Parsing.Grammar {
     public CalcGrammar() {
       // 1. Terminals
       var number = new NumberLiteral("number");

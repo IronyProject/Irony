@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace Irony.CompilerServices.Construction {
+namespace Irony.Parsing.Construction {
   //Non-canonical extensions for LALR
   internal partial class ParserDataBuilder {
     LR0ItemSet _coresToAddWrapTailHint = new LR0ItemSet(); 
@@ -26,12 +26,13 @@ namespace Irony.CompilerServices.Construction {
         RecomputeLookaheadsAndResolveConflicts(Data.LalrStateCount);
         statesWithConflicts = GetStatesWithConflicts(Data.LalrStateCount);
         if (Data.States.Count > 3000) { //protect against infinite looping
-          _language.Errors.Add("NLALR process is in indefinite loop, number of states exceeded 3000.");
+          _language.Errors.Add(GrammarErrorLevel.InternalError, null, "NLALR process is in indefinite loop, number of states exceeded 3000.");
           return; 
         }
       }
-      if (_coresToAddWrapTailHint.Count > 0) 
-        ReportCoresToAddWrapTailHint(); 
+      //Add advice to error list
+      foreach (var core in _coresToAddWrapTailHint)
+        _language.Errors.Add(GrammarErrorLevel.Info, null, "NLALR transform: Add WrapTail() in '.' position to [{0}].", core.ToString());
     }//method
 
     private ParserStateList GetStatesWithConflicts(int startIndex) {
@@ -55,7 +56,7 @@ namespace Irony.CompilerServices.Construction {
         if (state.BuilderData.IsInadequate) {
           RecomputeAndResolveConflicts(state);
           if (state.BuilderData.Conflicts.Count > 0) {
-            DetectConflictsUnresolvableByRestructuring(state);
+            DetectUnresolvableConflicts(state);
             DetectNlalrFixableConflicts(state);
           }
         }//if
@@ -287,14 +288,7 @@ namespace Irony.CompilerServices.Construction {
             _coresToAddWrapTailHint.Add(source.Core); 
         }
       }
-      //still report them as conflicts
-      ReportParseConflicts(state, srConflicts, rrConflicts);
-      //create default actions and remove conflicts from list so we don't deal with them anymore
-      foreach (var conflict in rrConflicts) {
-        var reduceItems = stateData.ReduceItems.SelectByReducedLookahead(conflict);
-        var action = ParserAction.CreateReduce(reduceItems.First().Core.Production);
-        state.Actions[conflict] = action;
-      }
+      ReportAndCreateDefaultActionsForConflicts(state, srConflicts, rrConflicts);
       //Update ResolvedConflicts and Conflicts sets
       stateData.ResolvedConflicts.UnionWith(srConflicts);
       stateData.ResolvedConflicts.UnionWith(rrConflicts);
@@ -309,7 +303,7 @@ namespace Irony.CompilerServices.Construction {
             with sources having the same core (LR0 item) then we have unresolvable conflict. Wrapping of the item tail would produce
             the same new non-terminal as lookahead in both conflicting reduce items. 
     */
-    private void DetectConflictsUnresolvableByRestructuring(ParserState state) {
+    private void DetectUnresolvableConflicts(ParserState state) {
       //compute R-R and S-R conflicting lookaheads
       var rrConflicts = new BnfTermSet();
       var srConflicts = new BnfTermSet();
@@ -331,11 +325,11 @@ namespace Irony.CompilerServices.Construction {
         }//foreach item
       }//foreach conflict
       if (srConflicts.Count > 0)
-        ReportParseConflicts("Ambiguous grammar, unresolvable shift-reduce conflicts.", state, srConflicts);
+        _language.Errors.Add(GrammarErrorLevel.Conflict, state, "Ambiguous grammar, unresolvable shift-reduce conflicts. State {0}, lookaheads [{1}]", state, srConflicts);
       if (rrConflicts.Count > 0)
-        ReportParseConflicts("Ambiguous grammar, unresolvable reduce-reduce conflicts.", state, rrConflicts);
+        _language.Errors.Add(GrammarErrorLevel.Conflict, state, "Ambiguous grammar, unresolvable reduce-reduce conflicts. State {0}, lookaheads [{1}]", state, rrConflicts);
       //create default actions and remove them from conflict list, so we don't deal with them anymore
-      CreateDefaultActionsForConflicts(state, srConflicts, rrConflicts); 
+      ReportAndCreateDefaultActionsForConflicts(state, srConflicts, rrConflicts); 
     } // method
 
 
@@ -384,18 +378,10 @@ namespace Irony.CompilerServices.Construction {
         }
         //sanity check
         if (reduceItem.Lookaheads.Count == 0)
-          AddError("ParserBuilder error: inadequate state {0}, reduce item '{1}' has no lookaheads.", state.Name, reduceItem.Core.Production);
+          _language.Errors.Add(GrammarErrorLevel.InternalError, state, "ParserBuilder error: inadequate state {0}, reduce item '{1}' has no lookaheads.", state.Name, reduceItem.Core.Production);
       }
     }//method
 
-    private void ReportCoresToAddWrapTailHint() {
-      StringBuilder sb = new StringBuilder();
-      foreach (var core in _coresToAddWrapTailHint) 
-        sb.Append("" + core.ToString() + "\r\n");
-      AddError("\r\nParser builder detected parsing conflicts that can be resolved by restructuring.\r\n" + 
-               "Add WrapTail() hint method in place of '.' to the following productions in original grammar: \r\n" + 
-               sb.ToString()); 
-    }
 
   }//class
 }//namespace

@@ -4,24 +4,24 @@ using System.Linq;
 using System.Text;
 
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
   // ParserData is a container for all information used by CoreParser in input processing.
   // ParserData is a field in LanguageData structure and is used by CoreParser when parsing intput. 
   // The state graph entry is InitialState state; the state graph encodes information usually contained 
   // in what is known in literature as transiton/goto tables.
   // The graph is built from the language grammar by ParserBuilder. 
   // See "Parsing Techniques", 2nd edition for introduction to non-canonical parsing algorithms
-  using Irony.CompilerServices.Construction;
+  using Irony.Parsing.Construction;
   public class ParserData {
-    public readonly Grammar Grammar;
+    public readonly LanguageData Language;
     public ParseMethod ParseMethod;
     public ParserState InitialState;
     public ParserState FinalState;
     public readonly ParserStateList States = new ParserStateList();
     public int LalrStateCount; //number of canonical LALR states; after this count all states are non-canonical
-    public ParserData(Grammar grammar, ParseMethod method) {
-      Grammar = grammar;
-      ParseMethod = method;
+    public ParserData(LanguageData language) {
+      Language = language;
+      ParseMethod = Language.Grammar.ParseMethod;
     }
   }
 

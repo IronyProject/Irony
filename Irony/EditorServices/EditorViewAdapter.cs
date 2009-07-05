@@ -14,11 +14,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 using System.Threading;
-using Irony.CompilerServices;
+using Irony.Parsing;
 
 namespace Irony.EditorServices {
+  public delegate void ColorizeMethod(); 
+  public interface IUIThreadInvoker {
+    void InvokeOnUIThread(ColorizeMethod colorize);
+  }
 
   public class ColorizeEventArgs : EventArgs {
     public readonly TokenList Tokens; 
@@ -64,16 +67,17 @@ namespace Irony.EditorServices {
 
   public class EditorViewAdapter {
     public readonly EditorAdapter Adapter;
-    public readonly Control Control;
+    private IUIThreadInvoker _invoker;
+    //public readonly Control Control;
     ViewData _data;
     ViewRange _range; 
     bool _wantsColorize;
     int _colorizing; 
     public event EventHandler<ColorizeEventArgs> ColorizeTokens; 
 
-    public EditorViewAdapter(EditorAdapter adapter, Control control) {
+    public EditorViewAdapter(EditorAdapter adapter, IUIThreadInvoker invoker) {
       Adapter = adapter;
-      this.Control = control;
+      _invoker = invoker;
       Adapter.AddView(this);
       _range = new ViewRange(-1, -1);
     }
@@ -118,8 +122,7 @@ namespace Irony.EditorServices {
       if (!_wantsColorize) return;
       int colorizing = Interlocked.Exchange(ref _colorizing, 1);
       if (colorizing != 0) return;
-      if (Control.IsDisposed) return;
-      Control.BeginInvoke(new MethodInvoker(Colorize));
+      _invoker.InvokeOnUIThread(Colorize);
     }
     private void Colorize() {
       var range = _range;

@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
 
   //Scanner class. The Scanner's function is to transform a stream of characters into aggregates/words or lexemes, 
   // like identifier, number, literal, etc. 
@@ -38,7 +38,7 @@ namespace Irony.CompilerServices {
 
     public Scanner(ScannerData data) {
       _data = data;
-      _grammar = _data.GrammarData.Grammar;
+      _grammar = _data.Language.Grammar;
     }
 
     public void BeginScan(CompilerContext context) {

@@ -48,10 +48,6 @@ namespace Irony.Scripting.Ast {
     public override string ToString() {
       return Op + " (unary)";
     }
-    protected override void XmlSetAttributes(System.Xml.XmlElement element) {
-      base.XmlSetAttributes(element);
-      element.SetAttribute("Operation", Op); 
-    }
 /*
     public override void OnCodeAnalysis(CodeAnalysisArgs args) {
       switch (args.Phase) {

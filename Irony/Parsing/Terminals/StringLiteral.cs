@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
 
   [Flags]
   public enum StringFlags : short {
@@ -98,7 +98,9 @@ namespace Irony.CompilerServices {
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
       if (_subtypes.Count == 0) {
-        grammarData.Language.Errors.Add("Error in string literal [" + this.Name + "]: No start/end symbols specified.");
+        grammarData.Language.Errors.Add(GrammarErrorLevel.Error, null, 
+            "Error in string literal [{0}]: No start/end symbols specified.", this.Name);
+        return; 
       }
       //collect all start-end symbols in lists and create strings of first chars
       _subtypes.Sort(StringSubType.LongerStartFirst); 

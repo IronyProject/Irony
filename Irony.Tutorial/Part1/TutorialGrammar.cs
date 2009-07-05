@@ -13,7 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.CompilerServices;
+using Irony.Parsing;
 using Irony.Scripting.Ast;
 
 namespace Irony.Tutorial.Part1 {
@@ -22,7 +22,7 @@ namespace Irony.Tutorial.Part1 {
   // 5 + 2.5 * 4
 
   [Language("TutorialGrammar", "1.0", "Sample tutorial grammar")]
-  public class CalcGrammar : Irony.CompilerServices.Grammar {
+  public class CalcGrammar : Irony.Parsing.Grammar {
     public CalcGrammar() {
       // 1. Terminals
       var number = new NumberLiteral("number");

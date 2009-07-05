@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.CompilerServices;
+using Irony.Parsing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Irony.Tests {

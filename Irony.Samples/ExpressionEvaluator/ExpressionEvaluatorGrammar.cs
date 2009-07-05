@@ -13,7 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.CompilerServices;
+using Irony.Parsing;
 using Irony.Scripting.Ast;
 
 namespace Irony.Samples {
@@ -28,7 +28,7 @@ namespace Irony.Samples {
   //  for arguments 2 and 3. 
 
   [Language("ExpressionEvaluator", "1.0", "Multi-line expression evaluator")]
-  public class ExpressionEvaluatorGrammar : Irony.CompilerServices.Grammar {
+  public class ExpressionEvaluatorGrammar : Irony.Parsing.Grammar {
     public ExpressionEvaluatorGrammar() {
       // 1. Terminals
       var number = new NumberLiteral("number");

@@ -16,14 +16,14 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
 
   public class TerminalLookupTable : Dictionary<char, TerminalList> { }
 
   // ScannerData is a container for all info needed by scanner to read input. 
   // ScannerData is a field in LanguageData structure and is used by Scanner. 
   public class ScannerData {
-    public readonly GrammarData GrammarData;
+    public readonly LanguageData Language;
     public readonly TerminalLookupTable TerminalsLookup = new TerminalLookupTable(); //hash table for fast terminal lookup by input char
     public readonly TerminalList FallbackTerminals = new TerminalList(); //terminals that have no explicit prefixes
     public string ScannerRecoverySymbols;
@@ -31,8 +31,8 @@ namespace Irony.CompilerServices {
     public readonly TerminalList MultilineTerminals = new TerminalList();
     public readonly TokenFilterList TokenFilters = new TokenFilterList(); 
 
-    public ScannerData(GrammarData grammarData) {
-      GrammarData  = grammarData;
+    public ScannerData(LanguageData language) {
+      Language  = language;
     }
   }//class
 

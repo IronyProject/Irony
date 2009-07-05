@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Irony.CompilerServices;
+using Irony.Parsing;
 
 namespace Irony.Samples.SQL {
   // Loosely based on SQL89 grammar from Gold parser. Supports some extra TSQL constructs.

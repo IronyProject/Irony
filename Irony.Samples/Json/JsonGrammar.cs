@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Irony.CompilerServices;
+using Irony.Parsing;
 
 namespace Irony.Samples.Json {
   [Language("JSON", "1.0", "JSON data format")]

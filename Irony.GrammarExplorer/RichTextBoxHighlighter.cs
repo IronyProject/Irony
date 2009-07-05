@@ -23,7 +23,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Threading;
 using System.Runtime.InteropServices;
-using Irony.CompilerServices;
+using Irony.Parsing;
 using Irony.EditorServices;
 using System.Diagnostics;
 
@@ -31,23 +31,25 @@ namespace Irony.GrammarExplorer {
 
   public class TokenColorTable : Dictionary<TokenColor, Color> { }
 
-  public class RichTextBoxHighligter : NativeWindow, IDisposable {
+  public class RichTextBoxHighligter : NativeWindow, IDisposable, IUIThreadInvoker {
     public RichTextBox TextBox;
     public readonly TokenColorTable TokenColors = new TokenColorTable();
-    EditorViewAdapter _viewAdapter;
+    public readonly EditorAdapter Adapter; 
+    public readonly EditorViewAdapter ViewAdapter;
 
     private IntPtr _savedEventMask = IntPtr.Zero;
     bool _colorizing;
     bool _disposed;
 
     #region constructor, initialization and disposing
-    public RichTextBoxHighligter(RichTextBox textBox, EditorViewAdapter adapter) {
-      TextBox = textBox;  
-      _viewAdapter = adapter;
+    public RichTextBoxHighligter(RichTextBox textBox, Compiler compiler) {
+      TextBox = textBox;
+      Adapter = new EditorAdapter(compiler); 
+      ViewAdapter = new EditorViewAdapter(Adapter, this);
       InitColorTable();
       Connect();
       UpdateViewRange();
-      _viewAdapter.SetNewText(TextBox.Text);
+      ViewAdapter.SetNewText(TextBox.Text);
     }
     private void Connect() {
       TextBox.MouseMove += TextBox_MouseMove;
@@ -57,7 +59,7 @@ namespace Irony.GrammarExplorer {
       TextBox.HScroll += TextBox_ScrollResize;
       TextBox.SizeChanged += TextBox_ScrollResize;
       TextBox.Disposed += TextBox_Disposed;
-      _viewAdapter.ColorizeTokens += Adapter_ColorizeTokens;
+      ViewAdapter.ColorizeTokens += Adapter_ColorizeTokens;
       this.AssignHandle(TextBox.Handle);
     }
 
@@ -104,7 +106,7 @@ namespace Irony.GrammarExplorer {
     void TextBox_TextChanged(object sender, EventArgs e) {
       //if we are here while colorizing, it means the "change" event is a result of our coloring action
       if (_colorizing) return; 
-      _viewAdapter.SetNewText(TextBox.Text);
+      ViewAdapter.SetNewText(TextBox.Text);
     }
     void TextBox_ScrollResize(object sender, EventArgs e) {
       UpdateViewRange();
@@ -117,7 +119,7 @@ namespace Irony.GrammarExplorer {
     private void UpdateViewRange() {
       int minpos = TextBox.GetCharIndexFromPosition(new Point(0, 0));
       int maxpos = TextBox.GetCharIndexFromPosition(new Point(TextBox.ClientSize.Width, TextBox.ClientSize.Height));
-      _viewAdapter.SetViewRange(minpos, maxpos);
+      ViewAdapter.SetViewRange(minpos, maxpos);
     }
     #endregion
 
@@ -168,24 +170,6 @@ namespace Irony.GrammarExplorer {
     }
     #endregion
 
-/* - looks like WndProc override is not needed
-    #region overrides: WndProc
-    [DebuggerStepThrough]
-    protected override void WndProc(ref Message m) {
-      // pre-process the text control's messages
-      switch (m.Msg) {
-        case WM_PAINT:
-          //force recolorising when window is about to paint - this would likely cause another WM_PAINT message
-          if (_viewAdapter.WantsColorize) {
-            UpdateViewRange();
-            _viewAdapter.TryInvokeColorize();
-          } 
-          break; 
-      }
-      base.WndProc(ref m);
-    }
-    #endregion
-*/
     #region Colorizing tokens
     public void LockTextBox() {
       // Stop redrawing:  
@@ -243,6 +227,14 @@ namespace Irony.GrammarExplorer {
     }
     #endregion
 
+
+    #region IUIThreadInvoker Members
+
+    public void InvokeOnUIThread(ColorizeMethod colorize) {
+      TextBox.BeginInvoke(new MethodInvoker(colorize)); 
+    }
+
+    #endregion
   }//class
 
 }//namespace 

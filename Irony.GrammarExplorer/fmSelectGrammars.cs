@@ -19,7 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Reflection;
-using Irony.CompilerServices; 
+using Irony.Parsing; 
 
 namespace Irony.GrammarExplorer {
   public partial class fmSelectGrammars : Form {

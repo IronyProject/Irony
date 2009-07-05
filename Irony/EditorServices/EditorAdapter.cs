@@ -16,7 +16,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Runtime.InteropServices;
-using Irony.CompilerServices;
+using Irony.Parsing;
 
 namespace Irony.EditorServices {
 

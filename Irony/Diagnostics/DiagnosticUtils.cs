@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Irony.CompilerServices;
-using Irony.CompilerServices.Construction;
+using Irony.Parsing;
+using Irony.Parsing.Construction;
 
 namespace Irony.Diagnostics {
   public static class DiagnosticUtils {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Irony.CompilerServices;
+using Irony.Parsing;
 using Irony.Scripting.Ast;
 using Irony.Scripting.Runtime;
 

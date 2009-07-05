@@ -106,12 +106,6 @@ namespace Irony.Scripting.Ast {
       return Name;
     }
 
-
-    protected override void XmlSetAttributes(XmlElement thisElement) {
-      base.XmlSetAttributes(thisElement);
-      thisElement.SetAttribute("Name", Name); 
-    }
-
 /*
     public override void OnCodeAnalysis(CodeAnalysisArgs args) {
       switch (args.Phase) {

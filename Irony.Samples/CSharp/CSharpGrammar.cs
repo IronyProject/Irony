@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.CompilerServices;
+using Irony.Parsing;
 
 namespace Irony.Samples.CSharp {
 
@@ -540,7 +540,7 @@ namespace Irony.Samples.CSharp {
       //selection (if and switch)
       selection_statement.Rule = if_statement | switch_statement;
       if_statement.Rule = Symbol("if") + Lpar + expression + Rpar + embedded_statement + else_clause_opt;
-      else_clause_opt.Rule = Empty |  PreferShiftHere() + "else" + embedded_statement;
+      else_clause_opt.Rule = Empty | PreferShiftHere() + "else" + embedded_statement;
       switch_statement.Rule = "switch" + parenthesized_expression + Lbr + switch_sections_opt + Rbr;
       switch_section.Rule = switch_labels + statement_list;
       switch_sections_opt.Rule = MakeStarRule(switch_sections_opt, null, switch_section);

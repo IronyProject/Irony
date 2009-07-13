@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
 
   #region Comments
   //  Token filter is a token preprocessor that operates on a token stream between scanner and parser:

@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection; 
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
 
 
   public class NonTerminalList : List<NonTerminal> { }

@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Globalization;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
   #region notes
   //Identifier terminal. Matches alpha-numeric sequences that usually represent identifiers and keywords.
   // c#: @ prefix signals to not interpret as a keyword; allows \u escapes

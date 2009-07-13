@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
 
   public class SymbolTerminalTable : Dictionary<string, SymbolTerminal> {
     public SymbolTerminalTable(StringComparer comparer) : base(100, comparer) { 

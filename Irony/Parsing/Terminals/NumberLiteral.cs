@@ -18,7 +18,7 @@ using System.Globalization;
 using System.Text;
 using System.Diagnostics;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
   using BigInteger = Microsoft.Scripting.Math.BigInteger;
   using Complex64 = Microsoft.Scripting.Math.Complex64;
 

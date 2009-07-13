@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Text;
 
 
-namespace Irony.CompilerServices.Construction {
+namespace Irony.Parsing.Construction { 
 
   internal class ParserStateData {
     public readonly ParserState State;

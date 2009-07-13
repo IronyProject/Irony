@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Irony.Parsing {
+namespace Irony.Parsing { 
   public enum GrammarErrorLevel {
     NoError, //used only for max error level when there are no errors
     Info,

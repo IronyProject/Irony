@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing { 
 
   /* 
     A node for so-called parse tree (concrete syntax tree) - initial tree that parser produces; it contains all 

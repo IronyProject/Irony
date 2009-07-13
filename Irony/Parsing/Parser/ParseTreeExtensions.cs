@@ -5,7 +5,7 @@ using System.Text;
 using System.IO; 
 using System.Xml;
 
-namespace Irony.Parsing {
+namespace Irony.Parsing { 
   public static class XmlExtensions {
 
     public static string ToXml(this ParseTree parseTree) {

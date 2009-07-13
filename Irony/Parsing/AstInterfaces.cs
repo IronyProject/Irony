@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing { 
 
   //Basic interface for AST nodes; Init method is the chance for AST node to get references to its child nodes, and all 
   // related information gathered during parsing

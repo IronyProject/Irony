@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing { 
 
   //GrammarData is a container for all basic info about the grammar
   // GrammarData is a field in LanguageData object. 

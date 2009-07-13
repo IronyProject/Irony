@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
   //This is a simple NewLine terminal recognizing line terminators for use in grammars for line-based languages like VB
   // instead of more complex alternative of using CodeOutlineFilter. 
   public class NewLineTerminal : Terminal {

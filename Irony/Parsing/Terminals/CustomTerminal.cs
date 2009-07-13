@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
   //Terminal based on custom method; allows creating custom match without creating new class derived from Terminal 
   public delegate Token MatchHandler(Terminal terminal, CompilerContext context, ISourceStream source);
   public class CustomTerminal : Terminal {

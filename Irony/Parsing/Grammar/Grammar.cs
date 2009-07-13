@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Text;
 using Irony.Scripting.Runtime;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing { 
 
   public partial class Grammar {
 

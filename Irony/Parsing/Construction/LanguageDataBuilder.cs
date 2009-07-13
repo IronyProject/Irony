@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 namespace Irony.Parsing.Construction {
-  internal class LanguageDataBuilder {
+  internal class LanguageDataBuilder { 
 
     internal LanguageData Language;
     Grammar _grammar;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace Irony.Parsing.Construction {
+namespace Irony.Parsing.Construction { 
   //Non-canonical extensions for LALR
   internal partial class ParserDataBuilder {
     LR0ItemSet _coresToAddWrapTailHint = new LR0ItemSet(); 

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
   //Parser class represents combination of scanner and LALR parser (CoreParser)
-  public class Parser {
+  public class Parser { 
     public readonly LanguageData Language; 
     public readonly Scanner Scanner;
     public readonly CoreParser CoreParser;

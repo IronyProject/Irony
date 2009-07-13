@@ -16,7 +16,7 @@ using System.Text;
 using System.Diagnostics;
 using Irony.Parsing.Construction;
 
-namespace Irony.Parsing {
+namespace Irony.Parsing { 
 
   public class Compiler {
 

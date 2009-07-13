@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace Irony.Parsing.Construction {
+namespace Irony.Parsing.Construction { 
   
   // Methods constructing LALR automaton
   internal partial class ParserDataBuilder {

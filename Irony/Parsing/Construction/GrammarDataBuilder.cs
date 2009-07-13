@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Irony.Parsing.Construction {
+namespace Irony.Parsing.Construction { 
 
   internal class GrammarDataBuilder {
     LanguageData _language;

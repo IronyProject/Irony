@@ -18,7 +18,7 @@ using System.Diagnostics;
 using Irony.Diagnostics;
 
 
-namespace Irony.Parsing {
+namespace Irony.Parsing { 
   // CoreParser class implements NLALR parser automaton. Its behavior is controlled by the state transition graph
   // with root in Data.InitialState. Each state contains a dictionary of parser actions indexed by input 
   // element (terminal or non-terminal). 

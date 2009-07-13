@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
 
   public class TerminalList : List<Terminal> { }
   public class TerminalSet : HashSet<Terminal> { }

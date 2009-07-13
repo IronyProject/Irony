@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
 
   public class ParserStack : List<ParseTreeNode> {
     public ParserStack() : base(200) { }

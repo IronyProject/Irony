@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing { 
 
   public enum TermOptions {
     None = 0,
@@ -218,6 +218,16 @@ namespace Irony.CompilerServices {
         sb.Append(",");
       }
       return sb.ToString().Trim();
+    }
+  }
+
+  public class AstNodeEventArgs : EventArgs {
+    public AstNodeEventArgs(ParseTreeNode parseTreeNode) {
+      ParseTreeNode = parseTreeNode;
+    }
+    public readonly ParseTreeNode ParseTreeNode;
+    public object AstNode {
+      get { return ParseTreeNode.AstNode; }
     }
   }
 

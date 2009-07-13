@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Globalization;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
   public static class TerminalFactory {
 
     public static StringLiteral CreateCSharpString(string name) {

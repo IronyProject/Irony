@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
 
   //Note: this class was not tested at all
   // Based on contributions by CodePlex user sakana280

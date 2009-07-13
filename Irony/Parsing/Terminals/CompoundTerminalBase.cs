@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
   #region About compound terminals
   /*
    As  it turns out, many terminal types in real-world languages have 3-part structure: prefix-body-suffix

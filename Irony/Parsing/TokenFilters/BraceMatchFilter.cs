@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
 
   #region Description
   // This filter controls matching of left/right symbol pairs in the source.

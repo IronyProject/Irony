@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 
-namespace Irony.Parsing {
+namespace Irony.Parsing { 
   // ParserData is a container for all information used by CoreParser in input processing.
   // ParserData is a field in LanguageData structure and is used by CoreParser when parsing intput. 
   // The state graph entry is InitialState state; the state graph encodes information usually contained 

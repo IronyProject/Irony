@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Text;
 //using System.Text.RegularExpressions;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
 
   public interface ISourceStream {
 

@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
 
   public enum TokenFlags {
     IsIncomplete = 0x01,

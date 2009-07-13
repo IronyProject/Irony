@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 //Error handling methods of CoreParser class
-namespace Irony.CompilerServices {
+namespace Irony.Parsing { 
   public partial class CoreParser {
 
     private bool TryRecover() {

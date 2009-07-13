@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
   //This terminal allows to declare a set of constants in the input language
   // It should be used when constant symbols do not look like normal identifiers; e.g. in Scheme, #t, #f are true/false
   // constants, and they don't fit into Scheme identifier pattern.

@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing {
 
   //Adds newLine, indent, unindent tokes to scanner's output stream for languages like Python.
   // Scanner ignores new lines and indentations as whitespace; this filter produces these symbols based 

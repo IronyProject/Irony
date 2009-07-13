@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 
-namespace Irony.CompilerServices {
+namespace Irony.Parsing { 
 
   //BNF expressions are represented as OR-list of Plus-lists of BNF terms
   internal class BnfExpressionData : List<BnfTermList> { }

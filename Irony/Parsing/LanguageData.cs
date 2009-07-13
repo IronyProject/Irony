@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Irony.Parsing {
+namespace Irony.Parsing { 
   public class LanguageData {
     public readonly Grammar Grammar;
     public readonly GrammarData GrammarData; 

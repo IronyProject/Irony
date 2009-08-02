@@ -27,7 +27,7 @@ namespace Irony.Scripting.Ast {
       ChildNodes.Clear();
       var Identifier = lvalue as VarRefNode;
       if (Identifier == null) {
-        args.Context.ReportError(lvalue.Location, "Expected identifier.");
+        args.Context.AddError(lvalue.Location, "Expected identifier.");
         return; 
       }
       Identifier.Flags |= AstNodeFlags.AllocateSlot | AstNodeFlags.NotRValue;

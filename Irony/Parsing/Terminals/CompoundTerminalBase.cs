@@ -54,7 +54,6 @@ namespace Irony.Parsing {
       public short Flags;  //need to be short, because we need to save it in Scanner state for Vs integration
       public string Error;
       public TypeCode[] TypeCodes;
-      public string ControlSymbol_;
       public string ExponentSymbol;  //exponent symbol for Number literal
       public string StartSymbol;     //string start and end symbols
       public string EndSymbol;
@@ -68,6 +67,7 @@ namespace Irony.Parsing {
       public bool IsSet(short flag) {
         return (Flags & flag) != 0; 
       }
+      public string Text { get { return Prefix + Body + Suffix; } }
     }
 
     #endregion 
@@ -135,7 +135,7 @@ namespace Irony.Parsing {
       if (context.ScannerState.Value == 0) {
         token = QuickParse(context, source);
         if (token != null) return token;
-        source.Position = source.TokenStart.Position; //revert the position
+        source.PreviewPosition = source.Location.Position; //revert the position
       }
 
       CompoundTokenDetails details = new CompoundTokenDetails();
@@ -146,14 +146,14 @@ namespace Irony.Parsing {
       if (!ReadBody(source, details))
         return null;
       if (details.Error != null) 
-        return context.CreateErrorTokenAndReportError(source.TokenStart, source.CurrentChar.ToString(), details.Error);
+        return source.CreateErrorToken(details.Error);
       if (details.IsPartial) {
         details.Value = details.Body;
       } else {
         ReadSuffix(source, details);
 
-        if (!ConvertValue(details))
-          return context.CreateErrorTokenAndReportError(source.TokenStart, source.CurrentChar.ToString(), "Failed to convert the value: " + details.Error);
+      if (!ConvertValue(details))
+        return source.CreateErrorToken("Failed to convert the value: {0}", details.Error);
       }
       token = CreateToken(context, source, details);
        
@@ -168,8 +168,7 @@ namespace Irony.Parsing {
     }
 
     protected virtual Token CreateToken(CompilerContext context, ISourceStream source, CompoundTokenDetails details) {
-      string lexeme = source.GetLexeme();
-      Token token = new Token(this, source.TokenStart, lexeme, details.Value);
+      var token = source.CreateToken(this, details.Value);
       token.Details = details;
       if (details.IsPartial) 
         token.Flags |= TokenFlags.IsIncomplete;
@@ -186,13 +185,13 @@ namespace Irony.Parsing {
     }
 
     protected virtual void ReadPrefix(ISourceStream source, CompoundTokenDetails details) {
-      if (_prefixesFirsts.IndexOf(source.CurrentChar) < 0)
+      if (_prefixesFirsts.IndexOf(source.PreviewChar) < 0)
         return;
       foreach (string pfx in Prefixes) {
         if (!source.MatchSymbol(pfx, !CaseSensitive)) continue; 
         //We found prefix
         details.Prefix = pfx;
-        source.Position += pfx.Length;
+        source.PreviewPosition += pfx.Length;
         //Set flag from prefix
         short pfxFlags;
         if (!string.IsNullOrEmpty(details.Prefix) && PrefixFlags.TryGetValue(details.Prefix, out pfxFlags))
@@ -206,12 +205,12 @@ namespace Irony.Parsing {
     }
 
     protected virtual void ReadSuffix(ISourceStream source, CompoundTokenDetails details) {
-      if (_suffixesFirsts.IndexOf(source.CurrentChar) < 0) return;
+      if (_suffixesFirsts.IndexOf(source.PreviewChar) < 0) return;
       foreach (string sfx in Suffixes) {
         if (!source.MatchSymbol(sfx, !CaseSensitive)) continue;
         //We found suffix
         details.Suffix = sfx;
-        source.Position += sfx.Length;
+        source.PreviewPosition += sfx.Length;
         //Set TypeCode from suffix
         TypeCode[] codes;
         if (!string.IsNullOrEmpty(details.Suffix) && SuffixTypeCodes.TryGetValue(details.Suffix, out codes))

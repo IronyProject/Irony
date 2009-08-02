@@ -8,7 +8,6 @@ namespace Irony.Parsing.Construction {
 
     internal LanguageData Language;
     Grammar _grammar;
-    private ParserStateHash _stateHash = new ParserStateHash();
 
     public LanguageDataBuilder(LanguageData language) {
       Language = language;
@@ -29,7 +28,7 @@ namespace Irony.Parsing.Construction {
         pbld.Build();
         Validate();
         //call grammar method, a chance to tweak the automaton
-        _grammar.OnParserDataConstructed(Language);
+        _grammar.OnLanguageDataConstructed(Language);
         return true;
       } catch (GrammarErrorException) {
         return false; //grammar error should be already added to Language.Errors collection

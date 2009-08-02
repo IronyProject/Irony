@@ -232,11 +232,13 @@ namespace Irony.Parsing {
     public virtual void OnGrammarDataConstructed(LanguageData language) {
     }
 
-    public virtual void OnParserDataConstructed(LanguageData language) {
+    public virtual void OnLanguageDataConstructed(LanguageData language) {
     }
-
-    public virtual string GetSyntaxErrorMessage(CompilerContext context, ParserState state, ParseTreeNode currentInput) {
-      return null; //Irony then would construct default message
+    //Constructs the error message in situation when parser has no available action for current input.
+    // override this method if you want to change this message
+    public virtual string ConstructParserErrorMessage(CompilerContext context, ParserState state, BnfTermSet expectedTerms, ParseTreeNode currentInput) {
+      string msg = "Syntax error" + (expectedTerms.Count == 0 ? "." : ", expected: " + expectedTerms.ToErrorString());
+      return msg; 
     }
     
     public virtual LanguageRuntime CreateRuntime() {

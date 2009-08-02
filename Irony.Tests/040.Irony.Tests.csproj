@@ -46,6 +46,8 @@
   <ItemGroup>
     <Compile Include="CommentTerminalTests.cs" />
     <None Include="EvaluationTests.cs" />
+    <Compile Include="RegExLiteralTests.cs" />
+    <Compile Include="FreeTextLiteralTests.cs" />
     <Compile Include="IdentifierTerminalTests.cs" />
     <Compile Include="IntegrationTests.cs" />
     <Compile Include="NumberLiteralTests.cs" />

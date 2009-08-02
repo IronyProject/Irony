@@ -96,6 +96,8 @@ namespace Irony.Parsing {
       //Trace current state if tracing is on
       if (_traceOn)
         _currentTraceEntry = _context.AddParserTrace(_currentState, Stack.Top, _currentInput);
+      if (_currentInput.IsError)
+        return TryRecover();
       //Try getting action
       ParserAction action = GetAction();
       if (action == null) {
@@ -231,10 +233,10 @@ namespace Irony.Parsing {
     
     private SourceSpan ComputeNewNodeSpan(int childCount) {
       if (childCount == 0)
-        return new SourceSpan(_currentInput.Span.Start, 0);
+        return new SourceSpan(_currentInput.Span.Location, 0);
       var first = Stack[Stack.Count - childCount];
       var last = Stack.Top;
-      return new SourceSpan(first.Span.Start, last.Span.EndPos - first.Span.Start.Position);
+      return new SourceSpan(first.Span.Location, last.Span.EndPosition - first.Span.Location.Position);
     }
 
     private bool CheckReducingExistingList(Production reduceProduction, out ParseTreeNode listNode) {
@@ -273,7 +275,7 @@ namespace Irony.Parsing {
         if (parseNode.AstNode != null && parseNode.Term != null)
           parseNode.Term.OnAstNodeCreated(parseNode);
       } catch (Exception ex) {
-        _context.ReportError(parseNode.Span.Start, "Failed to create AST node for non-terminal [{0}], error: " + ex.Message, parseNode.Term.Name); 
+        _context.ReportError(parseNode.Span.Location, "Failed to create AST node for non-terminal [{0}], error: " + ex.Message, parseNode.Term.Name); 
       }
     }
     #endregion

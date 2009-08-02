@@ -95,7 +95,7 @@ namespace Irony.Scripting.Ast {
     public SourceSpan Span; 
 
     public SourceLocation Location {
-      get { return Span.Start; }
+      get { return Span.Location; }
     }
 
     //List of child nodes

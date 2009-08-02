@@ -24,7 +24,7 @@ using System.Security;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Irony")]
-[assembly: AssemblyCopyright("Copyright © 2008 Roman Ivantsov")]
+[assembly: AssemblyCopyright("Copyright © 2009 Roman Ivantsov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: CLSCompliant(true)]

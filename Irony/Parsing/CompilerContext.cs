@@ -49,7 +49,7 @@ namespace Irony.Parsing {
     public bool ParserIsRecovering;
     public bool ScannerIsRecovering;
 
-    #region constructors and factory methods
+    #region constructors
     public CompilerContext(Compiler compiler) {
       this.Compiler = compiler;
 #if DEBUG
@@ -58,7 +58,7 @@ namespace Irony.Parsing {
     }
     #endregion
 
-    #region Helper methods: GetParserState
+    #region Helper methods: GetCurrentParserState
     public ParserState GetCurrentParserState() {
       try {
         return this.Compiler.Parser.CoreParser.CurrentState;
@@ -104,7 +104,7 @@ namespace Irony.Parsing {
     #endregion
 
     #region Error handling
-    public Token CreateErrorTokenAndReportError(SourceLocation location, string content, string message, params object[] args) {
+    public Token CreateErrorTokenAndReportError_(SourceLocation location, string content, string message, params object[] args) {
       if (args != null && args.Length > 0)
         message = string.Format(message, args);
       ReportError(this.Compiler.Parser.CoreParser.CurrentState, location, message);
@@ -132,7 +132,7 @@ namespace Irony.Parsing {
     }
     public Token Token {
       get { return _token; }
-      set { _token = value; }
+      internal set { _token = value; }
     } Token _token;
 
   }//class

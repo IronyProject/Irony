@@ -19,6 +19,8 @@
     <SccLocalPath>.</SccLocalPath>
     <SccAuxPath>https://tfs05.codeplex.com</SccAuxPath>
     <SccProvider>{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}</SccProvider>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>irony.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -50,9 +52,15 @@
   <ItemGroup>
     <Compile Include="Parsing\Grammar\GrammarError.cs" />
     <Compile Include="Parsing\Parser\ParseTreeExtensions.cs" />
+    <Compile Include="Parsing\Parser\Preprocessor.cs" />
     <Compile Include="Parsing\StringHelpers.cs" />
     <Compile Include="Parsing\Parser\CoreParser_ErrorHandling.cs" />
     <Compile Include="Diagnostics\ParserTraceEntry.cs" />
+    <Compile Include="Parsing\Terminals\CompilerDirectiveTerminal.cs" />
+    <Compile Include="Parsing\Terminals\RegExLiteral.cs" />
+    <Compile Include="Parsing\Terminals\FreeTextLiteral.cs" />
+    <Compile Include="Parsing\Terminals\ValidateTokenEvent.cs" />
+    <Compile Include="Parsing\Terminals\_ISourceStream.cs" />
     <Compile Include="Scripting\CodeAnalysis.cs" />
     <Compile Include="Parsing\Grammar\GrammarData.cs" />
     <Compile Include="Parsing\Grammar\LanguageAttribute.cs" />
@@ -142,6 +150,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="irony.snk" />
     <None Include="Scripting\Runtime\SlimLock.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

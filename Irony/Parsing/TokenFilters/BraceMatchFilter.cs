@@ -52,14 +52,13 @@ namespace Irony.Parsing {
         }
         //We have closing brace
         if (_braces.Count == 0) {
-          yield return context.CreateErrorTokenAndReportError( token.Location, token.Text, "Unmatched closing brace '{0}'", token.Text);
+          yield return base.CreateErrorTokenAt(token.Location, "Unmatched closing brace '{0}'", token.Text);
           continue;
         }
         //check match
         Token last = _braces.Pop();
         if (last.AsSymbol.IsPairFor != token.AsSymbol) {
-          yield return context.CreateErrorTokenAndReportError(token.Location, token.Text,
-              "Unmatched closing brace '{0}' - expected '{1}'", last.AsSymbol.IsPairFor.Name);
+          yield return base.CreateErrorTokenAt(token.Location, "Unmatched closing brace '{0}' - expected '{1}'", last.AsSymbol.IsPairFor.Name);
           continue;
         }
         //everything is ok, there's matching brace on top of the stack

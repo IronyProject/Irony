@@ -26,6 +26,7 @@ namespace Irony.Parsing {
     Content,
     Outline, //newLine, indent, dedent
     Comment,
+    Directive,
     Error,
   }
 
@@ -38,6 +39,10 @@ namespace Irony.Parsing {
     
     public object Value {
       get { return _value; }
+      set {
+        _value = value;
+        _valueString = (value == null ? string.Empty : value.ToString());
+      }
     } object _value;
 
     public string ValueString {
@@ -54,11 +59,7 @@ namespace Irony.Parsing {
       this.AsSymbol = term as SymbolTerminal;
       Location = location;
       Text = text;
-      SetValue(value); 
-    }
-    public void SetValue(object value) {
-      _value = value;
-      _valueString = (value == null ? string.Empty : value.ToString());
+      Value = value; 
     }
 
     public Terminal Terminal {
@@ -107,17 +108,7 @@ namespace Irony.Parsing {
       else
         result = _valueString + " (" + Terminal.ToString() + ")";
       return result; 
-    }
-
-/*
-    protected override void XmlSetAttributes(XmlElement thisElement) {
-      base.XmlSetAttributes(thisElement);
-      thisElement.SetAttribute("Value", Text); //Adds value string
-      if (Value != null)
-        thisElement.SetAttribute("ValueType", this.Value.GetType().FullName); //Adds value string
-
-    }
-*/
+    }//method
 
   }//class
 

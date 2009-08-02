@@ -51,10 +51,10 @@ namespace Irony.Parsing {
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
       if (!source.MatchSymbol(_symbol, !OwnerGrammar.CaseSensitive))
         return null;
-      source.Position += _symbol.Length;
-      Token tkn = new Token(this, source.TokenStart, Symbol, null);
-      return tkn;
+      source.PreviewPosition += _symbol.Length;
+      return source.CreateToken(this,_symbol);
     }
+
     public override IList<string> GetFirsts() {
       return new string[] { _symbol };
     }

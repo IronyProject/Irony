@@ -22,8 +22,6 @@ namespace Irony.Parsing {
 
     public Compiler(Grammar grammar) {
       Language = new LanguageData(grammar); 
-//      var builder = new LanguageDataBuilder(Language);
-//      builder.Build();
       if (Language.CanParse())
         Parser = new Parser(Language);
     }

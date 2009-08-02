@@ -27,7 +27,11 @@ namespace Irony.Parsing {
     VsLineScan,         // line-by-line scanning in VS integration for syntax highlighting
     //ConsoleInput, //line-by-line from console
   }
-
+  public enum CompilerErrorLevel {
+    Info    = 0,
+    Warning = 1,
+    Error   = 2,
+  }
 
 
   // The purpose of this class is to provide a container for information shared 
@@ -104,18 +108,14 @@ namespace Irony.Parsing {
     #endregion
 
     #region Error handling
-    public Token CreateErrorTokenAndReportError_(SourceLocation location, string content, string message, params object[] args) {
-      if (args != null && args.Length > 0)
-        message = string.Format(message, args);
-      ReportError(this.Compiler.Parser.CoreParser.CurrentState, location, message);
-      var grammar = Compiler.Language.Grammar;
-      Token result = new Token(grammar.SyntaxError, location, content, message);
-      return result; 
+    //Error level is not used so far, will implement later
+    public void AddError(SourceLocation location, string message, params object[] args) {
+      AddCompilerMessage(CompilerErrorLevel.Error, location, message, args); 
     }
-    public void ReportError(SourceLocation location, string message, params object[] args) {
-      ReportError(null, location, message, args); 
+    public void AddCompilerMessage(CompilerErrorLevel level, SourceLocation location, string message, params object[] args) {
+      AddCompilerMessage(level, null, location, message, args); 
     }
-    public void ReportError(ParserState state, SourceLocation location, string message, params object[] args) {
+    public void AddCompilerMessage(CompilerErrorLevel level, ParserState state, SourceLocation location, string message, params object[] args) {
       if (CurrentParseTree == null) return; 
       if (CurrentParseTree.Errors.Count >= MaxErrors) return;
       if (args != null && args.Length > 0)

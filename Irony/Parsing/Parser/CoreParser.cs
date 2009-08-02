@@ -96,8 +96,10 @@ namespace Irony.Parsing {
       //Trace current state if tracing is on
       if (_traceOn)
         _currentTraceEntry = _context.AddParserTrace(_currentState, Stack.Top, _currentInput);
-      if (_currentInput.IsError)
+      if (_currentInput.IsError) {
+        ReportErrorFromScanner();
         return TryRecover();
+      }
       //Try getting action
       ParserAction action = GetAction();
       if (action == null) {
@@ -275,7 +277,7 @@ namespace Irony.Parsing {
         if (parseNode.AstNode != null && parseNode.Term != null)
           parseNode.Term.OnAstNodeCreated(parseNode);
       } catch (Exception ex) {
-        _context.ReportError(parseNode.Span.Location, "Failed to create AST node for non-terminal [{0}], error: " + ex.Message, parseNode.Term.Name); 
+        _context.AddError(parseNode.Span.Location, "Failed to create AST node for non-terminal [{0}], error: " + ex.Message, parseNode.Term.Name); 
       }
     }
     #endregion

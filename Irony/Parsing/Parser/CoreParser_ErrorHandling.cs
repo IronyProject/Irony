@@ -93,6 +93,11 @@ namespace Irony.Parsing {
       return null;
     }
 
+    #region Error reporting
+    private void ReportErrorFromScanner() {
+      _context.AddError(_currentInput.Token.Location, _currentInput.Token.Value as string); 
+    }
+
     private void ReportParseError() {
       string msg;
       if (_currentInput.Term == _grammar.Eof)
@@ -107,7 +112,7 @@ namespace Irony.Parsing {
         if (string.IsNullOrEmpty(msg))
           msg = "Syntax error";
       }
-      _context.ReportError(_currentState, _currentInput.Span.Location, msg);
+      _context.AddCompilerMessage(CompilerErrorLevel.Error, _currentState, _currentInput.Span.Location, msg);
       if (_currentTraceEntry != null) {
         _currentTraceEntry.Message = msg;
         _currentTraceEntry.IsError = true;
@@ -142,8 +147,9 @@ namespace Irony.Parsing {
       //Clean-up reduced set, remove pseudo terms
       if (reducedSet.Contains(_grammar.Eof)) reducedSet.Remove(_grammar.Eof);
       if (reducedSet.Contains(_grammar.SyntaxError)) reducedSet.Remove(_grammar.SyntaxError);
-    
+
     }
+    #endregion
 
 
   }//class

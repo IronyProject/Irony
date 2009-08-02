@@ -322,7 +322,7 @@ namespace Irony.GrammarExplorer {
  */ 
       } catch(RuntimeException rex) {
         //catch and add runtime to compiler context, so they will be shown in the form
-        _compilerContext.ReportError(rex.Location, rex.Message);
+        _compilerContext.AddError(rex.Location, rex.Message);
       } finally {
         sw.Stop();
         if (evalContext != null) {

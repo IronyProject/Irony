@@ -44,7 +44,7 @@ namespace Irony.Samples {
       var ParExpr = new NonTerminal("ParExpr");
       var UnExpr = new NonTerminal("UnExpr", typeof(UnExprNode));
       var UnOp = new NonTerminal("UnOp");
-      var BinOp = new NonTerminal("BinOp");
+      var BinOp = new NonTerminal("BinOp", "operator");
       var AssignmentStmt = new NonTerminal("AssignmentStmt", typeof(AssigmentNode));
       var Statement = new NonTerminal("Statement");
       var ProgramLine = new NonTerminal("ProgramLine");

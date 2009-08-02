@@ -764,9 +764,9 @@ namespace Irony.GrammarExplorer {
       // 
       this.groupBox1.Controls.Add(this.gridCompileErrors);
       this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.groupBox1.Location = new System.Drawing.Point(147, 3);
+      this.groupBox1.Location = new System.Drawing.Point(158, 3);
       this.groupBox1.Name = "groupBox1";
-      this.groupBox1.Size = new System.Drawing.Size(946, 155);
+      this.groupBox1.Size = new System.Drawing.Size(935, 155);
       this.groupBox1.TabIndex = 3;
       this.groupBox1.TabStop = false;
       this.groupBox1.Text = "Compile Errors";
@@ -789,7 +789,7 @@ namespace Irony.GrammarExplorer {
       this.gridCompileErrors.ReadOnly = true;
       this.gridCompileErrors.RowHeadersVisible = false;
       this.gridCompileErrors.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-      this.gridCompileErrors.Size = new System.Drawing.Size(940, 136);
+      this.gridCompileErrors.Size = new System.Drawing.Size(929, 136);
       this.gridCompileErrors.TabIndex = 2;
       this.gridCompileErrors.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridCompileErrors_CellDoubleClick);
       // 
@@ -839,7 +839,7 @@ namespace Irony.GrammarExplorer {
       this.grpCompileInfo.Dock = System.Windows.Forms.DockStyle.Left;
       this.grpCompileInfo.Location = new System.Drawing.Point(3, 3);
       this.grpCompileInfo.Name = "grpCompileInfo";
-      this.grpCompileInfo.Size = new System.Drawing.Size(144, 155);
+      this.grpCompileInfo.Size = new System.Drawing.Size(155, 155);
       this.grpCompileInfo.TabIndex = 5;
       this.grpCompileInfo.TabStop = false;
       this.grpCompileInfo.Text = "Statistics";

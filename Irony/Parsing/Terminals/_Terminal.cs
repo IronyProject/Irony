@@ -51,6 +51,18 @@ namespace Irony.Parsing {
     }
     #endregion
 
+    #region Events: ValidateToken
+    private ValidateTokenEventArgs _validateTokenArgs = new ValidateTokenEventArgs(); 
+    public event EventHandler<ValidateTokenEventArgs> ValidateToken;
+    protected internal virtual Token InvokeValidateToken(CompilerContext context, ISourceStream source, TerminalList terminals, Token token) {
+      if (ValidateToken == null) return token;
+      _validateTokenArgs.Init(context, source, terminals, token);
+      ValidateToken(this, _validateTokenArgs);
+      return _validateTokenArgs.Token;
+    }
+
+    #endregion
+
     #region static comparison methods
     public static int ByName(Terminal x, Terminal y) {
       return string.Compare(x.ToString(), y.ToString());
@@ -69,5 +81,4 @@ namespace Irony.Parsing {
   }//class
 
 
-
-}
+}//namespace

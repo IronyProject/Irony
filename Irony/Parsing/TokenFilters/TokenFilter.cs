@@ -52,7 +52,11 @@ namespace Irony.Parsing {
     }
     public virtual void OnSetSourceLocation(SourceLocation location) {
     }
-
+    protected Token CreateErrorTokenAt(SourceLocation location, string message, params object[] args) {
+      if (args != null && args.Length > 0)
+        message = string.Format(message, args);
+      return new Token(Grammar.SyntaxError, location, string.Empty, message); 
+    }
   }//class
 
   public class TokenFilterList : List<TokenFilter> { }

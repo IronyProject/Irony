@@ -20,12 +20,14 @@ namespace Irony.Parsing {
   // constants, and they don't fit into Scheme identifier pattern.
   public class ConstantsTable : Dictionary<string, object> { }
   public class ConstantTerminal : Terminal {
-    public ConstantTerminal(string name)     : base(name) {
+    public readonly ConstantsTable Constants = new ConstantsTable();
+    public ConstantTerminal(string name)
+      : base(name) {
       base.SetOption(TermOptions.IsConstant);
     }
-    public readonly ConstantsTable Table = new ConstantsTable();
+
     public void Add(string lexeme, object value) {
-      this.Table[lexeme] = value;
+      this.Constants[lexeme] = value;
     }
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
@@ -34,18 +36,19 @@ namespace Irony.Parsing {
     }
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
       string text = source.Text;
-      foreach (string lexeme in Table.Keys) {
-        if (source.Position + lexeme.Length > text.Length) continue;
-        if (!source.MatchSymbol(lexeme, !OwnerGrammar.CaseSensitive)) continue; 
-        Token tkn = new Token(this, source.TokenStart, lexeme, Table[lexeme]);
-        source.Position += lexeme.Length;
-        return tkn;
+      foreach (var entry in Constants) {
+        var constant = entry.Key;
+        if (source.PreviewPosition + constant.Length > text.Length) continue;
+        if (source.MatchSymbol(constant, !OwnerGrammar.CaseSensitive)) {
+          source.PreviewPosition += constant.Length;
+          return source.CreateToken(this, entry.Value);
+        }
       }
       return null;
     }
     public override IList<string> GetFirsts() {
-      string[] array = new string[Table.Count];
-      Table.Keys.CopyTo(array, 0);
+      string[] array = new string[Constants.Count];
+      Constants.Keys.CopyTo(array, 0);
       return array;
     }
 

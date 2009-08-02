@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 
 namespace Irony.Parsing {
 
@@ -141,17 +142,17 @@ namespace Irony.Parsing {
 
     private bool CompleteReadBody(ISourceStream source, CompoundTokenDetails details) {
       bool escapeEnabled = !details.IsSet((short) StringFlags.NoEscapes);
-      int start = source.Position;
+      int start = source.PreviewPosition;
       string endQuoteSymbol = details.EndSymbol;
       string endQuoteDoubled = endQuoteSymbol + endQuoteSymbol; //doubled quote symbol
       bool lineBreakAllowed = details.IsSet((short) StringFlags.AllowsLineBreak);
       //1. Find the string end
       // first get the position of the next line break; we are interested in it to detect malformed string, 
       //  therefore do it only if linebreak is NOT allowed; if linebreak is allowed, set it to -1 (we don't care).  
-      int nlPos = lineBreakAllowed ? -1 : source.Text.IndexOf('\n', source.Position);
+      int nlPos = lineBreakAllowed ? -1 : source.Text.IndexOf('\n', source.PreviewPosition);
       //fix by ashmind for EOF right after opening symbol
       while (true) {
-        int endPos = source.Text.IndexOf(endQuoteSymbol, source.Position);
+        int endPos = source.Text.IndexOf(endQuoteSymbol, source.PreviewPosition);
         //Check for partial token in line-scanning mode
         if (endPos < 0 && details.PartialOk && lineBreakAllowed) {
           ProcessPartialBody(source, details); 
@@ -162,7 +163,7 @@ namespace Irony.Parsing {
         if (malformed) {
           //Set source position for recovery: move to the next line if linebreak is not allowed.
           if (nlPos > 0) endPos = nlPos;
-          if (endPos > 0) source.Position = endPos + 1;
+          if (endPos > 0) source.PreviewPosition = endPos + 1;
           details.Error = "Mal-formed  string literal - cannot find termination symbol.";
           return true; //we did find start symbol, so it is definitely string, only malformed
         }//if malformed
@@ -172,28 +173,28 @@ namespace Irony.Parsing {
 
         //We found EndSymbol - check if it is escaped; if yes, skip it and continue search
         if (escapeEnabled && IsEndQuoteEscaped(source.Text, endPos)) {
-          source.Position = endPos + endQuoteSymbol.Length;
+          source.PreviewPosition = endPos + endQuoteSymbol.Length;
           continue; //searching for end symbol
         }
         
         //Check if it is doubled end symbol
-        source.Position = endPos;
+        source.PreviewPosition = endPos;
         if (details.IsSet((short)StringFlags.AllowsDoubledQuote) && source.MatchSymbol(endQuoteDoubled, !CaseSensitive)) {
-          source.Position = endPos + endQuoteDoubled.Length;
+          source.PreviewPosition = endPos + endQuoteDoubled.Length;
           continue;
         }//checking for doubled end symbol
         
         //Ok, this is normal endSymbol that terminates the string. 
         // Advance source position and get out from the loop
         details.Body = source.Text.Substring(start, endPos - start);
-        source.Position = endPos + endQuoteSymbol.Length;
+        source.PreviewPosition = endPos + endQuoteSymbol.Length;
         return true; //if we come here it means we're done - we found string end.
       }  //end of loop to find string end; 
     }
     private void ProcessPartialBody(ISourceStream source, CompoundTokenDetails details) {
-      int from = source.Position;
-      source.Position = source.Text.Length;
-      details.Body = source.Text.Substring(from, source.Position - from);
+      int from = source.PreviewPosition;
+      source.PreviewPosition = source.Text.Length;
+      details.Body = source.Text.Substring(from, source.PreviewPosition - from);
       details.IsPartial = true;
     }
     
@@ -233,7 +234,7 @@ namespace Irony.Parsing {
     }
 
     private bool ReadStartSymbol(ISourceStream source, CompoundTokenDetails details) {
-      if (_startSymbolsFirsts.IndexOf(source.CurrentChar) < 0)
+      if (_startSymbolsFirsts.IndexOf(source.PreviewChar) < 0)
         return false;
       foreach (StringSubType subType in _subtypes) {
         if (!source.MatchSymbol(subType.Start, !CaseSensitive))
@@ -243,7 +244,7 @@ namespace Irony.Parsing {
         details.EndSymbol = subType.End;
         details.Flags |= (short) subType.Flags;
         details.SubTypeIndex = subType.Index;
-        source.Position += subType.Start.Length;
+        source.PreviewPosition += subType.Start.Length;
         return true;
       }//foreach
       return false; 
@@ -253,6 +254,8 @@ namespace Irony.Parsing {
     //Extract the string content from lexeme, adjusts the escaped and double-end symbols
     protected override bool ConvertValue(CompoundTokenDetails details) {
       string value = details.Body;
+      if (value == null)
+        Debug.WriteLine("StringLiteral: Details.Value == null"); 
       bool escapeEnabled = !details.IsSet((short)StringFlags.NoEscapes);
       //Fix all escapes
       if (escapeEnabled && value.IndexOf(EscapeChar) >= 0) {

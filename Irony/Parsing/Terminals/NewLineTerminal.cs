@@ -39,14 +39,14 @@ namespace Irony.Parsing {
       return firsts;
     }
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
-      char current = source.CurrentChar;
+      char current = source.PreviewChar;
       if (!LineTerminators.Contains(current)) return null;
       //Treat \r\n as a single terminator
-      bool doExtraShift = (current == '\r' && source.NextChar == '\n');
-      source.Position++; //main shift
+      bool doExtraShift = (current == '\r' && source.NextPreviewChar == '\n');
+      source.PreviewPosition++; //main shift
       if (doExtraShift)
-        source.Position++;
-      Token result = new Token(this, source.TokenStart, source.GetLexeme(), null);
+        source.PreviewPosition++;
+      Token result = source.CreateToken(this);
       return result;
     }
 

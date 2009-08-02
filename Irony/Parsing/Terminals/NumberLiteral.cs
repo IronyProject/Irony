@@ -33,6 +33,8 @@ namespace Irony.Parsing {
                                   // it is followed by dot (or exp symbol) - leave to another terminal that will handle float numbers
     AllowSign   = 0x08,
     DisableQuickParse = 0x10,
+    AllowLetterAfter = 0x20,      // allow number be followed by a letter or underscore; by default this flag is not set, so "3a" would not be 
+                                  //  recognized as number followed by an identifier
 
     //The following should be used with 
     Binary = 0x0100, //e.g. GNU GCC C Extension supports binary number literals
@@ -115,25 +117,25 @@ namespace Irony.Parsing {
     // so we try to do a quick parse for these, without starting the whole general process
     protected override Token QuickParse(CompilerContext context, ISourceStream source) {
       if (IsSet(NumberFlags.DisableQuickParse)) return null;
-      char current = source.CurrentChar;
-      if (char.IsDigit(current) && QuickParseTerminators.IndexOf(source.NextChar) >= 0) {
-        int iValue = current - '0';
-        object value = null;
-        switch (DefaultIntTypes[0]) {
-          case TypeCode.Int32: value = iValue; break;
-          case TypeCode.UInt32: value = (UInt32)iValue; break;
-          case TypeCode.Byte: value = (byte)iValue; break;
-          case TypeCode.SByte: value = (sbyte) iValue; break;
-          case TypeCode.Int16: value = (Int16)iValue; break;
-          case TypeCode.UInt16: value = (UInt16)iValue; break;
-          default: return null; 
-        }
-        Token token = new Token(this, source.TokenStart, current.ToString(), value);
-        source.Position++;
-        return token;
-      } else
-        return null;
+      char current = source.PreviewChar;
+      //it must be a digit followed by a terminator
+      if (!char.IsDigit(current) || QuickParseTerminators.IndexOf(source.NextPreviewChar) < 0)
+        return null; 
+      int iValue = current - '0';
+      object value = null;
+      switch (DefaultIntTypes[0]) {
+        case TypeCode.Int32: value = iValue; break;
+        case TypeCode.UInt32: value = (UInt32)iValue; break;
+        case TypeCode.Byte: value = (byte)iValue; break;
+        case TypeCode.SByte: value = (sbyte) iValue; break;
+        case TypeCode.Int16: value = (Int16)iValue; break;
+        case TypeCode.UInt16: value = (UInt16)iValue; break;
+        default: return null; 
+      }
+      source.PreviewPosition++;
+      return source.CreateToken(this, value);
     }
+
     protected override void InitDetails(CompilerContext context, CompoundTokenDetails details) {
       base.InitDetails(context, details);
       details.Flags = (short) this.Flags;
@@ -142,7 +144,7 @@ namespace Irony.Parsing {
     protected override void ReadPrefix(ISourceStream source, CompoundTokenDetails details) {
       //check that is not a  0 followed by dot; 
       //this may happen in Python for number "0.123" - we can mistakenly take "0" as octal prefix
-      if (source.CurrentChar == '0' && source.NextChar == '.') return;
+      if (source.PreviewChar == '0' && source.NextPreviewChar == '.') return;
       base.ReadPrefix(source, details);
     }//method
 
@@ -154,11 +156,11 @@ namespace Irony.Parsing {
 
     protected override bool ReadBody(ISourceStream source, CompoundTokenDetails details) {
       //remember start - it may be different from source.TokenStart, we may have skipped prefix
-      int start = source.Position;
-      char current = source.CurrentChar;
+      int start = source.PreviewPosition;
+      char current = source.PreviewChar;
       if (current == '-' || current == '+') {
         details.Sign = current.ToString();
-        source.Position++;
+        source.PreviewPosition++;
       }
       //Figure out digits set
       string digits = GetDigits(details);
@@ -167,10 +169,10 @@ namespace Irony.Parsing {
       bool foundDigits = false;
 
       while (!source.EOF()) {
-        current = source.CurrentChar;
+        current = source.PreviewChar;
         //1. If it is a digit, just continue going
         if (digits.IndexOf(current) >= 0) {
-          source.Position++;
+          source.PreviewPosition++;
           foundDigits = true; 
           continue;
         }
@@ -182,10 +184,10 @@ namespace Irony.Parsing {
           if (hasDotOrExp) break; //from while loop
           //In python number literals (NumberAllowPointFloat) a point can be the first and last character,
           //We accept dot only if it is followed by a digit
-          if (digits.IndexOf(source.NextChar) < 0 && !IsSet(NumberFlags.AllowStartEndDot))
+          if (digits.IndexOf(source.NextPreviewChar) < 0 && !IsSet(NumberFlags.AllowStartEndDot))
             break; //from while loop
           details.Flags |= (int) NumberFlags.HasDot;
-          source.Position++;
+          source.PreviewPosition++;
           continue;
         }
         //3. Check if it is int number followed by dot or exp symbol
@@ -200,7 +202,7 @@ namespace Irony.Parsing {
 
         //4. Only for decimals - check if it is (the first) exponent symbol
         if (allowFloat && isDecimal && isExpSymbol) {
-          char next = source.NextChar;
+          char next = source.NextPreviewChar;
           bool nextIsSign = next == '-' || next == '+';
           bool nextIsDigit = digits.IndexOf(next) >= 0;
           if (!nextIsSign && !nextIsDigit)
@@ -208,19 +210,27 @@ namespace Irony.Parsing {
           //ok, we've got real exponent
           details.ExponentSymbol = current.ToString(); //remember the exp char
           details.Flags |= (int) NumberFlags.HasExp;
-          source.Position++;
+          source.PreviewPosition++;
           if (nextIsSign)
-            source.Position++; //skip +/- explicitly so we don't have to deal with them on the next iteration
+            source.PreviewPosition++; //skip +/- explicitly so we don't have to deal with them on the next iteration
           continue;
         }
         //4. It is something else (not digit, not dot or exponent) - we're done
         break; //from while loop
       }//while
-      int end = source.Position;
+      int end = source.PreviewPosition;
       if (!foundDigits) 
         return false; 
       details.Body = source.Text.Substring(start, end - start);
       return true;
+    }
+    protected internal override Token InvokeValidateToken(CompilerContext context, ISourceStream source, TerminalList terminals, Token token) {
+      if (!IsSet(NumberFlags.AllowLetterAfter)) {
+        var current = source.PreviewChar;
+        if (char.IsLetter(current) || current == '_') 
+          return source.CreateErrorToken("Number cannot be followed by a letter"); 
+      }
+      return base.InvokeValidateToken(context, source, terminals, token);
     }
 
     protected override bool ConvertValue(CompoundTokenDetails details) {

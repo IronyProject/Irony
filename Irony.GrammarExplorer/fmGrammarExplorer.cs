@@ -439,7 +439,7 @@ namespace Irony.GrammarExplorer {
       if (vtreeNode == null) return;
       var parseNode = vtreeNode.Tag as ParseTreeNode;
       if (parseNode == null) return;
-      ShowSourceLocation(parseNode.Span.Start, 1);
+      ShowSourceLocation(parseNode.Span.Location, 1);
     }
 
     bool _changingGrammar;
@@ -493,11 +493,11 @@ namespace Irony.GrammarExplorer {
           break;
         case 1: //stack top
           if (entry.StackTop != null)
-            ShowSourceLocationAndTraceToken(entry.StackTop.Span.Start, entry.StackTop.Span.Length);
+            ShowSourceLocationAndTraceToken(entry.StackTop.Span.Location, entry.StackTop.Span.Length);
           break;
         case 2: //input
           if (entry.Input != null)
-            ShowSourceLocationAndTraceToken(entry.Input.Span.Start, entry.Input.Span.Length);
+            ShowSourceLocationAndTraceToken(entry.Input.Span.Location, entry.Input.Span.Length);
           break;
         case 3: //action
           break;

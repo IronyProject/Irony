@@ -37,9 +37,11 @@ namespace Irony.Parsing {
         //Check if we can reduce
         var action = GetReduceActionInCurrentState();
         if (action != null) {
-          //Now reset scanner's position to current input position and clear all token queues; do it before ExecuteReduce
-          // as reset would clear the input stack
-          ResetSourceLocation(_currentInput.Span.Start, _currentInput.Span.EndPos);
+          //Clear all input token queues and buffered input, reset location back to input position token queues; 
+          _scanner.SetSourceLocation(_currentInput.Span.Location);
+          _currentInput = null;
+          InputStack.Clear();
+          //Reduce error production - it creates parent non-terminal that "hides" error inside
           ExecuteReduce(action.ReduceProduction);
           return true; //we recovered 
         }
@@ -53,10 +55,10 @@ namespace Irony.Parsing {
       return false;
     }//method
 
-    public void ResetSourceLocation(SourceLocation tokenStart, int position) {
+    public void ResetLocationAndClearInput(SourceLocation location, int position) {
       _currentInput = null;
       InputStack.Clear();
-      _scanner.SetSourceLocation(tokenStart, position);
+      _scanner.SetSourceLocation(location);
     }
 
     private ParserAction FindErrorShiftActionInStack() {
@@ -98,21 +100,30 @@ namespace Irony.Parsing {
       else {
         if (_currentState.ReportedExpectedSet == null)
           ComputeReportedExpectedSet(_currentState); 
-        msg = _grammar.GetSyntaxErrorMessage(_context, _currentState, _currentInput);
-        if (msg == null)
-          msg = "Syntax error" + (_currentState.ReportedExpectedSet.Count == 0 ? "." :
-            ", expected: " + _currentState.ReportedExpectedSet.ToErrorString());
+        //TODO: add extra filtering of expected terms from brace-matching filter: while the closing parenthesis ")" might 
+        //  be expected term in a state in general, if there was no opening parenthesis in preceding input then we would not
+        //  expect a closing one. 
+        msg = _grammar.ConstructParserErrorMessage(_context, _currentState, _currentState.ReportedExpectedSet, _currentInput);
+        if (string.IsNullOrEmpty(msg))
+          msg = "Syntax error";
       }
-      _context.ReportError(_currentState, _currentInput.Span.Start, msg);
+      _context.ReportError(_currentState, _currentInput.Span.Location, msg);
       if (_currentTraceEntry != null) {
         _currentTraceEntry.Message = msg;
         _currentTraceEntry.IsError = true;
       }
     }
 
+    //compute set of expected terms in a parser state. While there may be extended list of symbols expected at some point,
+    // we want to reorganize and reduce it. For example, if the current state expects all arithmetic operators as an input,
+    // it would be better to not list all operators (+, -, *, /, etc) but simply put "operator" covering them all. 
+    // To be able to do this, grammar writer can set non-empty DisplayName on Operator non-terminal - this is an indicator for 
+    // Irony to wrap all sub-elements of the rule and report them as "operator". The following code takes "raw" list of 
+    // expected terms from the state, finds terms that have a DisplayName assinged and removes other terms that are covered 
+    // by this display name. 
     private void ComputeReportedExpectedSet(ParserState state) {
-      //2. Compute reduced expected terms - to be used in error reporting
-      //2.1. Scan Expected terms, add non-terminals with non-empty DisplayName to reduced set, and collect all their firsts
+      //Compute reduced expected terms - to be used in error reporting
+      //1. Scan Expected terms, add non-terminals with non-empty DisplayName to reduced set, and collect all their firsts
       var reducedSet = state.ReportedExpectedSet = new BnfTermSet();
       var allFirsts = new BnfTermSet();
       foreach (var term in state.ExpectedTerms) {
@@ -123,7 +134,7 @@ namespace Irony.Parsing {
           allFirsts.UnionWith(nt.Firsts);
         }
       }
-      //2.2. Now go thru all expected terms and add only those that are NOT in the allFirsts set.
+      //2. Now go thru all expected terms and add only those that are NOT in the allFirsts set.
       foreach (var term in state.ExpectedTerms) {
         if (!reducedSet.Contains(term) && !allFirsts.Contains(term) && (term is Terminal || !string.IsNullOrEmpty(term.DisplayName)))
           reducedSet.Add(term);
@@ -131,7 +142,6 @@ namespace Irony.Parsing {
       //Clean-up reduced set, remove pseudo terms
       if (reducedSet.Contains(_grammar.Eof)) reducedSet.Remove(_grammar.Eof);
       if (reducedSet.Contains(_grammar.SyntaxError)) reducedSet.Remove(_grammar.SyntaxError);
-
     
     }
 

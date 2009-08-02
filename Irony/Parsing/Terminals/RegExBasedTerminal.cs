@@ -57,12 +57,11 @@ namespace Irony.Parsing {
     }
 
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
-      Match m = _expression.Match(source.Text, source.Position);
-      if (!m.Success || m.Index != source.Position) 
+      Match m = _expression.Match(source.Text, source.PreviewPosition);
+      if (!m.Success || m.Index != source.PreviewPosition) 
         return null;
-      source.Position += m.Length;
-      string text = source.GetLexeme();
-      return new Token(this, source.TokenStart, text, null);
+      source.PreviewPosition += m.Length;
+      return source.CreateToken(this); 
     }
 
   }//class

@@ -125,7 +125,7 @@ namespace Irony.GrammarExplorer {
 
     #region WinAPI
     // some winapís required
-    [DllImport("user32", CharSet = CharSet.Auto)]
+    [DllImport("user32", CharSet =  CharSet.Auto)]
     private extern static IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, IntPtr lParam);
 
     [DllImport("user32.dll")]

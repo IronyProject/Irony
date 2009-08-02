@@ -27,14 +27,14 @@ namespace Irony.Parsing {
   }//SourceLocation
 
   public struct SourceSpan {
-    public readonly SourceLocation Start;
+    public readonly SourceLocation Location;
     public readonly int Length;
-    public SourceSpan(SourceLocation start, int length) {
-      Start = start;
+    public SourceSpan(SourceLocation location, int length) {
+      Location = location;
       Length = length;
     }
-    public int EndPos {
-      get { return Start.Position + Length; }
+    public int EndPosition {
+      get { return Location.Position + Length; }
     }
   }
 

@@ -26,13 +26,13 @@ namespace Irony.Parsing {
     CompilerContext _context;
     //buffered tokens can come from expanding a multi-token, when Terminal.TryMatch() returns several tokens packed into one token
     TokenList _bufferedTokens = new TokenList();
-    public IEnumerable<Token> UnfilteredStream;
-    public IEnumerable<Token> FilteredStream;
-    public IEnumerator<Token> FilteredTokenEnumerator;
+    public IEnumerable<Token> UnfilteredStream; //initial stream of tokens directly from terminals
+    public IEnumerable<Token> FilteredStream;   // the stream of tokens after token filters
+    public IEnumerator<Token> FilteredTokenEnumerator; //enumerator of filtered token stream
 
     public ISourceStream Source {
       get { return _source; }
-    } ISourceStream _source;
+    } SourceStream _source;
 
     #endregion
 
@@ -54,17 +54,7 @@ namespace Irony.Parsing {
     }
 
     public void SetSource(string text) {
-      _source = new SourceStream(text, 0);
-      _nextNewLinePosition = text.IndexOfAny(_data.LineTerminators);
-    }
-    public void SetPartialSource(string text, int offset) {
-      if (_source == null)
-        _source = new SourceStream(text, offset);
-      else {
-        _source.Text = text;
-        _source.Position = offset;
-      }
-      _nextNewLinePosition = _source.Text.IndexOf('\n', offset);
+      _source = new SourceStream(_data, text, 0);
     }
 
     public Token GetToken() {
@@ -122,7 +112,10 @@ namespace Irony.Parsing {
       return result;
     }
     public void VsSetSource(string text, int offset) {
-      SetPartialSource(text, offset); 
+      if (_source == null)
+        _source = new SourceStream(_data, text, offset);
+      else 
+        _source.SetText(text, offset);
     }
     #endregion
 
@@ -131,16 +124,17 @@ namespace Irony.Parsing {
       if (_bufferedTokens.Count > 0) 
         return ReadBufferedToken(); 
       //1. Skip whitespace. We don't need to check for EOF: at EOF we start getting 0-char, so we'll get out automatically
-      while (_grammar.WhitespaceChars.IndexOf(_source.CurrentChar) >= 0)
-        _source.Position++;
+      while (_grammar.WhitespaceChars.IndexOf(_source.PreviewChar) >= 0)
+        _source.PreviewPosition++;
       //That's the token start, calc location (line and column)
-      ComputeNewTokenLocation();
+      _source.MoveLocationToPreviewPosition();
+      //AdvanceLocationTo(_source.PreviewPosition);
       //Check for EOF
       if (_source.EOF())
         return CreateFinalToken(); 
       //Find matching terminal
       // First, try terminals with explicit "first-char" prefixes, selected by current char in source
-      var terms = SelectTerminals(_source.CurrentChar);
+      var terms = SelectTerminals(_source.PreviewChar);
       var token = MatchTerminals(terms);
       //If no token, try FallbackTerminals
       if (token == null && terms != _data.FallbackTerminals && _data.FallbackTerminals.Count > 0)
@@ -153,12 +147,13 @@ namespace Irony.Parsing {
       //If we have normal token then return it
       if (token != null && !token.IsError()) {
         //set position to point after the result token
-        _source.Position = _source.TokenStart.Position + token.Length;
+        _source.PreviewPosition = _source.Location.Position + token.Length;
+        _source.MoveLocationToPreviewPosition();
         return token;
       } 
       //we have an error: either error token or no token at all
       if (token == null)  //if no token then create error token
-        token = _context.CreateErrorTokenAndReportError(_source.TokenStart, _source.CurrentChar.ToString(), "Invalid character: '{0}'", _source.CurrentChar);
+        token = _source.CreateErrorToken("Invalid character: '{0}'", _source.PreviewChar);
       Recover();
       return token;
     }//method
@@ -180,7 +175,7 @@ namespace Irony.Parsing {
     
     //returns EOF token or NewLine token if flag NewLineBeforeEOF set
     private Token CreateFinalToken() {
-      var result = new Token(_grammar.Eof, _source.TokenStart, string.Empty, _grammar.Eof.Name);
+      var result = new Token(_grammar.Eof, _source.Location, string.Empty, _grammar.Eof.Name);
       //check if we need extra newline before EOF
       bool currentIsNewLine = _currentToken != null && _currentToken.Terminal == _grammar.NewLine;
       if (_grammar.FlagIsSet(LanguageFlags.NewLineBeforeEOF) && !currentIsNewLine) {
@@ -199,8 +194,10 @@ namespace Irony.Parsing {
         if (result != null && result.Terminal.Priority > term.Priority)
           break;
         //Reset source position and try to match
-        _source.Position = _source.TokenStart.Position;
+        _source.PreviewPosition = _source.Location.Position;
         Token token = term.TryMatch(_context, _source);
+        if (token != null)
+          token = term.InvokeValidateToken(_context, _source, terminals, token); 
         //Take this token as result only if we don't have anything yet, or if it is longer token than previous
         if (token != null && (token.IsError() || result == null || token.Length > result.Length))
           result = token;
@@ -256,28 +253,29 @@ namespace Irony.Parsing {
     private bool Recover() {
       try {
         _context.ScannerIsRecovering = true;
-        _source.Position++;
+        _source.PreviewPosition++;
         while (!_source.EOF()) {
-          if (_data.ScannerRecoverySymbols.IndexOf(_source.CurrentChar) >= 0) return true;
-          _source.Position++;
+          if (_data.ScannerRecoverySymbols.IndexOf(_source.PreviewChar) >= 0) return true;
+          _source.PreviewPosition++;
         }
         return false; 
       } finally {
-        _context.ScannerIsRecovering = false; 
+        _source.MoveLocationToPreviewPosition();
+        _context.ScannerIsRecovering = false;
       }
     }
     #endregion 
 
-
     #region TokenPreview
     //Preview mode allows custom code in grammar to help parser decide on appropriate action in case of conflict
+    // Preview process is simply searching for particular tokens in "preview set", and finding out which of the 
+    // tokens will come first.
     // In preview mode, tokens returned by ReadToken are collected in _previewTokens list; after finishing preview
     //  the scanner "rolls back" to original position - either by directly restoring the position, or moving the preview
     //  tokens into _bufferedTokens list, so that they will read again by parser in normal mode.
     // See c# grammar sample for an example of using preview methods
     TokenList _previewTokens = new TokenList();
-    SourceLocation _savedTokenStart;
-    int _savedPosition;
+    SourceLocation _previewStartLocation;
 
     public bool InPreview {
       get { return _inPreview; }
@@ -286,8 +284,7 @@ namespace Irony.Parsing {
     //Switches Scanner into preview mode
     public void BeginPreview() {
       _inPreview = true;
-      _savedTokenStart = _source.TokenStart;
-      _savedPosition = _source.Position;
+      _previewStartLocation = _source.Location;
       _previewTokens.Clear();
     }
 
@@ -296,85 +293,17 @@ namespace Irony.Parsing {
       if (keepPreviewTokens)
         _bufferedTokens.InsertRange(0, _previewTokens); //insert previewed tokens into buffered list, so we don't recreate them again
       else 
-        SetSourceLocation(_savedTokenStart, _savedPosition);
+        SetSourceLocation(_previewStartLocation);
       _previewTokens.Clear();
       _inPreview = false;
     }
     #endregion
 
-    //TODO: this is messed up, need to fix all code related to TokenStart and position and resetting it
-    // problem: tokenStart is the position of "last" (previous) token, while position parameter is a position where next token will start
-    public void SetSourceLocation(SourceLocation tokenStart, int position) {
+    public void SetSourceLocation(SourceLocation location) {
       foreach (var filter in _data.TokenFilters)
-        filter.OnSetSourceLocation(tokenStart); 
-      _source.TokenStart = tokenStart;
-      _source.Position = position; 
+        filter.OnSetSourceLocation(location); 
+      _source.Location = location;
     }
-
-    #region TokenStart calculations
-    private int _nextNewLinePosition = -1; //private field to cache position of next \n character
-    //Calculates the _source.TokenStart values (row/column) for the token which starts at the current position.
-    // We just skipped the whitespace and about to start scanning the next token.
-    internal void ComputeNewTokenLocation() {
-      //cache values in local variables
-      SourceLocation tokenStart = _source.TokenStart;
-      int newPosition = _source.Position;
-      string text = _source.Text;
-      if (newPosition > text.Length - 1) 
-        newPosition = text.Length - 1; 
-
-      // Currently TokenStart field contains location (pos/line/col) of the last created token. 
-      // First, check if new position is in the same line; if so, just adjust column and return
-      //  Note that this case is not line start, so we do not need to check tab chars (and adjust column) 
-      if (newPosition <= _nextNewLinePosition || _nextNewLinePosition < 0) {
-        tokenStart.Column += newPosition - tokenStart.Position;
-        tokenStart.Position = newPosition;
-        _source.TokenStart = tokenStart;
-        return;
-      }
-      //So new position is on new line (beyond _nextNewLinePosition)
-      //First count \n chars in the string fragment
-      int lineStart = _nextNewLinePosition;
-      int nlCount = 1; //we start after old _nextNewLinePosition, so we count one NewLine char
-      CountCharsInText(text, _data.LineTerminators, lineStart + 1, newPosition - 1, ref nlCount, ref lineStart);
-      tokenStart.Line += nlCount;
-      //at this moment lineStart is at start of line where newPosition is located 
-      //Calc # of tab chars from lineStart to newPosition to adjust column#
-      int tabCount = 0;
-      int dummy = 0;
-      char[] tab_arr = { '\t' };
-      if (_source.TabWidth > 1)
-        CountCharsInText(text, tab_arr, lineStart, newPosition - 1, ref tabCount, ref dummy);
-
-      //adjust TokenStart with calculated information
-      tokenStart.Position = newPosition;
-      tokenStart.Column = newPosition - lineStart - 1;
-      if (tabCount > 0)
-        tokenStart.Column += (_source.TabWidth - 1) * tabCount; // "-1" to count for tab char itself
-
-      //finally cache new line and assign TokenStart
-      _nextNewLinePosition = text.IndexOfAny(_data.LineTerminators, newPosition);
-      _source.TokenStart = tokenStart;
-    }
-
-    private void CountCharsInText(string text, char[] chars, int from, int until, ref int count, ref int lastPosition) {
-      if (from >= until) return;
-      if (until >= text.Length) until = text.Length - 1;
-      while (true) {
-        int next = text.IndexOfAny(chars, from, until - from + 1);
-        if (next < 0) return;
-        //CR followed by LF is one line terminator, not two; we put it here, just to cover for special case; it wouldn't break
-        // the case when this function is called to count tabs
-        bool isCRLF = (text[next] == '\n' && next > 0 && text[next - 1] == '\r');
-        if (!isCRLF)
-          count++; //count
-        lastPosition = next;
-        from = next + 1;
-      }
-
-    }
-    #endregion
-
 
   }//class
 

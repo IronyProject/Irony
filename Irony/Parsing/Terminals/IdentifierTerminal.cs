@@ -120,43 +120,44 @@ namespace Irony.Parsing {
     }
 
     protected override Token QuickParse(CompilerContext context, ISourceStream source) {
-      if (AllFirstChars.IndexOf(source.CurrentChar) < 0) 
+      if (AllFirstChars.IndexOf(source.PreviewChar) < 0) 
         return null;
-      source.Position++;
-      while (AllChars.IndexOf(source.CurrentChar) >= 0 && !source.EOF())
-        source.Position++;
+      source.PreviewPosition++;
+      while (AllChars.IndexOf(source.PreviewChar) >= 0 && !source.EOF())
+        source.PreviewPosition++;
       //if it is not a terminator then cancel; we need to go through full algorithm
-      if (_terminators.IndexOf(source.CurrentChar) < 0) return null; 
-      string text = source.GetLexeme();
-      Token token = new Token(this, source.TokenStart, text, text);
+      if (_terminators.IndexOf(source.PreviewChar) < 0) return null; 
+      var token = source.CreateToken(this);
+      if (!this.GrammarData.Grammar.CaseSensitive)
+        token.Value = token.Text.ToLower(); 
       CheckReservedWord(token);
       return token; 
     }
 
     protected override bool ReadBody(ISourceStream source, CompoundTokenDetails details) {
-      int start = source.Position;
+      int start = source.PreviewPosition;
       bool allowEscapes = details.IsSet((short)IdFlags.AllowsEscapes);
       CharList outputChars = new CharList();
       while (!source.EOF()) {
-        char current = source.CurrentChar;
+        char current = source.PreviewChar;
         if (_terminators.IndexOf(current) >= 0) break;
         if (allowEscapes && current == this.EscapeChar) {
           current = ReadUnicodeEscape(source, details);
           //We  need to back off the position. ReadUnicodeEscape sets the position to symbol right after escape digits.  
           //This is the char that we should process in next iteration, so we must backup one char, to pretend the escaped
           // char is at position of last digit of escape sequence. 
-          source.Position--; 
+          source.PreviewPosition--; 
           if (details.Error != null) 
             return false;
         }
         //Check if current character is OK
-        if (!CharOk(current, source.Position == start)) 
+        if (!CharOk(current, source.PreviewPosition == start)) 
           break; 
         //Check if we need to skip this char
         UnicodeCategory currCat = char.GetUnicodeCategory(current); //I know, it suxx, we do it twice, fix it later
         if (!this.CharsToRemoveCategories.Contains(currCat))
           outputChars.Add(current); //add it to output (identifier)
-        source.Position++;
+        source.PreviewPosition++;
       }//while
       if (outputChars.Count == 0)
         return false;
@@ -178,23 +179,23 @@ namespace Irony.Parsing {
 
     private char ReadUnicodeEscape(ISourceStream source, CompoundTokenDetails details) {
       //Position is currently at "\" symbol
-      source.Position++; //move to U/u char
+      source.PreviewPosition++; //move to U/u char
       int len;
-      switch (source.CurrentChar) {
+      switch (source.PreviewChar) {
         case 'u': len = 4; break;
         case 'U': len = 8; break; 
         default:
           details.Error = "Invalid escape symbol, expected 'u' or 'U' only.";
           return '\0'; 
       }
-      if (source.Position + len > source.Text.Length) {
+      if (source.PreviewPosition + len > source.Text.Length) {
         details.Error = "Invalid escape symbol";
         return '\0';
       }
-      source.Position++; //move to the first digit
-      string digits = source.Text.Substring(source.Position, len);
+      source.PreviewPosition++; //move to the first digit
+      string digits = source.Text.Substring(source.PreviewPosition, len);
       char result = (char)Convert.ToUInt32(digits, 16);
-      source.Position += len;
+      source.PreviewPosition += len;
       details.Flags |= (int) IdFlags.HasEscapes;
       return result;
     }

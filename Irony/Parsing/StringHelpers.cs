@@ -34,6 +34,7 @@ namespace Irony.Parsing {
 
   public class StringDictionary : Dictionary<string, string> { }
   public class CharList : List<char> { }
+  public class CharHashSet : HashSet<char> { } //adding Hash to the name to avoid confusion with System.Runtime.Interoperability.CharSet
 
   public class StringSet : HashSet<string> {
     public override string ToString() {

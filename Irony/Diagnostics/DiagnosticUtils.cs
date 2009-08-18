@@ -66,7 +66,7 @@ namespace Irony.Diagnostics {
       StringBuilder sb = new StringBuilder();
       foreach (NonTerminal nt in language.GrammarData.NonTerminals) {
         sb.Append(nt.Name);
-        sb.Append(nt.IsSet(TermOptions.IsNullable) ? "  (Nullable) " : "");
+        sb.Append(nt.OptionIsSet(TermOptions.IsNullable) ? "  (Nullable) " : "");
         sb.AppendLine();
         foreach (Production pr in nt.Productions) {
           sb.Append("   ");

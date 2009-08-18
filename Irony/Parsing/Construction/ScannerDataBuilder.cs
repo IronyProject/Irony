@@ -27,7 +27,7 @@ namespace Irony.Parsing.Construction {
 
     private void InitMultilineTerminalsList() {
       foreach (var terminal in _grammarData.Terminals) {
-        if (terminal.IsSet(TermOptions.IsMultiline)) {
+        if (terminal.OptionIsSet(TermOptions.IsMultiline)) {
           _data.MultilineTerminals.Add(terminal);
           terminal.MultilineIndex = (byte)(_data.MultilineTerminals.Count);
         }
@@ -73,7 +73,7 @@ namespace Irony.Parsing.Construction {
       //check if we need brace match token filter
       bool needBraceMatchFilter = false;
       foreach(var term in _grammarData.Terminals)
-        if (term.IsSet(TermOptions.IsBrace)) {
+        if (term.OptionIsSet(TermOptions.IsBrace)) {
           needBraceMatchFilter = true;
           break; 
         }

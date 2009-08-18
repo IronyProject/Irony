@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Irony.Parsing;
-using Irony.Scripting.Runtime;
+using Irony.Ast.Interpreter;
 
 namespace Irony.Samples.Scheme {
 
@@ -62,13 +62,13 @@ namespace Irony.Samples.Scheme {
 
     #region Scheme Runtime library implementations
     private void ConsImpl(EvaluationContext context) {
-      context.CurrentResult = new Pair(context.CallArgs[0], context.CallArgs[1]);
+      context.Result = new Pair(context.CallArgs[0], context.CallArgs[1]);
     }
     private void CarImpl(EvaluationContext context) {
-      context.CurrentResult = GetPair(context).Car;
+      context.Result = GetPair(context).Car;
     }
     private void CdrImpl(EvaluationContext context) {
-      context.CurrentResult = GetPair(context).Cdr;
+      context.Result = GetPair(context).Cdr;
     }
     private Pair GetPair(EvaluationContext context) {
       Pair result = context.CallArgs[0] as Pair;
@@ -81,10 +81,10 @@ namespace Irony.Samples.Scheme {
       foreach (object v in data) {
         p = new Pair(v, p);
       }
-      context.CurrentResult = p;
+      context.Result = p;
     }
     private void NullQImpl(EvaluationContext context) {
-      context.CurrentResult = (BoolToSchemeObject(context.CallArgs[0] == NullObject));
+      context.Result = (BoolToSchemeObject(context.CallArgs[0] == NullObject));
     }
 
     //almost same as BooObjectToSchemeObject, only with typed argument to avoid extra boxing
@@ -98,7 +98,7 @@ namespace Irony.Samples.Scheme {
         if (v == null) continue;
         OnConsoleWrite(v.ToString());
       }
-      context.CurrentResult = null;
+      context.Result = null;
     }
 
     private void NewLineImpl(EvaluationContext context) {

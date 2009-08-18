@@ -81,7 +81,7 @@ namespace Irony.Parsing {
       Token token;
       do {
         token = _scanner.GetToken();
-      } while (token.Terminal.IsSet(TermOptions.IsNonGrammar) && token.Terminal != _grammar.Eof);  
+      } while (token.Terminal.OptionIsSet(TermOptions.IsNonGrammar) && token.Terminal != _grammar.Eof);  
       _currentInput = new ParseTreeNode(token);
       InputStack.Push(_currentInput);
       if (_currentInput.IsError)
@@ -210,29 +210,47 @@ namespace Irony.Parsing {
     }
     
     private ParseTreeNode CreateParseTreeNodeForReduce(Production reduceProduction) {
-      int childCount = reduceProduction.RValues.Count;
-      ParseTreeNode newNode; 
-      //Check if it is an existing list node
-      if (CheckReducingExistingList(reduceProduction, out newNode)) 
-        return newNode; 
+      //Special case: reducing list-forming production like "list->list + delim? + elem"
+      //in this case the list is already created, so we just get it from stack and add "elem" to it.
+      if (reduceProduction.IsSet(ProductionFlags.IsListBuilder))
+        return ReduceExistingList(reduceProduction); 
       //"normal" node
-      newNode = new ParseTreeNode(reduceProduction);
+      var newNode = new ParseTreeNode(reduceProduction);
+      int childCount = reduceProduction.RValues.Count;
       newNode.Span = ComputeNewNodeSpan(childCount);
       if (childCount == 0) 
-        return newNode; 
-      newNode.FirstChild = Stack[Stack.Count - childCount]; //remember first child; it might be thrown away later if it's punctuation
+        return newNode;
+      //remember the first child; it might be thrown away later if it's punctuation
+      newNode.FirstChild = Stack[Stack.Count - childCount]; 
       //copy precedence field if there's one child only
       if (childCount == 1 && newNode.FirstChild.Precedence != BnfTerm.NoPrecedence) {
         newNode.Precedence = newNode.FirstChild.Precedence;
         newNode.Associativity = newNode.FirstChild.Associativity;
       }
-      //Pop child nodes one-by-one
+      //Special case; when we have 
+      if (reduceProduction.IsSet(ProductionFlags.ContainsTransientList)) {
+        PopTransientNodes(childCount, newNode);
+        return newNode;
+      }
+      //Pop child nodes one-by-one; note that they are popped in the reverse of their normal order, so we reverse them after
       foreach(var rvalue in reduceProduction.RValues) {
-        PopChildNode(newNode, ListAddMode.Start); 
+        var child = PopStackNode();
+        if (child != null) 
+          newNode.ChildNodes.Add(child); 
       }//for i
+      newNode.ChildNodes.Reverse();
       return newNode;
     }
-    
+
+    private void PopTransientNodes(int nodeCount, ParseTreeNode parent) {
+      for (int i = 0; i < nodeCount; i++) {
+        var node = Stack.Pop();
+        if (node.Term.OptionIsSet(TermOptions.IsPunctuation)) continue;
+        parent.ChildNodes.AddRange(node.ChildNodes);
+        //continue loop until all nodes are popped up                
+      }
+    }
+
     private SourceSpan ComputeNewNodeSpan(int childCount) {
       if (childCount == 0)
         return new SourceSpan(_currentInput.Span.Location, 0);
@@ -241,36 +259,35 @@ namespace Irony.Parsing {
       return new SourceSpan(first.Span.Location, last.Span.EndPosition - first.Span.Location.Position);
     }
 
-    private bool CheckReducingExistingList(Production reduceProduction, out ParseTreeNode listNode) {
-      listNode = null;
-      var childCount = reduceProduction.RValues.Count;
-      bool isExistingList = childCount > 0 && reduceProduction.LValue.IsSet(TermOptions.IsList) &&
-          reduceProduction.RValues[0] == reduceProduction.LValue;
-      if (!isExistingList) return false;
-      listNode = Stack[Stack.Count - childCount]; //get the list already created - it is first child node
+    private ParseTreeNode ReduceExistingList(Production reduceProduction) {
+      ParseTreeNode listNode = null;
+      var childCount = reduceProduction.RValues.Count; 
+      //We are reducing the production of the 
+      listNode = Stack[Stack.Count - childCount]; //get the list already created - it is the first child node
       listNode.Span = ComputeNewNodeSpan(childCount);
-      PopChildNode(listNode, ListAddMode.End); //new list element sits on top, so add it to the end of child list
-      //now pop the rest one or two nodes
-      var poppedNode = Stack.Pop();
-      while (poppedNode != listNode)
-        poppedNode = Stack.Pop();
-      return true; 
+      var child = PopStackNode();
+      if (child != null) 
+        listNode.ChildNodes.Add(child); 
+      //now pop the rest one or two nodes, until the list node is popped
+      while (Stack.Pop() != listNode) { }
+      return listNode; 
     }
 
-    // 
-    private void PopChildNode(ParseTreeNode addToParent, ListAddMode mode) {
+    private ParseTreeNode PopStackNode() {
       var poppedNode = Stack.Pop();
       poppedNode.State = null; //clear the State field, we need only when node is in the stack
-      if (poppedNode.Term.IsSet(TermOptions.IsPunctuation)) return;
-      if (poppedNode.Term.IsSet(TermOptions.IsTransient)) {
-        addToParent.ChildNodes.Add(poppedNode.ChildNodes, mode);
-      } else {
-        if (_grammar.FlagIsSet(LanguageFlags.CreateAst))
-          SafeCreateAstNode(poppedNode);
-        addToParent.ChildNodes.Add(poppedNode, mode);
-      }
+      if (poppedNode.Term.OptionIsSet(TermOptions.IsPunctuation)) return null;
+      //08/16/09: changed to pop transient node only if child has a single 'grandchild' node
+      // that would allow to use Transient in some recursive definitions to eliminate redundant nestings
+      // also check it is not a list - list is a different issue.
+      if (poppedNode.Term.OptionIsSet(TermOptions.IsTransient) && !poppedNode.Term.OptionIsSet(TermOptions.IsList)
+          && poppedNode.ChildNodes.Count == 1) 
+         return poppedNode.ChildNodes[0];
+      if (_grammar.FlagIsSet(LanguageFlags.CreateAst))
+        SafeCreateAstNode(poppedNode);
+      return poppedNode;
     }
-    
+
     private void SafeCreateAstNode(ParseTreeNode parseNode) {
       try {
         _grammar.CreateAstNode(_context, parseNode);
@@ -309,17 +326,7 @@ namespace Irony.Parsing {
     }
 
     private void ExecuteAccept(ParserAction action) {
-      var rootNode = Stack.Pop();
-      //it might be transient node; if yes, take it's first child
-      if (rootNode.Term.IsSet(TermOptions.IsTransient)) {
-        rootNode = rootNode.ChildNodes[0];
-      } else {
-        //otherwise, create AST node if necessary
-        if (_grammar.FlagIsSet(LanguageFlags.CreateAst))
-          SafeCreateAstNode(rootNode);
-      }
-      rootNode.State = null; //clear the State field, we need only when node is in the stack
-      _context.CurrentParseTree.Root = rootNode; 
+      _context.CurrentParseTree.Root = PopStackNode();  
     }
 
     private void ExecuteOperatorAction(ParserState newShiftState, Production reduceProduction) {

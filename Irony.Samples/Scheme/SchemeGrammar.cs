@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Irony.Parsing;
-using Irony.Scripting.Ast;
+using Irony.Ast;
 
 namespace Irony.Samples.Scheme {
   [Language("Scheme", "1.0", "Sample Scheme grammar")]
@@ -207,13 +207,13 @@ namespace Irony.Samples.Scheme {
       TokenFilters.Add(filter);
 
       //Scheme is tail-recursive language
-      base.SetLanguageFlags( LanguageFlags.AutoDetectTransient | LanguageFlags.TailRecursive | 
-                  LanguageFlags.SupportsInterpreter | LanguageFlags.SupportsConsole);
+      base.LanguageFlags = LanguageFlags.AutoDetectKeywords | LanguageFlags.TailRecursive | 
+                  LanguageFlags.SupportsInterpreter | LanguageFlags.SupportsConsole;
 
     }//constructor
 
-    public override Irony.Scripting.Runtime.LanguageRuntime CreateRuntime() {
-      return new SchemeRuntime();
+    public override Irony.Ast.Interpreter.LanguageRuntime CreateRuntime() {
+      return null; // new SchemeRuntime();
     }
 
     private string[] Operators = new string[] { "+", "-", "*", "/", "<", "=", ">" };

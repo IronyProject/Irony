@@ -103,8 +103,9 @@ namespace Irony.Parsing {
       if (_currentInput.Term == _grammar.Eof)
         msg = "Unexpected end of file.";
       else {
+        //See note about multi-threading issues in ComputeReportedExpectedSet comments.
         if (_currentState.ReportedExpectedSet == null)
-          ComputeReportedExpectedSet(_currentState); 
+          _currentState.ReportedExpectedSet = ComputeReportedExpectedSet(_currentState); 
         //TODO: add extra filtering of expected terms from brace-matching filter: while the closing parenthesis ")" might 
         //  be expected term in a state in general, if there was no opening parenthesis in preceding input then we would not
         //  expect a closing one. 
@@ -126,10 +127,17 @@ namespace Irony.Parsing {
     // Irony to wrap all sub-elements of the rule and report them as "operator". The following code takes "raw" list of 
     // expected terms from the state, finds terms that have a DisplayName assinged and removes other terms that are covered 
     // by this display name. 
-    private void ComputeReportedExpectedSet(ParserState state) {
+    // Note about multi-threading. When used in multi-threaded environment (web server), the LanguageData would be shared in 
+    // application-wide cache to avoid rebuilding the parser data on every request. The LanguageData is immutable, except 
+    // this one case - the expected sets are constructed late by CoreParser on the when-needed basis. 
+    // We don't do any locking here, just compute the set and on return from this function the state field is assigned. 
+    // We assume that this field assignment is an atomic, concurrency-safe operation. The worst thing that might happen
+    // is "double-effort" when two threads start computing the same set around the same time, and the last one to finish would 
+    // leave its result in the state field. 
+    private BnfTermSet ComputeReportedExpectedSet(ParserState state) {
       //Compute reduced expected terms - to be used in error reporting
       //1. Scan Expected terms, add non-terminals with non-empty DisplayName to reduced set, and collect all their firsts
-      var reducedSet = state.ReportedExpectedSet = new BnfTermSet();
+      var reducedSet = new BnfTermSet();
       var allFirsts = new BnfTermSet();
       foreach (var term in state.ExpectedTerms) {
         var nt = term as NonTerminal;
@@ -147,7 +155,7 @@ namespace Irony.Parsing {
       //Clean-up reduced set, remove pseudo terms
       if (reducedSet.Contains(_grammar.Eof)) reducedSet.Remove(_grammar.Eof);
       if (reducedSet.Contains(_grammar.SyntaxError)) reducedSet.Remove(_grammar.SyntaxError);
-
+      return reducedSet;
     }
     #endregion
 

@@ -152,12 +152,6 @@ namespace Irony.Parsing.Construction {
           hints.Add(hint);
           continue;
         }
-        //Check if it is a Terminal or Error element
-        Terminal t = operand as Terminal;
-        if (t != null) {
-          prod.Flags |= ProductionFlags.HasTerminals;
-          if (t.Category == TokenCategory.Error) prod.Flags |= ProductionFlags.IsError;
-        }
         //Add the operand info and LR0 Item
         LR0Item item = new LR0Item(_lastItemId++, prod, prod.RValues.Count, hints);
         prod.LR0Items.Add(item);
@@ -168,8 +162,33 @@ namespace Irony.Parsing.Construction {
       if (prod.RValues.Count == 0)
         prod.Flags |= ProductionFlags.IsEmpty;
       //Add final LRItem
+      ComputeProductionFlags(prod); 
       prod.LR0Items.Add(new LR0Item(_lastItemId++, prod, prod.RValues.Count, hints));
       return prod;
+    }
+    private void ComputeProductionFlags(Production production) {
+      production.Flags = ProductionFlags.None;
+      int transListCount = 0; 
+      foreach (var rv in production.RValues) {
+        //Check if it is a Terminal or Error element
+        var t = rv as Terminal;
+        if (t != null) {
+          production.Flags |= ProductionFlags.HasTerminals;
+          if (t.Category == TokenCategory.Error) production.Flags |= ProductionFlags.IsError;
+        }
+        if(rv.OptionIsSet(TermOptions.IsPunctuation)) continue;
+        if (rv.OptionIsSet(TermOptions.IsTransient) && rv.OptionIsSet(TermOptions.IsList))
+          transListCount++;
+        else
+          transListCount += 100; //so it will never be 1
+      }//foreach
+      //Set ContainsTransientList flag
+      if (transListCount == 1)
+        production.Flags |= ProductionFlags.ContainsTransientList;
+      //Set IsListBuilder flag
+      if (production.RValues.Count > 0 && production.RValues[0] == production.LValue
+          && production.LValue.OptionIsSet(TermOptions.IsList))
+        production.Flags |= ProductionFlags.IsListBuilder;
     }
     private static void ComputeNonTerminalsNullability(GrammarData data) {
       NonTerminalList undecided = data.NonTerminals;
@@ -194,7 +213,7 @@ namespace Irony.Parsing.Construction {
         //Go thru all elements of production and check nullability
         bool allNullable = true;
         foreach (BnfTerm child in prod.RValues) {
-          allNullable &= child.IsSet(TermOptions.IsNullable);
+          allNullable &= child.OptionIsSet(TermOptions.IsNullable);
         }//foreach child
         if (allNullable) {
           nonTerminal.SetOption(TermOptions.IsNullable);
@@ -212,7 +231,7 @@ namespace Irony.Parsing.Construction {
             var item = prod.LR0Items[i];
             item.TailIsNullable = true;
             if (item.Current == null) continue;
-            if (!item.Current.IsSet(TermOptions.IsNullable))
+            if (!item.Current.OptionIsSet(TermOptions.IsNullable))
               break; //for i
           }//for i
         }//foreach prod
@@ -228,7 +247,7 @@ namespace Irony.Parsing.Construction {
             prod.DirectFirsts.Add(term);
             nt.DirectFirsts.Add(term);
             nt.Firsts.Add(term);
-            if (!term.IsSet(TermOptions.IsNullable)) break; //foreach term
+            if (!term.OptionIsSet(TermOptions.IsNullable)) break; //foreach term
           }
         }
       }//foreach nt

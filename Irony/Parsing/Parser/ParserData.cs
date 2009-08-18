@@ -120,6 +120,18 @@ namespace Irony.Parsing {
     HasTerminals = 0x02, //contains terminal
     IsError = 0x04,      //contains Error terminal
     IsEmpty = 0x08,
+    //Indicates that it is a main production for list formation, in the form: "list->list+delim?+elem"
+    IsListBuilder = 0x10,
+    //Indicated that the right-side expression consists of a transient list (with IsTransient and IsList flags set)
+    // plus optional punctuation terms (IsPunctuation flag is set). When reducing such production the resulting node
+    // (corresponding to LValue of the production) will contain as child nodes directly the ChildNodes
+    // of the transient node on the right. For example, for the production:
+    //  MList -> "(" + NList + ")"
+    // If we want to indicate that MList is the "real" list we're interested in, and we want to put 
+    // all elements from NList into MList, then we mark left and right parenthesis as punctuation, and NList as transient node.
+    // The flag will be set, and the parser will move NList.ChildNodes to MList.ChildNodes, and discard
+    // the NList. 
+    ContainsTransientList   = 0x20,
   }
 
   public class Production {

@@ -101,7 +101,7 @@ namespace Irony.Parsing {
       string result = string.Empty;
       if (Terminal is SymbolTerminal)
         result = Text + " [Symbol]";
-      else if (Terminal.IsSet(TermOptions.IsKeyword))
+      else if (Terminal.OptionIsSet(TermOptions.IsKeyword))
         result = Text + " " + "[Keyword]";
       else if (_valueString == null)
         result = Text + " (" + Terminal.ToString() + ")";

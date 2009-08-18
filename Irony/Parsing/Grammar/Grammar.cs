@@ -13,7 +13,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.Scripting.Runtime;
+using Irony.Ast;
+using Irony.Ast.Interpreter;
 
 namespace Irony.Parsing { 
 
@@ -40,22 +41,11 @@ namespace Irony.Parsing {
     #region Language Flags
     public LanguageFlags LanguageFlags {
       get { return _languageFlags; }
+      set { _languageFlags = value; }
     } LanguageFlags _languageFlags = LanguageFlags.Default;
 
-    public void SetLanguageFlags(LanguageFlags flag) {
-      SetLanguageFlags(flag, true); 
-    }
-    public void SetLanguageFlags(LanguageFlags flag, bool value) {
-      if (value)
-        _languageFlags |= flag;
-      else
-        _languageFlags &= ~flag;
-    }
     public bool FlagIsSet(LanguageFlags flag) {
       return (LanguageFlags & flag) != 0;
-    }
-    public void ResetFlags() {
-      _languageFlags = LanguageFlags.None;
     }
     #endregion
 
@@ -263,9 +253,9 @@ namespace Irony.Parsing {
       return MakeStarRule(listNonTerminal, null, listMember);
     }
     public static BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember) {
+      listNonTerminal.SetOption(TermOptions.IsList);
       if (delimiter == null) {
         //it is much simpler case
-        listNonTerminal.SetOption(TermOptions.IsList);
         listNonTerminal.Rule = _currentGrammar.Empty | listNonTerminal + listMember;
         return listNonTerminal.Rule;
       }
@@ -274,11 +264,10 @@ namespace Irony.Parsing {
       //  does not work when you have delimiters. This simple version allows lists starting with delimiters -
       // which is wrong. The correct formula is to first define "Elem+"-list, and then define "Elem*" list 
       // as "Elem* -> Empty|Elem+" 
-      NonTerminal tmp = new NonTerminal(listMember.Name + "+");
-      tmp.SetOption(TermOptions.IsTransient); //important - mark it as Transient so it will be eliminated from AST tree
-      MakePlusRule(tmp, delimiter, listMember);
-      listNonTerminal.Rule = _currentGrammar.Empty | tmp;
-      //listNonTerminal.SetOption(TermOptions.IsStarList);
+      NonTerminal plusList = new NonTerminal(listMember.Name + "+");
+      MakePlusRule(plusList, delimiter, listMember);
+      plusList.SetOption(TermOptions.IsTransient); //important - mark it as Transient so it will be eliminated from AST tree
+      listNonTerminal.Rule = _currentGrammar.Empty | plusList;
       return listNonTerminal.Rule;
     }
     #endregion

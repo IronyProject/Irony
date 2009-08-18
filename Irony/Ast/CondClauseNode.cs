@@ -13,31 +13,28 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Irony.Ast.Interpreter;
 
-namespace Irony.Parsing {
+namespace Irony.Ast {
+  public class CondClauseNode : AstNode {
+    public AstNode Test;
+    public StatementListNode Expressions;
 
-  public class ParserStack : List<ParseTreeNode> {
-    public ParserStack() : base(200) { }
-    public void Push(ParseTreeNode nodeInfo) {
-      base.Add(nodeInfo);
+    public CondClauseNode(NodeArgs args, AstNode test, StatementListNode expressions) :base(args) {
+      ChildNodes.Clear();
+      this.Role = "Clause";
+      Test = test;
+      Test.Role = "Test";
+      ChildNodes.Add(Test);
+      Expressions = expressions;
+      Expressions.Role = "Command";
+      ChildNodes.Add(Expressions);
     }
-    public void Push(ParseTreeNode nodeInfo, ParserState state) {
-      nodeInfo.State = state;
-      base.Add(nodeInfo); 
+
+    public override void Evaluate(EvaluationContext context) {
+      Expressions.Evaluate(context);
     }
-    public ParseTreeNode Pop() {
-      var top = Top; 
-      base.RemoveAt(Count - 1);
-      return top; 
-    }
-    public void Pop(int count) {
-      base.RemoveRange(Count - count, count); 
-    }
-    public ParseTreeNode Top {
-      get {
-        if (Count == 0) return null;
-        return base[Count - 1];
-      }
-    }
-  }
-}
+  
+  }//class
+
+}//namespace

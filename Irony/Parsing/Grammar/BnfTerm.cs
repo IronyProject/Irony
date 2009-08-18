@@ -17,28 +17,29 @@ using System.Text;
 using System.Reflection;
 
 namespace Irony.Parsing { 
-
+  [Flags]
   public enum TermOptions {
     None = 0,
-    IsOperator = 0x01,
-    UsePrecedence = 0x02, //allows using precedence on symbol; by default is set together with IsOperator flag; maybe overwritten
+    IsOperator =         0x01,
+    UsePrecedence =      0x02, //allows using precedence on symbol; by default is set together with IsOperator flag; maybe overwritten
                           // by RestrictPrecedence method
-    IsOpenBrace = 0x04,
-    IsCloseBrace = 0x08,
     IsBrace = IsOpenBrace | IsCloseBrace,
-    IsConstant = 0x10,
-    IsPunctuation = 0x20,
-    IsDelimiter = 0x40,
-    IsList = 0x80,
-    IsMemberSelect = 0x100,    
-    IsNonGrammar = 0x0200,  // if set, parser would eliminate the token from the input stream; terms in Grammar.NonGrammarTerminals have this flag set
-    IsTransient = 0x0400,  // Transient non-terminal - should be removed from the AST tree. 
-    IsNullable = 0x0800,
-    IsVisible = 0x1000,
-    IsKeyword = 0x2000,
-    IsReservedWord = 0x04000,
-    IsMultiline = 0x08000,
-    AllowConvertToSymbol = 0x10000, // Allows to convert to symbol (typically keyword) is parser is not able to match by Term type
+    IsOpenBrace =        0x04,
+    IsCloseBrace =       0x08,
+    IsConstant =         0x10,
+    IsPunctuation =      0x20,
+    IsDelimiter =        0x40,
+    IsMemberSelect =    0x100,    
+    IsNonGrammar =     0x0200,  // if set, parser would eliminate the token from the input stream; terms in Grammar.NonGrammarTerminals have this flag set
+    IsTransient =      0x0400,  // Transient non-terminal - should be removed from the AST tree.
+    //internal flags
+    IsList           = 0x1000,
+    //calculated flags
+    IsNullable =     0x010000,
+    IsVisible =      0x020000,
+    IsKeyword =      0x040000,
+    IsReservedWord = 0x080000,
+    IsMultiline =    0x100000,
     // Identifier terminal is an example
   }
 
@@ -89,15 +90,13 @@ namespace Irony.Parsing {
     public int Precedence = NoPrecedence;
     public Associativity Associativity = Associativity.Neutral;
 
-    [System.Diagnostics.DebuggerStepThrough]
-    public bool IsSet(TermOptions option) {
-      return (Options & option) != 0;
+    public bool OptionIsSet(TermOptions option) {
+      bool result = (Options & option) != 0;
+      return result; 
     }
-    [System.Diagnostics.DebuggerStepThrough]
     public void SetOption(TermOptions option) {
       SetOption(option, true);
     }
-    [System.Diagnostics.DebuggerStepThrough]
     public void SetOption(TermOptions option, bool value) {
       if (value)
         Options |= option;
@@ -137,8 +136,7 @@ namespace Irony.Parsing {
     }
     public NonTerminal Star() {
       if (_star != null) return _star;
-      string name = this.Name + "*";
-      _star = new NonTerminal(name);
+      _star = new NonTerminal(this.Name + "*");
       _star.SetOption(TermOptions.IsList);
       _star.Rule = Grammar.CurrentGrammar.Empty | _star + this;
       return _star;

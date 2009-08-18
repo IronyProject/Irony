@@ -207,7 +207,7 @@ namespace Irony.Samples {
             MarkTransient(EXPR, PRINT_ARG); 
             #endregion
 
-            this.SetLanguageFlags(LanguageFlags.NewLineBeforeEOF); 
+            this.LanguageFlags = LanguageFlags.AutoDetectKeywords | LanguageFlags.NewLineBeforeEOF; 
 
       }//constructor
 

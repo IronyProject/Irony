@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Irony.Parsing;
-using Irony.Scripting.Ast;
+using Irony.Ast;
 
 namespace Irony.Samples {
   // This grammar describes programs that consist of simple expressions and assignments,
@@ -74,7 +74,7 @@ namespace Irony.Samples {
       MarkTransient(Term, Expr, Statement, BinOp, Variable);
 
       //automatically add NewLine before EOF so that our BNF rules work correctly when there's no final line break in source
-      this.SetLanguageFlags(LanguageFlags.NewLineBeforeEOF | LanguageFlags.SupportsInterpreter | LanguageFlags.AutoDetectTransient); 
+      this.LanguageFlags = LanguageFlags.NewLineBeforeEOF | LanguageFlags.SupportsInterpreter; 
 
     }
   }

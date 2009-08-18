@@ -23,8 +23,8 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using Irony.Parsing;
 using Irony.Diagnostics;
-using Irony.Scripting.Runtime;
 using Irony.EditorServices;
+using Irony.Ast.Interpreter;
 using Irony.GrammarExplorer.Properties;
 
 using Irony.Samples.Apress.Examples;
@@ -328,8 +328,8 @@ namespace Irony.GrammarExplorer {
         if (evalContext != null) {
           evalContext.Runtime.ConsoleWrite -= Ops_ConsoleWrite;
           txtOutput.Text = _outBuffer.ToString();
-          if (evalContext.CurrentResult != Unassigned.Value)
-            txtOutput.Text += evalContext.CurrentResult;
+          if (evalContext.Result != Unassigned.Value)
+            txtOutput.Text += evalContext.Result;
         }
         if (_parseTree.Errors.Count > 0)
           ShowCompilerErrors();
@@ -340,7 +340,6 @@ namespace Irony.GrammarExplorer {
     void Ops_ConsoleWrite(object sender, ConsoleWriteEventArgs e) {
       _outBuffer.Append(e.Text);
     }
-
     #endregion
 
     #region miscellaneous: LoadSourceFile, Search, Source highlighting

@@ -56,7 +56,7 @@
     <Compile Include="GWBasic\GwBasicGrammar.cs" />
     <Compile Include="ExpressionEvaluator\ExpressionEvaluatorGrammar.cs" />
     <Compile Include="NonCanonTestGrammars\NonCanonTestGrammar1.cs" />
-    <Compile Include="Scheme\SchemeRuntime.cs" />
+    <None Include="Scheme\SchemeRuntime.cs" />
     <Compile Include="Script.NET\ScriptDotNetGrammar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Python\PythonGrammar.cs" />

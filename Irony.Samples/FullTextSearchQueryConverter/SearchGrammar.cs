@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Irony.Parsing;
+using System.Globalization;
 //using System.Data.SqlClient;
 //using System.Data;
 
@@ -18,7 +19,7 @@ namespace Irony.Samples.Apress.Examples
             "Slightly revised to work with latest version of Irony. "; 
           
           // Terminals
-          var Term = new IdentifierTerminal("Term", "!@#$%^*_'.?", "!@#$%^*_'.?0123456789");
+          var Term = CreateTerm("Term");
           var Phrase = new StringLiteral("Phrase");
 
           // NonTerminals
@@ -60,11 +61,37 @@ namespace Irony.Samples.Apress.Examples
           ExactOperator.Rule = Symbol("+");
           ParenthesizedExpression.Rule = "(" + OrExpression + ")";
           ProximityExpression.Rule = "<" + ProximityList + ">";
-
           MakePlusRule(ProximityList, Term);
 
+          MarkTransient(PrimaryExpression, ParenthesizedExpression, AndExpression, OrExpression);
           RegisterPunctuation("<", ">", "(", ")");
         }
+
+        //Creates extended identifier terminal that allows international characters
+        // Following the pattern used for c# identifier terminal in TerminalFactory.CreateCSharpIdentifier method;
+        private IdentifierTerminal CreateTerm(string name) {
+          IdentifierTerminal term = new IdentifierTerminal(name);
+          term.AllChars = string.Empty;
+          term.AllFirstChars = string.Empty;
+          term.CharCategories.AddRange(new UnicodeCategory[] {
+             UnicodeCategory.UppercaseLetter, //Ul
+             UnicodeCategory.LowercaseLetter, //Ll
+             UnicodeCategory.TitlecaseLetter, //Lt
+             UnicodeCategory.ModifierLetter,  //Lm
+             UnicodeCategory.OtherLetter,     //Lo
+             UnicodeCategory.LetterNumber,     //Nl
+             UnicodeCategory.DecimalDigitNumber, //Nd
+             UnicodeCategory.ConnectorPunctuation, //Pc
+             UnicodeCategory.SpacingCombiningMark, //Mc
+             UnicodeCategory.NonSpacingMark,       //Mn
+             UnicodeCategory.Format                //Cf
+          });
+          //StartCharCategories are the same
+          term.StartCharCategories.AddRange(term.CharCategories); 
+          return term;
+        }
+
+
 
         public enum TermType
         {
@@ -77,13 +104,12 @@ namespace Irony.Samples.Apress.Examples
           string result = "";
           // Note that some NonTerminals don't actually get into the AST tree, 
           // because of some Irony's optimizations - punctuation stripping and 
-          // node bubbling. For example, ParenthesizedExpression - parentheses 
+          // transient nodes elimination. For example, ParenthesizedExpression - parentheses 
           // symbols get stripped off as punctuation, and child expression node 
-          // (parenthesized content) replaces the parent ParExpr node (the 
-          // child is "bubbled up").
+          // (parenthesized content) replaces the parent ParenthesizedExpression node
           switch (node.Term.Name) {
             case "OrExpression":
-              if (node.ChildNodes.Count == 1) {
+              if (node.ChildNodes.Count == 1) { //this never happens, because we declared OrExpression as transient
                 result = ConvertQuery(node.ChildNodes[0], TermType.Inflectional);
                 break;
               }
@@ -92,7 +118,7 @@ namespace Irony.Samples.Apress.Examples
               break;
 
             case "AndExpression":
-              if (node.ChildNodes.Count == 1) {
+              if (node.ChildNodes.Count == 1) { //this never happens, because we declared AndExpression as transient
                 result = ConvertQuery(node.ChildNodes[0], TermType.Inflectional);
                 break; 
               }

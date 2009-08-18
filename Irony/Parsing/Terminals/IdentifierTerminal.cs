@@ -50,7 +50,6 @@ namespace Irony.Parsing {
     public IdentifierTerminal(string name, string extraChars, string extraFirstChars): base(name) {
       AllFirstChars = Strings.AllLatinLetters + extraFirstChars;
       AllChars = Strings.AllLatinLetters + Strings.DecimalDigits + extraChars;
-      SetOption(TermOptions.AllowConvertToSymbol);
     }
 
     public void AddPrefix(string prefix, IdFlags flags) {
@@ -114,7 +113,7 @@ namespace Irony.Parsing {
       if (OwnerGrammar.SymbolTerms.TryGetValue(token.Text, out symbolTerm)) {
         token.AsSymbol = symbolTerm;
         //if it is reserved word, then overwrite terminal
-        if (symbolTerm.IsSet(TermOptions.IsReservedWord))
+        if (symbolTerm.OptionIsSet(TermOptions.IsReservedWord))
           token.SetTerminal(symbolTerm); 
       }
     }

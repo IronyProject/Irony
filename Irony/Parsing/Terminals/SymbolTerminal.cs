@@ -46,12 +46,19 @@ namespace Irony.Parsing {
     }  string _symbol;
 
     public SymbolTerminal IsPairFor;
+    //Normally false, meaning keywords (symbols in grammar consisting of letters) cannot be followed by a letter or digit
+    public bool AllowAlphaAfterKeyword = false; 
 
     #region overrides: TryMatch, GetPrefixes(), ToString() 
     public override Token TryMatch(CompilerContext context, ISourceStream source) {
       if (!source.MatchSymbol(_symbol, !OwnerGrammar.CaseSensitive))
         return null;
       source.PreviewPosition += _symbol.Length;
+      //In case of keywords, check that it is not followed by letter or digit
+      if (this.OptionIsSet(TermOptions.IsKeyword) && !AllowAlphaAfterKeyword) {
+        var previewChar = source.PreviewChar;
+        if (char.IsLetterOrDigit(previewChar) || previewChar == '_') return null; //reject
+      }
       return source.CreateToken(this,_symbol);
     }
 
@@ -64,17 +71,17 @@ namespace Irony.Parsing {
       base.Init(grammarData);
       if (this.EditorInfo != null) return;
       TokenType tknType = TokenType.Identifier;
-      if (IsSet(TermOptions.IsOperator))
+      if (OptionIsSet(TermOptions.IsOperator))
         tknType |= TokenType.Operator; 
-      else if (IsSet(TermOptions.IsDelimiter | TermOptions.IsPunctuation))
+      else if (OptionIsSet(TermOptions.IsDelimiter | TermOptions.IsPunctuation))
         tknType |= TokenType.Delimiter;
       TokenTriggers triggers = TokenTriggers.None;
-      if (this.IsSet(TermOptions.IsBrace))
+      if (this.OptionIsSet(TermOptions.IsBrace))
         triggers |= TokenTriggers.MatchBraces;
-      if (this.IsSet(TermOptions.IsMemberSelect))
+      if (this.OptionIsSet(TermOptions.IsMemberSelect))
         triggers |= TokenTriggers.MemberSelect;
       TokenColor color = TokenColor.Text; 
-      if (IsSet(TermOptions.IsKeyword))
+      if (OptionIsSet(TermOptions.IsKeyword))
         color = TokenColor.Keyword;
       this.EditorInfo = new TokenEditorInfo(tknType, color, triggers);
     }

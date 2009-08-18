@@ -40,12 +40,12 @@ namespace Irony.Parsing {
 
     public override IEnumerable<Token> BeginFiltering(CompilerContext context, IEnumerable<Token> tokens) {
       foreach (Token token in tokens) {
-        if (!token.Terminal.IsSet(TermOptions.IsBrace)) {
+        if (!token.Terminal.OptionIsSet(TermOptions.IsBrace)) {
           yield return token;
           continue;
         }
         //open brace symbol
-        if (token.Terminal.IsSet(TermOptions.IsOpenBrace)) {
+        if (token.Terminal.OptionIsSet(TermOptions.IsOpenBrace)) {
           _braces.Push(token);
           yield return token;
           continue;

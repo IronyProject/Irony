@@ -42,7 +42,7 @@ namespace Irony.Parsing {
     TailRecursive = 0x0400, //Tail-recursive language - Scheme is one example
 
     //Default value
-    Default = AutoDetectTransient | AutoDetectKeywords,
+    Default = AutoDetectKeywords,
   }
 
   public enum ParseMethod {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Irony.Parsing;
-using Irony.Scripting.Ast;
+using Irony.Ast;
 
 namespace Irony.Tests {
 

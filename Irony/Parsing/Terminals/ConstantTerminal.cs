@@ -21,8 +21,7 @@ namespace Irony.Parsing {
   public class ConstantsTable : Dictionary<string, object> { }
   public class ConstantTerminal : Terminal {
     public readonly ConstantsTable Constants = new ConstantsTable();
-    public ConstantTerminal(string name)
-      : base(name) {
+    public ConstantTerminal(string name) : base(name) {
       base.SetOption(TermOptions.IsConstant);
     }
 

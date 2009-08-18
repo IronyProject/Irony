@@ -218,7 +218,7 @@ namespace Irony.GrammarExplorer {
       // by parser when it detects that it is in fact keyword from Grammar. So now this backpatching does not happen, 
       // so we have to detect keywords here
       var colorIndex = token.EditorInfo.Color;
-      if (token.AsSymbol != null && token.AsSymbol.EditorInfo != null && token.AsSymbol.IsSet(TermOptions.IsKeyword)) {
+      if (token.AsSymbol != null && token.AsSymbol.EditorInfo != null && token.AsSymbol.OptionIsSet(TermOptions.IsKeyword)) {
         colorIndex = token.AsSymbol.EditorInfo.Color;
       }//if
       Color result;

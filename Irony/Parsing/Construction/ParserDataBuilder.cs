@@ -91,7 +91,7 @@ namespace Irony.Parsing.Construction {
         foreach (NonTerminal nt in data.NonTerminals) {
           var isOp = true;
           foreach (var prod in nt.Productions) {
-            isOp &= prod.RValues.Count == 0 || prod.RValues.Count == 1 && prod.RValues[0].IsSet(TermOptions.IsOperator);
+            isOp &= prod.RValues.Count == 0 || prod.RValues.Count == 1 && prod.RValues[0].OptionIsSet(TermOptions.IsOperator);
             if (!isOp) break;
           }//foreac prod
           if (isOp)
@@ -160,7 +160,7 @@ namespace Irony.Parsing.Construction {
             var source = shiftItem.ShiftedItem;
             while (source.Core.Current != null) {
               trans.LookaheadSources.Add(source);
-              if (!source.Core.Current.IsSet(TermOptions.IsNullable)) break;
+              if (!source.Core.Current.OptionIsSet(TermOptions.IsNullable)) break;
               source = source.ShiftedItem;
             }//while
           }//foreach shiftItem
@@ -420,7 +420,7 @@ namespace Irony.Parsing.Construction {
     }
     private bool ResolveConflictByPrecedence(ParserState state, BnfTerm conflict) {
       var stateData = state.BuilderData;
-      if (!conflict.IsSet(TermOptions.UsePrecedence)) return false;
+      if (!conflict.OptionIsSet(TermOptions.UsePrecedence)) return false;
       if (!stateData.ShiftTerms.Contains(conflict)) return false; //it is not shift-reduce
       //first find reduce items
       var reduceItems = stateData.ReduceItems.SelectByLookahead(conflict);

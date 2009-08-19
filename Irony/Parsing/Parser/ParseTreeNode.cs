@@ -83,32 +83,9 @@ namespace Irony.Parsing {
       return AstNode.ToString();
     }//method
 
-    public bool HasChildNodes() {
-      return ChildNodes != null && ChildNodes.Count > 0;
-    }
-  }
+  }//class
 
-  public enum ListAddMode {
-    Start, 
-    End
-  }
-
-  public class ParseTreeNodeList : List<ParseTreeNode> {
-    public void Add(ParseTreeNode node, ListAddMode mode) {
-      if (mode == ListAddMode.Start)
-        base.Insert(0, node);
-      else
-        base.Add(node);
-
-    }
-    public void Add(ParseTreeNodeList nodes, ListAddMode mode) {
-      if (mode == ListAddMode.Start)
-        base.InsertRange(0, nodes);
-      else
-        base.AddRange(nodes);
-
-    }
-  }
+  public class ParseTreeNodeList : List<ParseTreeNode> { }
 
 
 }

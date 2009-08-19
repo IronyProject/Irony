@@ -70,7 +70,6 @@ namespace Irony.Ast.Interpreter {
   }
   #endregion 
 
-
   #region DispatchRecord, DispatchRecordTable classes
   public delegate object BinaryCallTarget(object arg1, object arg2);
 

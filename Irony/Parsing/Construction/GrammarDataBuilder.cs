@@ -182,14 +182,15 @@ namespace Irony.Parsing.Construction {
         else
           transListCount += 100; //so it will never be 1
       }//foreach
-      //Set ContainsTransientList flag
-      if (transListCount == 1)
-        production.Flags |= ProductionFlags.ContainsTransientList;
+      //Set TransientListCopy flag
+      if (transListCount == 1) //if only one transient list and some punctuation symbols
+        production.Flags |= ProductionFlags.TransientListCopy;
       //Set IsListBuilder flag
       if (production.RValues.Count > 0 && production.RValues[0] == production.LValue
           && production.LValue.OptionIsSet(TermOptions.IsList))
         production.Flags |= ProductionFlags.IsListBuilder;
-    }
+    }//method
+
     private static void ComputeNonTerminalsNullability(GrammarData data) {
       NonTerminalList undecided = data.NonTerminals;
       while (undecided.Count > 0) {

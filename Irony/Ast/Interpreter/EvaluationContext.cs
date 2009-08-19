@@ -35,7 +35,6 @@ namespace Irony.Ast.Interpreter {
     //The following are not used yet
     public JumpType Jump = JumpType.None;
     public AstNode GotoTarget;
-
     public Closure Tail;
 
     //contains call args for a function call; it is passed to the new frame when the call is made. 

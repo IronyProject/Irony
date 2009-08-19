@@ -227,9 +227,10 @@ namespace Irony.Parsing {
         newNode.Precedence = newNode.FirstChild.Precedence;
         newNode.Associativity = newNode.FirstChild.Associativity;
       }
-      //Special case; when we have 
-      if (reduceProduction.IsSet(ProductionFlags.ContainsTransientList)) {
-        PopTransientNodes(childCount, newNode);
+      //Special case; when we have production with transient list inside with optional punctuation
+      // symbols, we copy this transient node's children directly into new node. 
+      if (reduceProduction.IsSet(ProductionFlags.TransientListCopy)) {
+        CopyTransientLists(childCount, newNode);
         return newNode;
       }
       //Pop child nodes one-by-one; note that they are popped in the reverse of their normal order, so we reverse them after
@@ -242,7 +243,7 @@ namespace Irony.Parsing {
       return newNode;
     }
 
-    private void PopTransientNodes(int nodeCount, ParseTreeNode parent) {
+    private void CopyTransientLists(int nodeCount, ParseTreeNode parent) {
       for (int i = 0; i < nodeCount; i++) {
         var node = Stack.Pop();
         if (node.Term.OptionIsSet(TermOptions.IsPunctuation)) continue;

@@ -17,22 +17,19 @@ namespace Irony.Ast.Interpreter {
     public ScriptInterpreter(LanguageData language) {
       Language = language;
       Compiler = new Compiler(Language);
-      CompilerContext = new CompilerContext(Compiler); 
+      CompilerContext = new CompilerContext(Compiler);
       TopFrame = new StackFrame(Globals);
       var runtime = language.Grammar.CreateRuntime();
       EvaluationContext = new EvaluationContext(runtime, TopFrame);  
     }
-    public void Evaluate(string program) {
-      var compiler = new Compiler(Language); 
-      CompilerContext compilerContext = new CompilerContext(compiler); 
-      //var root = Parser.Parse(
 
+    public void Evaluate(string script) {
+      var tree = this.Compiler.Parse(CompilerContext, script, "source");
+      var astNode = tree.Root.AstNode;
+      var iInterpNode = astNode as IInterpretedNode;
+      iInterpNode.Evaluate(EvaluationContext, AstUseMode.Read);
+      //printout
     }
-    public void AppendAndEvaluate(AstNode node) {
-    }
-    
-
-
   
   }//class
 

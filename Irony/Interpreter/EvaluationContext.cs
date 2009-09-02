@@ -17,7 +17,7 @@ using System.Threading;
 using Irony.Parsing;
 using Irony.Ast;
 
-namespace Irony.Interpreter {
+namespace Irony.Interpreter { 
   public enum JumpType {
     None = 0,
     Break,

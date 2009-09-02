@@ -16,7 +16,7 @@ using System.Linq;
 using System.Text;
 using Irony.Ast;
 
-namespace Irony.Ast.Interpreter {
+namespace Irony.Interpreter { 
 
   [Flags]
   public enum FunctionFlags {

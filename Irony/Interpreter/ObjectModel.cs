@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Irony.Interpreter {
-  //steps:
-  //1. vmt = FindVmt
-  //2. 
+namespace Irony.Interpreter { 
+
   public class MethodImp {
     public StackFrame OwnerFrame; 
     public void Execute(EvaluationContext context, object target, int argCount) { }

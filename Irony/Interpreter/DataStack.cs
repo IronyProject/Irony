@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 namespace Irony.Interpreter {
-  public class DataStack {
+  public class DataStack { 
 
     List<object> _data = new List<object>(16);
     object _lastPushedItem;

@@ -5,7 +5,7 @@ using System.Text;
 using Irony.Ast; 
 using Irony.Parsing;
 
-namespace Irony.Interpreter {
+namespace Irony.Interpreter { 
 
   public class ScriptInterpreter {
     public readonly LanguageData Language;

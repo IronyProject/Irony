@@ -17,7 +17,7 @@ using System.Text;
 using Irony.Parsing;
 using Irony.Ast;
 
-namespace Irony.Ast.Interpreter {
+namespace Irony.Interpreter { 
 
   public class Closure {
     public string MethodName; //either BindingInfo.Name, or name of the variable storing lambda expression 

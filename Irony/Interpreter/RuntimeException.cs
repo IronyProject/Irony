@@ -16,7 +16,7 @@ using System.Linq;
 using System.Text;
 using Irony.Parsing;
 
-namespace Irony.Interpreter {
+namespace Irony.Interpreter { 
   public class RuntimeException : Exception {
     public SourceLocation Location;
     public RuntimeException(string message) : base(message) {   }

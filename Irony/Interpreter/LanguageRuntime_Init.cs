@@ -16,7 +16,7 @@ using System.Linq;
 using System.Text;
 //using Irony.Compiler;
 
-namespace Irony.Interpreter {
+namespace Irony.Interpreter { 
   using BigInteger = Microsoft.Scripting.Math.BigInteger;
   using Complex = Microsoft.Scripting.Math.Complex64;
 

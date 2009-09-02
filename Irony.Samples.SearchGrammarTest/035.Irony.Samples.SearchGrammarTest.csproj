@@ -5,17 +5,17 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{337C8662-3622-4AD9-8CFF-E7D9E437EA27}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{6B147CA0-CEEF-49A9-A234-F6A074D34838}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Irony.Tutorial</RootNamespace>
-    <AssemblyName>Irony.Tutorial</AssemblyName>
+    <RootNamespace>Irony.Samples.SearchGrammarTest</RootNamespace>
+    <AssemblyName>Irony.Samples.SearchGrammarTest</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SccProjectName>%24/irony/Irony.Tutorial</SccProjectName>
-    <SccLocalPath>.</SccLocalPath>
-    <SccAuxPath>https://tfs05.codeplex.com</SccAuxPath>
-    <SccProvider>{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}</SccProvider>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -49,14 +49,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Part1\MiniPython1.cs" />
-    <Compile Include="Part2\MiniPython2.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Readme.txt" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\Irony.Samples\020.Irony.Samples.csproj">
+      <Project>{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}</Project>
+      <Name>020.Irony.Samples</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Irony\010.Irony.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
       <Name>010.Irony</Name>

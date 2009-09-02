@@ -64,6 +64,7 @@ namespace Irony.Parsing {
     public NumberLiteral(string name, NumberFlags flags) : base(name) {
       Flags = flags;
       base.Category = TokenCategory.Literal;
+      base.AstNodeType = typeof(Irony.Ast.LiteralValueNode);
     }
     public void AddPrefix(string prefix, NumberFlags flags) {
       PrefixFlags.Add(prefix, (short) flags);
@@ -94,10 +95,11 @@ namespace Irony.Parsing {
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
       if (string.IsNullOrEmpty(QuickParseTerminators))
-        QuickParseTerminators = OwnerGrammar.WhitespaceChars + OwnerGrammar.Delimiters;
+        QuickParseTerminators = Grammar.WhitespaceChars + Grammar.Delimiters;
       _defaultFloatTypes = new TypeCode[] { DefaultFloatType };
       if (this.EditorInfo == null) 
         this.EditorInfo = new TokenEditorInfo(TokenType.Literal, TokenColor.Number, TokenTriggers.None);
+      Ast.LiteralValueNode.AssignDefaultAstNodeType(this);
     }
 
     public override IList<string> GetFirsts() {
@@ -115,7 +117,7 @@ namespace Irony.Parsing {
 
     //Most numbers in source programs are just one-digit instances of 0, 1, 2, and maybe others until 9
     // so we try to do a quick parse for these, without starting the whole general process
-    protected override Token QuickParse(CompilerContext context, ISourceStream source) {
+    protected override Token QuickParse(ParsingContext context, ISourceStream source) {
       if (IsSet(NumberFlags.DisableQuickParse)) return null;
       char current = source.PreviewChar;
       //it must be a digit followed by a terminator
@@ -136,7 +138,7 @@ namespace Irony.Parsing {
       return source.CreateToken(this, value);
     }
 
-    protected override void InitDetails(CompilerContext context, CompoundTokenDetails details) {
+    protected override void InitDetails(ParsingContext context, CompoundTokenDetails details) {
       base.InitDetails(context, details);
       details.Flags = (short) this.Flags;
     }
@@ -224,7 +226,7 @@ namespace Irony.Parsing {
       details.Body = source.Text.Substring(start, end - start);
       return true;
     }
-    protected internal override Token InvokeValidateToken(CompilerContext context, ISourceStream source, TerminalList terminals, Token token) {
+    protected internal override Token InvokeValidateToken(ParsingContext context, ISourceStream source, TerminalList terminals, Token token) {
       if (!IsSet(NumberFlags.AllowLetterAfter)) {
         var current = source.PreviewChar;
         if (char.IsLetter(current) || current == '_') 

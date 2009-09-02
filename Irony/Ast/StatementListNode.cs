@@ -14,18 +14,32 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Irony.Ast.Interpreter;
+using Irony.Interpreter;
+using Irony.Parsing;
 
 namespace Irony.Ast {
 
   public class StatementListNode : AstNode {
-    
-    public StatementListNode(NodeArgs args) : base(args) { }
 
-    public StatementListNode(NodeArgs args, AstNodeList statements) : base(args) {
-      ChildNodes.Clear();
-      foreach (AstNode stmt in statements)
-        AddChild(null, stmt);
+    public StatementListNode() { }
+     
+    public override void Init(ParsingContext context, ParseTreeNode treeNode) {
+      base.Init(context, treeNode);
+      foreach (var child in treeNode.ChildNodes) {
+        AddChild("stmt", child, false); //don't throw error if null
+      }
+      AsString = "Statement List";
+    }
+
+    public override void Evaluate(EvaluationContext context, AstMode mode) {
+      if (ChildNodes.Count == 0) return;
+      ChildNodes[ChildNodes.Count - 1].Flags |= AstNodeFlags.IsTail;
+      int iniCount = context.Data.Count; 
+      foreach(var stmt in ChildNodes) {
+        //restore position, in case one of the statement left something (like standalone expression vs assignment) 
+        context.Data.PopUntil(iniCount); 
+        stmt.Evaluate(context, AstMode.Read);
+      }
     }
     
   }//class

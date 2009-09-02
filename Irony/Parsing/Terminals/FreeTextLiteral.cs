@@ -29,9 +29,10 @@ namespace Irony.Parsing {
       foreach (var t in Terminators)
         stopChars.Add(t[0]);
       _stopChars = stopChars.ToArray();
+      Ast.LiteralValueNode.AssignDefaultAstNodeType(this);
     }
 
-    public override Token TryMatch(CompilerContext context, ISourceStream source) {
+    public override Token TryMatch(ParsingContext context, ISourceStream source) {
       string tokenText = string.Empty;
       while (true) {
         //Find next position

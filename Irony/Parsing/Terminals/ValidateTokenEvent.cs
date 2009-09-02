@@ -6,14 +6,14 @@ using System.Text;
 namespace Irony.Parsing {
 
   public class ValidateTokenEventArgs : EventArgs {
-    public CompilerContext Context;
+    public ParsingContext Context;
     public ISourceStream Source;
     public TerminalList Terminals; //all terminals that are candidates for producing a token
     public Token Token {
       get { return _token; }
     } Token _token;
 
-    internal void Init(CompilerContext context, ISourceStream source, TerminalList terminals, Token token) {
+    internal void Init(ParsingContext context, ISourceStream source, TerminalList terminals, Token token) {
       Context = context;
       Source = source;
       Terminals = terminals;

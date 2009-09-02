@@ -104,10 +104,6 @@
     <Compile Include="RichTextBoxHighlighter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Irony.Samples\020.Irony.Samples.csproj">
-      <Project>{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}</Project>
-      <Name>020.Irony.Samples</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Irony\010.Irony.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
       <Name>010.Irony</Name>

@@ -88,7 +88,7 @@ namespace Irony.Samples.Scheme {
       var ExportSpecList = new NonTerminal("ExportSpecList");
       var LP = new NonTerminal("LP"); //"(" or "["
       var RP = new NonTerminal("RP"); // ")" or "]"
-      var Identifier = new NonTerminal("Identifier", typeof(VarRefNode));
+      var Identifier = new NonTerminal("Identifier", typeof(IdentifierNode));
       var IdentifierList = new NonTerminal("IdentifierList");
       var IdentifierListOpt = new NonTerminal("IdentifierListOpt");
       var PeculiarIdentifier = new NonTerminal("PeculiarIdentifier");
@@ -207,12 +207,12 @@ namespace Irony.Samples.Scheme {
       TokenFilters.Add(filter);
 
       //Scheme is tail-recursive language
-      base.LanguageFlags = LanguageFlags.AutoDetectKeywords | LanguageFlags.TailRecursive | 
-                  LanguageFlags.SupportsInterpreter | LanguageFlags.SupportsConsole;
+      base.LanguageFlags = LanguageFlags.AutoDetectKeywords | LanguageFlags.TailRecursive 
+                         ;//| LanguageFlags.SupportsInterpreter | LanguageFlags.SupportsConsole;
 
     }//constructor
 
-    public override Irony.Ast.Interpreter.LanguageRuntime CreateRuntime() {
+    public override Irony.Interpreter.LanguageRuntime CreateRuntime() {
       return null; // new SchemeRuntime();
     }
 
@@ -223,7 +223,7 @@ namespace Irony.Samples.Scheme {
       return false; 
     }
 
-    private void CreateFunctionCallNode(CompilerContext context, ParseTreeNode parseNode) {
+    private void CreateFunctionCallNode(ParsingContext context, ParseTreeNode parseNode) {
 /*      VarRefNode id = parseNode.ChildNodes[0] as VarRefNode;
       AstNodeList funArgs = parseNode.ChildNodes[1].ChildNodes;
       if (IsOperator(id.Name)) {
@@ -234,12 +234,12 @@ namespace Irony.Samples.Scheme {
 */
     }
 
-    private void CreateDefineVarNode(CompilerContext context, ParseTreeNode parseNode) {
+    private void CreateDefineVarNode(ParsingContext context, ParseTreeNode parseNode) {
       //we skip the "define" keyword so the indexes are 1,2
     //  parseNode.AstNode = new AssigmentNode(args, parseNode.ChildNodes[1] as VarRefNode, parseNode.ChildNodes[2]);
     }
 
-    private void CreateDefineFunNode(CompilerContext context, ParseTreeNode parseNode) {
+    private void CreateDefineFunNode(ParsingContext context, ParseTreeNode parseNode) {
       /* //"define" keyword is at index 0
       VarRefNode funNameNode = parseNode.ChildNodes[1] as VarRefNode;
       funNameNode.Flags |= AstNodeFlags.AllocateSlot;
@@ -249,34 +249,34 @@ namespace Irony.Samples.Scheme {
       parseNode.AstNode = new AssigmentNode(args, funNameNode, anonFun);
  */   }
 
-    private void CreateLambdaNode(CompilerContext context, ParseTreeNode parseNode) {
+    private void CreateLambdaNode(ParsingContext context, ParseTreeNode parseNode) {
 /*      AstNode funParams = parseNode.ChildNodes[1];
       AstNode funBody = parseNode.ChildNodes[2];
       parseNode.AstNode = new AnonFunctionNode(args, funParams, funBody); 
 */
     }
 
-    private void CreateIfThenElseNode(CompilerContext context, ParseTreeNode parseNode) {
+    private void CreateIfThenElseNode(ParsingContext context, ParseTreeNode parseNode) {
 /*      AstNode test = parseNode.ChildNodes[1];
       AstNode ifTrue = parseNode.ChildNodes[2];
       AstNode ifFalse = parseNode.ChildNodes[3];
       parseNode.AstNode = new IfNode(args, test, ifTrue, ifFalse);
 */    }
 
-    private void CreateCondFormNode(CompilerContext context, ParseTreeNode parseNode) {
+    private void CreateCondFormNode(ParsingContext context, ParseTreeNode parseNode) {
 /*      AstNodeList condClauses = parseNode.ChildNodes[1].ChildNodes;
       AstNode elseNode = parseNode.ChildNodes[2];
       AstNode elseCommands = (elseNode.IsEmpty()? null : elseNode.ChildNodes[1]);
       parseNode.AstNode = new CondFormNode(args, condClauses, elseCommands);
 */    }
 
-    private void CreateCondClauseNode(CompilerContext context, ParseTreeNode parseNode) {
+    private void CreateCondClauseNode(ParsingContext context, ParseTreeNode parseNode) {
 /*      AstNode test = parseNode.ChildNodes[0];
       StatementListNode command = parseNode.ChildNodes[1] as StatementListNode;
       parseNode.AstNode = new CondClauseNode(args, test, command);
 */    }
 
-    private void CreateBeginNode(CompilerContext context, ParseTreeNode parseNode) {
+    private void CreateBeginNode(ParsingContext context, ParseTreeNode parseNode) {
 //      parseNode.AstNode = new StatementListNode(args, parseNode.ChildNodes[1].ChildNodes);
     }
 

@@ -25,12 +25,12 @@ namespace Irony.GrammarExplorer {
     /// </summary>
     private void InitializeComponent() {
       this.components = new System.ComponentModel.Container();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
       this.tabGrammar = new System.Windows.Forms.TabControl();
       this.pageTerminals = new System.Windows.Forms.TabPage();
       this.txtTerms = new System.Windows.Forms.TextBox();
@@ -118,6 +118,7 @@ namespace Irony.GrammarExplorer {
       this.pageOutput = new System.Windows.Forms.TabPage();
       this.txtOutput = new System.Windows.Forms.TextBox();
       this.panel2 = new System.Windows.Forms.Panel();
+      this.lnkShowErrLocation = new System.Windows.Forms.LinkLabel();
       this.label5 = new System.Windows.Forms.Label();
       this.lblRunTime = new System.Windows.Forms.Label();
       this.tabGrammar.SuspendLayout();
@@ -357,7 +358,7 @@ namespace Irony.GrammarExplorer {
       this.tvParseTree.Name = "tvParseTree";
       this.tvParseTree.Size = new System.Drawing.Size(336, 400);
       this.tvParseTree.TabIndex = 0;
-      this.tvParseTree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tvAstNodes_AfterSelect);
+      this.tvParseTree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tvParseTree_AfterSelect);
       // 
       // pageAst
       // 
@@ -379,6 +380,7 @@ namespace Irony.GrammarExplorer {
       this.tvAst.Name = "tvAst";
       this.tvAst.Size = new System.Drawing.Size(336, 400);
       this.tvAst.TabIndex = 1;
+      this.tvAst.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tvAst_AfterSelect);
       // 
       // chkParserTrace
       // 
@@ -718,8 +720,8 @@ namespace Irony.GrammarExplorer {
       // 
       // dataGridViewTextBoxColumn2
       // 
-      dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn2.DefaultCellStyle = dataGridViewCellStyle1;
+      dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      this.dataGridViewTextBoxColumn2.DefaultCellStyle = dataGridViewCellStyle7;
       this.dataGridViewTextBoxColumn2.HeaderText = "Error Level";
       this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
       this.dataGridViewTextBoxColumn2.ReadOnly = true;
@@ -738,8 +740,8 @@ namespace Irony.GrammarExplorer {
       // 
       this.dataGridViewTextBoxColumn6.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
       this.dataGridViewTextBoxColumn6.DataPropertyName = "State";
-      dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn6.DefaultCellStyle = dataGridViewCellStyle2;
+      dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      this.dataGridViewTextBoxColumn6.DefaultCellStyle = dataGridViewCellStyle8;
       this.dataGridViewTextBoxColumn6.HeaderText = "Parser State";
       this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
       this.dataGridViewTextBoxColumn6.ReadOnly = true;
@@ -795,8 +797,8 @@ namespace Irony.GrammarExplorer {
       // 
       // dataGridViewTextBoxColumn3
       // 
-      dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn3.DefaultCellStyle = dataGridViewCellStyle3;
+      dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      this.dataGridViewTextBoxColumn3.DefaultCellStyle = dataGridViewCellStyle9;
       this.dataGridViewTextBoxColumn3.HeaderText = "L, C";
       this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
       this.dataGridViewTextBoxColumn3.ReadOnly = true;
@@ -816,8 +818,8 @@ namespace Irony.GrammarExplorer {
       // 
       this.dataGridViewTextBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
       this.dataGridViewTextBoxColumn1.DataPropertyName = "State";
-      dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle4;
+      dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle10;
       this.dataGridViewTextBoxColumn1.HeaderText = "Parser State";
       this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
       this.dataGridViewTextBoxColumn1.ReadOnly = true;
@@ -968,8 +970,8 @@ namespace Irony.GrammarExplorer {
       // State
       // 
       this.State.DataPropertyName = "State";
-      dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.State.DefaultCellStyle = dataGridViewCellStyle5;
+      dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      this.State.DefaultCellStyle = dataGridViewCellStyle11;
       this.State.HeaderText = "State";
       this.State.Name = "State";
       this.State.ReadOnly = true;
@@ -981,8 +983,8 @@ namespace Irony.GrammarExplorer {
       // Stack
       // 
       this.Stack.DataPropertyName = "StackTop";
-      dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-      this.Stack.DefaultCellStyle = dataGridViewCellStyle6;
+      dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+      this.Stack.DefaultCellStyle = dataGridViewCellStyle12;
       this.Stack.HeaderText = "Stack Top";
       this.Stack.Name = "Stack";
       this.Stack.ReadOnly = true;
@@ -1115,6 +1117,7 @@ namespace Irony.GrammarExplorer {
       // 
       // panel2
       // 
+      this.panel2.Controls.Add(this.lnkShowErrLocation);
       this.panel2.Controls.Add(this.label5);
       this.panel2.Controls.Add(this.lblRunTime);
       this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
@@ -1122,6 +1125,19 @@ namespace Irony.GrammarExplorer {
       this.panel2.Name = "panel2";
       this.panel2.Size = new System.Drawing.Size(1090, 21);
       this.panel2.TabIndex = 2;
+      // 
+      // lnkShowErrLocation
+      // 
+      this.lnkShowErrLocation.AutoSize = true;
+      this.lnkShowErrLocation.Dock = System.Windows.Forms.DockStyle.Right;
+      this.lnkShowErrLocation.Enabled = false;
+      this.lnkShowErrLocation.Location = new System.Drawing.Point(992, 0);
+      this.lnkShowErrLocation.Name = "lnkShowErrLocation";
+      this.lnkShowErrLocation.Size = new System.Drawing.Size(98, 13);
+      this.lnkShowErrLocation.TabIndex = 20;
+      this.lnkShowErrLocation.TabStop = true;
+      this.lnkShowErrLocation.Text = "Show error location";
+      this.lnkShowErrLocation.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkShowErrLocation_LinkClicked);
       // 
       // label5
       // 
@@ -1286,6 +1302,7 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.Label label12;
     private System.Windows.Forms.Label lblCompileErrorCount;
     private System.Windows.Forms.Label lblLanguageDescr;
+    private System.Windows.Forms.LinkLabel lnkShowErrLocation;
 
   }
 }

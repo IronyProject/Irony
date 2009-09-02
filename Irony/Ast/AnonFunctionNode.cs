@@ -14,7 +14,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Irony.Ast.Interpreter;
+using Irony.Parsing;
+using Irony.Interpreter;
 
 namespace Irony.Ast {
 
@@ -23,27 +24,22 @@ namespace Irony.Ast {
     public AstNode Body;
     public FunctionBindingInfo BindingInfo;
 
-    public AnonFunctionNode(NodeArgs args, AstNode parameters, AstNode body) : base(args) {
+    public AnonFunctionNode() { }
+    public override void Init(ParsingContext context, ParseTreeNode treeNode) {
+      base.Init(context, treeNode); 
+            
+    }
+    public AnonFunctionNode(AstNode parameters, AstNode body) : this() {
       ChildNodes.Clear();
-      Parameters = parameters;
-      AddChild("Params", Parameters);
+/*
+      Parameters = AddChild("Params", parameters);
+      
       Body = body;
       AddChild("Body", Body);
       foreach (VarRefNode prm in Parameters.ChildNodes)
         prm.Flags |= AstNodeFlags.AllocateSlot;
-    }
+  
+ */ }
 
-    protected void EvaluateOnDefine(EvaluationContext context) {
-      context.Result = new Closure(context.CurrentFrame, this, BindingInfo); // Body.Evaluate);
-    }
-
-
-    #region IBindingTarget Members
-
-    public FunctionBindingInfo GetBindingInfo() {
-      return BindingInfo;
-    }
-
-    #endregion
   }//class
 }

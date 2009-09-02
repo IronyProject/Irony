@@ -43,7 +43,7 @@ namespace Irony.Parsing {
     protected GrammarData GrammarData;
     protected Grammar Grammar; 
 
-    public virtual IEnumerable<Token> BeginFiltering(CompilerContext context, IEnumerable<Token> tokens) {
+    public virtual IEnumerable<Token> BeginFiltering(ParsingContext context, IEnumerable<Token> tokens) {
       yield break;
     }
     public virtual void Init(GrammarData grammarData) {

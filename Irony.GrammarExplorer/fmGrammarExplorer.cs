@@ -24,10 +24,9 @@ using System.Xml;
 using Irony.Parsing;
 using Irony.Diagnostics;
 using Irony.EditorServices;
-using Irony.Ast.Interpreter;
+using Irony.Ast; 
+using Irony.Interpreter;
 using Irony.GrammarExplorer.Properties;
-
-using Irony.Samples.Apress.Examples;
 
 namespace Irony.GrammarExplorer {
   public partial class fmGrammarExplorer : Form {
@@ -36,10 +35,12 @@ namespace Irony.GrammarExplorer {
     }
 
     //fields
-    Grammar _grammar; 
-    Compiler _compiler;
-    CompilerContext _compilerContext;
+    Grammar _grammar;
+    LanguageData _language; 
+    Parser _parser;
+    ParsingContext _parsingContext;
     ParseTree _parseTree;
+    RuntimeException _runtimeError; 
 
     #region Form load/unload events
     private void fmExploreGrammar_Load(object sender, EventArgs e) {
@@ -70,6 +71,7 @@ namespace Irony.GrammarExplorer {
       lblLanguageDescr.Text = string.Empty;
       txtGrammarComments.Text = string.Empty;
     }
+
     private void ClearCompileResults() {
       lblSrcLineCount.Text = string.Empty;
       lblSrcTokenCount.Text = "";
@@ -81,6 +83,7 @@ namespace Irony.GrammarExplorer {
       gridParserTrace.Rows.Clear();
       lstTokens.Items.Clear();
       tvParseTree.Nodes.Clear();
+      SetRuntimeError(null); 
       Application.DoEvents();
     }
 
@@ -105,7 +108,7 @@ namespace Irony.GrammarExplorer {
 
     private void ShowParseTrace() {
       gridParserTrace.Rows.Clear();
-      foreach (var entry in _compilerContext.ParserTrace) {
+      foreach (var entry in _parsingContext.ParserTrace) {
         int index = gridParserTrace.Rows.Add(entry.State, entry.StackTop, entry.Input,
             entry.Message, entry.NewState); 
         if (entry.IsError)
@@ -131,10 +134,10 @@ namespace Irony.GrammarExplorer {
       //  showing compiled syntax tree. 
     }
 
-    private void ShowParseTree(ParseTree parseTree) {
+    private void ShowParseTree() {
       tvParseTree.Nodes.Clear();
-      if (parseTree == null) return; 
-      AddParseNodeRec(null, parseTree.Root);
+      if (_parseTree == null) return; 
+      AddParseNodeRec(null, _parseTree.Root);
     }
     private void AddParseNodeRec(TreeNode parent, ParseTreeNode nodeInfo) {
       if (nodeInfo == null) return;
@@ -150,6 +153,25 @@ namespace Irony.GrammarExplorer {
         AddParseNodeRec(newNode, child);
     }
 
+    private void ShowAstTree() {
+      tvAst.Nodes.Clear();
+      if (_parseTree == null || _parseTree.Root == null || _parseTree.Root.AstNode == null) return;
+      AddAstNodeRec(null, _parseTree.Root.AstNode);
+    }
+
+    private void AddAstNodeRec(TreeNode parent, object astNode) {
+      if (astNode == null) return; 
+      string txt = astNode.ToString();
+      TreeNode newNode = (parent == null ?
+        tvAst.Nodes.Add(txt) : parent.Nodes.Add(txt));
+      newNode.Tag = astNode;
+      var iBrowsable = astNode as IBrowsableAstNode;
+      if (iBrowsable == null) return;
+      var childList = iBrowsable.GetChildNodes(); 
+      foreach (var child in childList)
+        AddAstNodeRec(newNode, child);
+    }
+
     private void ShowParserConstructionResults() {
       txtParserStates.Text = string.Empty;
       gridGrammarErrors.Rows.Clear();
@@ -157,16 +179,16 @@ namespace Irony.GrammarExplorer {
       txtNonTerms.Text = string.Empty;
       txtParserStates.Text = string.Empty;
       tabBottom.SelectedTab = pageLanguage;
-      if (_compiler == null) return;
-      txtTerms.Text = DiagnosticUtils.PrintTerminals(_compiler.Language);
-      txtNonTerms.Text = DiagnosticUtils.PrintNonTerminals(_compiler.Language);
-      txtParserStates.Text = DiagnosticUtils.PrintStateList(_compiler.Language);
+      if (_parser == null) return;
+      txtTerms.Text = DiagnosticUtils.PrintTerminals(_parser.Language);
+      txtNonTerms.Text = DiagnosticUtils.PrintNonTerminals(_parser.Language);
+      txtParserStates.Text = DiagnosticUtils.PrintStateList(_parser.Language);
       ShowGrammarErrors();
     }//method
 
     private void ShowGrammarErrors() {
       gridGrammarErrors.Rows.Clear();
-      var errors = _compiler.Language.Errors;
+      var errors = _parser.Language.Errors;
       if (errors.Count == 0) return;
       foreach (var err in errors)
         gridGrammarErrors.Rows.Add(err.Level.ToString(), err.Message, err.State);
@@ -206,6 +228,13 @@ namespace Irony.GrammarExplorer {
       DoSearch(txtParserStates, "State " + state.Name, 0);
     }
 
+    private void SetRuntimeError(RuntimeException error){
+      lnkShowErrLocation.Enabled = error != null; 
+      _runtimeError = error;
+      if (error != null)
+        WriteOutput("Error: " + error.Message + " (at " + error.Location + ")");
+    }
+
     #endregion 
 
     #region Grammar combo menu commands
@@ -230,7 +259,7 @@ namespace Irony.GrammarExplorer {
       if (MessageBox.Show("Are you sure you want to remove grammmar " + cboGrammars.SelectedItem + "?",
         "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes) {
         cboGrammars.Items.RemoveAt(cboGrammars.SelectedIndex);
-        _compiler = null;
+        _parser = null;
         if (cboGrammars.Items.Count > 0)
           cboGrammars.SelectedIndex = 0;
       }
@@ -240,7 +269,7 @@ namespace Irony.GrammarExplorer {
       if (MessageBox.Show("Are you sure you want to remove all grammmars in the list?",
         "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes) {
         cboGrammars.Items.Clear();
-        _compiler = null;
+        _parser = null;
       }
     }
     #endregion
@@ -257,13 +286,14 @@ namespace Irony.GrammarExplorer {
       txtOutput.Text = string.Empty;
       _parseTree = null;
 
-      btnRun.Enabled = false;// grammar.FlagIsSet(LanguageFlags.SupportsInterpreter); //temp, interpreter does not work
+      btnRun.Enabled = _grammar.FlagIsSet(LanguageFlags.SupportsInterpreter); 
       _grammar.ParseMethod = (ParseMethod)cboParseMethod.SelectedIndex;
       Stopwatch sw = new Stopwatch();
       try {
         sw.Start();
-        _compiler = new Compiler(_grammar);
-        _compilerContext = new CompilerContext(_compiler);
+        _language = new LanguageData(_grammar); 
+        _parser = new Parser (_language);
+        _parsingContext = new ParsingContext(_parser);
         sw.Stop();
         StartHighligter();
       } finally {
@@ -274,30 +304,32 @@ namespace Irony.GrammarExplorer {
 
     private void ParseSample() {
       ClearCompileResults();
-      if (_compiler == null || !_compiler.Language.CanParse()) return; 
+      if (_parser == null || !_parser.Language.CanParse()) return; 
       _parseTree = null;
-      _compilerContext = new CompilerContext(_compiler);
-      _compilerContext.SetOption(CompilerOptions.TraceParser, chkParserTrace.Checked);
+      _parsingContext = new ParsingContext(_parser);
+      _parsingContext.SetOption(ParseOptions.TraceParser, chkParserTrace.Checked);
       try {
-        _compiler.Parse(_compilerContext, txtSource.Text, "<source>");
+        _parser.Parse(_parsingContext, txtSource.Text, "<source>");
       } catch (Exception ex) {
         gridCompileErrors.Rows.Add(null, ex.Message, null);
         tabBottom.SelectedTab = pageParserOutput;
         throw;
       } finally {
-        _parseTree = _compilerContext.CurrentParseTree;
+        _parseTree = _parsingContext.CurrentParseTree;
         ShowCompilerErrors();
         if (chkParserTrace.Checked) {
           ShowParseTrace();
         }
         ShowCompileStats();
-        ShowParseTree(_parseTree);
+        ShowParseTree();
+        ShowAstTree(); 
       }
     }
 
 
     StringBuilder _outBuffer;
     private void RunSample() {
+      SetRuntimeError(null); 
       Stopwatch sw = new Stopwatch();
       txtOutput.Text = "";
       _outBuffer = new StringBuilder();
@@ -306,36 +338,36 @@ namespace Irony.GrammarExplorer {
         if (_parseTree == null)
           ParseSample();
         if (_parseTree.Errors.Count > 0) return;
-        
-        //_compiler.AnalyzeCode(_rootNode, _compilerContext); -- code should be analyzed already
-        if (_parseTree.Errors.Count > 0) return;
-/*
-        AstNode rootNode = _parseTree.Root.AstNode as AstNode;
-        if (rootNode == null)
-          throw new Exception("Root node info has no custom root node - cannot evaluate."); 
-        evalContext = new EvaluationContext(_compilerContext.Runtime, rootNode);
+        var iRoot = _parseTree.Root.AstNode as IInterpretedAstNode;
+        if (iRoot == null) return;
+
+        evalContext = new EvaluationContext(_grammar.CreateRuntime());
         evalContext.Runtime.ConsoleWrite += Ops_ConsoleWrite;
         sw.Start();
-        rootNode.Evaluate(evalContext);
+        iRoot.Evaluate(evalContext, AstMode.None);
         sw.Stop();
         lblRunTime.Text = sw.ElapsedMilliseconds.ToString();
- */ 
-      } catch(RuntimeException rex) {
-        //catch and add runtime to compiler context, so they will be shown in the form
-        _compilerContext.AddError(rex.Location, rex.Message);
+        WriteOutput(_outBuffer.ToString());
+        if (evalContext.LastResult != evalContext.Runtime.Unassinged)
+          WriteOutput(evalContext.LastResult);
+      } catch (RuntimeException rex) {
+        SetRuntimeError(rex); 
       } finally {
         sw.Stop();
         if (evalContext != null) {
           evalContext.Runtime.ConsoleWrite -= Ops_ConsoleWrite;
-          txtOutput.Text = _outBuffer.ToString();
-          if (evalContext.Result != Unassigned.Value)
-            txtOutput.Text += evalContext.Result;
+          tabBottom.SelectedTab = pageOutput;
         }
-        if (_parseTree.Errors.Count > 0)
-          ShowCompilerErrors();
-
       }//finally
     }//method
+
+    private void WriteOutput(object content) {
+      if (content == null) return; 
+      string text = content.ToString();
+      if (string.IsNullOrEmpty(text)) return; 
+      txtOutput.Text += text + Environment.NewLine;
+      txtOutput.Select(txtOutput.Text.Length - 1, 0);
+    }
 
     void Ops_ConsoleWrite(object sender, ConsoleWriteEventArgs e) {
       _outBuffer.Append(e.Text);
@@ -364,8 +396,8 @@ namespace Irony.GrammarExplorer {
     private void StartHighligter() {
       if (_highlighter != null)
         StopHighlighter();
-      if (!_compiler.Language.CanParse()) return; 
-      _highlighter = new RichTextBoxHighligter(txtSource, _compiler);
+      if (!_parser.Language.CanParse()) return; 
+      _highlighter = new RichTextBoxHighligter(txtSource, _language);
       _highlighter.Adapter.Activate();
     }
     private void StopHighlighter() {
@@ -433,12 +465,20 @@ namespace Irony.GrammarExplorer {
       RunSample();
     }
 
-    private void tvAstNodes_AfterSelect(object sender, TreeViewEventArgs e) {
+    private void tvParseTree_AfterSelect(object sender, TreeViewEventArgs e) {
       var vtreeNode = tvParseTree.SelectedNode;
       if (vtreeNode == null) return;
       var parseNode = vtreeNode.Tag as ParseTreeNode;
       if (parseNode == null) return;
       ShowSourceLocation(parseNode.Span.Location, 1);
+    }
+    private void tvAst_AfterSelect(object sender, TreeViewEventArgs e) {
+      var treeNode = tvAst.SelectedNode;
+      if (treeNode == null) return;
+      var iBrowsable = treeNode.Tag as IBrowsableAstNode;
+      if (iBrowsable == null) return;
+      ShowSourceLocation(iBrowsable.Location, 1);
+
     }
 
     bool _changingGrammar;
@@ -484,8 +524,8 @@ namespace Irony.GrammarExplorer {
     }
 
     private void gridParserTrace_CellDoubleClick(object sender, DataGridViewCellEventArgs e) {
-      if (_compilerContext == null || e.RowIndex < 0 || e.RowIndex >= _compilerContext.ParserTrace.Count) return;
-      var entry = _compilerContext.ParserTrace[e.RowIndex];
+      if (_parsingContext == null || e.RowIndex < 0 || e.RowIndex >= _parsingContext.ParserTrace.Count) return;
+      var entry = _parsingContext.ParserTrace[e.RowIndex];
       switch (e.ColumnIndex) {
         case 0: //state
           LocateParserState(entry.State);
@@ -549,7 +589,12 @@ namespace Irony.GrammarExplorer {
         DoSearch();
     }
 
+    private void lnkShowErrLocation_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
+      if (_runtimeError != null)
+        ShowSourceLocation(_runtimeError.Location, 1); 
+    }
     #endregion
+
 
   }//class
 }

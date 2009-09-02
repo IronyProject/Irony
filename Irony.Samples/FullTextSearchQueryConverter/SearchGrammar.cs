@@ -7,7 +7,7 @@ using System.Globalization;
 //using System.Data.SqlClient;
 //using System.Data;
 
-namespace Irony.Samples.Apress.Examples
+namespace Irony.Samples.FullTextSearch
 {
   [Language("SearchGrammar", "1.0", "Google-to-SQL query converter")]
   public class SearchGrammar : Grammar
@@ -63,16 +63,14 @@ namespace Irony.Samples.Apress.Examples
           ProximityExpression.Rule = "<" + ProximityList + ">";
           MakePlusRule(ProximityList, Term);
 
-          MarkTransient(PrimaryExpression, ParenthesizedExpression, AndExpression, OrExpression);
+          MarkTransient(PrimaryExpression, ParenthesizedExpression, AndExpression, OrExpression, ProximityExpression);
           RegisterPunctuation("<", ">", "(", ")");
         }
 
         //Creates extended identifier terminal that allows international characters
         // Following the pattern used for c# identifier terminal in TerminalFactory.CreateCSharpIdentifier method;
         private IdentifierTerminal CreateTerm(string name) {
-          IdentifierTerminal term = new IdentifierTerminal(name);
-          term.AllChars = string.Empty;
-          term.AllFirstChars = string.Empty;
+          IdentifierTerminal term = new IdentifierTerminal(name,   "!@#$%^*_'.?", "!@#$%^*_'.?0123456789");
           term.CharCategories.AddRange(new UnicodeCategory[] {
              UnicodeCategory.UppercaseLetter, //Ul
              UnicodeCategory.LowercaseLetter, //Ll
@@ -99,8 +97,11 @@ namespace Irony.Samples.Apress.Examples
             Thesaurus = 2,
             Exact = 3
         }
+        public static string ConvertQuery(ParseTreeNode node) {
+          return ConvertQuery(node, TermType.Inflectional); 
+        }
 
-        public static string ConvertQuery(ParseTreeNode node, TermType type) {
+        private static string ConvertQuery(ParseTreeNode node, TermType type) {
           string result = "";
           // Note that some NonTerminals don't actually get into the AST tree, 
           // because of some Irony's optimizations - punctuation stripping and 
@@ -109,22 +110,14 @@ namespace Irony.Samples.Apress.Examples
           // (parenthesized content) replaces the parent ParenthesizedExpression node
           switch (node.Term.Name) {
             case "OrExpression":
-              if (node.ChildNodes.Count == 1) { //this never happens, because we declared OrExpression as transient
-                result = ConvertQuery(node.ChildNodes[0], TermType.Inflectional);
-                break;
-              }
               result = "(" + ConvertQuery(node.ChildNodes[0], type) + " OR " +
                   ConvertQuery(node.ChildNodes[2], type) + ")";
               break;
 
             case "AndExpression":
-              if (node.ChildNodes.Count == 1) { //this never happens, because we declared AndExpression as transient
-                result = ConvertQuery(node.ChildNodes[0], TermType.Inflectional);
-                break; 
-              }
               string opSym = string.Empty;
-              var opNode = node.ChildNodes[1]; 
-              string opName = (opNode.ChildNodes.Count > 0 ? opNode.ChildNodes[0].Token.Text : string.Empty);
+              var opNode = node.ChildNodes[1];
+              string opName = opNode.FindTokenAndGetText();
               string andop = "";
 
               if (opName == "-") {

@@ -76,12 +76,27 @@ namespace Irony.Parsing {
     public override string ToString() {
       if (Term == null) //special case for initial node pushed into the stack at parser start
         return "(INITIAL STATE)";
-      if (Token != null)
+      if (Token == null)
+        return Term.Name;
+      else 
         return Token.ToString();
-      if (AstNode == null) return 
-        Term.ToString();
-      return AstNode.ToString();
     }//method
+
+    public string FindTokenAndGetText() {
+      var tkn = FindFirstChildToken();
+      return tkn == null ? null : tkn.Text;       
+    }
+    public Token FindFirstChildToken() {
+      return FindFirstChildTokenRec(this); 
+    }
+    private static Token FindFirstChildTokenRec(ParseTreeNode node) {
+      if (node.Token != null) return node.Token;
+      foreach (var child in node.ChildNodes) {
+        var tkn = FindFirstChildTokenRec(child);
+        if (tkn != null) return tkn; 
+      }
+      return null; 
+    }
 
   }//class
 

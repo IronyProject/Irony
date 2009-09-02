@@ -48,7 +48,7 @@ namespace Irony.Parsing {
       }
     }
 
-    public override Token TryMatch(CompilerContext context, ISourceStream source) {
+    public override Token TryMatch(ParsingContext context, ISourceStream source) {
       Token result;
       if (context.ScannerState.Value != 0) {
         // we are continuing in line mode - restore internal env (none in this case)
@@ -62,12 +62,12 @@ namespace Irony.Parsing {
       //if it is LineComment, it is ok to hit EOF without final line-break; just return all until end.
       if (_isLineComment)
         return source.CreateToken(this);
-      if (context.Mode == CompileMode.VsLineScan)
+      if (context.Mode == ParseMode.VsLineScan)
         return CreateIncompleteToken(context, source);
       return source.CreateErrorToken("Unclosed comment block");
     }
 
-    private Token CreateIncompleteToken(CompilerContext context, ISourceStream source) {
+    private Token CreateIncompleteToken(ParsingContext context, ISourceStream source) {
       source.PreviewPosition = source.Text.Length;
       Token result = source.CreateToken(this);
       result.Flags |= TokenFlags.IsIncomplete;
@@ -75,13 +75,13 @@ namespace Irony.Parsing {
       return result; 
     }
 
-    private bool BeginMatch(CompilerContext context, ISourceStream source) {
+    private bool BeginMatch(ParsingContext context, ISourceStream source) {
       //Check starting symbol
-      if (!source.MatchSymbol(StartSymbol, !OwnerGrammar.CaseSensitive)) return false;
+      if (!source.MatchSymbol(StartSymbol, !Grammar.CaseSensitive)) return false;
       source.PreviewPosition += StartSymbol.Length;
       return true; 
     }
-    private Token CompleteMatch(CompilerContext context, ISourceStream source) {
+    private Token CompleteMatch(ParsingContext context, ISourceStream source) {
       //Find end symbol
       while (!source.EOF()) {
         int firstCharPos;
@@ -96,7 +96,7 @@ namespace Irony.Parsing {
         //We found a character that might start an end symbol; let's see if it is true.
         source.PreviewPosition = firstCharPos;
         foreach (string endSymbol in EndSymbols) {
-          if (source.MatchSymbol(endSymbol, !OwnerGrammar.CaseSensitive)) {
+          if (source.MatchSymbol(endSymbol, !Grammar.CaseSensitive)) {
             //We found end symbol; eat end symbol only if it is not line comment.
             // For line comment, leave LF symbol there, it might be important to have a separate LF token
             if (!_isLineComment)

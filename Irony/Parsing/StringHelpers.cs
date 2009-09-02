@@ -37,8 +37,13 @@ namespace Irony.Parsing {
   public class CharHashSet : HashSet<char> { } //adding Hash to the name to avoid confusion with System.Runtime.Interoperability.CharSet
 
   public class StringSet : HashSet<string> {
+    public StringSet() { }
+    public StringSet(StringComparer comparer) : base(comparer) { }
     public override string ToString() {
       return ToString(" ");
+    }
+    public void AddRange(params string[] items) {
+      base.UnionWith(items); 
     }
     public string ToString(string separator) {
       return Strings.JoinStrings(separator, this);

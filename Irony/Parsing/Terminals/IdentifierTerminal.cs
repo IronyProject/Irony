@@ -73,11 +73,13 @@ namespace Irony.Parsing {
     #region overrides
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
-      _terminators = OwnerGrammar.WhitespaceChars + OwnerGrammar.Delimiters;
-      if (this.StartCharCategories.Count > 0 && !OwnerGrammar.FallbackTerminals.Contains(this))
-        OwnerGrammar.FallbackTerminals.Add(this);
+      _terminators = Grammar.WhitespaceChars + Grammar.Delimiters;
+      if (this.StartCharCategories.Count > 0 && !Grammar.FallbackTerminals.Contains(this))
+        Grammar.FallbackTerminals.Add(this);
       if (this.EditorInfo == null) 
         this.EditorInfo = new TokenEditorInfo(TokenType.Identifier, TokenColor.Identifier, TokenTriggers.None);
+      if (this.AstNodeType == null && this.AstNodeCreator == null && grammarData.Grammar.FlagIsSet(LanguageFlags.CreateAst))
+        this.AstNodeType = typeof(Irony.Ast.IdentifierNode);
     }
     //TODO: put into account non-Ascii aplhabets specified by means of Unicode categories!
     public override IList<string> GetFirsts() {
@@ -92,13 +94,13 @@ namespace Irony.Parsing {
         list.Add(this.EscapeChar.ToString());
       return list;
     }
-    protected override void InitDetails(CompilerContext context, CompoundTokenDetails details) {
+    protected override void InitDetails(ParsingContext context, CompoundTokenDetails details) {
       base.InitDetails(context, details);
       details.Flags = (short)Flags;
     }
 
     //Override to assign IsKeyword flag to keyword tokens
-    protected override Token CreateToken(CompilerContext context, ISourceStream source, CompoundTokenDetails details) {
+    protected override Token CreateToken(ParsingContext context, ISourceStream source, CompoundTokenDetails details) {
       if (details.IsSet((short)IdFlags.NameIncludesPrefix) && !string.IsNullOrEmpty(details.Prefix))
         details.Value = details.Prefix + details.Body;
       Token token = base.CreateToken(context, source, details);
@@ -110,7 +112,7 @@ namespace Irony.Parsing {
     }
     private void CheckReservedWord(Token token) {
       SymbolTerminal symbolTerm;
-      if (OwnerGrammar.SymbolTerms.TryGetValue(token.Text, out symbolTerm)) {
+      if (Grammar.SymbolTerms.TryGetValue(token.Text, out symbolTerm)) {
         token.AsSymbol = symbolTerm;
         //if it is reserved word, then overwrite terminal
         if (symbolTerm.OptionIsSet(TermOptions.IsReservedWord))
@@ -118,7 +120,7 @@ namespace Irony.Parsing {
       }
     }
 
-    protected override Token QuickParse(CompilerContext context, ISourceStream source) {
+    protected override Token QuickParse(ParsingContext context, ISourceStream source) {
       if (AllFirstChars.IndexOf(source.PreviewChar) < 0) 
         return null;
       source.PreviewPosition++;
@@ -128,7 +130,7 @@ namespace Irony.Parsing {
       if (_terminators.IndexOf(source.PreviewChar) < 0) return null; 
       var token = source.CreateToken(this);
       if (!this.GrammarData.Grammar.CaseSensitive)
-        token.Value = token.Text.ToLower(); 
+        token.Value = token.Text.ToLowerInvariant(); 
       CheckReservedWord(token);
       return token; 
     }

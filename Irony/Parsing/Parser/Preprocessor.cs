@@ -41,7 +41,7 @@ namespace Irony.Parsing {
     public StringSet CurrentSymbols = new StringSet();
     public MacroDefinitionTable Macros = new MacroDefinitionTable();
     public DirectiveStack ActiveDirectives = new DirectiveStack();
-    public virtual bool ProcessDirective(CompilerContext context, string directive, StringList args) {
+    public virtual bool ProcessDirective(ParsingContext context, string directive, StringList args) {
       return true;
     }//method
 

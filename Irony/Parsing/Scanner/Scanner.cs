@@ -23,7 +23,7 @@ namespace Irony.Parsing {
     #region Properties and Fields: Data, _source, _context, _caseSensitive, _currentToken
     ScannerData _data;
     Grammar _grammar;
-    CompilerContext _context;
+    ParsingContext _context;
     //buffered tokens can come from expanding a multi-token, when Terminal.TryMatch() returns several tokens packed into one token
     TokenList _bufferedTokens = new TokenList();
     public IEnumerable<Token> UnfilteredStream; //initial stream of tokens directly from terminals
@@ -41,7 +41,7 @@ namespace Irony.Parsing {
       _grammar = _data.Language.Grammar;
     }
 
-    public void BeginScan(CompilerContext context) {
+    public void BeginScan(ParsingContext context) {
       _context = context;
       _bufferedTokens.Clear();
       //create streams
@@ -214,7 +214,7 @@ namespace Irony.Parsing {
     private TerminalList SelectTerminals(char current) {
       TerminalList termList;
       if (!_grammar.CaseSensitive)
-        current = char.ToLower(current);
+        current = char.ToLowerInvariant(current);
       if (!_data.TerminalsLookup.TryGetValue(current, out termList))
         termList = _data.FallbackTerminals;
       if (termList.Count <= 1)  return termList;

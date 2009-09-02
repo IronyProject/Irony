@@ -16,7 +16,7 @@ using System.Linq;
 using System.Text;
 using Irony.Parsing;
 
-namespace Irony.Interpreter {
+namespace Irony.Interpreter { 
 
   #region OperatorDispatchKey class
   /// <summary>

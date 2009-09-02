@@ -16,7 +16,7 @@ using System.Text;
 using Irony.Parsing;
 using Irony.Ast;
 
-namespace Irony.Interpreter {
+namespace Irony.Interpreter { 
 
   public class ValueSet : Dictionary<string, object> { }
 

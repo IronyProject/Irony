@@ -17,7 +17,7 @@ using System.Text;
 using Irony.Parsing;
 using Irony.Ast;
 
-namespace Irony.Interpreter {
+namespace Irony.Interpreter { 
   using BigInteger = Microsoft.Scripting.Math.BigInteger;
   using Complex = Microsoft.Scripting.Math.Complex64;
 

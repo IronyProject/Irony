@@ -50,8 +50,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Ast\Interpreter\DynamicCallDispatcher.cs" />
-    <Compile Include="Ast\Interpreter\ScriptInterpreter.cs" />
+    <Compile Include="Ast\AstException.cs" />
+    <Compile Include="Interpreter\DataStack.cs" />
+    <Compile Include="Interpreter\DynamicCallDispatcher.cs" />
+    <Compile Include="Interpreter\RuntimeException.cs" />
+    <Compile Include="Interpreter\ScriptInterpreter.cs" />
+    <Compile Include="Interpreter\ObjectModel.cs" />
+    <Compile Include="Ast\LiteralValueNode.cs" />
     <Compile Include="Parsing\Grammar\GrammarError.cs" />
     <Compile Include="Parsing\Parser\ParseTreeExtensions.cs" />
     <Compile Include="Parsing\Parser\Preprocessor.cs" />
@@ -83,7 +88,7 @@
     <Compile Include="Diagnostics\DiagnosticUtils.cs" />
     <Compile Include="EditorServices\EditorViewAdapter.cs" />
     <Compile Include="Parsing\Scanner\TokenEditorInfo.cs" />
-    <Compile Include="Parsing\CompilerContext.cs" />
+    <Compile Include="Parsing\ParsingContext.cs" />
     <Compile Include="Parsing\Grammar\GrammarHint.cs" />
     <Compile Include="Parsing\Scanner\ScannerData.cs" />
     <Compile Include="Parsing\Scanner\SourceStream.cs" />
@@ -106,8 +111,8 @@
     <Compile Include="Parsing\Grammar\BnfTerm.cs" />
     <Compile Include="Parsing\Grammar\Grammar.cs" />
     <Compile Include="Parsing\Terminals\TerminalFactory.cs" />
-    <Compile Include="Ast\Interpreter\FunctionBindingInfo.cs" />
-    <Compile Include="Ast\Interpreter\LanguageRuntime_Init.cs" />
+    <Compile Include="Interpreter\FunctionBindingInfo.cs" />
+    <Compile Include="Interpreter\LanguageRuntime_Init.cs" />
     <Compile Include="Ast\AnonFunctionNode.cs" />
     <Compile Include="Ast\AssigmentNode.cs" />
     <Compile Include="Ast\BinExprNode.cs" />
@@ -117,12 +122,11 @@
     <Compile Include="Ast\IfNode.cs" />
     <Compile Include="Ast\StatementListNode.cs" />
     <Compile Include="Ast\UnExprNode.cs" />
-    <Compile Include="Ast\VarRefNode.cs" />
+    <Compile Include="Ast\IdentifierNode.cs" />
     <Compile Include="Ast\_AstNode.cs" />
     <Compile Include="Parsing\TokenFilters\BraceMatchFilter.cs" />
     <Compile Include="Parsing\TokenFilters\CodeOutlineFilter.cs" />
     <Compile Include="Parsing\TokenFilters\TokenFilter.cs" />
-    <Compile Include="Parsing\Compiler.cs" />
     <Compile Include="Microsoft\Complex64.cs" />
     <Compile Include="Microsoft\MathResources.Designer.cs">
       <DependentUpon>MathResources.resx</DependentUpon>
@@ -131,11 +135,10 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Microsoft\BigInteger.cs" />
-    <Compile Include="Ast\Interpreter\Closure.cs" />
-    <Compile Include="Ast\Interpreter\EvaluationContext.cs" />
-    <Compile Include="Ast\Interpreter\StackFrame.cs" />
-    <Compile Include="Ast\Interpreter\RuntimeException.cs" />
-    <Compile Include="Ast\Interpreter\LanguageRuntime.cs" />
+    <Compile Include="Interpreter\Closure.cs" />
+    <Compile Include="Interpreter\EvaluationContext.cs" />
+    <Compile Include="Interpreter\StackFrame.cs" />
+    <Compile Include="Interpreter\LanguageRuntime.cs" />
     <Compile Include="EditorServices\EditorAdapter.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -46,7 +46,7 @@ namespace Irony.Parsing {
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
       string workPattern = @"\G(" + Pattern + ")";
-      RegexOptions options = (OwnerGrammar.CaseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase);
+      RegexOptions options = (Grammar.CaseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase);
       _expression = new Regex(workPattern, options);
       if (this.EditorInfo == null) 
         this.EditorInfo = new TokenEditorInfo(TokenType.Unknown, TokenColor.Text, TokenTriggers.None);
@@ -56,7 +56,7 @@ namespace Irony.Parsing {
       return Prefixes;
     }
 
-    public override Token TryMatch(CompilerContext context, ISourceStream source) {
+    public override Token TryMatch(ParsingContext context, ISourceStream source) {
       Match m = _expression.Match(source.Text, source.PreviewPosition);
       if (!m.Success || m.Index != source.PreviewPosition) 
         return null;

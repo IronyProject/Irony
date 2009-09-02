@@ -16,7 +16,7 @@ using System.Text;
 using Irony.Parsing;
 using Irony.Ast;
 
-namespace Irony.Ast.Interpreter {
+namespace Irony.Interpreter {
 
   public class ValueSet : Dictionary<string, object> { }
 
@@ -31,11 +31,9 @@ namespace Irony.Ast.Interpreter {
       Values = globals; 
     }
 
-    public StackFrame(string methodName, AstNode node, StackFrame caller, StackFrame parent, ValueSet args) {
-      MethodName = methodName;
-      Node = node; 
+    public StackFrame(MethodImp method, StackFrame caller, StackFrame parent, DataStack args, int argCount) {
       Caller = caller;
-      Parent = parent;
+      //Parent = parent;
     }
 
     public object GetValue(string name) {

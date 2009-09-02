@@ -1,4 +1,5 @@
 #Simple calculation
-x = 3 + 5
-y = 3
-x / 2.0 + y * 2 - 2.5 #result= 7.5
+x = 1 + 2 * 3      # =7
+y = --x            # = 6
+z =  x * 1.5       # = 9
+z -= y             # = 3   

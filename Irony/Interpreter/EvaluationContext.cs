@@ -13,10 +13,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using Irony.Parsing;
 using Irony.Ast;
 
-namespace Irony.Ast.Interpreter {
+namespace Irony.Interpreter {
   public enum JumpType {
     None = 0,
     Break,
@@ -26,34 +27,39 @@ namespace Irony.Ast.Interpreter {
     Exception,
   }
 
-  public class EvaluationContext  {
+  public partial class EvaluationContext  {
+    public readonly int ThreadId; 
     public LanguageRuntime Runtime;
-
-    public StackFrame CurrentFrame;
-    public object Result;
-
-    //The following are not used yet
+    public DataStack Data;
+    public DynamicCallDispatcher CallDispatcher;
     public JumpType Jump = JumpType.None;
     public AstNode GotoTarget;
     public Closure Tail;
+    public StackFrame CurrentFrame;
 
-    //contains call args for a function call; it is passed to the new frame when the call is made. 
-    // CallArgs are created by the caller based on number of arguments in the call.
-    // Additionally, we reserve extra space for local variables so that this array can be used directly as local variables 
-    // space in a new frame. 
-    public object[] CallArgs; 
-
+    public EvaluationContext(LanguageRuntime runtime) : this(runtime, null) { }
     public EvaluationContext(LanguageRuntime runtime, StackFrame topFrame) {
       Runtime = runtime;
+      CallDispatcher = new DynamicCallDispatcher(this);
+      ThreadId = Thread.CurrentThread.ManagedThreadId;
       CurrentFrame = topFrame;
+      if (CurrentFrame == null)
+        CurrentFrame = new StackFrame(new ValueSet());
+      Data = new DataStack();
+      Data.Init(runtime.Unassinged);//set LastPushedItem to unassigned
+    }
+
+    public object LastResult {
+      get { return Data.LastPushedItem; }
     }
 
     public void PushFrame(string methodName, AstNode node, StackFrame parent) {
-      CurrentFrame = new StackFrame(methodName, node, CurrentFrame, parent, null);
+      //CurrentFrame = new StackFrame(methodName, node, CurrentFrame, parent, null);
     }
     public void PopFrame() {
       CurrentFrame = CurrentFrame.Caller;
     }
+
 
 
   }//class

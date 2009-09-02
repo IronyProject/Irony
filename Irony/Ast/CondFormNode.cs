@@ -14,14 +14,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Irony.Ast.Interpreter;
+using Irony.Interpreter;
+using Irony.Parsing;
 
 namespace Irony.Ast {
   public class CondFormNode : AstNode {
     public AstNodeList Clauses;
     public AstNode ElseClause;
 
-    public CondFormNode(NodeArgs args, AstNodeList clauses, AstNode elseClause) : base(args) {
+    public CondFormNode() { }
+
+    public override void Init(ParsingContext context, ParseTreeNode treeNode) {
+      base.Init(context, treeNode);
+      //TODO: finish this      
+    }
+    public CondFormNode(AstNodeList clauses, AstNode elseClause) {
       ChildNodes.Clear();
       Clauses = clauses;
       foreach (AstNode clause in clauses) {
@@ -35,16 +42,17 @@ namespace Irony.Ast {
       }
     }
 
-    public override void Evaluate(EvaluationContext context) {
+    public override void Evaluate(EvaluationContext context, AstMode mode) {
       foreach (CondClauseNode clause in Clauses) {
-        clause.Test.Evaluate(context);
-        if (context.Runtime.IsTrue(context.Result)) {
-          clause.Expressions.Evaluate(context);
+        clause.Test.Evaluate(context, AstMode.None);
+        var result = context.Data.Pop(); 
+        if (context.Runtime.IsTrue(result)) {
+          clause.Expressions.Evaluate(context, mode);
           return;
         }
       }//foreach
       if (ElseClause != null)
-        ElseClause.Evaluate(context);
+        ElseClause.Evaluate(context, 0);
     }
   }
 }

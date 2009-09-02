@@ -14,31 +14,37 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Irony.Interpreter;
+using System.Xml;
 using Irony.Parsing;
+using Irony.Interpreter;
 
 namespace Irony.Ast {
-  public class BinExprNode : AstNode {
-    public AstNode Left;
-    public string Op;
-    public AstNode Right;
 
-    public BinExprNode() { }
+  public class IdentifierNode : AstNode {
+    public string Symbol;
+
+    public IdentifierNode() { }
+
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      Left = AddChild("Arg", treeNode.ChildNodes[0]);
-      Right = AddChild("Arg", treeNode.ChildNodes[2]);
-      Op = treeNode.ChildNodes[1].FindTokenAndGetText(); 
-      AsString = Op + "(operator)"; 
+      Symbol = treeNode.Token.Value as string;
+      AsString = Symbol + "(identifier)"; 
     }
 
+
     public override void Evaluate(EvaluationContext context, AstMode mode) {
-      Left.Evaluate(context, AstMode.Read);
-      Right.Evaluate(context, AstMode.Read);
-      try {
-        context.CallDispatcher.ExecuteBinaryOperator(this.Op);
-      } catch (DivideByZeroException ex) {
-        throw new RuntimeException(ex.Message, ex, this.Span.Location); 
+      switch (mode) {
+        case AstMode.Read:
+          object value;
+          if (context.CurrentFrame.Values.TryGetValue(Symbol, out value)) {
+            context.Data.Push(value); 
+            return; 
+          }
+          throw new RuntimeException("Variable " + Symbol + " not defined.", null, this.Span.Location); 
+          
+        case AstMode.Write:
+          context.CurrentFrame.Values[Symbol] = context.Data.Pop(); 
+          break; 
       }
     }
 

@@ -13,7 +13,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.Ast.Interpreter;
+using Irony.Interpreter;
+using Irony.Parsing;
 
 namespace Irony.Ast {
   public class IfNode : AstNode {
@@ -21,29 +22,23 @@ namespace Irony.Ast {
     public AstNode IfTrue;
     public AstNode IfFalse;
 
-    public IfNode(NodeArgs args, AstNode test, AstNode ifTrue, AstNode ifFalse): base(args) {
-      ChildNodes.Clear();
+    public IfNode() { }
 
-      Test = test;
-      AddChild("Test", Test);
-      
-      IfTrue = ifTrue;
-      if (IfTrue.IsEmpty()) 
-        IfTrue = null;
-      AddChild("IfTrue", IfTrue);
+    public override void Init(ParsingContext context, ParseTreeNode treeNode) {
+      base.Init(context, treeNode);
+      Test = AddChild("Test", treeNode.ChildNodes[0]);
+      IfTrue = AddChild("IfTrue", treeNode.ChildNodes[1]);
+      if (treeNode.ChildNodes.Count > 2)
+        IfFalse = AddChild("IfFalse", treeNode.ChildNodes[2]);
+    } 
 
-      IfFalse = ifFalse;
-      if (IfFalse.IsEmpty()) IfFalse = null;
-      AddChild("IfFalse", IfFalse);
-    }
-
-
-    public override void Evaluate(EvaluationContext context) {
-      Test.Evaluate(context);
-      if (context.Runtime.IsTrue(context.Result)) {
-        if (IfTrue != null)    IfTrue.Evaluate(context);
+    public override void Evaluate(EvaluationContext context, AstMode mode) {
+      Test.Evaluate(context, AstMode.Write);
+      var result = context.Data.Pop();
+      if (context.Runtime.IsTrue(result)) {
+        if (IfTrue != null)    IfTrue.Evaluate(context, AstMode.None);
       } else {
-        if (IfFalse != null)   IfFalse.Evaluate(context);
+        if (IfFalse != null)   IfFalse.Evaluate(context, AstMode.None);
       }
     }
   }//class

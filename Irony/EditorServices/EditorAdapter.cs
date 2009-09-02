@@ -21,8 +21,8 @@ using Irony.Parsing;
 namespace Irony.EditorServices {
 
   public class EditorAdapter {
-    CompilerContext _context;
-    Compiler _compiler;
+    ParsingContext _context;
+    Parser _parser;
     Scanner _scanner;
     ParseTree _parseTree;
     string _newText;
@@ -32,10 +32,10 @@ namespace Irony.EditorServices {
     Thread _colorizerThread;
     bool _stopped;
 
-    public EditorAdapter(Compiler compiler) {
-      _compiler = compiler;
-      _context = new CompilerContext(_compiler);
-      _scanner = compiler.Parser.Scanner;
+    public EditorAdapter(LanguageData language) {
+      _parser = new Parser(language); 
+      _context = new ParsingContext(_parser);
+      _scanner = _parser.Scanner;
       _scanner.BeginScan(_context);
       _parseTree = new ParseTree(string.Empty, "Source");
       _colorizerThread = new Thread(ColorizerLoop);
@@ -74,7 +74,7 @@ namespace Irony.EditorServices {
     private  void ParseSource(string newText) {
       //Explicitly catch the case when new text is empty
       if (newText != string.Empty) {
-        _parseTree = _compiler.ScanOnly(newText, "Source");
+        _parseTree = _parser.ScanOnly(newText, "Source");
       }
       //notify views
       var views = GetViews();

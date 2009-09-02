@@ -113,7 +113,7 @@ namespace Irony.Parsing {
         if (string.IsNullOrEmpty(msg))
           msg = "Syntax error";
       }
-      _context.AddCompilerMessage(CompilerErrorLevel.Error, _currentState, _currentInput.Span.Location, msg);
+      _context.AddCompilerMessage(ParserErrorLevel.Error, _currentState, _currentInput.Span.Location, msg);
       if (_currentTraceEntry != null) {
         _currentTraceEntry.Message = msg;
         _currentTraceEntry.IsError = true;

@@ -38,7 +38,7 @@ namespace Irony.Parsing {
   public class BraceMatchFilter : TokenFilter {
     private Stack<Token> _braces = new Stack<Token>();
 
-    public override IEnumerable<Token> BeginFiltering(CompilerContext context, IEnumerable<Token> tokens) {
+    public override IEnumerable<Token> BeginFiltering(ParsingContext context, IEnumerable<Token> tokens) {
       foreach (Token token in tokens) {
         if (!token.Terminal.OptionIsSet(TermOptions.IsBrace)) {
           yield return token;

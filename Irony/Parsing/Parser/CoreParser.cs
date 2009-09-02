@@ -35,7 +35,7 @@ namespace Irony.Parsing {
 
     #region Properties and fields: _grammar, Data, Stack, _context, Input, CurrentState, LineCount, TokenCount
     Grammar _grammar;
-    CompilerContext _context;
+    ParsingContext _context;
     public readonly ParserData Data;
     public readonly ParserStack Stack = new ParserStack();
     readonly ParserStack InputStack = new ParserStack();
@@ -55,9 +55,9 @@ namespace Irony.Parsing {
     #endregion
 
     #region Parse method
-    public void Parse(CompilerContext context) {
+    public void Parse(ParsingContext context) {
       _context = context;
-      _traceOn = _context.OptionIsSet(CompilerOptions.TraceParser);
+      _traceOn = _context.OptionIsSet(ParseOptions.TraceParser);
       _currentInput = null;
       InputStack.Clear();
       Stack.Clear();

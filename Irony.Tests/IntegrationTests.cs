@@ -21,17 +21,19 @@ namespace Irony.Tests {
 
   [TestClass]
   public class IntegrationTests {
-    Grammar _grammar; 
+    Grammar _grammar;
+    LanguageData _language; 
     Scanner _scanner; 
-    CompilerContext _context; 
+    ParsingContext _context; 
     int _state; 
 
     private void Init(Grammar grammar) {
-      _grammar = grammar; 
-      var cmp = new Compiler(grammar);
-      _scanner = cmp.Parser.Scanner;
-      _context = new CompilerContext(cmp);
-      _context.Mode = CompileMode.VsLineScan;
+      _grammar = grammar;
+      _language = new LanguageData(_grammar); 
+      var parser = new Parser(_language);
+      _scanner = parser.Scanner;
+      _context = new ParsingContext(parser);
+      _context.Mode = ParseMode.VsLineScan;
       _scanner.BeginScan(_context); 
     }
 

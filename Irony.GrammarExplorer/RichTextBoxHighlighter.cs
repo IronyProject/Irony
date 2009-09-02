@@ -42,9 +42,9 @@ namespace Irony.GrammarExplorer {
     bool _disposed;
 
     #region constructor, initialization and disposing
-    public RichTextBoxHighligter(RichTextBox textBox, Compiler compiler) {
+    public RichTextBoxHighligter(RichTextBox textBox, LanguageData language) {
       TextBox = textBox;
-      Adapter = new EditorAdapter(compiler); 
+      Adapter = new EditorAdapter(language); 
       ViewAdapter = new EditorViewAdapter(Adapter, this);
       InitColorTable();
       Connect();

@@ -14,31 +14,52 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Irony.Ast.Interpreter;
+using Irony.Interpreter;
+using Irony.Parsing;
 
 namespace Irony.Ast {
   public class AssigmentNode : AstNode {
-    public VarRefNode Identifier;
+    public AstNode Target;
+    public string AssignmentOp;
+    public string BaseOp; //base arithm operation (+) for combined assignment like "+="
     public AstNode Expression;
+    public NodeEvaluate EvaluateImplRef; 
 
-    public AssigmentNode(NodeArgs args)  : this(args, args.ChildNodes[0], args.ChildNodes[2]) {  }
+    public AssigmentNode() {}
 
-    public AssigmentNode(NodeArgs args, AstNode lvalue, AstNode expression) : base(args) {
-      ChildNodes.Clear();
-      var Identifier = lvalue as VarRefNode;
-      if (Identifier == null) {
-        args.Context.AddError(lvalue.Location, "Expected identifier.");
-        return; 
+    public override void Init(ParsingContext context, ParseTreeNode treeNode) {
+      base.Init(context, treeNode);
+      Target = AddChild("To", treeNode.ChildNodes[0]);
+      //Get Op and baseOp if it is combined assignment
+      AssignmentOp = treeNode.ChildNodes[1].FindTokenAndGetText();
+      if (string.IsNullOrEmpty(AssignmentOp))
+        AssignmentOp = "=";
+      if (AssignmentOp.Length > 1) {
+        //it is combined op
+        BaseOp = AssignmentOp.Replace("=", string.Empty); 
       }
-      Identifier.Flags |= AstNodeFlags.AllocateSlot | AstNodeFlags.NotRValue;
-      AddChild("Name", Identifier);
-      Expression = expression;
-      AddChild("Expr", Expression);
+      //There maybe an "=" sign in the middle, or not - if it is marked as punctuation; so we just take the last node in child list
+      var lastIndex = treeNode.ChildNodes.Count - 1;
+      Expression = AddChild("Expr", treeNode.ChildNodes[lastIndex]);      
+      AsString = AssignmentOp + " (assignment)";
+      if (string.IsNullOrEmpty(BaseOp))
+        EvaluateImplRef = EvaluateSimple;
+      else
+        EvaluateImplRef = EvaluateCombined; 
     }
 
-    public override void Evaluate(EvaluationContext context) {
-      Expression.Evaluate(context);
-      Identifier.Evaluate(context); //writes the value into the slot
+    public override void Evaluate(EvaluationContext context, AstMode mode) {
+      EvaluateImplRef(context, mode); 
+    }
+    private void EvaluateSimple(EvaluationContext context, AstMode mode) {
+      Expression.Evaluate(context, AstMode.Read);
+      Target.Evaluate(context, AstMode.Write); //writes the value into the slot
+    }
+    private void EvaluateCombined(EvaluationContext context, AstMode mode) {
+      Target.Evaluate(context, AstMode.Read);
+      Expression.Evaluate(context, AstMode.Read);
+      context.CallDispatcher.ExecuteBinaryOperator(BaseOp); 
+      Target.Evaluate(context, AstMode.Write); //writes the value into the slot
     }
 
   }

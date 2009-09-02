@@ -10,13 +10,22 @@ namespace Irony.Parsing {
     public readonly Scanner Scanner;
     public readonly CoreParser CoreParser;
 
+    public Parser(Grammar grammar) {
+      Language = new LanguageData(grammar);
+      Scanner = new Scanner(Language.ScannerData);
+      CoreParser = new CoreParser(Language.ParserData, Scanner);
+    }
+
     public Parser(LanguageData language) {
       Language = language; 
       Scanner = new Scanner(Language.ScannerData);
       CoreParser = new CoreParser(Language.ParserData, Scanner); 
     }
 
-    public ParseTree Parse(CompilerContext context, string sourceText, string fileName) {
+    public ParseTree Parse(string sourceText) {
+      return Parse(new ParsingContext(this), sourceText, "<source>"); 
+    }
+    public ParseTree Parse(ParsingContext context, string sourceText, string fileName) {
       context.CurrentParseTree = new ParseTree(sourceText, fileName);
       Scanner.SetSource(sourceText);
       Scanner.BeginScan(context);
@@ -25,6 +34,19 @@ namespace Irony.Parsing {
         context.CurrentParseTree.Errors.Sort(SyntaxErrorList.ByLocation);
       return context.CurrentParseTree;
     }
+
+    public ParseTree ScanOnly(string sourceText, string fileName) {
+      var context = new ParsingContext(this);
+      context.CurrentParseTree = new ParseTree(sourceText, fileName);
+      Scanner.SetSource(sourceText);
+      Scanner.BeginScan(context);
+      while (true) {
+        var token = Scanner.GetToken();
+        if (token == null || token.Terminal == Language.Grammar.Eof) break;
+      }
+      return context.CurrentParseTree;
+    }
+
   
   }//class
 }//namespace

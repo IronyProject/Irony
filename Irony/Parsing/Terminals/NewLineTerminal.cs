@@ -21,6 +21,7 @@ namespace Irony.Parsing {
   public class NewLineTerminal : Terminal {
     public NewLineTerminal(string name) : base(name, TokenCategory.Outline) {
       base.DisplayName = "Line break";
+      this.Options |= TermOptions.IsPunctuation;
     }
 
     public string LineTerminators = "\n\r\v";
@@ -38,7 +39,7 @@ namespace Irony.Parsing {
         firsts.Add(t.ToString());
       return firsts;
     }
-    public override Token TryMatch(CompilerContext context, ISourceStream source) {
+    public override Token TryMatch(ParsingContext context, ISourceStream source) {
       char current = source.PreviewChar;
       if (!LineTerminators.Contains(current)) return null;
       //Treat \r\n as a single terminator

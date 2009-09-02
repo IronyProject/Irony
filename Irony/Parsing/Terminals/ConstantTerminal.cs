@@ -23,22 +23,26 @@ namespace Irony.Parsing {
     public readonly ConstantsTable Constants = new ConstantsTable();
     public ConstantTerminal(string name) : base(name) {
       base.SetOption(TermOptions.IsConstant);
+      AstNodeType = typeof(Ast.LiteralValueNode);
     }
 
     public void Add(string lexeme, object value) {
       this.Constants[lexeme] = value;
     }
+
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
       if (this.EditorInfo == null)
         this.EditorInfo = new TokenEditorInfo(TokenType.Unknown, TokenColor.Text, TokenTriggers.None);
+      Ast.LiteralValueNode.AssignDefaultAstNodeType(this); 
     }
-    public override Token TryMatch(CompilerContext context, ISourceStream source) {
+
+    public override Token TryMatch(ParsingContext context, ISourceStream source) {
       string text = source.Text;
       foreach (var entry in Constants) {
         var constant = entry.Key;
         if (source.PreviewPosition + constant.Length > text.Length) continue;
-        if (source.MatchSymbol(constant, !OwnerGrammar.CaseSensitive)) {
+        if (source.MatchSymbol(constant, !Grammar.CaseSensitive)) {
           source.PreviewPosition += constant.Length;
           return source.CreateToken(this, entry.Value);
         }

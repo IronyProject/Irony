@@ -14,7 +14,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Irony.Ast.Interpreter;
+using Irony.Parsing;
+using Irony.Interpreter;
 
 namespace Irony.Ast {
 
@@ -22,25 +23,28 @@ namespace Irony.Ast {
   // TODO: extend to support dynamic binding - for ex in Scheme, the node in function position can be any expression
   // that evaluates to a function
   public class FunctionCallNode : AstNode {
-    public VarRefNode NameRef;
+    public IdentifierNode NameRef;
     public AstNodeList Arguments;
-    bool _isTail = true; 
     //If the target method is fixed and statically bound (runtime library function for ex),
     // then this field contains the binding info for the target method
     public FunctionBindingInfo FixedTargetInfo;
 
-    public FunctionCallNode(NodeArgs args, VarRefNode name, AstNodeList arguments) : base(args) {
-      ChildNodes.Clear();
+    public FunctionCallNode() { }
+    public override void Init(ParsingContext context, ParseTreeNode treeNode) {
+      base.Init(context, treeNode); 
+    }
+    public FunctionCallNode(IdentifierNode name, AstNodeList arguments) : this() {
+/*      ChildNodes.Clear();
       NameRef = name;
       NameRef.Flags |= AstNodeFlags.SuppressNotDefined;
       AddChild("Name", NameRef);
       Arguments = arguments;
       foreach (AstNode arg in Arguments) 
         AddChild("Arg", arg);
-    }//constructor
+*/    }//constructor
 
     protected void InvokeDynamic(EvaluationContext context) {
-      NameRef.Evaluate(context);
+/*      NameRef.Evaluate(context);
       Closure target;
       try {
         target = (Closure)context.Result;
@@ -67,7 +71,9 @@ namespace Irony.Ast {
         tail.Evaluate(context);
       }
       context.CallArgs = null;
+ */
     }
+    
     protected void InvokeFixed(EvaluationContext context) {
       EvaluateArgs(context, FixedTargetInfo);
       //FixedTargetInfo.Evaluate(context);
@@ -78,11 +84,12 @@ namespace Irony.Ast {
         context.Tail = null;
         tail.Evaluate(context);
       }
-      context.CallArgs = null;
+     // context.CallArgs = null;
     }
   
 
     private void EvaluateArgs(EvaluationContext context, FunctionBindingInfo targetInfo) {
+/*
       object[] values =new object[this.Arguments.Count];
       //Just for perfomance, we implement two cases separately
       if (targetInfo.IsSet(FunctionFlags.HasParamArray)) {
@@ -110,10 +117,11 @@ namespace Irony.Ast {
       }
 
       context.CallArgs = values;
+ */ 
     }//method
 
     public override string ToString() {
-      string result = "call " + NameRef.Name;
+      string result = "call " + NameRef.Symbol;
       if (!string.IsNullOrEmpty(Role))
         result = Role + ": " + result; 
       return result; 

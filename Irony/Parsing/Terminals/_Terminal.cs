@@ -41,7 +41,7 @@ namespace Irony.Parsing {
     #endregion
 
     #region virtuals
-    public virtual Token TryMatch(CompilerContext context, ISourceStream source) {
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source) {
       return null;
     }
     //"Firsts" (chars) collections are used for quick search for possible matching terminal(s) using current character in the input stream.
@@ -54,7 +54,7 @@ namespace Irony.Parsing {
     #region Events: ValidateToken
     private ValidateTokenEventArgs _validateTokenArgs = new ValidateTokenEventArgs(); 
     public event EventHandler<ValidateTokenEventArgs> ValidateToken;
-    protected internal virtual Token InvokeValidateToken(CompilerContext context, ISourceStream source, TerminalList terminals, Token token) {
+    protected internal virtual Token InvokeValidateToken(ParsingContext context, ISourceStream source, TerminalList terminals, Token token) {
       if (ValidateToken == null) return token;
       _validateTokenArgs.Init(context, source, terminals, token);
       ValidateToken(this, _validateTokenArgs);

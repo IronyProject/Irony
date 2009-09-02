@@ -9,8 +9,8 @@ namespace Irony.Tests {
     protected TestGrammar _grammar;
     protected LanguageData _language; 
     protected ScannerData _scannerData;
-    protected Compiler _compiler; 
-    protected CompilerContext _context;
+    protected Parser _parser; 
+    protected ParsingContext _context;
     protected Terminal _terminal;
     protected Token _token;
 
@@ -18,13 +18,13 @@ namespace Irony.Tests {
     public void Setup() {
       _grammar = new TestGrammar();
       _language = new LanguageData(_grammar); 
-      _compiler = new Compiler(_grammar); 
-      _context = new CompilerContext(_compiler);
+      _parser = new Parser(_language); 
+      _context = new ParsingContext(_parser);
       _context.CurrentParseTree = new ParseTree(string.Empty, "source"); 
     }
     protected void SetTerminal(Terminal term) {
       _terminal = term;
-      _terminal.Init(_compiler.Language.GrammarData);
+      _terminal.Init(_parser.Language.GrammarData);
     }
     //Utilities
     public void TryMatch(string input) {

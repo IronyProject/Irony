@@ -43,7 +43,7 @@ namespace Irony.Parsing {
     // Identifier terminal is an example
   }
 
-  public delegate void AstNodeCreator(CompilerContext context, ParseTreeNode parseNode);
+  public delegate void AstNodeCreator(ParsingContext context, ParseTreeNode parseNode);
 
   //Basic Backus-Naur Form element. Base class for Terminal, NonTerminal, BnfExpression, GrammarHint
   public abstract class BnfTerm {
@@ -64,7 +64,6 @@ namespace Irony.Parsing {
 
     public virtual void Init(GrammarData grammarData) {
       GrammarData = grammarData;
-      OwnerGrammar = grammarData.Grammar;
     }
 
     public override string ToString() {
@@ -86,10 +85,12 @@ namespace Irony.Parsing {
     public string DisplayName;
     public TermOptions Options;
     protected GrammarData GrammarData;
-    protected Grammar OwnerGrammar; 
     public int Precedence = NoPrecedence;
     public Associativity Associativity = Associativity.Neutral;
 
+    public Grammar Grammar { 
+      get { return GrammarData.Grammar; } 
+    }
     public bool OptionIsSet(TermOptions option) {
       bool result = (Options & option) != 0;
       return result; 

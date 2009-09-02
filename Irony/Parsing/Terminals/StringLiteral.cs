@@ -60,10 +60,10 @@ namespace Irony.Parsing {
     #endregion
 
     #region constructors and initialization
-    //12/07/2008 - Attention - breaking change! Constructor with a single parameter no longer adds default startEnd symbol!
     public StringLiteral(string name, string startEndSymbol, StringFlags stringFlags) : base(name) {
       base.Category = TokenCategory.Literal;
       this._subtypes.Add(startEndSymbol, startEndSymbol, stringFlags);
+      base.AstNodeType = typeof(Irony.Ast.LiteralValueNode);
     }
     public StringLiteral(string name): this(name, "\"") {
     }
@@ -122,6 +122,8 @@ namespace Irony.Parsing {
       //Create editor info
       if (this.EditorInfo == null)
         this.EditorInfo = new TokenEditorInfo(TokenType.String, TokenColor.String, TokenTriggers.None);
+      //set default node type
+      Ast.LiteralValueNode.AssignDefaultAstNodeType(this); 
     }//method
 
     public override IList<string> GetFirsts() {
@@ -198,7 +200,7 @@ namespace Irony.Parsing {
       details.IsPartial = true;
     }
     
-    protected override void InitDetails(CompilerContext context, CompoundTerminalBase.CompoundTokenDetails details) {
+    protected override void InitDetails(ParsingContext context, CompoundTerminalBase.CompoundTokenDetails details) {
       base.InitDetails(context, details);
       if (context.ScannerState.Value != 0) {
         //we are continuing partial string on the next line

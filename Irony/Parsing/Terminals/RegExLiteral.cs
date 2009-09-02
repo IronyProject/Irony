@@ -57,7 +57,7 @@ namespace Irony.Parsing {
       return result; 
     }
 
-    public override Token TryMatch(CompilerContext context, ISourceStream source) {
+    public override Token TryMatch(ParsingContext context, ISourceStream source) {
       while (true) {
         //Find next position
         var newPos = source.Text.IndexOfAny(_stopChars, source.PreviewPosition + 1);

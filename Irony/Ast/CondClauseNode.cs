@@ -13,26 +13,29 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.Ast.Interpreter;
+using Irony.Interpreter;
+using Irony.Parsing;
 
 namespace Irony.Ast {
   public class CondClauseNode : AstNode {
     public AstNode Test;
     public StatementListNode Expressions;
 
-    public CondClauseNode(NodeArgs args, AstNode test, StatementListNode expressions) :base(args) {
-      ChildNodes.Clear();
-      this.Role = "Clause";
-      Test = test;
-      Test.Role = "Test";
-      ChildNodes.Add(Test);
-      Expressions = expressions;
-      Expressions.Role = "Command";
-      ChildNodes.Add(Expressions);
-    }
+    public CondClauseNode() { }
+    public override void Init(ParsingContext context, ParseTreeNode treeNode) {
+      base.Init(context, treeNode);
+      /*      ChildNodes.Clear();
+            this.Role = "Clause";
+            Test = test;
+            Test.Role = "Test";
+            ChildNodes.Add(Test);
+            Expressions = expressions;
+            Expressions.Role = "Command";
+            ChildNodes.Add(Expressions);
+      */    } 
 
-    public override void Evaluate(EvaluationContext context) {
-      Expressions.Evaluate(context);
+    public override void Evaluate(EvaluationContext context, AstMode mode) {
+      Expressions.Evaluate(context, mode);
     }
   
   }//class

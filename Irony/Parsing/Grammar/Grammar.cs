@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Irony.Ast;
-using Irony.Ast.Interpreter;
+using Irony.Interpreter;
 
 namespace Irony.Parsing { 
 
@@ -73,6 +73,9 @@ namespace Irony.Parsing {
 
     public string GrammarComments; //shown in Grammar Errors page
 
+    public StringSet PrefixUnaryOperators;
+    public StringSet PostfixUnaryOperators;
+
     #endregion 
 
     #region constructors
@@ -80,11 +83,16 @@ namespace Irony.Parsing {
     public Grammar() : this(true) { } //case sensitive by default
 
     public Grammar(bool caseSensitive) {
+      _currentGrammar = this;
       this.CaseSensitive = caseSensitive;
       bool ignoreCase =  !this.CaseSensitive;
       StringComparer comparer = StringComparer.Create(System.Globalization.CultureInfo.InvariantCulture, ignoreCase);
       SymbolTerms = new SymbolTerminalTable(comparer);
-      _currentGrammar = this;
+      //Initialize unary operators sets
+      PrefixUnaryOperators = new StringSet(comparer);
+      PostfixUnaryOperators = new StringSet(comparer);
+      PrefixUnaryOperators.AddRange ("+", "-", "!", "++", "--");
+      PostfixUnaryOperators.AddRange("++", "--");
       NewLinePlus = CreateNewLinePlus();
     }
     #endregion
@@ -181,11 +189,11 @@ namespace Irony.Parsing {
 
     #region virtual methods: TryMatch, CreateNode, GetSyntaxErrorMessage, CreateRuntime
     //This method is called if Scanner failed to produce token; it offers custom method a chance    
-    public virtual Token TryMatch(CompilerContext context, ISourceStream source) {
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source) {
       return null;
     }
 
-    public virtual void CreateAstNode(CompilerContext context, ParseTreeNode nodeInfo) {
+    public virtual void CreateAstNode(ParsingContext context, ParseTreeNode nodeInfo) {
       var term = nodeInfo.Term;
       if (term.AstNodeCreator != null) {
         term.AstNodeCreator(context, nodeInfo);
@@ -226,7 +234,7 @@ namespace Irony.Parsing {
     }
     //Constructs the error message in situation when parser has no available action for current input.
     // override this method if you want to change this message
-    public virtual string ConstructParserErrorMessage(CompilerContext context, ParserState state, BnfTermSet expectedTerms, ParseTreeNode currentInput) {
+    public virtual string ConstructParserErrorMessage(ParsingContext context, ParserState state, BnfTermSet expectedTerms, ParseTreeNode currentInput) {
       string msg = "Syntax error" + (expectedTerms.Count == 0 ? "." : ", expected: " + expectedTerms.ToErrorString());
       return msg; 
     }
@@ -336,7 +344,7 @@ namespace Irony.Parsing {
       }
       //create new term
       if (!CaseSensitive)
-        symbol = symbol.ToLower();
+        symbol = symbol.ToLowerInvariant();
       string.Intern(symbol); 
       term = new SymbolTerminal(symbol, name);
       SymbolTerms[symbol] = term;

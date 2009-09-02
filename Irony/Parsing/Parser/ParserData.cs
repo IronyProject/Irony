@@ -186,7 +186,7 @@ namespace Irony.Parsing {
   /// The class provides arguments for custom conflict resolution grammar method.
   /// </summary>
   public class ConflictResolutionArgs : EventArgs {
-    public readonly CompilerContext Context;
+    public readonly ParsingContext Context;
     public readonly Scanner Scanner; 
     public readonly ParserState CurrentParserState;
     public readonly ParseTreeNode CurrentParserInput;
@@ -195,10 +195,10 @@ namespace Irony.Parsing {
     public ParserActionType Result; //shift, reduce or operator
     public Production ReduceProduction; //defaulted to  
     //constructor
-    internal ConflictResolutionArgs(CompilerContext context, ParserAction conflictAction) {
+    internal ConflictResolutionArgs(ParsingContext context, ParserAction conflictAction) {
       Context = context;
-      Scanner = context.Compiler.Parser.Scanner; 
-      var coreParser = context.Compiler.Parser.CoreParser;
+      Scanner = context.Parser.Scanner; 
+      var coreParser = context.Parser.CoreParser;
       CurrentParserState = coreParser.CurrentState;
       CurrentParserInput = coreParser.CurrentInput;
       NewShiftState = conflictAction.NewState;

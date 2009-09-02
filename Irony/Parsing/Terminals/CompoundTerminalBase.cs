@@ -129,7 +129,7 @@ namespace Irony.Parsing {
       return Prefixes;
     }
 
-    public override Token TryMatch(CompilerContext context, ISourceStream source) {
+    public override Token TryMatch(ParsingContext context, ISourceStream source) {
       Token token;
       //Try quick parse first, but only if we're not continuing
       if (context.ScannerState.Value == 0) {
@@ -167,7 +167,7 @@ namespace Irony.Parsing {
       return token; 
     }
 
-    protected virtual Token CreateToken(CompilerContext context, ISourceStream source, CompoundTokenDetails details) {
+    protected virtual Token CreateToken(ParsingContext context, ISourceStream source, CompoundTokenDetails details) {
       var token = source.CreateToken(this, details.Value);
       token.Details = details;
       if (details.IsPartial) 
@@ -175,12 +175,12 @@ namespace Irony.Parsing {
       return token;
     }
 
-    protected virtual void InitDetails(CompilerContext context, CompoundTokenDetails details) {
-      details.PartialOk = (context.Mode == CompileMode.VsLineScan);
+    protected virtual void InitDetails(ParsingContext context, CompoundTokenDetails details) {
+      details.PartialOk = (context.Mode == ParseMode.VsLineScan);
       details.PartialContinues = (context.ScannerState.Value != 0); 
     }
 
-    protected virtual Token QuickParse(CompilerContext context, ISourceStream source) {
+    protected virtual Token QuickParse(ParsingContext context, ISourceStream source) {
       return null;
     }
 

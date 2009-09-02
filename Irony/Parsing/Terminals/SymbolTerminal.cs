@@ -50,8 +50,8 @@ namespace Irony.Parsing {
     public bool AllowAlphaAfterKeyword = false; 
 
     #region overrides: TryMatch, GetPrefixes(), ToString() 
-    public override Token TryMatch(CompilerContext context, ISourceStream source) {
-      if (!source.MatchSymbol(_symbol, !OwnerGrammar.CaseSensitive))
+    public override Token TryMatch(ParsingContext context, ISourceStream source) {
+      if (!source.MatchSymbol(_symbol, !Grammar.CaseSensitive))
         return null;
       source.PreviewPosition += _symbol.Length;
       //In case of keywords, check that it is not followed by letter or digit

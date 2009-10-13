@@ -11,7 +11,7 @@ namespace Irony.Samples.Json {
       //Terminals
       var jstring = new StringLiteral("string", "\"");
       var jnumber = new NumberLiteral("number");
-      var comma = Symbol(","); 
+      var comma = ToTerm(","); 
       
       //Nonterminals
       var jobject = new NonTerminal("Object");

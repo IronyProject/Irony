@@ -89,9 +89,9 @@ namespace Irony.Parsing.Construction {
       //Mark keywords - any "word" symbol directly mentioned in the grammar
       if (data.Grammar.FlagIsSet(LanguageFlags.AutoDetectKeywords)) 
         foreach (var term in data.Terminals) {
-          var symTerm = term as SymbolTerminal;
+          var symTerm = term as KeyTerm;
           if (symTerm == null) continue;
-          if (symTerm.Symbol.Length > 0 && char.IsLetter(symTerm.Symbol[0]))
+          if (symTerm.Text.Length > 0 && char.IsLetter(symTerm.Text[0]))
             symTerm.SetOption(TermOptions.IsKeyword); 
         }//foreach term
       //Init all terms
@@ -143,7 +143,7 @@ namespace Irony.Parsing.Construction {
       GrammarHintList hints = null;
       //create RValues list skipping Empty terminal and collecting grammar hints
       foreach (BnfTerm operand in operands) {
-        if (operand == Grammar.CurrentGrammar.Empty)
+        if (operand ==  _grammar.Empty)
           continue;
         //Collect hints as we go - they will be added to the next non-hint element
         GrammarHint hint = operand as GrammarHint;

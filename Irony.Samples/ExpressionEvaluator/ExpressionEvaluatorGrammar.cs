@@ -60,13 +60,13 @@ namespace Irony.Samples {
       Term.Rule = number | ParExpr | identifier;
       ParExpr.Rule = "(" + Expr + ")";
       UnExpr.Rule = UnOp + Term;
-      UnOp.Rule = Symbol("+") | "-" | "++" | "--";
+      UnOp.Rule = ToTerm("+") | "-" | "++" | "--";
       BinExpr.Rule = Expr + BinOp + Expr;
-      BinOp.Rule = Symbol("+") | "-" | "*" | "/" | "**";
+      BinOp.Rule = ToTerm("+") | "-" | "*" | "/" | "**";
       PostFixExpr.Rule = Term + PostFixOp;
-      PostFixOp.Rule = Symbol("++") | "--";
+      PostFixOp.Rule = ToTerm("++") | "--";
       AssignmentStmt.Rule = identifier + AssignmentOp + Expr;
-      AssignmentOp.Rule = Symbol("=") | "+=" | "-=" | "*=" | "/=";
+      AssignmentOp.Rule = ToTerm("=") | "+=" | "-=" | "*=" | "/=";
       Statement.Rule = AssignmentStmt | Expr | Empty;
       ProgramLine.Rule = Statement + NewLine;
       Program.Rule = MakeStarRule(Program, ProgramLine);
@@ -78,10 +78,10 @@ namespace Irony.Samples {
       RegisterOperators(3, Associativity.Right, "**");
 
       RegisterPunctuation("(", ")");
-      MarkTransient(Term, Expr, Statement, BinOp, AssignmentOp, ProgramLine, ParExpr);
+      MarkTransient(Term, Expr, Statement, BinOp, UnOp, AssignmentOp, ProgramLine, ParExpr);
 
       //automatically add NewLine before EOF so that our BNF rules work correctly when there's no final line break in source
-      this.LanguageFlags = LanguageFlags.CreateAst | LanguageFlags.NewLineBeforeEOF | LanguageFlags.SupportsInterpreter; 
+      this.LanguageFlags = LanguageFlags.CreateAst | LanguageFlags.NewLineBeforeEOF | LanguageFlags.CanRunSample; 
 
     }
   }

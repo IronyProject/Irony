@@ -41,25 +41,25 @@ namespace Irony.Samples.CSharp {
       NonGrammarTerminals.Add(ppInstruction);
 
       //Symbols
-      SymbolTerminal colon = Symbol(":", "colon");
-      SymbolTerminal semi = Symbol(";", "semi");
+      KeyTerm colon = ToTerm(":", "colon");
+      KeyTerm semi = ToTerm(";", "semi");
       NonTerminal semi_opt = new NonTerminal("semi?");
       semi_opt.Rule = Empty | semi;
-      SymbolTerminal dot = Symbol(".", "dot");
-      SymbolTerminal comma = Symbol(",", "comma");
+      KeyTerm dot = ToTerm(".", "dot");
+      KeyTerm comma = ToTerm(",", "comma");
       NonTerminal comma_opt = new NonTerminal("comma_opt", Empty | comma);
       NonTerminal commas_opt = new NonTerminal("commas_opt");
       commas_opt.Rule = MakeStarRule(commas_opt, null, comma);
-      SymbolTerminal qmark = Symbol("?", "qmark");
+      KeyTerm qmark = ToTerm("?", "qmark");
       NonTerminal qmark_opt = new NonTerminal("qmark_opt", Empty | qmark);
-      SymbolTerminal Lbr = Symbol("{");
-      SymbolTerminal Rbr = Symbol("}");
-      SymbolTerminal Lpar = Symbol("(");
-      SymbolTerminal Rpar = Symbol(")");
-      SymbolTerminal tgoto = Symbol("goto");
-      SymbolTerminal yld = Symbol("yield");
+      KeyTerm Lbr = ToTerm("{");
+      KeyTerm Rbr = ToTerm("}");
+      KeyTerm Lpar = ToTerm("(");
+      KeyTerm Rpar = ToTerm(")");
+      KeyTerm tgoto = ToTerm("goto");
+      KeyTerm yld = ToTerm("yield");
 
-      SymbolTerminal Lparx = Symbol("(*");
+      KeyTerm Lparx = ToTerm("(*");
       #endregion
 
       #region NonTerminals
@@ -216,7 +216,7 @@ namespace Irony.Samples.CSharp {
       NonTerminal class_body = new NonTerminal("class_body");
 
       //B.2.7 Classes
-      Terminal partial = Symbol("partial");
+      Terminal partial = ToTerm("partial");
       NonTerminal type_parameter_list_opt = new NonTerminal("type_parameter_list_opt");
       NonTerminal type_parameter = new NonTerminal("type_parameter");
       NonTerminal type_parameters = new NonTerminal("type_parameters");
@@ -402,7 +402,7 @@ namespace Irony.Samples.CSharp {
       rank_specifier.Rule = "[" + comma_list_opt + "]";
       rank_specifiers.Rule = MakePlusRule(rank_specifiers, null, rank_specifier);
       rank_specifiers_opt.Rule = rank_specifiers.Q();
-      integral_type.Rule = Symbol("sbyte") | "byte" | "short" | "ushort" | "int" | "uint" | "long" | "ulong" | "char";
+      integral_type.Rule = ToTerm("sbyte") | "byte" | "short" | "ushort" | "int" | "uint" | "long" | "ulong" | "char";
 
       //B.2.4. Variables
       //Quite strange in specs -
@@ -422,8 +422,8 @@ namespace Irony.Samples.CSharp {
                     | primary_expression;
       expression_opt.Rule = Empty | expression;
       expression_list.Rule = MakePlusRule(expression_list, comma, expression);
-      unary_operator.Rule = Symbol("+") | "-" | "!" | "~" | "*";
-      assignment_operator.Rule = Symbol("=") | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "<<=" | ">>=";
+      unary_operator.Rule = ToTerm("+") | "-" | "!" | "~" | "*";
+      assignment_operator.Rule = ToTerm("=") | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "<<=" | ">>=";
       conditional_expression.Rule = expression + PreferShiftHere() + qmark + expression + colon + expression;// + ReduceThis();
       bin_op_expression.Rule = expression + bin_op + expression;
 
@@ -539,7 +539,7 @@ namespace Irony.Samples.CSharp {
       block.Rule = Lbr + statement_list_opt + Rbr;
       //selection (if and switch)
       selection_statement.Rule = if_statement | switch_statement;
-      if_statement.Rule = Symbol("if") + Lpar + expression + Rpar + embedded_statement + else_clause_opt;
+      if_statement.Rule = ToTerm("if") + Lpar + expression + Rpar + embedded_statement + else_clause_opt;
       else_clause_opt.Rule = Empty | PreferShiftHere() + "else" + embedded_statement;
       switch_statement.Rule = "switch" + parenthesized_expression + Lbr + switch_sections_opt + Rbr;
       switch_section.Rule = switch_labels + statement_list;
@@ -587,15 +587,15 @@ namespace Irony.Samples.CSharp {
                                 | pre_incr_decr_expression | post_incr_decr_expression
                                 ;
       statement_expression_list.Rule = MakePlusRule(statement_expression_list, comma, statement_expression);
-      incr_or_decr_opt.Rule = Empty | Symbol("++") | "--";
-      incr_or_decr.Rule = Symbol("++") | "--";
+      incr_or_decr_opt.Rule = Empty | ToTerm("++") | "--";
+      incr_or_decr.Rule = ToTerm("++") | "--";
 
       //B.2.6. Namespaces
       this.Root = compilation_unit;
       compilation_unit.Rule = extern_alias_directives_opt
                             + using_directives_opt
                             + attributes_opt + namespace_declarations_opt;
-      extern_alias_directive.Rule = PreferShiftHere() + Symbol("extern") + "alias" + identifier + semi;
+      extern_alias_directive.Rule = PreferShiftHere() + ToTerm("extern") + "alias" + identifier + semi;
       extern_alias_directives_opt.Rule = MakeStarRule(extern_alias_directives_opt, null, extern_alias_directive);
       namespace_declaration.Rule = "namespace" + qualified_identifier + namespace_body + semi_opt;
       namespace_declarations_opt.Rule = MakeStarRule(namespace_declarations_opt, null, namespace_declaration);
@@ -629,7 +629,7 @@ namespace Irony.Samples.CSharp {
       type_parameter_constraints.Rule = MakePlusRule(type_parameter_constraints, comma, type_parameter_constraint);
       type_parameter_constraints_clauses_opt.Rule = MakeStarRule(type_parameter_constraints_clauses_opt, null, type_parameter_constraints_clause);
       //Note for post-processing - make sure the order is correct: new() is always last, etc. See p.503 of the spec 
-      type_parameter_constraint.Rule = qual_name_with_targs | "class" | "struct" | Symbol("new") + Lpar + Rpar;
+      type_parameter_constraint.Rule = qual_name_with_targs | "class" | "struct" | ToTerm("new") + Lpar + Rpar;
 
       //Class members
       //Note: we split operator-declaration into two separate operator elements: bin/unary and conversion operators
@@ -641,7 +641,7 @@ namespace Irony.Samples.CSharp {
       member_declarations_opt.Rule = MakeStarRule(member_declarations_opt, null, member_declaration);
 
       //Modifiers - see note #1 in Notes.txt file
-      modifier.Rule = Symbol("new") | "public" | "protected" | "internal" | "private" | "static" | "virtual" | "sealed" |
+      modifier.Rule = ToTerm("new") | "public" | "protected" | "internal" | "private" | "static" | "virtual" | "sealed" |
         "override" | "abstract" | "readonly" | "volatile" | "partial" | "extern"; //!!!
       modifiers_opt.Rule = MakeStarRule(modifiers_opt, null, modifier);
       //Joined member header - see note #2
@@ -668,9 +668,9 @@ namespace Irony.Samples.CSharp {
       property_declaration.Rule = member_header + type_ref + qual_name_with_targs/*member-name*/ + Lbr + accessor_declarations + Rbr;
       accessor_declaration.Rule = attributes_opt + accessor_modifier_opt + accessor_name + block;
       accessor_declarations.Rule = MakePlusRule(accessor_declarations, null, accessor_declaration);
-      accessor_name.Rule = Symbol("get") | "set";
+      accessor_name.Rule = ToTerm("get") | "set";
       accessor_modifier_opt.Rule = Empty | "protected" | "internal" | "private" |
-                           Symbol("protected") + "internal" | Symbol("internal") + "protected";
+                           ToTerm("protected") + "internal" | ToTerm("internal") + "protected";
 
       event_declaration.Rule = member_header + "event" + type_ref + event_body;
       event_body.Rule = variable_declarators + semi | qual_name_with_targs + Lbr + event_accessor_declarations + Rbr;
@@ -688,19 +688,19 @@ namespace Irony.Samples.CSharp {
       // note: difference with specs - we separate unary/binary operators from conversion operator, 
       //   and join binary and unary operator definitions, see note #5
       operator_declaration.Rule = member_header + type_ref + "operator" + overloadable_operator + Lpar + operator_parameters + Rpar + block;
-      overloadable_operator.Rule = Symbol("+") | "-" | "!" | "~" | "++" | "--" | "true" | "false" //unary operators
+      overloadable_operator.Rule = ToTerm("+") | "-" | "!" | "~" | "++" | "--" | "true" | "false" //unary operators
                                  | "*" | "/" | "%" | "&" | "|" | "^" | "<<" | ">>" | "==" | "!=" | ">" | "<" | ">=" | "<=";
       operator_parameters.Rule = operator_parameter | operator_parameter + comma + operator_parameter;
       operator_parameter.Rule = type_ref + identifier;
       conversion_operator_declaration.Rule = member_header + conversion_operator_kind +
            "operator" + type_ref + Lpar + operator_parameter + Rpar + block;
-      conversion_operator_kind.Rule = Symbol("implicit") | "explicit";
+      conversion_operator_kind.Rule = ToTerm("implicit") | "explicit";
 
       //constructor - also covers static constructor; the only difference is the word static
       constructor_declaration.Rule = member_header + identifier + formal_parameter_list_par +
         constructor_initializer_opt + block;
       constructor_initializer_opt.Rule = Empty | colon + constructor_base + argument_list_par;
-      constructor_base.Rule = Symbol("this") | "base";
+      constructor_base.Rule = ToTerm("this") | "base";
 
       destructor_declaration.Rule = member_header + // changed from Symbol("extern").Q() 
                                      "~" + identifier + Lpar + Rpar + block;
@@ -752,13 +752,13 @@ namespace Irony.Samples.CSharp {
       attribute.Rule = qual_name_with_targs + attribute_arguments_par_opt;
 
       attribute_target_specifier_opt.Rule = Empty | attribute_target + colon;
-      attribute_target.Rule = Symbol("field") | "event" | "method" | "param" | "property" | "return" | "type";
+      attribute_target.Rule = ToTerm("field") | "event" | "method" | "param" | "property" | "return" | "type";
       attribute_arguments_par_opt.Rule = Empty | Lpar + attribute_arguments_opt + Rpar;
       attribute_arguments_opt.Rule = MakeStarRule(attribute_arguments_opt, comma, attr_arg);
       attr_arg.Rule = identifier + "=" + expression | expression;
 
       //Prepare term set for conflict resolution
-      _skipTokensInPreview.UnionWith(new Terminal[] { dot, identifier, comma, Symbol("::"), comma, Symbol("["), Symbol("]") });
+      _skipTokensInPreview.UnionWith(new Terminal[] { dot, identifier, comma, ToTerm("::"), comma, ToTerm("["), ToTerm("]") });
     
     }
 
@@ -826,7 +826,7 @@ State S188 (Inadequate)
     // When this method is called we force the selection to a single ">"
     public override void OnScannerSelectTerminal(SelectTerminalArgs args) {
       if (args.Current == '>' && args.Scanner.InPreview) {
-        args.SelectedTerminal = Symbol(">"); //select the ">" terminal
+        args.SelectedTerminal = ToTerm(">"); //select the ">" terminal
       }
     }
     #endregion

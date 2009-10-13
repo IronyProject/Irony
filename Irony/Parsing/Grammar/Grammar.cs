@@ -39,10 +39,7 @@ namespace Irony.Parsing {
     public string LineTerminators = "\n\r\v";
 
     #region Language Flags
-    public LanguageFlags LanguageFlags {
-      get { return _languageFlags; }
-      set { _languageFlags = value; }
-    } LanguageFlags _languageFlags = LanguageFlags.Default;
+    public LanguageFlags LanguageFlags = LanguageFlags.Default;
 
     public bool FlagIsSet(LanguageFlags flag) {
       return (LanguageFlags & flag) != 0;
@@ -53,7 +50,6 @@ namespace Irony.Parsing {
     // (Comment terminal is usually one of them)
     // Tokens produced by these terminals will be ignored by parser input. 
     public readonly TerminalSet NonGrammarTerminals = new TerminalSet();
-    //public readonly TerminalList NonGrammarTerminals = new TerminalList();
 
     //Terminals that either don't have explicitly declared Firsts symbols, or can start with chars not covered by these Firsts 
     // For ex., identifier in c# can start with a Unicode char in one of several Unicode classes, not necessarily latin letter.
@@ -87,7 +83,7 @@ namespace Irony.Parsing {
       this.CaseSensitive = caseSensitive;
       bool ignoreCase =  !this.CaseSensitive;
       StringComparer comparer = StringComparer.Create(System.Globalization.CultureInfo.InvariantCulture, ignoreCase);
-      SymbolTerms = new SymbolTerminalTable(comparer);
+      KeyTerms = new KeyTermTable(comparer);
       //Initialize unary operators sets
       PrefixUnaryOperators = new StringSet(comparer);
       PostfixUnaryOperators = new StringSet(comparer);
@@ -101,7 +97,7 @@ namespace Irony.Parsing {
     //Reserved words handling 
     public void MarkReservedWords(params string[] reservedWords) {
       foreach (var word in reservedWords) {
-        var wdTerm = Symbol(word);
+        var wdTerm = ToTerm(word);
         wdTerm.SetOption(TermOptions.IsReservedWord);
         //Reserved words get the highest priority, so they get to be tried before identifiers
         wdTerm.Priority = 1000 + word.Length;
@@ -112,7 +108,7 @@ namespace Irony.Parsing {
     #region Register methods
     public void RegisterPunctuation(params string[] symbols) {
       foreach (string symbol in symbols) {
-        SymbolTerminal term = Symbol(symbol);
+        KeyTerm term = ToTerm(symbol);
         term.SetOption(TermOptions.IsPunctuation);
       }
     }
@@ -128,10 +124,8 @@ namespace Irony.Parsing {
 
     public void RegisterOperators(int precedence, Associativity associativity, params string[] opSymbols) {
       foreach (string op in opSymbols) {
-        SymbolTerminal opSymbol = Symbol(op);
+        KeyTerm opSymbol = ToTerm(op);
         opSymbol.SetOption(TermOptions.IsOperator);
-        if (!UsePrecedenceRestricted)
-          opSymbol.SetOption(TermOptions.UsePrecedence); 
         opSymbol.Precedence = precedence;
         opSymbol.Associativity = associativity;
       }
@@ -143,34 +137,14 @@ namespace Irony.Parsing {
     public void RegisterOperators(int precedence, Associativity associativity, params BnfTerm[] opTerms) {
       foreach (var term in opTerms) {
         term.SetOption(TermOptions.IsOperator);
-        if (!UsePrecedenceRestricted)
-          term.SetOption(TermOptions.UsePrecedence); 
         term.Precedence = precedence;
         term.Associativity = associativity;
       }
     }
 
-    // Restricts use of precedence rule to certain non-terminals
-    // In languages like c# the symbols "<" and ">" are used as comparison operators and as brackets for type parameters
-    // We must avoid applying precedence rule to these symbols in the second case. We can achieve this by doing the following.
-    // We register "<" and ">" as operators along with other operator symbols; we  define BinOp non-terminal with the rule 
-    //  that includes OR of all operators including "<" and ">"; we define type_arguments non-terminal using "<" and ">" as well. 
-    // We then instruct parser to apply precedence rule only to BinOp non-terminal. The parser then will apply precedence 
-    // only after reducing the BinOp - the precedence value in this case is derived from the underlying symbol. 
-    // If this set is empty, then Irony tries to detect automatically operator non-terminals like BinOp.
-    // This restriction can be used only in NLALR/NLALR-T methods.
-    internal bool UsePrecedenceRestricted;
-    public void RestrictPrecedence(params BnfTerm[] onlyTerms) {
-      UsePrecedenceRestricted = true; 
-      foreach (var symbol in SymbolTerms.Values)
-        symbol.SetOption(TermOptions.UsePrecedence, false); 
-      foreach(var term in onlyTerms)
-        term.SetOption(TermOptions.UsePrecedence); 
-    }
-
     public void RegisterBracePair(string openBrace, string closeBrace) {
-      SymbolTerminal openS = Symbol(openBrace);
-      SymbolTerminal closeS = Symbol(closeBrace);
+      KeyTerm openS = ToTerm(openBrace);
+      KeyTerm closeS = ToTerm(closeBrace);
       openS.SetOption(TermOptions.IsOpenBrace);
       openS.IsPairFor = closeS;
       closeS.SetOption(TermOptions.IsCloseBrace);
@@ -183,11 +157,11 @@ namespace Irony.Parsing {
     //MemberSelect are symbols invoking member list dropdowns in editor; for ex: . (dot), ::
     public void MarkMemberSelect(params string[] symbols) {
       foreach (var symbol in symbols)
-        Symbol(symbol).SetOption(TermOptions.IsMemberSelect);
+        ToTerm(symbol).SetOption(TermOptions.IsMemberSelect);
     }
     #endregion
 
-    #region virtual methods: TryMatch, CreateNode, GetSyntaxErrorMessage, CreateRuntime
+    #region virtual methods: TryMatch, CreateNode, GetSyntaxErrorMessage, CreateRuntime, RunSample
     //This method is called if Scanner failed to produce token; it offers custom method a chance    
     public virtual Token TryMatch(ParsingContext context, ISourceStream source) {
       return null;
@@ -243,6 +217,22 @@ namespace Irony.Parsing {
       return new LanguageRuntime();
     }
 
+    //This method allows custom implementation of running a sample in Grammar Explorer
+    // By default it evaluates a parse tree using default interpreter 
+    public virtual string RunSample(ParseTree parseTree) {
+      var outBuffer = new StringBuilder();
+      var iRoot = parseTree.Root.AstNode as IInterpretedAstNode;
+      if (iRoot == null) return null;
+      var runtime = CreateRuntime();
+      var evalContext = new EvaluationContext(runtime);
+      runtime.OutputBuffer = new StringBuilder();
+      iRoot.Evaluate(evalContext, AstMode.None);
+      if (evalContext.LastResult != runtime.Unassinged)
+        runtime.OutputBuffer.Append(evalContext.LastResult);
+      return runtime.OutputBuffer.ToString();
+    }
+
+
     #endregion
 
     #region MakePlusRule, MakeStarRule methods
@@ -281,7 +271,6 @@ namespace Irony.Parsing {
     #endregion
 
     #region Hint utilities
-    //[Obsolete("Deprecated. Use ResolveBy(ResolutionType.Shift) method instead")]
     protected GrammarHint PreferShiftHere() {
       return new GrammarHint(HintType.ResolveToShift, null); 
     }
@@ -294,6 +283,10 @@ namespace Irony.Parsing {
     protected GrammarHint WrapTail() {
       return new GrammarHint(HintType.WrapTail, null);
     }
+    protected GrammarHint ImplyPrecedence(int precedence) {
+      return new GrammarHint(HintType.Precedence, precedence);
+    }
+
     #endregion
 
     #region Standard terminals: EOF, Empty, NewLine, Indent, Dedent
@@ -328,15 +321,26 @@ namespace Irony.Parsing {
 
     #endregion
 
-    #region Symbol terminals support
-    public SymbolTerminalTable SymbolTerms;
+    #region KeyTerms (keywords + special symbols)
+    public KeyTermTable KeyTerms;
 
-    public SymbolTerminal Symbol(string symbol) {
-      return Symbol(symbol, symbol);
+    [Obsolete("Method Symbol(...) is deprecated, use ToTerm(...) instead.")]
+    public KeyTerm Symbol(string symbol) {
+      return ToTerm(symbol); 
     }
-    public SymbolTerminal Symbol(string symbol, string name) {
-      SymbolTerminal term;
-      if (SymbolTerms.TryGetValue(symbol, out term)) {
+
+    [Obsolete("Method Symbol(...) is deprecated, use ToTerm(...) instead.")]
+    public KeyTerm Symbol(string symbol, string name) {
+      return ToTerm(symbol, name); 
+    }
+
+
+    public KeyTerm ToTerm(string text) {
+      return ToTerm(text, text);
+    }
+    public KeyTerm ToTerm(string text, string name) {
+      KeyTerm term;
+      if (KeyTerms.TryGetValue(text, out term)) {
         //update name if it was specified now and not before
         if (string.IsNullOrEmpty(term.Name) && !string.IsNullOrEmpty(name))
           term.Name = name;
@@ -344,10 +348,10 @@ namespace Irony.Parsing {
       }
       //create new term
       if (!CaseSensitive)
-        symbol = symbol.ToLowerInvariant();
-      string.Intern(symbol); 
-      term = new SymbolTerminal(symbol, name);
-      SymbolTerms[symbol] = term;
+        text = text.ToLowerInvariant();
+      string.Intern(text); 
+      term = new KeyTerm(text, name);
+      KeyTerms[text] = term;
       return term; 
     }
 

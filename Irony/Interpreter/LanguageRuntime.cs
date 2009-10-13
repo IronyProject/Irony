@@ -60,9 +60,9 @@ namespace Irony.Interpreter {
     // each context (associated with its own thread) has its own instance. This instance is initialized
     // from this original table in method CreateOperatorImplementationsTable(). 
     private OperatorImplementationTable _baseOperatorImplementations;
-    public readonly MetaObjectTable MetaObjects = new MetaObjectTable();
+    //public readonly MetaObjectTable MetaObjects = new MetaObjectTable();
 
-    public readonly FunctionBindingTable FunctionBindings = new FunctionBindingTable();
+    //public readonly FunctionBindingTable FunctionBindings = new FunctionBindingTable();
 
 
     //Converter of the result for comparison operation; converts bool value to values
@@ -87,6 +87,7 @@ namespace Irony.Interpreter {
         table.Add(entry.Key, entry.Value);
       return table; 
     }
+/*
     public virtual FunctionBindingInfo GetFunctionBindingInfo(string name, AstNodeList  parameters) {
       return FunctionBindings.Find(name, parameters.Count);
     }
@@ -99,6 +100,7 @@ namespace Irony.Interpreter {
       FunctionBindings.Add(name, info);
       return info;
     }
+ */ 
 
     #region Operator implementations
     // When an implementation for exact type pair is not found, we find implementation for base type and create
@@ -225,11 +227,14 @@ namespace Irony.Interpreter {
 
 
     public event EventHandler<ConsoleWriteEventArgs> ConsoleWrite;
+    public StringBuilder OutputBuffer; 
     protected void OnConsoleWrite(string text) {
       if (ConsoleWrite != null) {
         ConsoleWriteEventArgs args = new ConsoleWriteEventArgs(text);
         ConsoleWrite(this, args);
       }
+      if (OutputBuffer != null)
+        OutputBuffer.Append(text); 
     }
 
     //Temporarily put it here

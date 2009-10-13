@@ -36,31 +36,14 @@ namespace Irony.Parsing.Construction {
       _stateHash.Clear();
       Stopwatch sw = new Stopwatch();
       sw.Start(); 
-      var i1 = sw.ElapsedMilliseconds;
       Data = _language.ParserData;
-      CheckPrecedenceSettings(_language.GrammarData, Data.ParseMethod); 
-      var i2 = sw.ElapsedMilliseconds;
-      var i3 = sw.ElapsedMilliseconds;
       CreateLalrParserStates(); 
-      var i4 = sw.ElapsedMilliseconds;
-      //TODO: move all the following to a single method
-      //ComputeTransitionIncludesAndItemLookbacks();  //5 ms
-      var i5 = sw.ElapsedMilliseconds;
       PropagateTransitionsIncludes(0);               //220 ms
-      var i6 = sw.ElapsedMilliseconds;
-      //ComputeTransitionsSources(0); 
-      var i7 = sw.ElapsedMilliseconds;
       ComputeLookaheads(); 
-      var i8 = sw.ElapsedMilliseconds;
-      var i9 = sw.ElapsedMilliseconds;
       ComputeAndResolveConflicts();
-      var i10 = sw.ElapsedMilliseconds;
-      var i11 = sw.ElapsedMilliseconds;
-      var i12 = sw.ElapsedMilliseconds;
       if (Data.ParseMethod == ParseMethod.Nlalr) {
         SwitchConflictingStatesToNonCanonicalLookaheads();
       }
-      var i13 = sw.ElapsedMilliseconds;
       ReportAndSetDefaultActionsForConflicts();
       CreateReduceActions();
       ComputeStateExpectedLists(); 
@@ -80,27 +63,6 @@ namespace Irony.Parsing.Construction {
 
   
     #region Creating parser states
-    private void CheckPrecedenceSettings(GrammarData data, ParseMethod method) {
-      if(!_grammar.UsePrecedenceRestricted) {
-        // All terms registered with RegisterOperator method already have IsOperator and UsePrecedence flags set. 
-        // What we need to do is detect non-terminals (like BinOp) that also should be treated as operators 
-        // in the parser input, and set the UsePrecedence flag on them.
-        // We find all non-terminals having all productions either empty or consisting of a single term which is operator
-        // It will cover situations when we define non-terminal like 'BinOp.Rule = "+" | "-" | "*" | "/";'
-        //  After reducing lookaheads in NLALR BinOp may become a lookahead, and it must be treated as operator
-        foreach (NonTerminal nt in data.NonTerminals) {
-          var isOp = true;
-          foreach (var prod in nt.Productions) {
-            isOp &= prod.RValues.Count == 0 || prod.RValues.Count == 1 && prod.RValues[0].OptionIsSet(TermOptions.IsOperator);
-            if (!isOp) break;
-          }//foreac prod
-          if (isOp)
-            nt.SetOption(TermOptions.UsePrecedence);
-        }//foreach 
-
-      }//else
-    }//method
-  
 
     private void CreateLalrParserStates() {
       CreateInitialState();
@@ -411,16 +373,17 @@ namespace Irony.Parsing.Construction {
 
     private void ResolveConflictsByPrecedence(ParserState state) {
       var stateData = state.BuilderData;
-      var oldCount = stateData.ResolvedConflicts.Count; 
-      foreach (var conflict in stateData.Conflicts) {
+      var oldCount = stateData.ResolvedConflicts.Count;
+      //we cannot remove resolved conflicts from stateData.Conflicts because that will break the iterator;
+      // instead we add them to ResolvedConflicts and then remove all resolved after completing the loop
+      foreach (var conflict in stateData.Conflicts)
         ResolveConflictByPrecedence(state, conflict);
-      }
       if (stateData.ResolvedConflicts.Count > oldCount)
         stateData.Conflicts.ExceptWith(stateData.ResolvedConflicts); 
     }
     private bool ResolveConflictByPrecedence(ParserState state, BnfTerm conflict) {
       var stateData = state.BuilderData;
-      if (!conflict.OptionIsSet(TermOptions.UsePrecedence)) return false;
+      if (!conflict.OptionIsSet(TermOptions.IsOperator)) return false;
       if (!stateData.ShiftTerms.Contains(conflict)) return false; //it is not shift-reduce
       //first find reduce items
       var reduceItems = stateData.ReduceItems.SelectByLookahead(conflict);

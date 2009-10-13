@@ -169,7 +169,7 @@ namespace Irony.Interpreter {
 
   #region OperatorDispatcher
   /// <summary>
-  /// The OperatorDispatcher class is responsible for fast dispatching to the implementation based on argument types
+  /// The DynamicCallDispatcher class is responsible for fast dispatching to the implementation based on argument types
   /// It is one per context which is one per thread.
   /// </summary>
   public class DynamicCallDispatcher {
@@ -182,7 +182,7 @@ namespace Irony.Interpreter {
       _runtime = _context.Runtime;
       OperatorImplementations = _runtime.CreateOperatorImplementationsTable();
     }
-
+/*
     public MetaObjectBase FindMetaObject(object target) {
       //built-in objects - lookup in MetaObjects table
       MetaObjectBase meta;
@@ -213,7 +213,7 @@ namespace Irony.Interpreter {
       object result = _context.LastResult;
       _context.Data.Replace(argCount + 1, result);
     }//method
-
+*/
     public void ExecuteBinaryOperator(string op) {
       var arg1 = _context.Data[1];
       var arg2 = _context.Data[0];
@@ -237,7 +237,8 @@ namespace Irony.Interpreter {
 
       //Treating as normal call - first comes implementor (arg1), then argument (ag2); something like: 
       // a + b  =>   a._add(b)
-      ExecuteMethod(arg1, op, 1);
+      //ExecuteMethod(arg1, op, 1);
+      throw new RuntimeException("Operator '" + op + "' not imlemented."); 
     }//method
 
     private bool TryConvertArgsOnOverflow(Type baseType) {

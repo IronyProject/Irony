@@ -34,7 +34,7 @@ namespace Irony.Interpreter {
     public DynamicCallDispatcher CallDispatcher;
     public JumpType Jump = JumpType.None;
     public AstNode GotoTarget;
-    public Closure Tail;
+    //public Closure Tail;
     public StackFrame CurrentFrame;
 
     public EvaluationContext(LanguageRuntime runtime) : this(runtime, null) { }

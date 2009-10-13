@@ -213,7 +213,7 @@ namespace Irony.Parsing.Construction {
           var occurCount = GetLookaheadOccurenceCount(state, lkhChild);
           if (occurCount > 1) {            
             //possible conflict, check precedence
-            if (lkhChild.OptionIsSet(TermOptions.UsePrecedence)) {
+            if (lkhChild.OptionIsSet(TermOptions.IsOperator)) {
               if (ntChild != null) {
                 valids.Add(ntChild); //if it is terminal, it is valid;
                 if (!alreadyChecked.Contains(lkhChild))  toCheck.Add(ntChild); 
@@ -265,7 +265,7 @@ namespace Irony.Parsing.Construction {
       foreach (var reduceItem in state.BuilderData.ReduceItems) {
         foreach (var lkh in reduceItem.ReducedLookaheads) {
           if (stateData.ShiftTerms.Contains(lkh)) {
-            if (!lkh.OptionIsSet(TermOptions.UsePrecedence))
+            if (!lkh.OptionIsSet(TermOptions.IsOperator))
               srConflicts.Add(lkh); //S-R conflict
           } else if (reduceLkhds.Contains(lkh))
             rrConflicts.Add(lkh); //R-R conflict

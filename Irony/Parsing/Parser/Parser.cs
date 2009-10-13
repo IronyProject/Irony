@@ -29,7 +29,9 @@ namespace Irony.Parsing {
       context.CurrentParseTree = new ParseTree(sourceText, fileName);
       Scanner.SetSource(sourceText);
       Scanner.BeginScan(context);
+      int start = Environment.TickCount;
       CoreParser.Parse(context);
+      context.CurrentParseTree.ParseTime = Environment.TickCount - start;
       if (context.CurrentParseTree.Errors.Count > 0)
         context.CurrentParseTree.Errors.Sort(SyntaxErrorList.ByLocation);
       return context.CurrentParseTree;

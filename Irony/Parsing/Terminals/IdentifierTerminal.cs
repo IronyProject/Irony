@@ -111,12 +111,12 @@ namespace Irony.Parsing {
       return token; 
     }
     private void CheckReservedWord(Token token) {
-      SymbolTerminal symbolTerm;
-      if (Grammar.SymbolTerms.TryGetValue(token.Text, out symbolTerm)) {
-        token.AsSymbol = symbolTerm;
+      KeyTerm keyTerm;
+      if (Grammar.KeyTerms.TryGetValue(token.Text, out keyTerm)) {
+        token.KeyTerm = keyTerm;
         //if it is reserved word, then overwrite terminal
-        if (symbolTerm.OptionIsSet(TermOptions.IsReservedWord))
-          token.SetTerminal(symbolTerm); 
+        if (keyTerm.OptionIsSet(TermOptions.IsReservedWord))
+          token.SetTerminal(keyTerm); 
       }
     }
 

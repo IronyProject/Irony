@@ -46,8 +46,8 @@ namespace Irony.Samples {
             var userFunctionName = variable;
             var comment = new CommentTerminal("Comment", "REM", "\n");
             var short_comment = new CommentTerminal("ShortComment", "'", "\n");
-            var comma = Symbol(",", "comma");
-            var colon = Symbol(":", "colon");
+            var comma = ToTerm(",", "comma");
+            var colon = ToTerm(":", "colon");
 
 
             var comma_opt = new NonTerminal("comma_opt");
@@ -141,10 +141,10 @@ namespace Irony.Samples {
             OPEN_STMT.Rule = "open" + EXPR + (Empty | "for" + OPEN_STMT_MODE) +
                 (Empty | "access" + OPEN_STMT_ACCESS) + "as" + pound_opt + fileNumber;
             OPEN_STMT_ACCESS.Rule = "read" + (Empty | "write") | "write";
-            OPEN_STMT_MODE.Rule = Symbol("o") | "i" | "a" | "output" | "input" | "append";
+            OPEN_STMT_MODE.Rule = ToTerm("o") | "i" | "a" | "output" | "input" | "append";
             CLOSE_STMT.Rule = "close" + pound_opt + fileNumber;
-            LINE_INPUT_STMT.Rule = Symbol("line") + "input" + semi_opt + stringLiteral + ";" + VARIABLE_OR_FUNCTION_EXPR;
-            LINE_INPUT_POUND_STMT.Rule = Symbol("line") + "input" + Symbol("#") + fileNumber + comma + VARIABLE_OR_FUNCTION_EXPR;
+            LINE_INPUT_STMT.Rule = ToTerm("line") + "input" + semi_opt + stringLiteral + ";" + VARIABLE_OR_FUNCTION_EXPR;
+            LINE_INPUT_POUND_STMT.Rule = ToTerm("line") + "input" + ToTerm("#") + fileNumber + comma + VARIABLE_OR_FUNCTION_EXPR;
             DIM_STMT.Rule = "dim" + VARIABLES;
             DEF_FN_STMT.Rule = "def" + userFunctionName + (Empty | "(" + ARG_LIST + ")") + "=" + EXPR;
             VARIABLES.Rule = VARIABLE_OR_FUNCTION_EXPR | VARIABLE_OR_FUNCTION_EXPR + "," + VARIABLES;
@@ -158,14 +158,14 @@ namespace Irony.Samples {
             GOTO_STMT.Rule = "goto" + lineNumber;
             GOSUB_STMT.Rule = "gosub" + lineNumber;
             RETURN_STMT.Rule = "return";
-            ON_STMT.Rule = "on" + EXPR + (Symbol("goto") | "gosub") + LINE_NUMBERS;
+            ON_STMT.Rule = "on" + EXPR + (ToTerm("goto") | "gosub") + LINE_NUMBERS;
             LINE_NUMBERS.Rule = MakePlusRule(LINE_NUMBERS, comma, lineNumber);
             ASSIGN_STMT.Rule = VARIABLE_OR_FUNCTION_EXPR + "=" + EXPR;
             LOCATE_STMT.Rule = "locate" + EXPR + comma + EXPR;
             SWAP_STMT.Rule = "swap" + EXPR + comma + EXPR;
             END_STMT.Rule = "end";
             CLS_STMT.Rule = "cls";
-            CLEAR_STMT.Rule = Symbol("clear") + comma + (Empty | number) + (Empty | comma + number) | "clear" + number | "clear";
+            CLEAR_STMT.Rule = ToTerm("clear") + comma + (Empty | number) + (Empty | comma + number) | "clear" + number | "clear";
             RANDOMIZE_STMT.Rule = "randomize" + EXPR;
 
             // An expression is a number, or a variable, a string, or the result of a binary comparison.
@@ -173,7 +173,7 @@ namespace Irony.Samples {
                       | "(" + EXPR + ")" | UNARY_EXPR;
             BINARY_EXPR.Rule = EXPR + BINARY_OP + EXPR;
             UNARY_EXPR.Rule = SIGN + EXPR;
-            SIGN.Rule = Symbol("-") | "+";
+            SIGN.Rule = ToTerm("-") | "+";
 
             //Inject PreferShift hint here to explicitly set shift as preferred action. Suppresses warning message about conflict. 
             //The conflict arises from PRINT statement, when there may be ambigous interpretations for expression like
@@ -181,7 +181,7 @@ namespace Irony.Samples {
             FUN_CALL.Rule = variable + PreferShiftHere() + "(" + ARG_LIST + ")";
             VARIABLE_OR_FUNCTION_EXPR.Rule = variable | FUN_CALL;
 
-            BINARY_OP.Rule = Symbol("+") | "^" | "-" | "*" | "/" | "=" | "<=" | ">=" | "<" | ">" | "<>" | "and" | "or";
+            BINARY_OP.Rule = ToTerm("+") | "^" | "-" | "*" | "/" | "=" | "<=" | ">=" | "<" | ">" | "<>" | "and" | "or";
             //let's do operator precedence right here
             RegisterOperators(60, "^");
             RegisterOperators(50, "*", "/");

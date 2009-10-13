@@ -45,13 +45,14 @@ namespace Irony.Samples {
       FieldMods.Rule = MakeStarRule(FieldMods, FieldMod);
       PropMods.Rule = MakeStarRule(PropMods, PropMod);
       MethodMods.Rule = MakeStarRule(MethodMods, MethodMod);
-      FieldMod.Rule = Symbol("new") | "public" | "protected" | "internal" | "private" | "static" | "readonly" | "volatile";
-      MethodMod.Rule = Symbol("new") | "public" | "protected" | "internal" | "private" | "static" | "virtual" | "sealed" |
+      FieldMod.Rule = ToTerm("new") | "public" | "protected" | "internal" | "private" | "static" | "readonly" | "volatile";
+      MethodMod.Rule = ToTerm("new") | "public" | "protected" | "internal" | "private" | "static" | "virtual" | "sealed" |
         "override" | "abstract" | "extern";
-      PropMod.Rule = Symbol("new") | "public" | "protected" | "internal" | "private" | "static" | "virtual" | "sealed" |
+      PropMod.Rule = ToTerm("new") | "public" | "protected" | "internal" | "private" | "static" | "virtual" | "sealed" |
         "override"; // | "abstract" | "extern"; - just to make it different from MethodMod
 
       this.Root = StatementList;
+      this.MarkTransient(Statement); 
      
 
     }

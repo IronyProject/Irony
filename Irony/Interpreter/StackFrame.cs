@@ -31,7 +31,7 @@ namespace Irony.Interpreter {
       Values = globals; 
     }
 
-    public StackFrame(MethodImp method, StackFrame caller, StackFrame parent, DataStack args, int argCount) {
+    public StackFrame(object method, StackFrame caller, StackFrame parent, DataStack args, int argCount) {
       Caller = caller;
       //Parent = parent;
     }

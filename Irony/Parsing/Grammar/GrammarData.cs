@@ -37,7 +37,7 @@ namespace Irony.Parsing {
     CreateAst = 0x08, //create AST nodes 
 
     //Runtime
-    SupportsInterpreter = 0x0100,
+    CanRunSample = 0x0100,
     SupportsConsole = 0x0200,
     TailRecursive = 0x0400, //Tail-recursive language - Scheme is one example
 

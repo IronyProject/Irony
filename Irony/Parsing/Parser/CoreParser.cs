@@ -126,10 +126,11 @@ namespace Irony.Parsing {
       if (_currentState.DefaultReduceAction != null)
         return _currentState.DefaultReduceAction;
       ParserAction action;
-      //First try as Symbol; 
+      //First try as keyterm/key symbol; for example if token text = "while", then first try it as a keyword "while";
+      // if this does not work, try as an identifier that happens to match a keyword but is in fact identifier
       Token inputToken = _currentInput.Token;
-      if (inputToken != null && inputToken.AsSymbol != null) {
-        var asSym = inputToken.AsSymbol;
+      if (inputToken != null && inputToken.KeyTerm != null) {
+        var asSym = inputToken.KeyTerm;
         if (CurrentState.Actions.TryGetValue(asSym, out action)) {
           #region comments
           // Ok, we found match as a symbol

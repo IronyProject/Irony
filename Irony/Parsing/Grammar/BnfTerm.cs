@@ -21,8 +21,7 @@ namespace Irony.Parsing {
   public enum TermOptions {
     None = 0,
     IsOperator =         0x01,
-    UsePrecedence =      0x02, //allows using precedence on symbol; by default is set together with IsOperator flag; maybe overwritten
-                          // by RestrictPrecedence method
+
     IsBrace = IsOpenBrace | IsCloseBrace,
     IsOpenBrace =        0x04,
     IsCloseBrace =       0x08,
@@ -149,10 +148,10 @@ namespace Irony.Parsing {
       return Op_Plus(term1, term2);
     }
     public static BnfExpression operator +(BnfTerm term1, string symbol2) {
-      return Op_Plus(term1, Grammar.CurrentGrammar.Symbol(symbol2));
+      return Op_Plus(term1, Grammar.CurrentGrammar.ToTerm(symbol2));
     }
     public static BnfExpression operator +( string symbol1, BnfTerm term2) {
-      return Op_Plus(Grammar.CurrentGrammar.Symbol(symbol1), term2);
+      return Op_Plus(Grammar.CurrentGrammar.ToTerm(symbol1), term2);
     }
 
     //Alternative 
@@ -160,10 +159,10 @@ namespace Irony.Parsing {
       return Op_Pipe(term1, term2);
     }
     public static BnfExpression operator |(BnfTerm term1, string symbol2) {
-      return Op_Pipe(term1, Grammar.CurrentGrammar.Symbol(symbol2));
+      return Op_Pipe(term1, Grammar.CurrentGrammar.ToTerm(symbol2));
     }
     public static BnfExpression operator |(string symbol1, BnfTerm term2) {
-      return Op_Pipe(Grammar.CurrentGrammar.Symbol(symbol1), term2);
+      return Op_Pipe(Grammar.CurrentGrammar.ToTerm(symbol1), term2);
     }
 
     //BNF operations implementation -----------------------

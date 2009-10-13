@@ -55,7 +55,6 @@
     <Compile Include="Interpreter\DynamicCallDispatcher.cs" />
     <Compile Include="Interpreter\RuntimeException.cs" />
     <Compile Include="Interpreter\ScriptInterpreter.cs" />
-    <Compile Include="Interpreter\ObjectModel.cs" />
     <Compile Include="Ast\LiteralValueNode.cs" />
     <Compile Include="Parsing\Grammar\GrammarError.cs" />
     <Compile Include="Parsing\Parser\ParseTreeExtensions.cs" />
@@ -103,7 +102,7 @@
     <Compile Include="Parsing\Terminals\StringLiteral.cs" />
     <Compile Include="Parsing\Terminals\CustomTerminal.cs" />
     <Compile Include="Parsing\Terminals\IdentifierTerminal.cs" />
-    <Compile Include="Parsing\Terminals\SymbolTerminal.cs" />
+    <Compile Include="Parsing\Terminals\KeyTerm.cs" />
     <Compile Include="Parsing\Terminals\_Terminal.cs" />
     <Compile Include="Parsing\Scanner\Token.cs" />
     <Compile Include="Parsing\Scanner\Scanner.cs" />
@@ -111,14 +110,9 @@
     <Compile Include="Parsing\Grammar\BnfTerm.cs" />
     <Compile Include="Parsing\Grammar\Grammar.cs" />
     <Compile Include="Parsing\Terminals\TerminalFactory.cs" />
-    <Compile Include="Interpreter\FunctionBindingInfo.cs" />
     <Compile Include="Interpreter\LanguageRuntime_Init.cs" />
-    <Compile Include="Ast\AnonFunctionNode.cs" />
     <Compile Include="Ast\AssigmentNode.cs" />
     <Compile Include="Ast\BinExprNode.cs" />
-    <Compile Include="Ast\CondClauseNode.cs" />
-    <Compile Include="Ast\CondFormNode.cs" />
-    <Compile Include="Ast\FunctionCallNode.cs" />
     <Compile Include="Ast\IfNode.cs" />
     <Compile Include="Ast\StatementListNode.cs" />
     <Compile Include="Ast\UnExprNode.cs" />
@@ -135,7 +129,6 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Microsoft\BigInteger.cs" />
-    <Compile Include="Interpreter\Closure.cs" />
     <Compile Include="Interpreter\EvaluationContext.cs" />
     <Compile Include="Interpreter\StackFrame.cs" />
     <Compile Include="Interpreter\LanguageRuntime.cs" />
@@ -151,9 +144,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="irony.snk" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Ast\__README!!!.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

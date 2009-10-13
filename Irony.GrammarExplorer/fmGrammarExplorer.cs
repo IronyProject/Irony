@@ -286,7 +286,7 @@ namespace Irony.GrammarExplorer {
       txtOutput.Text = string.Empty;
       _parseTree = null;
 
-      btnRun.Enabled = _grammar.FlagIsSet(LanguageFlags.SupportsInterpreter); 
+      btnRun.Enabled = _grammar.FlagIsSet(LanguageFlags.CanRunSample); 
       _grammar.ParseMethod = (ParseMethod)cboParseMethod.SelectedIndex;
       Stopwatch sw = new Stopwatch();
       try {
@@ -326,52 +326,33 @@ namespace Irony.GrammarExplorer {
       }
     }
 
-
-    StringBuilder _outBuffer;
     private void RunSample() {
       SetRuntimeError(null); 
       Stopwatch sw = new Stopwatch();
       txtOutput.Text = "";
-      _outBuffer = new StringBuilder();
-      EvaluationContext evalContext = null;
       try {
         if (_parseTree == null)
           ParseSample();
         if (_parseTree.Errors.Count > 0) return;
-        var iRoot = _parseTree.Root.AstNode as IInterpretedAstNode;
-        if (iRoot == null) return;
-
-        evalContext = new EvaluationContext(_grammar.CreateRuntime());
-        evalContext.Runtime.ConsoleWrite += Ops_ConsoleWrite;
         sw.Start();
-        iRoot.Evaluate(evalContext, AstMode.None);
+        string output = _grammar.RunSample(_parseTree); 
         sw.Stop();
         lblRunTime.Text = sw.ElapsedMilliseconds.ToString();
-        WriteOutput(_outBuffer.ToString());
-        if (evalContext.LastResult != evalContext.Runtime.Unassinged)
-          WriteOutput(evalContext.LastResult);
+        WriteOutput(output);
+        tabBottom.SelectedTab = pageOutput;
       } catch (RuntimeException rex) {
         SetRuntimeError(rex); 
       } finally {
         sw.Stop();
-        if (evalContext != null) {
-          evalContext.Runtime.ConsoleWrite -= Ops_ConsoleWrite;
-          tabBottom.SelectedTab = pageOutput;
-        }
       }//finally
     }//method
 
-    private void WriteOutput(object content) {
-      if (content == null) return; 
-      string text = content.ToString();
+    private void WriteOutput(string text) {
       if (string.IsNullOrEmpty(text)) return; 
       txtOutput.Text += text + Environment.NewLine;
       txtOutput.Select(txtOutput.Text.Length - 1, 0);
     }
 
-    void Ops_ConsoleWrite(object sender, ConsoleWriteEventArgs e) {
-      _outBuffer.Append(e.Text);
-    }
     #endregion
 
     #region miscellaneous: LoadSourceFile, Search, Source highlighting

@@ -6,7 +6,6 @@ using Irony.Parsing;
 
 namespace Irony.Samples.SQL {
   // Loosely based on SQL89 grammar from Gold parser. Supports some extra TSQL constructs.
-  // Does not support BETWEEN, which brings a few shift/reduce conflicts
 
   [Language("SQL", "89", "SQL 89 grammar")]
   public class SqlGrammar : Grammar {
@@ -14,44 +13,41 @@ namespace Irony.Samples.SQL {
       //Terminals
       var comment = new CommentTerminal("comment", "/*", "*/");
       var lineComment = new CommentTerminal("line_comment", "--", "\n", "\r\n");
-      //TODO: remove block comment, added for testing LUA-style comments
-      var blockComment = new CommentTerminal("block_comment", "--[[", "]]");
       NonGrammarTerminals.Add(comment);
       NonGrammarTerminals.Add(lineComment);
-      NonGrammarTerminals.Add(blockComment);
       var number = new NumberLiteral("number");
       var string_literal = new StringLiteral("string", "'", StringFlags.AllowsDoubledQuote);
       var name = new IdentifierTerminal("name");
       var name_ext = TerminalFactory.CreateSqlExtIdentifier("name_ext");
-      var comma = Symbol(",");
-      var dot = Symbol(".");
-      var CREATE = Symbol("CREATE"); 
-      var NULL = Symbol("NULL"); 
-      var NOT = Symbol("NOT");
-      var UNIQUE = Symbol("UNIQUE"); 
-      var WITH = Symbol("WITH");
-      var TABLE = Symbol("TABLE"); 
-      var ALTER = Symbol("ALTER"); 
-      var ADD = Symbol("ADD"); 
-      var COLUMN = Symbol("COLUMN"); 
-      var DROP = Symbol("DROP"); 
-      var CONSTRAINT = Symbol("CONSTRAINT");
-      var INDEX = Symbol("INDEX"); 
-      var ON = Symbol("ON");
-      var KEY = Symbol("KEY");
-      var PRIMARY = Symbol("PRIMARY"); 
-      var INSERT = Symbol("INSERT");
-      var INTO = Symbol("INTO");
-      var UPDATE = Symbol("UPDATE");
-      var SET = Symbol("SET"); 
-      var VALUES = Symbol("VALUES");
-      var DELETE = Symbol("DELETE");
-      var SELECT = Symbol("SELECT"); 
-      var FROM = Symbol("FROM");
-      var AS = Symbol("AS");
-      var COUNT = Symbol("COUNT");
-      var JOIN = Symbol("JOIN");
-      var BY = Symbol("BY"); 
+      var comma = ToTerm(",");
+      var dot = ToTerm(".");
+      var CREATE = ToTerm("CREATE"); 
+      var NULL = ToTerm("NULL"); 
+      var NOT = ToTerm("NOT");
+      var UNIQUE = ToTerm("UNIQUE"); 
+      var WITH = ToTerm("WITH");
+      var TABLE = ToTerm("TABLE"); 
+      var ALTER = ToTerm("ALTER"); 
+      var ADD = ToTerm("ADD"); 
+      var COLUMN = ToTerm("COLUMN"); 
+      var DROP = ToTerm("DROP"); 
+      var CONSTRAINT = ToTerm("CONSTRAINT");
+      var INDEX = ToTerm("INDEX"); 
+      var ON = ToTerm("ON");
+      var KEY = ToTerm("KEY");
+      var PRIMARY = ToTerm("PRIMARY"); 
+      var INSERT = ToTerm("INSERT");
+      var INTO = ToTerm("INTO");
+      var UPDATE = ToTerm("UPDATE");
+      var SET = ToTerm("SET"); 
+      var VALUES = ToTerm("VALUES");
+      var DELETE = ToTerm("DELETE");
+      var SELECT = ToTerm("SELECT"); 
+      var FROM = ToTerm("FROM");
+      var AS = ToTerm("AS");
+      var COUNT = ToTerm("COUNT");
+      var JOIN = ToTerm("JOIN");
+      var BY = ToTerm("BY"); 
 
       //Non-terminals
       var Id = new NonTerminal("Id");
@@ -144,7 +140,7 @@ namespace Irony.Samples.SQL {
       fieldDefList.Rule = MakePlusRule(fieldDefList, comma, fieldDef);
       fieldDef.Rule = Id + typeName + typeParamsOpt + nullSpecOpt;
       nullSpecOpt.Rule = NULL | NOT + NULL | Empty;
-      typeName.Rule = Symbol("BIT") | "DATE" | "TIME" | "TIMESTAMP" | "DECIMAL" | "REAL" | "FLOAT" | "SMALLINT" | "INTEGER"
+      typeName.Rule = ToTerm("BIT") | "DATE" | "TIME" | "TIMESTAMP" | "DECIMAL" | "REAL" | "FLOAT" | "SMALLINT" | "INTEGER"
                                    | "INTERVAL" | "CHARACTER"
                                    // MS SQL types:  
                                    | "DATETIME" | "INT" | "DOUBLE" | "CHAR" | "NCHAR" | "VARCHAR" | "NVARCHAR"
@@ -220,7 +216,7 @@ namespace Irony.Samples.SQL {
       unExpr.Rule = unOp + term;
       unOp.Rule = NOT | "+" | "-" | "~"; 
       binExpr.Rule = expression + binOp + expression;
-      binOp.Rule = Symbol("+") | "-" | "*" | "/" | "%" //arithmetic
+      binOp.Rule = ToTerm("+") | "-" | "*" | "/" | "%" //arithmetic
                  | "&" | "|" | "^"                     //bit
                  | "=" | ">" | "<" | ">=" | "<=" | "<>" | "!=" | "!<" | "!>"
                  | "AND" | "OR" | "LIKE" | NOT + "LIKE" | "IN" | NOT + "IN" ; 
@@ -244,10 +240,6 @@ namespace Irony.Samples.SQL {
       RegisterPunctuation(semiOpt);
       base.MarkTransient(stmt, Id_simple, term, asOpt, aliasOpt, stmtLine, binOp, expression);
 
-      /*
-      AddKeywords("SELECT", "CREATE", "ALTER", "UPDATE", "INSERT", "DELETE", "FROM", "WHERE", "GROUP", "ORDER", "BY", 
-                  "INNER", "LEFT", "RIGHT", "JOIN", "ON"); 
-      */
     }//constructor
 
   }//class

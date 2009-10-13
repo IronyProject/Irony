@@ -49,6 +49,11 @@ namespace Irony.Parsing {
     public virtual IList<string> GetFirsts() {
       return null;
     }
+
+    public virtual string TokenToString(Token token) {
+      var result = (token.ValueString ?? token.Text) + " (" + Name + ")";
+      return result; 
+    }
     #endregion
 
     #region Events: ValidateToken

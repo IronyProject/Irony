@@ -71,8 +71,8 @@ namespace Irony.Samples.Scheme {
       var ByteVector = new NonTerminal("ByteVector");
       var Datum = new NonTerminal("Datum"); //Datum in R6RS terms
       var DatumOpt = new NonTerminal("DatumOpt"); //Datum in R6RS terms
-      var DatumList = new NonTerminal("Datum+", typeof(StatementListNode));
-      var DatumListOpt = new NonTerminal("Datum*", typeof(StatementListNode));
+      var DatumList = new NonTerminal("Datum+");
+      var DatumListOpt = new NonTerminal("Datum*");
       var Statement = new NonTerminal("Statement");
       var Atom = new NonTerminal("Atom");
       var CompoundDatum = new NonTerminal("CompoundDatum");
@@ -88,25 +88,25 @@ namespace Irony.Samples.Scheme {
       var ExportSpecList = new NonTerminal("ExportSpecList");
       var LP = new NonTerminal("LP"); //"(" or "["
       var RP = new NonTerminal("RP"); // ")" or "]"
-      var Identifier = new NonTerminal("Identifier", typeof(IdentifierNode));
+      var Identifier = new NonTerminal("Identifier");
       var IdentifierList = new NonTerminal("IdentifierList");
       var IdentifierListOpt = new NonTerminal("IdentifierListOpt");
       var PeculiarIdentifier = new NonTerminal("PeculiarIdentifier");
       var LibraryVersion = new NonTerminal("LibraryVersion");
       var VersionListOpt = new NonTerminal("VersionListOpt");
 
-      var FunctionCall = new NonTerminal("FunctionCall", CreateFunctionCallNode);
+      var FunctionCall = new NonTerminal("FunctionCall");
       var FunctionRef = new NonTerminal("FunctionRef");
       var SpecialForm = new NonTerminal("SpecialForm");
-      var DefineVarForm = new NonTerminal("DefineVarForm", CreateDefineVarNode);
-      var DefineFunForm = new NonTerminal("DefineFunForm", CreateDefineFunNode);
-      var LambdaForm = new NonTerminal("LambdaForm", CreateLambdaNode);
-      var IfForm = new NonTerminal("IfForm", CreateIfThenElseNode);
-      var CondForm = new NonTerminal("CondForm", CreateCondFormNode);
-      var CondClause = new NonTerminal("CondClause", CreateCondClauseNode);
+      var DefineVarForm = new NonTerminal("DefineVarForm");
+      var DefineFunForm = new NonTerminal("DefineFunForm");
+      var LambdaForm = new NonTerminal("LambdaForm");
+      var IfForm = new NonTerminal("IfForm");
+      var CondForm = new NonTerminal("CondForm");
+      var CondClause = new NonTerminal("CondClause");
       var CondClauseList = new NonTerminal("CondClauseList");
       var CondElseOpt = new NonTerminal("CondElseOpt");
-      var BeginForm = new NonTerminal("BeginForm", CreateBeginNode);
+      var BeginForm = new NonTerminal("BeginForm");
       var LetForm = new NonTerminal("LetForm"); //not implemented
       var LetRecForm = new NonTerminal("LetRecForm"); //not implemented
       var LetPair = new NonTerminal("LetPair");
@@ -114,18 +114,10 @@ namespace Irony.Samples.Scheme {
       #endregion
 
       #region Rules
-      //
-      // Using optional elements in Scheme grammar brings some nasty conflicts - by default the parser selects "shift" over reduce
-      // which leads to failure to parse simple programs without libraries and export/import sections. 
-      // This trouble comes from that the fact that Scheme has soooooo many parenthesis. Therefore, using a single next symbol 
-      // as a lookahead (as it happens in LALR parsing) doesn't help much - the next symbol is almost always a parenthesis, 
-      // not some meaningful symbol. That's why in the following expressions I had to use explicit listing of variants, 
-      // instead of simply marking some elements as optional (see Module, Script, LibraryBody elements) - this clears the conflicts
-      // but would make node construction more difficult.
       base.Root = Module; 
 
-      LP.Rule = Symbol("(") | "[";  //R6RS allows mix & match () and []
-      RP.Rule = Symbol(")") | "]";
+      LP.Rule = ToTerm("(") | "[";  //R6RS allows mix & match () and []
+      RP.Rule = ToTerm(")") | "]";
 
       // Module.Rule = LibraryListOpt + Script; -- this brings conflicts
       Module.Rule = LibraryList + Script | Script;
@@ -166,9 +158,9 @@ namespace Irony.Samples.Scheme {
 
       //TODO: create PeculiarIdentifier custom terminal instead of var 
       // or just custom SchemeIdentifier terminal
-      PeculiarIdentifier.Rule = Symbol("+") | "-" | "..."; // |"->" + subsequent; (should be!) 
+      PeculiarIdentifier.Rule = ToTerm("+") | "-" | "..."; // |"->" + subsequent; (should be!) 
       Abbreviation.Rule = AbbrevPrefix + Datum;
-      AbbrevPrefix.Rule = Symbol("'") | "`" | ",@" | "," | "#'" | "#`" | "#,@" | "#,";
+      AbbrevPrefix.Rule = ToTerm("'") | "`" | ",@" | "," | "#'" | "#`" | "#,@" | "#,";
       Vector.Rule = "#(" + DatumListOpt + ")";
       ByteVector.Rule = "#vu8(" + ByteList + ")";
       ByteList.Rule = MakeStarRule(ByteList, Byte);
@@ -207,78 +199,10 @@ namespace Irony.Samples.Scheme {
       TokenFilters.Add(filter);
 
       //Scheme is tail-recursive language
-      base.LanguageFlags = LanguageFlags.AutoDetectKeywords | LanguageFlags.TailRecursive 
-                         ;//| LanguageFlags.SupportsInterpreter | LanguageFlags.SupportsConsole;
+      base.LanguageFlags |= LanguageFlags.TailRecursive; 
 
     }//constructor
 
-    public override Irony.Interpreter.LanguageRuntime CreateRuntime() {
-      return null; // new SchemeRuntime();
-    }
-
-    private string[] Operators = new string[] { "+", "-", "*", "/", "<", "=", ">" };
-    private bool IsOperator(string op) {
-      foreach (string s in Operators)
-        if (s == op) return true;
-      return false; 
-    }
-
-    private void CreateFunctionCallNode(ParsingContext context, ParseTreeNode parseNode) {
-/*      VarRefNode id = parseNode.ChildNodes[0] as VarRefNode;
-      AstNodeList funArgs = parseNode.ChildNodes[1].ChildNodes;
-      if (IsOperator(id.Name)) {
-        parseNode.AstNode = new BinExprNode(args, funArgs[0], id.Name, funArgs[1]);
-      } else {
-        parseNode.AstNode = new FunctionCallNode(args, id, funArgs);
-      }
-*/
-    }
-
-    private void CreateDefineVarNode(ParsingContext context, ParseTreeNode parseNode) {
-      //we skip the "define" keyword so the indexes are 1,2
-    //  parseNode.AstNode = new AssigmentNode(args, parseNode.ChildNodes[1] as VarRefNode, parseNode.ChildNodes[2]);
-    }
-
-    private void CreateDefineFunNode(ParsingContext context, ParseTreeNode parseNode) {
-      /* //"define" keyword is at index 0
-      VarRefNode funNameNode = parseNode.ChildNodes[1] as VarRefNode;
-      funNameNode.Flags |= AstNodeFlags.AllocateSlot;
-      AstNode funParams = parseNode.ChildNodes[2]; 
-      AstNode funBody = parseNode.ChildNodes[3];
-      AstNode anonFun = new AnonFunctionNode(args, funParams, funBody);
-      parseNode.AstNode = new AssigmentNode(args, funNameNode, anonFun);
- */   }
-
-    private void CreateLambdaNode(ParsingContext context, ParseTreeNode parseNode) {
-/*      AstNode funParams = parseNode.ChildNodes[1];
-      AstNode funBody = parseNode.ChildNodes[2];
-      parseNode.AstNode = new AnonFunctionNode(args, funParams, funBody); 
-*/
-    }
-
-    private void CreateIfThenElseNode(ParsingContext context, ParseTreeNode parseNode) {
-/*      AstNode test = parseNode.ChildNodes[1];
-      AstNode ifTrue = parseNode.ChildNodes[2];
-      AstNode ifFalse = parseNode.ChildNodes[3];
-      parseNode.AstNode = new IfNode(args, test, ifTrue, ifFalse);
-*/    }
-
-    private void CreateCondFormNode(ParsingContext context, ParseTreeNode parseNode) {
-/*      AstNodeList condClauses = parseNode.ChildNodes[1].ChildNodes;
-      AstNode elseNode = parseNode.ChildNodes[2];
-      AstNode elseCommands = (elseNode.IsEmpty()? null : elseNode.ChildNodes[1]);
-      parseNode.AstNode = new CondFormNode(args, condClauses, elseCommands);
-*/    }
-
-    private void CreateCondClauseNode(ParsingContext context, ParseTreeNode parseNode) {
-/*      AstNode test = parseNode.ChildNodes[0];
-      StatementListNode command = parseNode.ChildNodes[1] as StatementListNode;
-      parseNode.AstNode = new CondClauseNode(args, test, command);
-*/    }
-
-    private void CreateBeginNode(ParsingContext context, ParseTreeNode parseNode) {
-//      parseNode.AstNode = new StatementListNode(args, parseNode.ChildNodes[1].ChildNodes);
-    }
 
   }//class
 

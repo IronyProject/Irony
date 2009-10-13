@@ -32,21 +32,21 @@ namespace Irony.Samples.ScriptNET
 
       StringLiteral s = new StringLiteral("String", "'", StringFlags.AllowsDoubledQuote);
 
-      Terminal dot = Symbol(".", "dot");
-      Terminal less = Symbol("<");
-      Terminal greater = Symbol(">");
-      Terminal arrow = Symbol("->");
-      Terminal LSb = Symbol("[");
-      Terminal RSb = Symbol("]");
-      Terminal LCb = Symbol("(");
-      Terminal RCb = Symbol(")");
-      Terminal RFb = Symbol("}");
-      Terminal LFb = Symbol("{");
-      Terminal LMb = Symbol("<[");
-      Terminal RMb = Symbol("]>");
-      Terminal comma = Symbol(",");
-      Terminal semicolon = Symbol(";");
-      Terminal colon = Symbol(":");
+      Terminal dot = ToTerm(".", "dot");
+      Terminal less = ToTerm("<");
+      Terminal greater = ToTerm(">");
+      Terminal arrow = ToTerm("->");
+      Terminal LSb = ToTerm("[");
+      Terminal RSb = ToTerm("]");
+      Terminal LCb = ToTerm("(");
+      Terminal RCb = ToTerm(")");
+      Terminal RFb = ToTerm("}");
+      Terminal LFb = ToTerm("{");
+      Terminal LMb = ToTerm("<[");
+      Terminal RMb = ToTerm("]>");
+      Terminal comma = ToTerm(",");
+      Terminal semicolon = ToTerm(";");
+      Terminal colon = ToTerm(":");
 
       #endregion
 
@@ -97,7 +97,7 @@ namespace Irony.Samples.ScriptNET
 
       #region 3. BNF rules
       #region 3.1 Expressions
-      Expr.Rule = Symbol("true")
+      Expr.Rule = ToTerm("true")
                   | "false"
                   | "null"
                   | s
@@ -122,14 +122,14 @@ namespace Irony.Samples.ScriptNET
       ExprList.Rule = MakePlusRule(ExprList, comma, Expr);
       NewStmt.Rule = "new" + QualifiedName + GenericsPostfix.Q() + LCb + ExprList.Q() + RCb;
       NewArrStmt.Rule = "new" + QualifiedName + GenericsPostfix.Q() + LSb + ExprList.Q() + RSb;
-      BinOp.Rule = Symbol("+") | "-" | "*" | "/" | "%" | "^" | "&" | "|"
+      BinOp.Rule = ToTerm("+") | "-" | "*" | "/" | "%" | "^" | "&" | "|"
                   | "&&" | "||" | "==" | "!=" | greater | less 
                   | ">=" | "<=" | "is" 
                   | "="  | "+=" | "-=" 
                   | ".";
 
-      LUnOp.Rule = Symbol("-") | "~" | "!";
-      RUnOp.Rule = Symbol("++") | "--";
+      LUnOp.Rule = ToTerm("-") | "~" | "!";
+      RUnOp.Rule = ToTerm("++") | "--";
 
       ArrayConstructor.Rule = LSb + ExprList + RSb;
       MObjectConstructor.Rule = LSb + v + arrow + Expr + MObjectList.Star() + RSb;
@@ -167,7 +167,7 @@ namespace Irony.Samples.ScriptNET
       CompoundStatement.Rule = LFb + Statements + RFb;
 
 
-      SwitchStatements.Rule = Symbol("case") + Expr + colon + Statements + SwitchStatements
+      SwitchStatements.Rule = ToTerm("case") + Expr + colon + Statements + SwitchStatements
                              | "default" + colon + Statements;
 
       #endregion

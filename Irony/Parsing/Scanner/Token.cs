@@ -52,11 +52,11 @@ namespace Irony.Parsing {
     public object Details;
     public TokenFlags Flags; 
     public TokenEditorInfo EditorInfo;
-    public SymbolTerminal AsSymbol;
+    public KeyTerm KeyTerm;
 
     public Token(Terminal term, SourceLocation location, string text, object value)  {
       SetTerminal(term);
-      this.AsSymbol = term as SymbolTerminal;
+      this.KeyTerm = term as KeyTerm;
       Location = location;
       Text = text;
       Value = value; 
@@ -98,16 +98,7 @@ namespace Irony.Parsing {
 
     [System.Diagnostics.DebuggerStepThrough]
     public override string ToString() {
-      string result = string.Empty;
-      if (Terminal is SymbolTerminal)
-        result = Text + " [Symbol]";
-      else if (Terminal.OptionIsSet(TermOptions.IsKeyword))
-        result = Text + " " + "[Keyword]";
-      else if (_valueString == null)
-        result = Text + " (" + Terminal.ToString() + ")";
-      else
-        result = _valueString + " (" + Terminal.ToString() + ")";
-      return result; 
+      return Terminal.TokenToString(this); 
     }//method
 
   }//class

@@ -57,8 +57,8 @@ namespace Irony.Parsing {
         }
         //check match
         Token last = _braces.Pop();
-        if (last.AsSymbol.IsPairFor != token.AsSymbol) {
-          yield return base.CreateErrorTokenAt(token.Location, "Unmatched closing brace '{0}' - expected '{1}'", last.AsSymbol.IsPairFor.Name);
+        if (last.KeyTerm.IsPairFor != token.KeyTerm) {
+          yield return base.CreateErrorTokenAt(token.Location, "Unmatched closing brace '{0}' - expected '{1}'", last.KeyTerm.IsPairFor.Name);
           continue;
         }
         //everything is ok, there's matching brace on top of the stack

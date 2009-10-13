@@ -40,14 +40,14 @@ namespace Irony.Samples.FullTextSearch
           this.Root = OrExpression;
           OrExpression.Rule = AndExpression
                             | OrExpression + OrOperator + AndExpression;
-          OrOperator.Rule = Symbol("or") | "|";
+          OrOperator.Rule = ToTerm("or") | "|";
           AndExpression.Rule = PrimaryExpression
                              | AndExpression + AndOperator + PrimaryExpression;
           AndOperator.Rule = Empty
                            | "and"
                            | "&"
                            | ExcludeOperator;
-          ExcludeOperator.Rule = Symbol("-");
+          ExcludeOperator.Rule = "-";
           PrimaryExpression.Rule = Term
                                  | ThesaurusExpression
                                  | ExactExpression
@@ -55,22 +55,23 @@ namespace Irony.Samples.FullTextSearch
                                  | Phrase
                                  | ProximityExpression;
           ThesaurusExpression.Rule = ThesaurusOperator + Term;
-          ThesaurusOperator.Rule = Symbol("~");
+          ThesaurusOperator.Rule = "~";
           ExactExpression.Rule = ExactOperator + Term
                                | ExactOperator + Phrase;
-          ExactOperator.Rule = Symbol("+");
+          ExactOperator.Rule = "+";
           ParenthesizedExpression.Rule = "(" + OrExpression + ")";
           ProximityExpression.Rule = "<" + ProximityList + ">";
           MakePlusRule(ProximityList, Term);
 
           MarkTransient(PrimaryExpression, ParenthesizedExpression, AndExpression, OrExpression, ProximityExpression);
           RegisterPunctuation("<", ">", "(", ")");
+          LanguageFlags |= LanguageFlags.CanRunSample;
         }
 
         //Creates extended identifier terminal that allows international characters
         // Following the pattern used for c# identifier terminal in TerminalFactory.CreateCSharpIdentifier method;
         private IdentifierTerminal CreateTerm(string name) {
-          IdentifierTerminal term = new IdentifierTerminal(name,   "!@#$%^*_'.?", "!@#$%^*_'.?0123456789");
+          IdentifierTerminal term = new IdentifierTerminal(name,   "!@#$%^*_'.?-", "!@#$%^*_'.?0123456789");
           term.CharCategories.AddRange(new UnicodeCategory[] {
              UnicodeCategory.UppercaseLetter, //Ul
              UnicodeCategory.LowercaseLetter, //Ll
@@ -89,6 +90,10 @@ namespace Irony.Samples.FullTextSearch
           return term;
         }
 
+        public override string RunSample(ParseTree parseTree) {
+          var sql = ConvertQuery(parseTree.Root);
+          return sql;
+        }
 
 
         public enum TermType

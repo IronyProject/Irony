@@ -73,16 +73,29 @@ namespace Irony.Parsing {
 
   public class ParserAction {
     public ParserActionType ActionType;
-    public readonly ParserState NewState; //new state for shift or non-canonical transition
-    public Production ReduceProduction;
+    //Shift action
+    public readonly ParserState NewState;
+    public readonly int Precedence; //precedence for shift symbol, either from operator symbol or from precedence grammar hint
+    public readonly Associativity Associativity = Associativity.Left;
+    //Reduce action parameters
+    public Production ReduceProduction; 
 
-    protected ParserAction(ParserActionType actionType, ParserState newState, Production reduceProduction) {
+    protected ParserAction(ParserActionType actionType, ParserState newState, Production reduceProduction)
+        : this(actionType, newState, reduceProduction, KeyTerm.NoPrecedence, Associativity.Left) { 
+    }
+    protected ParserAction(ParserActionType actionType, ParserState newState, Production reduceProduction, 
+            int precedence, Associativity associativity) {
       this.ActionType = actionType;
       this.NewState = newState;
       this.ReduceProduction = reduceProduction;
+      this.Precedence = precedence;
+      this.Associativity = associativity;
     }
     public static ParserAction CreateShift(ParserState newState) {
-      return new ParserAction(ParserActionType.Shift, newState, null);
+      return new ParserAction(ParserActionType.Shift, newState, null, 0, Associativity.Left);
+    }
+    public static ParserAction CreateShift(ParserState newState, int precedence, Associativity associativity) {
+      return new ParserAction(ParserActionType.Shift, newState, null, precedence, associativity);
     }
     public static ParserAction CreateReduce(Production reduceProduction) {
       return new ParserAction(ParserActionType.Reduce, null, reduceProduction);

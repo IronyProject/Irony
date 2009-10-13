@@ -86,8 +86,8 @@ namespace Irony.Parsing {
     private ParserAction GetShiftActionInCurrentState() {
       ParserAction result = null;
       if (_currentState.Actions.TryGetValue(_currentInput.Term, out result) ||
-         _currentInput.Token != null && _currentInput.Token.AsSymbol != null &&
-             _currentState.Actions.TryGetValue(_currentInput.Token.AsSymbol, out result))
+         _currentInput.Token != null && _currentInput.Token.KeyTerm != null &&
+             _currentState.Actions.TryGetValue(_currentInput.Token.KeyTerm, out result))
         if (result.ActionType == ParserActionType.Shift)
           return result;
       return null;

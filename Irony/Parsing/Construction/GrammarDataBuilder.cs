@@ -23,6 +23,7 @@ namespace Irony.Parsing.Construction {
       _grammarData.AugmentedRoot.Rule = _grammar.Root + _grammar.Eof;
       CollectTermsFromGrammar();
       InitTermLists(_grammarData);
+      InitTokenFilters(); 
       CreateProductions();
       ComputeNonTerminalsNullability(_grammarData);
       ComputeTailsNullability(_grammarData);
@@ -303,18 +304,24 @@ namespace Irony.Parsing.Construction {
           nt.SetOption(TermOptions.IsTransient);
       }
     }
+    private void InitTokenFilters() {
+      foreach (var filter in _grammar.TokenFilters)
+        filter.Init(_grammarData);
+    }
+
 
     #region Grammar Validation
     private void ValidateGrammar() {
-      //Check CreateAst flag and give a warning if this flag is not set, but node types or NodeCreator methods are assigned
-      // in any of non-terminals
-      if (!_grammar.FlagIsSet(LanguageFlags.CreateAst)) {
-        var ntSet = new BnfTermSet();
+      //Check that if CreateAst flag is set then AstNodeType or AstNodeCreator is assigned on all non-transient nodes.
+      if (_grammar.FlagIsSet(LanguageFlags.CreateAst)) {
+        var errorSet = new BnfTermSet();
         foreach (var nt in _grammarData.NonTerminals)
-          if (nt.AstNodeCreator != null || nt.AstNodeType != null)
-            ntSet.Add(nt);
-        if (ntSet.Count > 0)
-          this._language.Errors.Add(GrammarErrorLevel.Warning, null, "Warning: AstNodeType or AstNodeCreator is set in some non-terminals, but LanguageFlags.CreateAst flag is not set.");
+          if (nt.AstNodeCreator == null && nt.AstNodeType == null 
+                  && !nt.OptionIsSet(TermOptions.IsTransient) && nt != _grammarData.AugmentedRoot)
+            errorSet.Add(nt);
+        if (errorSet.Count > 0)
+          this._language.Errors.Add(GrammarErrorLevel.Warning, null, 
+            "Warning: AstNodeType or AstNodeCreator is not set on non-terminals: " + errorSet.ToString());
       }
     }//method
     #endregion

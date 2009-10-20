@@ -105,7 +105,7 @@ namespace Irony.Parsing {
     }
     #endregion 
 
-    #region Register methods
+    #region Register/Mark methods
     public void RegisterPunctuation(params string[] symbols) {
       foreach (string symbol in symbols) {
         KeyTerm term = ToTerm(symbol);
@@ -159,10 +159,21 @@ namespace Irony.Parsing {
       foreach (var symbol in symbols)
         ToTerm(symbol).SetOption(TermOptions.IsMemberSelect);
     }
+    //Sets IsNotReported flag on terminals. As a result the terminal wouldn't appear in expected terminal list
+    // in syntax error messages
+    public void MarkNotReported(params BnfTerm[] terms) {
+      foreach (var term in terms)
+        term.SetOption(TermOptions.IsNotReported);
+    }
+    public void MarkNotReported(params string[] symbols) {
+      foreach (var symbol in symbols)
+        ToTerm(symbol).SetOption(TermOptions.IsNotReported);
+    }
+
     #endregion
 
     #region virtual methods: TryMatch, CreateNode, GetSyntaxErrorMessage, CreateRuntime, RunSample
-    //This method is called if Scanner failed to produce token; it offers custom method a chance    
+    //This method is called if Scanner fails to produce a token; it offers custom method a chance to produce the token    
     public virtual Token TryMatch(ParsingContext context, ISourceStream source) {
       return null;
     }
@@ -176,7 +187,8 @@ namespace Irony.Parsing {
         return;
       }
       Type nodeType = term.AstNodeType ?? this.DefaultNodeType;
-      if (nodeType == null) return; 
+      if (nodeType == null) 
+        return; //we give a warning on grammar validation about this situation
       nodeInfo.AstNode =  Activator.CreateInstance(nodeType);
       //Initialize node
       var iInit = nodeInfo.AstNode as IAstNodeInit;
@@ -209,7 +221,7 @@ namespace Irony.Parsing {
     //Constructs the error message in situation when parser has no available action for current input.
     // override this method if you want to change this message
     public virtual string ConstructParserErrorMessage(ParsingContext context, ParserState state, BnfTermSet expectedTerms, ParseTreeNode currentInput) {
-      string msg = "Syntax error" + (expectedTerms.Count == 0 ? "." : ", expected: " + expectedTerms.ToErrorString());
+      string msg = "Syntax error" + (expectedTerms.Count == 0 ? "." : ", expected: " + expectedTerms.ToErrorString() + ".");
       return msg; 
     }
     
@@ -219,17 +231,10 @@ namespace Irony.Parsing {
 
     //This method allows custom implementation of running a sample in Grammar Explorer
     // By default it evaluates a parse tree using default interpreter 
-    public virtual string RunSample(ParseTree parseTree) {
-      var outBuffer = new StringBuilder();
-      var iRoot = parseTree.Root.AstNode as IInterpretedAstNode;
-      if (iRoot == null) return null;
-      var runtime = CreateRuntime();
-      var evalContext = new EvaluationContext(runtime);
-      runtime.OutputBuffer = new StringBuilder();
-      iRoot.Evaluate(evalContext, AstMode.None);
-      if (evalContext.LastResult != runtime.Unassinged)
-        runtime.OutputBuffer.Append(evalContext.LastResult);
-      return runtime.OutputBuffer.ToString();
+    public virtual string RunSample(ParseTree parsedSample) {
+      var interpreter = new ScriptInterpreter(this);
+      interpreter.Evaluate(parsedSample);
+      return interpreter.GetOutput(); 
     }
 
 
@@ -304,7 +309,7 @@ namespace Irony.Parsing {
     public readonly Terminal Eof = new Terminal("EOF", TokenCategory.Outline);
 
     //End-of-Statement terminal
-    public readonly Terminal Eos = new Terminal("EOS", TokenCategory.Outline);
+    public readonly Terminal Eos = new Terminal("EOS", "[end-of-statement]", TokenCategory.Outline);
 
     public readonly Terminal SyntaxError = new Terminal("SYNTAX_ERROR", TokenCategory.Error);
 

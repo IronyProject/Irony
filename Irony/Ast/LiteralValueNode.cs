@@ -11,9 +11,11 @@ namespace Irony.Ast {
 
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode); 
-      Value = treeNode.Token.Value;    
+      Value = treeNode.Token.Value;
+      AsString = Value == null ? "null" : Value.ToString(); 
     }
-    public override void Evaluate(EvaluationContext context, AstMode mode) {
+
+    public override void EvaluateNode(EvaluationContext context, AstMode mode) {
       switch (mode) {
         case AstMode.Read: context.Data.Push(Value); break;
         //Write call might happen for expressions like "5++"; when system tries to save the incremented value 
@@ -21,10 +23,9 @@ namespace Irony.Ast {
         case AstMode.Write: context.Data.Pop(); break;  
       }
     }
-    public override string ToString() {
-      return Role + ":" + Value; 
-    }
 
+    //TODO: think how to eliminate this method. Literal terminals should NOT use AstNode-derived code.
+    // Irony's AstNode is one custom implementation, one of many possible.
     public static bool AssignDefaultAstNodeType(Terminal terminal) {
       bool assignType = (terminal.AstNodeType == null && terminal.AstNodeCreator == null
           && terminal.Grammar.FlagIsSet(LanguageFlags.CreateAst));

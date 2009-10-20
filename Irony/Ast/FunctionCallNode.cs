@@ -18,29 +18,30 @@ using Irony.Interpreter;
 using Irony.Parsing;
 
 namespace Irony.Ast {
-  public class BinExprNode : AstNode {
-    public AstNode Left;
-    public string Op;
-    public AstNode Right;
 
-    public BinExprNode() { }
+  //A node representing function call
+  public class FunctionCallNode : AstNode {
+    AstNode TargetRef;
+    AstNode Arguments;
+    string _targetName;
+     
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      Left = AddChild("Arg", treeNode.ChildNodes[0]);
-      Right = AddChild("Arg", treeNode.ChildNodes[2]);
-      var opToken = treeNode.ChildNodes[1].FindFirstChildToken();
-      Op = opToken.Text;
-      //Set error anchor to operator, so on error (Division by zero) the explorer will point to 
-      // operator node as location, not to the very beginning of the first operand.
-      ErrorAnchor = opToken.Location;
-      AsString = Op + "(operator)"; 
+      TargetRef = AddChild("Target", treeNode.ChildNodes[0]);
+      _targetName = treeNode.ChildNodes[0].FindTokenAndGetText(); 
+      Arguments = AddChild("Args", treeNode.ChildNodes[1]);
+      AsString = "Call " + _targetName;
     }
 
     public override void EvaluateNode(EvaluationContext context, AstMode mode) {
-      Left.Evaluate(context, AstMode.Read);
-      Right.Evaluate(context, AstMode.Read);
-      context.CallDispatcher.ExecuteBinaryOperator(this.Op);
-    }//method
+      TargetRef.Evaluate(context, AstMode.Read);
+      var target = context.Data.Pop() as ICallTarget;
+      if (target == null)
+        context.ThrowError(this, "Variable {0} is not a callable function", _targetName);
+      Arguments.Evaluate(context, AstMode.Read);
+      target.Call(context);
+    }
 
   }//class
+
 }//namespace

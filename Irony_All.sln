@@ -14,9 +14,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		ReadMe.txt = ReadMe.txt
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "025.Irony.Samples.ConsoleCalculator", "Irony.Samples.ConsoleCalculator\025.Irony.Samples.ConsoleCalculator.csproj", "{5A31B964-CDFA-4406-9316-32A0F04CE149}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 5
+		SccNumberOfProjects = 6
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs05.codeplex.com/
 		SccLocalPath0 = .
@@ -32,6 +34,9 @@ Global
 		SccProjectUniqueName4 = Irony.Tests\\040.Irony.Tests.csproj
 		SccProjectName4 = Irony.Tests
 		SccLocalPath4 = Irony.Tests
+		SccProjectUniqueName5 = Irony.Samples.ConsoleCalculator\\025.Irony.Samples.ConsoleCalculator.csproj
+		SccProjectName5 = Irony.Samples.ConsoleCalculator
+		SccLocalPath5 = Irony.Samples.ConsoleCalculator
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -89,6 +94,18 @@ Global
 		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.Silverlight Release|Any CPU.Build.0 = Release|Any CPU
 		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.SpecSharp|Any CPU.ActiveCfg = Release|Any CPU
 		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.SpecSharp|Any CPU.Build.0 = Release|Any CPU
+		{5A31B964-CDFA-4406-9316-32A0F04CE149}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A31B964-CDFA-4406-9316-32A0F04CE149}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A31B964-CDFA-4406-9316-32A0F04CE149}.FxCop|Any CPU.ActiveCfg = Release|Any CPU
+		{5A31B964-CDFA-4406-9316-32A0F04CE149}.FxCop|Any CPU.Build.0 = Release|Any CPU
+		{5A31B964-CDFA-4406-9316-32A0F04CE149}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A31B964-CDFA-4406-9316-32A0F04CE149}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A31B964-CDFA-4406-9316-32A0F04CE149}.Silverlight Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A31B964-CDFA-4406-9316-32A0F04CE149}.Silverlight Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A31B964-CDFA-4406-9316-32A0F04CE149}.Silverlight Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A31B964-CDFA-4406-9316-32A0F04CE149}.Silverlight Release|Any CPU.Build.0 = Release|Any CPU
+		{5A31B964-CDFA-4406-9316-32A0F04CE149}.SpecSharp|Any CPU.ActiveCfg = Release|Any CPU
+		{5A31B964-CDFA-4406-9316-32A0F04CE149}.SpecSharp|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

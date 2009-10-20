@@ -50,6 +50,7 @@
     <Compile Include="CSharp\CSharpGrammar.cs" />
     <Compile Include="FullTextSearchQueryConverter\SearchGrammar.cs" />
     <Compile Include="Json\JsonGrammar.cs" />
+    <Compile Include="MiniPython\MiniPython.cs" />
     <Compile Include="NonCanonTestGrammars\NonCanonTestGrammar3.cs" />
     <Compile Include="NonCanonTestGrammars\NonCanonTestGrammar2.cs" />
     <Compile Include="NonCanonTestGrammars\NonCanonTestGrammar4.cs" />

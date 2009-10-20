@@ -22,7 +22,6 @@ namespace Irony.Parsing.Construction {
       _data.ScannerRecoverySymbols = _grammar.WhitespaceChars + _grammar.Delimiters;
       InitMultilineTerminalsList();
       BuildTerminalsLookupTable();
-      InitTokenFilters();
     }
 
     private void InitMultilineTerminalsList() {
@@ -68,27 +67,6 @@ namespace Irony.Parsing.Construction {
           list.Sort(Terminal.ByPriorityReverse);
     }//method
 
-    private void InitTokenFilters() {
-      _data.TokenFilters.AddRange(_grammarData.Grammar.TokenFilters);
-      //check if we need brace match token filter
-      bool needBraceMatchFilter = false;
-      foreach(var term in _grammarData.Terminals)
-        if (term.OptionIsSet(TermOptions.IsBrace)) {
-          needBraceMatchFilter = true;
-          break; 
-        }
-      if (needBraceMatchFilter)
-        EnsureBraceMatchFilter(_data); 
-      //initialize filters
-      foreach (var filter in _data.TokenFilters)
-        filter.Init(_grammarData);
-    }
-    private static void EnsureBraceMatchFilter(ScannerData _data) {
-      foreach (TokenFilter filter in _data.TokenFilters)
-        if (filter is BraceMatchFilter) return;
-      _data.TokenFilters.Add(new BraceMatchFilter());
-    }
-
   }//class
 
-}
+}//namespace

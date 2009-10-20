@@ -22,10 +22,15 @@ namespace Irony.Ast {
 
   //Basic interface for AST nodes; Init method is the chance for AST node to get references to its child nodes, and all 
   // related information gathered during parsing
+  //Implementing this interface is a minimum required from custom AST node class to enable its creation by Irony
+  // parser. Alternatively, if your custom AST node class does not implement this interface then you can create
+  // and initialize node instances using AstNodeCreator delegate attached to corresponding non-terminal in your grammar.
   public interface IAstNodeInit {
     void Init(ParsingContext context, ParseTreeNode parseNode);
   }
 
+  //Grammar explorer uses this interface to discover and display the AST tree after parsing the input
+  // (Grammar Explorer additionally uses ToString method of the node to get the text representation of the node)
   public interface IBrowsableAstNode {
     SourceLocation Location {get;} 
     IEnumerable GetChildNodes();
@@ -36,20 +41,28 @@ namespace Irony.Ast {
     None = 0,
     Read = 0x01,
     Write = 0x02,
-    Tail = 0x10,
   }
 
-  public delegate void NodeEvaluate(EvaluationContext context, AstMode mode); 
-
+  //This interface is expected by Irony's ScriptInterpreter when it evaluates AST nodes in the AST tree. 
   public interface IInterpretedAstNode {
     void Evaluate(EvaluationContext context, AstMode mode);
+    //Used for pointing to error location. For most nodes it would be the location of the node itself.
+    // One exception is BinExprNode: when we get "Division by zero" error evaluating 
+    //  x = (5 + 3) / (2 - 2)
+    // it is better to point to "/" as error location, rather than the first "(" - which is the start 
+    // location of binary expression. 
+    SourceLocation GetErrorAnchor();
   }
 
+  //Simple visitor interface
   public interface IAstVisitor {
     void BeginVisit(AstNode node);
     void EndVisit(AstNode node);
   }
 
+  public interface ICallTarget {
+    void Call(EvaluationContext context); 
+  }
 
 
 }

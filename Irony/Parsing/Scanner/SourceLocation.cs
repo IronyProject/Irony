@@ -15,15 +15,23 @@ namespace Irony.Parsing {
       Line = line;
       Column = column;
     }
-    //Line and Column displayed to user should be 1-based
+    //Line/col are zero-based internally
     public override string ToString() {
-      return (Line + 1).ToString() + ", " + (Column + 1).ToString();
+      return "(" + Line.ToString() + ":" + Column.ToString() + ")";
+    }
+    //Line and Column displayed to user should be 1-based
+    public string ToUiString() {
+      return "(" + (Line + 1).ToString() + ":" + (Column + 1).ToString() + ")";
     }
     public static int Compare(SourceLocation x, SourceLocation y) {
       if (x.Position < y.Position) return -1;
       if (x.Position == y.Position) return 0;
       return 1;
     }
+    public static SourceLocation Empty {
+      get { return _empty; }
+    } static SourceLocation _empty = new SourceLocation();  
+
   }//SourceLocation
 
   public struct SourceSpan {

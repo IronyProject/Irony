@@ -33,6 +33,8 @@ namespace Irony.Samples {
         @"Simple expression evaluator. ";
       // 1. Terminals
       var number = new NumberLiteral("number");
+      //Let's allow big integers (with unlimited number of digits):
+      number.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.Int64, NumberLiteral.TypeCodeBigInt };
       var identifier = new IdentifierTerminal("identifier");
       var comment = new CommentTerminal("comment", "#", "\n", "\r"); //new
       //comment must to be added to NonGrammarTerminals list; it is not used directly in grammar rules,
@@ -50,7 +52,7 @@ namespace Irony.Samples {
       var PostFixExpr = new NonTerminal("PostFixExpr", typeof(UnExprNode));
       var PostFixOp = new NonTerminal("PostFixOp");
       var AssignmentStmt = new NonTerminal("AssignmentStmt", typeof(AssigmentNode));
-      var AssignmentOp = new NonTerminal("AssignmentOp");
+      var AssignmentOp = new NonTerminal("AssignmentOp", "assignment operator");
       var Statement = new NonTerminal("Statement");
       var ProgramLine = new NonTerminal("ProgramLine");
       var Program = new NonTerminal("Program", typeof(StatementListNode));
@@ -78,7 +80,10 @@ namespace Irony.Samples {
       RegisterOperators(3, Associativity.Right, "**");
 
       RegisterPunctuation("(", ")");
-      MarkTransient(Term, Expr, Statement, BinOp, UnOp, AssignmentOp, ProgramLine, ParExpr);
+      RegisterBracePair("(", ")"); 
+      MarkTransient(Term, Expr, Statement, BinOp, UnOp, PostFixOp, AssignmentOp, ProgramLine, ParExpr);
+      // The following makes error messages a little cleaner (try commenting and entering 'x y' to see the effect)
+      MarkNotReported("++", "--"); 
 
       //automatically add NewLine before EOF so that our BNF rules work correctly when there's no final line break in source
       this.LanguageFlags = LanguageFlags.CreateAst | LanguageFlags.NewLineBeforeEOF | LanguageFlags.CanRunSample; 

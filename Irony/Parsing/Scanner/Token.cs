@@ -22,7 +22,7 @@ namespace Irony.Parsing {
   }
 
   public enum TokenCategory {
-    Literal,
+    //Literal,
     Content,
     Outline, //newLine, indent, dedent
     Comment,
@@ -31,6 +31,8 @@ namespace Irony.Parsing {
   }
 
   public class TokenList : List<Token> {}
+  public class TokenStack : Stack<Token> { }
+
   //Tokens are produced by scanner and fed to parser, optionally passing through Token filters in between. 
   public class Token  {
     private Terminal _terminal; 
@@ -98,7 +100,7 @@ namespace Irony.Parsing {
 
     [System.Diagnostics.DebuggerStepThrough]
     public override string ToString() {
-      return Terminal.TokenToString(this); 
+      return Terminal.TokenToString(this);// +" (" + Location.ToString() + ")"; 
     }//method
 
   }//class

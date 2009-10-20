@@ -47,7 +47,7 @@ namespace Irony.Parsing {
       //create streams
       FilteredStream = UnfilteredStream = CreateUnfilteredTokenStream();
       //chain all token filters
-      foreach (TokenFilter filter in _data.TokenFilters) {
+      foreach (TokenFilter filter in _grammar.TokenFilters) {
         FilteredStream = filter.BeginFiltering(context, FilteredStream);
       }
       FilteredTokenEnumerator = FilteredStream.GetEnumerator(); 
@@ -300,7 +300,7 @@ namespace Irony.Parsing {
     #endregion
 
     public void SetSourceLocation(SourceLocation location) {
-      foreach (var filter in _data.TokenFilters)
+      foreach (var filter in _grammar.TokenFilters)
         filter.OnSetSourceLocation(location); 
       _source.Location = location;
     }

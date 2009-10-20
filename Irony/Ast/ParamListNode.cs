@@ -18,29 +18,31 @@ using Irony.Interpreter;
 using Irony.Parsing;
 
 namespace Irony.Ast {
-  public class BinExprNode : AstNode {
-    public AstNode Left;
-    public string Op;
-    public AstNode Right;
 
-    public BinExprNode() { }
+  public class ParamListNode : AstNode {
+     
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      Left = AddChild("Arg", treeNode.ChildNodes[0]);
-      Right = AddChild("Arg", treeNode.ChildNodes[2]);
-      var opToken = treeNode.ChildNodes[1].FindFirstChildToken();
-      Op = opToken.Text;
-      //Set error anchor to operator, so on error (Division by zero) the explorer will point to 
-      // operator node as location, not to the very beginning of the first operand.
-      ErrorAnchor = opToken.Location;
-      AsString = Op + "(operator)"; 
+      foreach (var child in treeNode.ChildNodes) {
+          AddChild("parameter", child); 
+      }
+      AsString = "Param list";
     }
 
     public override void EvaluateNode(EvaluationContext context, AstMode mode) {
-      Left.Evaluate(context, AstMode.Read);
-      Right.Evaluate(context, AstMode.Read);
-      context.CallDispatcher.ExecuteBinaryOperator(this.Op);
+      var argsObj = context.Data.Pop();
+      var args = argsObj as ValueList;
+      if (args == null)
+        context.ThrowError(this, "Argument list not found in the stack. Expected: ValueList, found: {0}", argsObj);
+      if (args.Count != ChildNodes.Count)
+        context.ThrowError(this, "Invalid number of arguments. Expected: {0}, found: {1}", ChildNodes.Count, args.Count);
+
+      for(int i = 0; i < ChildNodes.Count; i++) {
+        context.Data.Push(args[i]);
+        ChildNodes[i].Evaluate(context, AstMode.Write); 
+      }
     }//method
 
   }//class
+
 }//namespace

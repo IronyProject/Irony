@@ -35,10 +35,11 @@ namespace Irony.Parsing {
 
     private char[] _stopChars; 
 
-    public RegExLiteral(string name) : base(name, TokenCategory.Literal) {
+    public RegExLiteral(string name) : base(name) {
       Switches.Add('i', RegexOptions.IgnoreCase);
       Switches.Add('g', RegexOptions.None); //not sure what to do with this flag? anybody, any advice?
-      Switches.Add('m', RegexOptions.Multiline); 
+      Switches.Add('m', RegexOptions.Multiline);
+      base.SetOption(TermOptions.IsLiteral);
     }
 
     public RegExLiteral(string name, char startEndSymbol, char escapeSymbol) : base(name) {

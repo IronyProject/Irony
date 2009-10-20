@@ -61,7 +61,7 @@ namespace Irony.Parsing {
 
     #region constructors and initialization
     public StringLiteral(string name, string startEndSymbol, StringFlags stringFlags) : base(name) {
-      base.Category = TokenCategory.Literal;
+      base.SetOption(TermOptions.IsLiteral);
       this._subtypes.Add(startEndSymbol, startEndSymbol, stringFlags);
       base.AstNodeType = typeof(Irony.Ast.LiteralValueNode);
     }

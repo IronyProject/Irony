@@ -36,6 +36,7 @@ namespace Irony.Interpreter {
     public AstNode GotoTarget;
     //public Closure Tail;
     public StackFrame CurrentFrame;
+    public StringBuilder OutputBuffer = new StringBuilder(); 
 
     public EvaluationContext(LanguageRuntime runtime) : this(runtime, null) { }
     public EvaluationContext(LanguageRuntime runtime, StackFrame topFrame) {
@@ -46,21 +47,51 @@ namespace Irony.Interpreter {
       if (CurrentFrame == null)
         CurrentFrame = new StackFrame(new ValueSet());
       Data = new DataStack();
-      Data.Init(runtime.Unassinged);//set LastPushedItem to unassigned
+      Data.Init(runtime.Unassigned);//set LastPushedItem to unassigned
     }
 
     public object LastResult {
       get { return Data.LastPushedItem; }
     }
+    public void ClearLastResult() {
+      Data.Init(Runtime.Unassigned); 
+    }
+    public bool HasLastResult {
+      get { return LastResult != Runtime.Unassigned; }
+    }
 
     public void PushFrame(string methodName, AstNode node, StackFrame parent) {
-      //CurrentFrame = new StackFrame(methodName, node, CurrentFrame, parent, null);
+      CurrentFrame = new StackFrame(methodName, CurrentFrame, parent);
     }
     public void PopFrame() {
       CurrentFrame = CurrentFrame.Caller;
     }
 
+    public bool TryGetValue(string name, out object value) {
+      if (CurrentFrame.Values.TryGetValue(name, out value)) return true; 
+      var frame = CurrentFrame.Parent;
+      while (frame != null) {
+        if (frame.Values.TryGetValue(name, out value)) return true;
+        frame = frame.Parent;
+      }
+      value = null; 
+      return false; 
+    }
+    public void SetValue(string name, object value) {
+      CurrentFrame.Values[name] = value; 
+    }
 
+    public void Write(string text) {
+      if (OutputBuffer != null)
+        OutputBuffer.Append(text); 
+    }
+
+    public void ThrowError(IInterpretedAstNode sourceNode, string message, params object[] args) {
+      if (args != null && args.Length > 0)
+        message = string.Format(message, args);
+      SourceLocation loc = (sourceNode == null) ? SourceLocation.Empty : sourceNode.GetErrorAnchor(); 
+      throw new RuntimeException(message, null, loc); 
+    }
 
   }//class
 

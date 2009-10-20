@@ -194,10 +194,6 @@ namespace Irony.Samples.Scheme {
       RegisterPunctuation(LP, RP);
       MarkTransient(Datum, CompoundDatum, Statement, SpecialForm, Atom); 
 
-      //Filters and other stuff
-      BraceMatchFilter filter = new BraceMatchFilter();
-      TokenFilters.Add(filter);
-
       //Scheme is tail-recursive language
       base.LanguageFlags |= LanguageFlags.TailRecursive; 
 

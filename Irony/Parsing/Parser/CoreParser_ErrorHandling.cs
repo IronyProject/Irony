@@ -106,10 +106,12 @@ namespace Irony.Parsing {
         //See note about multi-threading issues in ComputeReportedExpectedSet comments.
         if (_currentState.ReportedExpectedSet == null)
           _currentState.ReportedExpectedSet = ComputeReportedExpectedSet(_currentState); 
-        //TODO: add extra filtering of expected terms from brace-matching filter: while the closing parenthesis ")" might 
-        //  be expected term in a state in general, if there was no opening parenthesis in preceding input then we would not
+        //Filter out closing braces which are not expected based on previous input.
+        // While the closing parenthesis ")" might be expected term in a state in general, 
+        // if there was no opening parenthesis in preceding input then we would not
         //  expect a closing one. 
-        msg = _grammar.ConstructParserErrorMessage(_context, _currentState, _currentState.ReportedExpectedSet, _currentInput);
+        var expectedSet = FilterBracesInExpectedSet(_currentState.ReportedExpectedSet);
+        msg = _grammar.ConstructParserErrorMessage(_context, _currentState, expectedSet, _currentInput);
         if (string.IsNullOrEmpty(msg))
           msg = "Syntax error";
       }
@@ -140,6 +142,7 @@ namespace Irony.Parsing {
       var reducedSet = new BnfTermSet();
       var allFirsts = new BnfTermSet();
       foreach (var term in state.ExpectedTerms) {
+        if (term.OptionIsSet(TermOptions.IsNotReported)) continue; 
         var nt = term as NonTerminal;
         if (nt == null) continue;
         if (!reducedSet.Contains(nt) && !string.IsNullOrEmpty(nt.DisplayName) && !allFirsts.Contains(nt)) {
@@ -149,13 +152,32 @@ namespace Irony.Parsing {
       }
       //2. Now go thru all expected terms and add only those that are NOT in the allFirsts set.
       foreach (var term in state.ExpectedTerms) {
+        if (term.OptionIsSet(TermOptions.IsNotReported)) continue;
         if (!reducedSet.Contains(term) && !allFirsts.Contains(term) && (term is Terminal || !string.IsNullOrEmpty(term.DisplayName)))
           reducedSet.Add(term);
       }
-      //Clean-up reduced set, remove pseudo terms
+      //3. Clean-up reduced set: remove pseudo terms
       if (reducedSet.Contains(_grammar.Eof)) reducedSet.Remove(_grammar.Eof);
       if (reducedSet.Contains(_grammar.SyntaxError)) reducedSet.Remove(_grammar.SyntaxError);
       return reducedSet;
+    }
+
+    private BnfTermSet FilterBracesInExpectedSet(BnfTermSet defaultSet) {
+      var result = new BnfTermSet();
+      var lastOpenBrace = OpenBraces.Count > 0 ? OpenBraces.Peek() : null;
+      foreach (var bnfTerm in defaultSet) {
+        var term = bnfTerm as Terminal;
+        if (term == null || !term.OptionIsSet(TermOptions.IsCloseBrace)) {
+          result.Add(bnfTerm);
+          continue; 
+        }
+        //we have a close brace
+        var skip = lastOpenBrace == null //if there were no opening braces then all close braces should be removed
+                 || term != lastOpenBrace.Terminal.IsPairFor;
+        if (!skip) 
+          result.Add(bnfTerm);
+      }//foreach
+      return result; 
     }
     #endregion
 

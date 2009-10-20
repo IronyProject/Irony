@@ -18,29 +18,39 @@ using Irony.Interpreter;
 using Irony.Parsing;
 
 namespace Irony.Ast {
-  public class BinExprNode : AstNode {
-    public AstNode Left;
-    public string Op;
-    public AstNode Right;
 
-    public BinExprNode() { }
+  //A node representing function definition
+  public class FunctionDefNode : AstNode, ICallTarget {
+    AstNode NameNode;
+    AstNode Parameters;
+    AstNode Body;
+     
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      Left = AddChild("Arg", treeNode.ChildNodes[0]);
-      Right = AddChild("Arg", treeNode.ChildNodes[2]);
-      var opToken = treeNode.ChildNodes[1].FindFirstChildToken();
-      Op = opToken.Text;
-      //Set error anchor to operator, so on error (Division by zero) the explorer will point to 
-      // operator node as location, not to the very beginning of the first operand.
-      ErrorAnchor = opToken.Location;
-      AsString = Op + "(operator)"; 
+      //child #0 is usually a keyword like "def"
+      NameNode = AddChild("Name", treeNode.ChildNodes[1]);
+      Parameters = AddChild("Parameters", treeNode.ChildNodes[2]);
+      Body = AddChild("Body", treeNode.ChildNodes[3]);
+      AsString = "Function " + NameNode.ToString();
     }
 
     public override void EvaluateNode(EvaluationContext context, AstMode mode) {
-      Left.Evaluate(context, AstMode.Read);
-      Right.Evaluate(context, AstMode.Read);
-      context.CallDispatcher.ExecuteBinaryOperator(this.Op);
-    }//method
+      //push the function into the stack
+      context.Data.Push(this);
+      NameNode.Evaluate(context, AstMode.Write); 
+    }
 
+
+    #region ICallTarget Members
+
+    public void Call(EvaluationContext context) {
+      context.PushFrame(this.NameNode.ToString(), this, context.CurrentFrame);
+      Parameters.Evaluate(context, AstMode.None);
+      Body.Evaluate(context, AstMode.None);
+      context.PopFrame(); 
+    }
+
+    #endregion
   }//class
+
 }//namespace

@@ -38,6 +38,7 @@ namespace Irony.Parsing {
     ParsingContext _context;
     public readonly ParserData Data;
     public readonly ParserStack Stack = new ParserStack();
+    public TokenStack OpenBraces = new TokenStack();
     readonly ParserStack InputStack = new ParserStack();
     Scanner _scanner;
     bool _traceOn;
@@ -61,6 +62,7 @@ namespace Irony.Parsing {
       _currentInput = null;
       InputStack.Clear();
       Stack.Clear();
+      OpenBraces.Clear(); 
       _currentState = Data.InitialState; //set the current state to InitialState
       Stack.Push(new ParseTreeNode(Data.InitialState));
       //main loop
@@ -81,7 +83,9 @@ namespace Irony.Parsing {
       Token token;
       do {
         token = _scanner.GetToken();
-      } while (token.Terminal.OptionIsSet(TermOptions.IsNonGrammar) && token.Terminal != _grammar.Eof);  
+      } while (token.Terminal.OptionIsSet(TermOptions.IsNonGrammar) && token.Terminal != _grammar.Eof);
+      if (token.Terminal.OptionIsSet(TermOptions.IsBrace))
+        token = CheckBraceToken(token);
       _currentInput = new ParseTreeNode(token);
       InputStack.Push(_currentInput);
       if (_currentInput.IsError)
@@ -286,11 +290,11 @@ namespace Irony.Parsing {
           && poppedNode.ChildNodes.Count == 1) 
          return poppedNode.ChildNodes[0];
       if (_grammar.FlagIsSet(LanguageFlags.CreateAst))
-        SafeCreateAstNode(poppedNode);
+        CreateAstNode(poppedNode);
       return poppedNode;
     }
 
-    private void SafeCreateAstNode(ParseTreeNode parseNode) {
+    private void CreateAstNode(ParseTreeNode parseNode) {
       try {
         _grammar.CreateAstNode(_context, parseNode);
         if (parseNode.AstNode != null && parseNode.Term != null)
@@ -358,6 +362,31 @@ namespace Irony.Parsing {
       }
       //If no operators found on the stack, do simple shift
       return ParserActionType.Shift;
+    }
+    #endregion
+
+    #region Braces handling
+    private Token CheckBraceToken(Token token) {
+      if (token.Terminal.OptionIsSet(TermOptions.IsOpenBrace)) {
+        OpenBraces.Push(token);
+        return token;
+      }
+      //it is closing brace; check if we have opening brace
+      if (OpenBraces.Count == 0)
+        return CreateBraceMismatchErrorToken(token);
+      //check that braces match
+      var lastBrace = OpenBraces.Peek();
+      if (lastBrace.Terminal.IsPairFor != token.Terminal)
+        return CreateBraceMismatchErrorToken(token);
+      //Link both tokens, pop the stack and return true
+      Token.LinkMatchingBraces(lastBrace, token);
+      OpenBraces.Pop();
+      return token;
+    }
+
+    private Token CreateBraceMismatchErrorToken(Token closingBrace) {
+      return new Token(_grammar.SyntaxError, closingBrace.Location, closingBrace.Text,
+          string.Format("Unmatched closing brace '{0}'.", closingBrace.Text));
     }
     #endregion
 

@@ -24,6 +24,11 @@ namespace Irony.Parsing {
     public Terminal(string name)  : base(name) {  }
     public Terminal(string name, TokenCategory category)  : this(name) {
       Category = category;
+      if (Category == TokenCategory.Outline)
+        this.SetOption(TermOptions.IsPunctuation);
+    }
+    public Terminal(string name, string displayName, TokenCategory category) : this(name, category) {
+      this.DisplayName = displayName;
     }
     #endregion
 
@@ -38,6 +43,7 @@ namespace Irony.Parsing {
 
     public TokenEditorInfo EditorInfo;
     public byte MultilineIndex;
+    public Terminal IsPairFor;
     #endregion
 
     #region virtuals

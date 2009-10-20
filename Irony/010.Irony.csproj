@@ -51,6 +51,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Ast\AstException.cs" />
+    <Compile Include="Ast\BlockNode.cs" />
+    <Compile Include="Ast\FunctionCallNode.cs" />
+    <Compile Include="Ast\FunctionDefNode.cs" />
+    <Compile Include="Ast\ParamListNode.cs" />
+    <Compile Include="Ast\ExpressionListNode.cs" />
+    <Compile Include="Ast\NotSupportedNode.cs" />
     <Compile Include="Interpreter\DataStack.cs" />
     <Compile Include="Interpreter\DynamicCallDispatcher.cs" />
     <Compile Include="Interpreter\RuntimeException.cs" />
@@ -118,7 +124,6 @@
     <Compile Include="Ast\UnExprNode.cs" />
     <Compile Include="Ast\IdentifierNode.cs" />
     <Compile Include="Ast\_AstNode.cs" />
-    <Compile Include="Parsing\TokenFilters\BraceMatchFilter.cs" />
     <Compile Include="Parsing\TokenFilters\CodeOutlineFilter.cs" />
     <Compile Include="Parsing\TokenFilters\TokenFilter.cs" />
     <Compile Include="Microsoft\Complex64.cs" />

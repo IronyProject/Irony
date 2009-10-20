@@ -193,7 +193,8 @@ namespace Irony.Parsing {
     }
 
     private static void CountCharsInText(string text, char[] chars, int from, int until, ref int count, ref int lastCharOccurrencePosition) {
-      if (from >= until) return;
+//      if (from >= until) return;
+      if (from > until) return;
       if (until >= text.Length) until = text.Length - 1;
       while (true) {
         int next = text.IndexOfAny(chars, from, until - from + 1);

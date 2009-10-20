@@ -74,7 +74,7 @@ namespace Irony.Ast {
     }//method
 
     #region Evaluation methods
-    public override void Evaluate(EvaluationContext context, AstMode mode) {
+    public override void EvaluateNode(EvaluationContext context, AstMode mode) {
       EvaluateImplRef(context, mode); 
     }
     private void EvaluatePrefixPlus(EvaluationContext context, AstMode mode) {

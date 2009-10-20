@@ -18,29 +18,28 @@ using Irony.Interpreter;
 using Irony.Parsing;
 
 namespace Irony.Ast {
-  public class BinExprNode : AstNode {
-    public AstNode Left;
-    public string Op;
-    public AstNode Right;
 
-    public BinExprNode() { }
+  //A node representing expression list - for example, list of argument expressions in function call
+  public class ExpressionListNode : AstNode {
+     
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      Left = AddChild("Arg", treeNode.ChildNodes[0]);
-      Right = AddChild("Arg", treeNode.ChildNodes[2]);
-      var opToken = treeNode.ChildNodes[1].FindFirstChildToken();
-      Op = opToken.Text;
-      //Set error anchor to operator, so on error (Division by zero) the explorer will point to 
-      // operator node as location, not to the very beginning of the first operand.
-      ErrorAnchor = opToken.Location;
-      AsString = Op + "(operator)"; 
+      foreach (var child in treeNode.ChildNodes) {
+          AddChild("expr", child); 
+      }
+      AsString = "Expression list";
     }
 
     public override void EvaluateNode(EvaluationContext context, AstMode mode) {
-      Left.Evaluate(context, AstMode.Read);
-      Right.Evaluate(context, AstMode.Read);
-      context.CallDispatcher.ExecuteBinaryOperator(this.Op);
-    }//method
+      foreach(var expr in ChildNodes) 
+        expr.Evaluate(context, AstMode.Read);
+      //Pop all results from data stack, collect them into one list and push the list into the stack
+      var result = new ValueList();
+      for (var i = 0; i < ChildNodes.Count; i++)
+        result.Add(context.Data.Pop());
+      context.Data.Push(result); 
+    }
 
   }//class
+
 }//namespace

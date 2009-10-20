@@ -12,8 +12,9 @@ namespace Irony.Parsing {
     public StringDictionary Escapes = new StringDictionary();
     private char[] _stopChars;
 
-    public FreeTextLiteral(string name, params string[] terminators) : base(name, TokenCategory.Literal) {
-      Terminators.UnionWith(terminators); 
+    public FreeTextLiteral(string name, params string[] terminators) : base(name) {
+      Terminators.UnionWith(terminators);
+      base.SetOption(TermOptions.IsLiteral);
     }//constructor
 
     public override IList<string> GetFirsts() {

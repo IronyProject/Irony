@@ -41,6 +41,7 @@ namespace Irony.GrammarExplorer {
       this.pageTest = new System.Windows.Forms.TabPage();
       this.txtSource = new System.Windows.Forms.RichTextBox();
       this.panel1 = new System.Windows.Forms.Panel();
+      this.chkDisableHili = new System.Windows.Forms.CheckBox();
       this.btnToXml = new System.Windows.Forms.Button();
       this.btnRun = new System.Windows.Forms.Button();
       this.btnFileOpen = new System.Windows.Forms.Button();
@@ -117,10 +118,12 @@ namespace Irony.GrammarExplorer {
       this.lblTraceComment = new System.Windows.Forms.Label();
       this.pageOutput = new System.Windows.Forms.TabPage();
       this.txtOutput = new System.Windows.Forms.TextBox();
-      this.panel2 = new System.Windows.Forms.Panel();
+      this.pnlRuntimeInfo = new System.Windows.Forms.Panel();
       this.lnkShowErrLocation = new System.Windows.Forms.LinkLabel();
       this.label5 = new System.Windows.Forms.Label();
       this.lblRunTime = new System.Windows.Forms.Label();
+      this.lnkShowErrStack = new System.Windows.Forms.LinkLabel();
+      this.label13 = new System.Windows.Forms.Label();
       this.tabGrammar.SuspendLayout();
       this.pageTerminals.SuspendLayout();
       this.pageNonTerms.SuspendLayout();
@@ -147,7 +150,7 @@ namespace Irony.GrammarExplorer {
       this.grpTokens.SuspendLayout();
       this.pnlParserTraceTop.SuspendLayout();
       this.pageOutput.SuspendLayout();
-      this.panel2.SuspendLayout();
+      this.pnlRuntimeInfo.SuspendLayout();
       this.SuspendLayout();
       // 
       // tabGrammar
@@ -263,6 +266,7 @@ namespace Irony.GrammarExplorer {
       // 
       // panel1
       // 
+      this.panel1.Controls.Add(this.chkDisableHili);
       this.panel1.Controls.Add(this.btnToXml);
       this.panel1.Controls.Add(this.btnRun);
       this.panel1.Controls.Add(this.btnFileOpen);
@@ -272,6 +276,17 @@ namespace Irony.GrammarExplorer {
       this.panel1.Name = "panel1";
       this.panel1.Size = new System.Drawing.Size(734, 30);
       this.panel1.TabIndex = 2;
+      // 
+      // chkDisableHili
+      // 
+      this.chkDisableHili.AutoSize = true;
+      this.chkDisableHili.Location = new System.Drawing.Point(5, 7);
+      this.chkDisableHili.Name = "chkDisableHili";
+      this.chkDisableHili.Size = new System.Drawing.Size(150, 17);
+      this.chkDisableHili.TabIndex = 9;
+      this.chkDisableHili.Text = "Disable syntax highlighting";
+      this.chkDisableHili.UseVisualStyleBackColor = true;
+      this.chkDisableHili.CheckedChanged += new System.EventHandler(this.chkDisableHili_CheckedChanged);
       // 
       // btnToXml
       // 
@@ -759,7 +774,7 @@ namespace Irony.GrammarExplorer {
       this.pageParserOutput.Padding = new System.Windows.Forms.Padding(3);
       this.pageParserOutput.Size = new System.Drawing.Size(1096, 161);
       this.pageParserOutput.TabIndex = 2;
-      this.pageParserOutput.Text = "Compiler Output";
+      this.pageParserOutput.Text = "Parser Output";
       this.pageParserOutput.UseVisualStyleBackColor = true;
       // 
       // groupBox1
@@ -1094,7 +1109,7 @@ namespace Irony.GrammarExplorer {
       // pageOutput
       // 
       this.pageOutput.Controls.Add(this.txtOutput);
-      this.pageOutput.Controls.Add(this.panel2);
+      this.pageOutput.Controls.Add(this.pnlRuntimeInfo);
       this.pageOutput.Location = new System.Drawing.Point(4, 22);
       this.pageOutput.Name = "pageOutput";
       this.pageOutput.Padding = new System.Windows.Forms.Padding(3);
@@ -1107,31 +1122,32 @@ namespace Irony.GrammarExplorer {
       // 
       this.txtOutput.Dock = System.Windows.Forms.DockStyle.Fill;
       this.txtOutput.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.txtOutput.Location = new System.Drawing.Point(3, 24);
+      this.txtOutput.Location = new System.Drawing.Point(3, 3);
       this.txtOutput.Multiline = true;
       this.txtOutput.Name = "txtOutput";
       this.txtOutput.ReadOnly = true;
       this.txtOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-      this.txtOutput.Size = new System.Drawing.Size(1090, 134);
+      this.txtOutput.Size = new System.Drawing.Size(939, 155);
       this.txtOutput.TabIndex = 1;
       // 
-      // panel2
+      // pnlRuntimeInfo
       // 
-      this.panel2.Controls.Add(this.lnkShowErrLocation);
-      this.panel2.Controls.Add(this.label5);
-      this.panel2.Controls.Add(this.lblRunTime);
-      this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
-      this.panel2.Location = new System.Drawing.Point(3, 3);
-      this.panel2.Name = "panel2";
-      this.panel2.Size = new System.Drawing.Size(1090, 21);
-      this.panel2.TabIndex = 2;
+      this.pnlRuntimeInfo.Controls.Add(this.label13);
+      this.pnlRuntimeInfo.Controls.Add(this.lnkShowErrStack);
+      this.pnlRuntimeInfo.Controls.Add(this.lnkShowErrLocation);
+      this.pnlRuntimeInfo.Controls.Add(this.label5);
+      this.pnlRuntimeInfo.Controls.Add(this.lblRunTime);
+      this.pnlRuntimeInfo.Dock = System.Windows.Forms.DockStyle.Right;
+      this.pnlRuntimeInfo.Location = new System.Drawing.Point(942, 3);
+      this.pnlRuntimeInfo.Name = "pnlRuntimeInfo";
+      this.pnlRuntimeInfo.Size = new System.Drawing.Size(151, 155);
+      this.pnlRuntimeInfo.TabIndex = 2;
       // 
       // lnkShowErrLocation
       // 
       this.lnkShowErrLocation.AutoSize = true;
-      this.lnkShowErrLocation.Dock = System.Windows.Forms.DockStyle.Right;
       this.lnkShowErrLocation.Enabled = false;
-      this.lnkShowErrLocation.Location = new System.Drawing.Point(992, 0);
+      this.lnkShowErrLocation.Location = new System.Drawing.Point(23, 45);
       this.lnkShowErrLocation.Name = "lnkShowErrLocation";
       this.lnkShowErrLocation.Size = new System.Drawing.Size(98, 13);
       this.lnkShowErrLocation.TabIndex = 20;
@@ -1157,6 +1173,27 @@ namespace Irony.GrammarExplorer {
       this.lblRunTime.TabIndex = 18;
       this.lblRunTime.Text = "0";
       // 
+      // lnkShowErrStack
+      // 
+      this.lnkShowErrStack.AutoSize = true;
+      this.lnkShowErrStack.Enabled = false;
+      this.lnkShowErrStack.Location = new System.Drawing.Point(23, 69);
+      this.lnkShowErrStack.Name = "lnkShowErrStack";
+      this.lnkShowErrStack.Size = new System.Drawing.Size(79, 13);
+      this.lnkShowErrStack.TabIndex = 21;
+      this.lnkShowErrStack.TabStop = true;
+      this.lnkShowErrStack.Text = "Show full stack";
+      this.lnkShowErrStack.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkShowErrStack_LinkClicked);
+      // 
+      // label13
+      // 
+      this.label13.AutoSize = true;
+      this.label13.Location = new System.Drawing.Point(5, 24);
+      this.label13.Name = "label13";
+      this.label13.Size = new System.Drawing.Size(73, 13);
+      this.label13.TabIndex = 22;
+      this.label13.Text = "Runtime error:";
+      // 
       // fmGrammarExplorer
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1180,6 +1217,7 @@ namespace Irony.GrammarExplorer {
       this.pageParserStates.PerformLayout();
       this.pageTest.ResumeLayout(false);
       this.panel1.ResumeLayout(false);
+      this.panel1.PerformLayout();
       this.tabOutput.ResumeLayout(false);
       this.pageSyntaxTree.ResumeLayout(false);
       this.pageAst.ResumeLayout(false);
@@ -1205,8 +1243,8 @@ namespace Irony.GrammarExplorer {
       this.pnlParserTraceTop.PerformLayout();
       this.pageOutput.ResumeLayout(false);
       this.pageOutput.PerformLayout();
-      this.panel2.ResumeLayout(false);
-      this.panel2.PerformLayout();
+      this.pnlRuntimeInfo.ResumeLayout(false);
+      this.pnlRuntimeInfo.PerformLayout();
       this.ResumeLayout(false);
 
     }
@@ -1291,7 +1329,7 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.GroupBox grpCompileInfo;
     private System.Windows.Forms.Label lblLanguage;
     private System.Windows.Forms.Label label4;
-    private System.Windows.Forms.Panel panel2;
+    private System.Windows.Forms.Panel pnlRuntimeInfo;
     private System.Windows.Forms.Label label5;
     private System.Windows.Forms.Label lblRunTime;
     private System.Windows.Forms.TextBox txtGrammarComments;
@@ -1303,6 +1341,9 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.Label lblCompileErrorCount;
     private System.Windows.Forms.Label lblLanguageDescr;
     private System.Windows.Forms.LinkLabel lnkShowErrLocation;
+    private System.Windows.Forms.CheckBox chkDisableHili;
+    private System.Windows.Forms.LinkLabel lnkShowErrStack;
+    private System.Windows.Forms.Label label13;
 
   }
 }

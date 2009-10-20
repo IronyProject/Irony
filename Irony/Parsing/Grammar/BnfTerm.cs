@@ -21,25 +21,28 @@ namespace Irony.Parsing {
   public enum TermOptions {
     None = 0,
     IsOperator =         0x01,
-
+    IsOpenBrace =        0x02,
+    IsCloseBrace =       0x04,
     IsBrace = IsOpenBrace | IsCloseBrace,
-    IsOpenBrace =        0x04,
-    IsCloseBrace =       0x08,
+    IsLiteral  =         0x08,
+
     IsConstant =         0x10,
     IsPunctuation =      0x20,
     IsDelimiter =        0x40,
+    IsReservedWord =    0x080,
+    
     IsMemberSelect =    0x100,    
     IsNonGrammar =     0x0200,  // if set, parser would eliminate the token from the input stream; terms in Grammar.NonGrammarTerminals have this flag set
     IsTransient =      0x0400,  // Transient non-terminal - should be removed from the AST tree.
+    IsNotReported =    0x0800,  // Exclude from expected terminals list on syntax error
+    
     //internal flags
     IsList           = 0x1000,
     //calculated flags
     IsNullable =     0x010000,
     IsVisible =      0x020000,
     IsKeyword =      0x040000,
-    IsReservedWord = 0x080000,
     IsMultiline =    0x100000,
-    // Identifier terminal is an example
   }
 
   public delegate void AstNodeCreator(ParsingContext context, ParseTreeNode parseNode);
@@ -210,12 +213,11 @@ namespace Irony.Parsing {
       return sb.ToString().Trim();
     }
     public string ToErrorString() {
-      var sb = new StringBuilder();
+      var slist = new StringList();
       foreach (var term in this) {
-        sb.Append(term.DisplayName);
-        sb.Append(",");
+        slist.Add(term.DisplayName);
       }
-      return sb.ToString().Trim();
+      return slist.ToString(", ");
     }
   }
 

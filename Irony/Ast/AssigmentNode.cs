@@ -48,7 +48,7 @@ namespace Irony.Ast {
         EvaluateImplRef = EvaluateCombined; 
     }
 
-    public override void Evaluate(EvaluationContext context, AstMode mode) {
+    public override void EvaluateNode(EvaluationContext context, AstMode mode) {
       EvaluateImplRef(context, mode); 
     }
     private void EvaluateSimple(EvaluationContext context, AstMode mode) {

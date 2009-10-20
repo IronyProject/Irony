@@ -40,7 +40,8 @@ namespace Irony.GrammarExplorer {
     Parser _parser;
     ParsingContext _parsingContext;
     ParseTree _parseTree;
-    RuntimeException _runtimeError; 
+    RuntimeException _runtimeError;
+    bool _loaded; 
 
     #region Form load/unload events
     private void fmExploreGrammar_Load(object sender, EventArgs e) {
@@ -51,12 +52,17 @@ namespace Irony.GrammarExplorer {
         var grammars = GrammarItemList.FromXml(Settings.Default.Grammars);
         grammars.ShowIn(cboGrammars);
         cboGrammars.SelectedIndex = Settings.Default.LanguageIndex; //this will start colorizer
+        chkParserTrace.Checked = Settings.Default.EnableTrace;
+        chkDisableHili.Checked = Settings.Default.DisableHili;
       } catch { }
+      _loaded = true; 
     }
     private void fmExploreGrammar_FormClosing(object sender, FormClosingEventArgs e) {
       Settings.Default.SourceSample = txtSource.Text;
       Settings.Default.LanguageIndex = cboGrammars.SelectedIndex;
       Settings.Default.SearchPattern = txtSearch.Text;
+      Settings.Default.EnableTrace = chkParserTrace.Checked;
+      Settings.Default.DisableHili = chkDisableHili.Checked;
       var grammars = GrammarItemList.FromCombo(cboGrammars);
       Settings.Default.Grammars = grammars.ToXml(); 
       Settings.Default.Save();
@@ -83,7 +89,7 @@ namespace Irony.GrammarExplorer {
       gridParserTrace.Rows.Clear();
       lstTokens.Items.Clear();
       tvParseTree.Nodes.Clear();
-      SetRuntimeError(null); 
+      ClearRuntimeError(); 
       Application.DoEvents();
     }
 
@@ -102,7 +108,9 @@ namespace Irony.GrammarExplorer {
       if (_parseTree == null || _parseTree.Errors.Count == 0) return; 
       foreach (var err in _parseTree.Errors) 
         gridCompileErrors.Rows.Add(err.Location, err, err.ParserState);
-      if (tabBottom.SelectedTab != pageParserOutput)
+      var needPageSwitch = tabBottom.SelectedTab != pageParserOutput && 
+        !(tabBottom.SelectedTab == pageParserTrace && chkParserTrace.Checked);
+      if (needPageSwitch)
         tabBottom.SelectedTab = pageParserOutput;
     }
 
@@ -143,7 +151,7 @@ namespace Irony.GrammarExplorer {
       if (nodeInfo == null) return;
       Token token = nodeInfo.AstNode as Token;
       if (token != null) {
-        if (token.Terminal.Category != TokenCategory.Content && token.Terminal.Category != TokenCategory.Literal) return; 
+        if (token.Terminal.Category != TokenCategory.Content) return; 
       }
       string txt = nodeInfo.ToString();
       TreeNode newNode = (parent == null? 
@@ -228,11 +236,28 @@ namespace Irony.GrammarExplorer {
       DoSearch(txtParserStates, "State " + state.Name, 0);
     }
 
-    private void SetRuntimeError(RuntimeException error){
-      lnkShowErrLocation.Enabled = error != null; 
+    private void ShowRuntimeError(RuntimeException error){
       _runtimeError = error;
-      if (error != null)
-        WriteOutput("Error: " + error.Message + " (at " + error.Location + ")");
+      lnkShowErrLocation.Enabled = _runtimeError != null;
+      lnkShowErrStack.Enabled = lnkShowErrLocation.Enabled; 
+      if (_runtimeError != null) {
+        //the exception was caught and processed by Interpreter
+        WriteOutput("Error: " + error.Message + " At " + _runtimeError.Location.ToUiString() + ".");
+        ShowSourceLocation(_runtimeError.Location, 1); 
+      } else {
+        //the exception was not caught by interpreter/AST node. Show full exception info
+        WriteOutput("Error: " + error.Message);
+        fmShowException.ShowException(error);
+
+      }
+      tabBottom.SelectedTab = pageOutput; 
+    }
+
+    private void ClearRuntimeError() {
+      lnkShowErrLocation.Enabled = false;
+      lnkShowErrStack.Enabled = false; 
+      _runtimeError = null;
+      txtOutput.Text = string.Empty;
     }
 
     #endregion 
@@ -327,7 +352,7 @@ namespace Irony.GrammarExplorer {
     }
 
     private void RunSample() {
-      SetRuntimeError(null); 
+      ClearRuntimeError(); 
       Stopwatch sw = new Stopwatch();
       txtOutput.Text = "";
       try {
@@ -340,8 +365,8 @@ namespace Irony.GrammarExplorer {
         lblRunTime.Text = sw.ElapsedMilliseconds.ToString();
         WriteOutput(output);
         tabBottom.SelectedTab = pageOutput;
-      } catch (RuntimeException rex) {
-        SetRuntimeError(rex); 
+      } catch (RuntimeException ex) {
+        ShowRuntimeError(ex); 
       } finally {
         sw.Stop();
       }//finally
@@ -377,6 +402,7 @@ namespace Irony.GrammarExplorer {
     private void StartHighligter() {
       if (_highlighter != null)
         StopHighlighter();
+      if (chkDisableHili.Checked) return; 
       if (!_parser.Language.CanParse()) return; 
       _highlighter = new RichTextBoxHighligter(txtSource, _language);
       _highlighter.Adapter.Activate();
@@ -385,7 +411,15 @@ namespace Irony.GrammarExplorer {
       if (_highlighter == null) return;
       _highlighter.Dispose();
       _highlighter = null;
-      txtSource.Text = txtSource.Text; //remove all old highlighting
+      var txt = txtSource.Text;
+      txtSource.Clear(); 
+      txtSource.Text = txt; //remove all old highlighting
+    }
+    private void EnableHighligter(bool enable) {
+      if (_highlighter != null)
+        StopHighlighter();
+      if (enable)
+        StartHighligter(); 
     }
 
     //The following methods are contributed by Andrew Bradnan; pasted here with minor changes
@@ -574,7 +608,20 @@ namespace Irony.GrammarExplorer {
       if (_runtimeError != null)
         ShowSourceLocation(_runtimeError.Location, 1); 
     }
+    private void lnkShowErrStack_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
+      if (_runtimeError == null) return;
+      if (_runtimeError.InnerException != null)
+        fmShowException.ShowException(_runtimeError.InnerException);
+      else
+        fmShowException.ShowException(_runtimeError); 
+    }
+
     #endregion
+
+    private void chkDisableHili_CheckedChanged(object sender, EventArgs e) {
+      if (!_loaded) return; 
+      EnableHighligter(!chkDisableHili.Checked); 
+    }
 
 
   }//class

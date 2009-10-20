@@ -46,7 +46,6 @@ namespace Irony.Parsing {
       get { return _text; }
     }  string _text;
 
-    public KeyTerm IsPairFor;
     //Normally false, meaning keywords (symbols in grammar consisting of letters) cannot be followed by a letter or digit
     public bool AllowAlphaAfterKeyword = false; 
 

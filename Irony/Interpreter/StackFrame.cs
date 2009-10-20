@@ -19,28 +19,23 @@ using Irony.Ast;
 namespace Irony.Interpreter { 
 
   public class ValueSet : Dictionary<string, object> { }
+  public class ValueList : List<object> { }
 
   public class StackFrame {
     public string MethodName; //for debugging purposes
     public StackFrame Parent; //Lexical parent - not the same as the caller
     public StackFrame Caller;
-    public AstNode Node;
     public ValueSet Values; //global values for top frame; parameters and local variables for method frame
 
     public StackFrame(ValueSet globals) {
       Values = globals; 
     }
 
-    public StackFrame(object method, StackFrame caller, StackFrame parent, DataStack args, int argCount) {
+    public StackFrame(string methodName, StackFrame caller, StackFrame parent) {
+      MethodName = methodName; 
       Caller = caller;
-      //Parent = parent;
-    }
-
-    public object GetValue(string name) {
-      return null; 
-    }
-
-    public void SetValue(string name, object value) {
+      Parent = parent;
+      Values = new ValueSet(); 
     }
 
     public StackFrame GetFrame(int scopeLevel) {

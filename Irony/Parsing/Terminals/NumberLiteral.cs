@@ -63,7 +63,7 @@ namespace Irony.Parsing {
     }
     public NumberLiteral(string name, NumberFlags flags) : base(name) {
       Flags = flags;
-      base.Category = TokenCategory.Literal;
+      base.SetOption(TermOptions.IsLiteral);
       base.AstNodeType = typeof(Irony.Ast.LiteralValueNode);
     }
     public void AddPrefix(string prefix, NumberFlags flags) {

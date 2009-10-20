@@ -21,41 +21,15 @@ using Irony.Interpreter;
 
 namespace Irony.Ast {
 
-  #region NodeArgs
-  // This class is a container for information used by the NodeCreator delegate
-  public class NodeArgs_ {
-    public readonly ParsingContext Context;
-    public readonly BnfTerm Term;
-    public readonly SourceSpan Span;
-    public readonly AstNodeList ChildNodes;
-
-    public NodeArgs_(ParsingContext context, BnfTerm term, SourceSpan span, AstNodeList childNodes) {
-      Context = context;
-      Term = term;
-      Span = span; 
-      ChildNodes = childNodes;
-    }
-  }//struct
-  #endregion
+  public delegate void NodeEvaluate(EvaluationContext context, AstMode mode); 
 
   [Flags]
   public enum AstNodeFlags {
     None = 0x0,
     IsTail          = 0x01,     //the node is in tail position
-    //Identifiers flags
-    AllocateSlot    = 0x02,     //the identifier node should allocate slot for a variable
-    SuppressNotDefined = 0x04,  //suppress "variable not defined" message during binding; this flag is set in Id node of function call - 
-                                // to allow for external functions
-    NotRValue        = 0x08,    // used in identifiers as indicators that this use is not RValue, so identifier does not mark the slot as 
-    IsLValue         = 0x10,           // used in identifiers as indicators that this use is LValue assignment
-    UsesOuterScope   = 0x020,   //the function uses values in outer(parent) scope(s), so it may need closure 
-
   }
 
-
   public class AstNodeList : List<AstNode> { }
-
-  public class NodeAttributeDictionary : Dictionary<string, object> { }
 
   //Base AST node class
   public class AstNode : IAstNodeInit, IBrowsableAstNode, IInterpretedAstNode {
@@ -67,16 +41,38 @@ namespace Irony.Ast {
     public virtual void Init(ParsingContext context, ParseTreeNode treeNode) {
       this.Term = treeNode.Term;
       Span = treeNode.Span;
+      ErrorAnchor = this.Location;
       treeNode.AstNode = this;
-      AsString = (Term == null ? this.GetType().Name : Term.Name); 
+      AsString = (Term == null ? this.GetType().Name : Term.Name);
     }
     #endregion
 
     #region IInterpretedAstNode Members
+    //Important: do not override this method! - override EvaluateNode instead!
+    // You should have strong reasons to override it - for example, if you want to change 
+    // exception handling implementation in base method. Otherwise, put all derived functionality
+    // in EvaluateNode
     public virtual void Evaluate(EvaluationContext context, AstMode mode) {
+      try {
+        EvaluateNode(context, mode); 
+      } catch (RuntimeException) {
+        throw;
+      } catch (Exception ex) {
+        var rex = new RuntimeException(ex.Message, ex, this.GetErrorAnchor()); 
+        throw rex;
+      }
+    }
 
+    public const string KeyErrorLocation = "_error_location";
+    public const string KeyErrorNode = "_error_node";
+
+    public SourceLocation GetErrorAnchor() {
+      return ErrorAnchor;
     }
     #endregion
+
+    public virtual void EvaluateNode(EvaluationContext context, AstMode mode) {
+    }
 
     #region IBrowsableAstNode Members
     public virtual System.Collections.IEnumerable GetChildNodes() {
@@ -92,6 +88,12 @@ namespace Irony.Ast {
     public BnfTerm Term; 
     public SourceSpan Span;
     public AstNodeFlags Flags;
+    //Used for pointing to error location. For most nodes it would be the location of the node itself.
+    // One exception is BinExprNode: when we get "Division by zero" error evaluating 
+    //  x = (5 + 3) / (2 - 2)
+    // it is better to point to "/" as error location, rather than the first "(" - which is the start 
+    // location of binary expression. 
+    protected SourceLocation ErrorAnchor;
     // Role is a free-form string used as prefix in ToString() representation of the node. 
     // Node's parent can set it to "property name" or role of the child node in parent's node context. 
     public string Role;
@@ -99,44 +101,25 @@ namespace Irony.Ast {
     protected string AsString;
 
     //List of child nodes
-    public AstNodeList  ChildNodes = new AstNodeList();
+    public readonly AstNodeList  ChildNodes = new AstNodeList();
 
-    public NodeAttributeDictionary Attributes {
-      get {
-        if (_attributes == null)
-          _attributes = new NodeAttributeDictionary();
-        return _attributes;
-      }
-    } NodeAttributeDictionary _attributes;
     #endregion
 
 
-    #region Utility methods: AddChild, IsEmpty, SetParent, IsSet, Location...
-    public AstNode AddChild(string role, ParseTreeNode childParseNode) {
-      return AddChild(role, childParseNode, true); 
-    }
-    public AstNode AddChild(string role, ParseTreeNode childParseNode, bool throwIfNull) {
-      var child = (AstNode) childParseNode.AstNode;
-      if (child == null) {
-        if (throwIfNull) {
-          var msg = string.Format("Child AST node #{0} is null. Parent: {1}, Role: {2}", 
-              ChildNodes.Count + 1, this.Term.Name, role);
-          throw new AstException(this, msg); 
-        } else 
-          return null;
-      }
+    #region Utility methods: AddChild, SetParent, FlagIsSet ...
+    protected AstNode AddChild(string role, ParseTreeNode childParseNode) {
+      var child = (AstNode)childParseNode.AstNode;
       child.Role = role;
-      child.SetParent(this); 
+      child.SetParent(this);
       ChildNodes.Add(child);
-      return child; 
+      return child;
     }
-    public bool IsEmpty() {
-      return ChildNodes.Count == 0;
-    }
+
     public void SetParent(AstNode parent) {
       Parent = parent;
     }
-    public bool IsSet(AstNodeFlags flag) {
+    
+    public bool FlagIsSet(AstNodeFlags flag) {
       return (Flags & flag) != 0;
     }
     #endregion

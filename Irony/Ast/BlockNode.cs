@@ -14,38 +14,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Xml;
-using Irony.Parsing;
 using Irony.Interpreter;
+using Irony.Parsing;
 
 namespace Irony.Ast {
+  public class BlockNode : StatementListNode {
 
-  public class IdentifierNode : AstNode {
-    public string Symbol;
-
-    public IdentifierNode() { }
-
+    public BlockNode() { }
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
-      base.Init(context, treeNode);
-      Symbol = treeNode.Token.Value as string;
-      AsString = Symbol + "(identifier)"; 
+      base.Init(context, treeNode.ChildNodes[0]);
+      AsString = "Block";
     }
 
-
-    public override void EvaluateNode(EvaluationContext context, AstMode mode) {
-      switch (mode) {
-        case AstMode.Read:
-          object value;
-          if (context.TryGetValue(Symbol, out value))
-            context.Data.Push(value); 
-          else 
-            context.ThrowError(this, "Variable " + Symbol + " not defined.", null, this.GetErrorAnchor());
-          break; 
-        case AstMode.Write:
-          context.SetValue(Symbol, context.Data.Pop()); 
-          break; 
-      }
-    }
 
   }//class
 }//namespace

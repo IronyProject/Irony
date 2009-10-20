@@ -183,7 +183,7 @@ namespace Irony.Parsing {
       for (int i = 0; i < production.RValues.Count; i++) {
         if (i == dotPosition)
           bld.Append(dotChar);
-        bld.Append(production.RValues[i].ToString());
+        bld.Append(production.RValues[i].Name);
         bld.Append(" ");
       }//for i
       if (dotPosition == production.RValues.Count)

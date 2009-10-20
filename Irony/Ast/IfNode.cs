@@ -32,13 +32,13 @@ namespace Irony.Ast {
         IfFalse = AddChild("IfFalse", treeNode.ChildNodes[2]);
     } 
 
-    public override void Evaluate(EvaluationContext context, AstMode mode) {
+    public override void EvaluateNode(EvaluationContext context, AstMode mode) {
       Test.Evaluate(context, AstMode.Write);
       var result = context.Data.Pop();
       if (context.Runtime.IsTrue(result)) {
-        if (IfTrue != null)    IfTrue.Evaluate(context, AstMode.None);
+        if (IfTrue != null)    IfTrue.Evaluate(context, AstMode.Read);
       } else {
-        if (IfFalse != null)   IfFalse.Evaluate(context, AstMode.None);
+        if (IfFalse != null)   IfFalse.Evaluate(context, AstMode.Read);
       }
     }
   }//class

@@ -29,7 +29,7 @@ namespace Irony.Parsing {
     public string ScannerRecoverySymbols;
     public char[] LineTerminators; //used for line counting
     public readonly TerminalList MultilineTerminals = new TerminalList();
-    public readonly TokenFilterList TokenFilters = new TokenFilterList(); 
+//    public readonly TokenFilterList TokenFilters = new TokenFilterList(); 
 
     public ScannerData(LanguageData language) {
       Language  = language;

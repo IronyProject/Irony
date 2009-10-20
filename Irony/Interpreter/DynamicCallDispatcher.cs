@@ -246,13 +246,24 @@ namespace Irony.Interpreter {
       Type upType = _runtime.GetUpType(baseType);
       if (upType == null)
         return false;
-      var arg2 = Convert.ChangeType(_context.Data.Pop(), upType);
-      var arg1 = Convert.ChangeType(_context.Data.Pop(), upType);
-      _context.Data.Push(arg1);
-      _context.Data.Push(arg2);
+      var arg2 = _context.Data.Pop();
+      var arg1 = _context.Data.Pop();
+      var arg1Conv = ConvertValue(arg1, upType);
+      var arg2Conv = ConvertValue(arg2, upType);
+      _context.Data.Push(arg1Conv);
+      _context.Data.Push(arg2Conv);
       return true;
     }
 
+    private object ConvertValue(object value, Type toType) {
+      var key = OperatorDispatchKey.CreateForTypeConverter(value.GetType(), toType); 
+      TypeConverter converter; 
+      if (_runtime.TypeConverters.TryGetValue(key, out converter)) {
+        var result = converter.Invoke(value);
+        return result; 
+      }
+      throw new RuntimeException(string.Format("Failed to convert value '%1' to type %2.", value, toType));
+    }
 
   }//class
   #endregion

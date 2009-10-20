@@ -69,7 +69,11 @@ namespace Irony.Interpreter {
     // specific for the language
     public TypeConverter BoolResultConverter = null;
     //An unassigned reserved object for a language implementation
-    public Unassigned Unassinged = new Unassigned();
+    public Unassigned Unassigned = new Unassigned();
+
+    public bool IsAssigned(object value) {
+      return value != Unassigned;
+    }
 
     public LanguageRuntime() {
       Init();
@@ -222,19 +226,16 @@ namespace Irony.Interpreter {
       string err = string.Format("Cannot convert from {0} to {1}.", fromType, toType);
       throw new RuntimeException(err);
     }
-
     #endregion
 
 
     public event EventHandler<ConsoleWriteEventArgs> ConsoleWrite;
-    public StringBuilder OutputBuffer; 
-    protected void OnConsoleWrite(string text) {
+    protected void OnConsoleWrite(EvaluationContext context, string text) {
       if (ConsoleWrite != null) {
         ConsoleWriteEventArgs args = new ConsoleWriteEventArgs(text);
         ConsoleWrite(this, args);
       }
-      if (OutputBuffer != null)
-        OutputBuffer.Append(text); 
+      context.Write(text); 
     }
 
     //Temporarily put it here

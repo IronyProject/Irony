@@ -50,9 +50,9 @@ namespace Irony.Parsing {
 
     public override Token TryMatch(ParsingContext context, ISourceStream source) {
       Token result;
-      if (context.ScannerState.Value != 0) {
+      if (context.VsLineScanState.Value != 0) {
         // we are continuing in line mode - restore internal env (none in this case)
-        context.ScannerState.Value = 0;
+        context.VsLineScanState.Value = 0;
       } else {
         //we are starting from scratch
         if (!BeginMatch(context, source)) return null;
@@ -71,7 +71,7 @@ namespace Irony.Parsing {
       source.PreviewPosition = source.Text.Length;
       Token result = source.CreateToken(this);
       result.Flags |= TokenFlags.IsIncomplete;
-      context.ScannerState.TerminalIndex = this.MultilineIndex;
+      context.VsLineScanState.TerminalIndex = this.MultilineIndex;
       return result; 
     }
 

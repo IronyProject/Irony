@@ -21,7 +21,6 @@ using Irony.Parsing;
 namespace Irony.EditorServices {
 
   public class EditorAdapter {
-    ParsingContext _context;
     Parser _parser;
     Scanner _scanner;
     ParseTree _parseTree;
@@ -34,9 +33,7 @@ namespace Irony.EditorServices {
 
     public EditorAdapter(LanguageData language) {
       _parser = new Parser(language); 
-      _context = new ParsingContext(_parser);
       _scanner = _parser.Scanner;
-      _scanner.BeginScan(_context);
       _parseTree = new ParseTree(string.Empty, "Source");
       _colorizerThread = new Thread(ColorizerLoop);
       _colorizerThread.IsBackground = true;

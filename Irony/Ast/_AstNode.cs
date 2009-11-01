@@ -98,7 +98,7 @@ namespace Irony.Ast {
     // Node's parent can set it to "property name" or role of the child node in parent's node context. 
     public string Role;
     // node.ToString() returns 'Role: AsString', which is used for showing node in AST tree. 
-    protected string AsString;
+    public string AsString { get; protected set; }
 
     //List of child nodes
     public readonly AstNodeList  ChildNodes = new AstNodeList();

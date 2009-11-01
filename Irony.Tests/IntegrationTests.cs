@@ -32,9 +32,8 @@ namespace Irony.Tests {
       _language = new LanguageData(_grammar); 
       var parser = new Parser(_language);
       _scanner = parser.Scanner;
-      _context = new ParsingContext(parser);
+      _context = parser.Context;
       _context.Mode = ParseMode.VsLineScan;
-      _scanner.BeginScan(_context); 
     }
 
     private void SetSource(string text) {

@@ -12,14 +12,12 @@ namespace Irony.Ast {
     string Name; 
     public override void  Init(ParsingContext context, ParseTreeNode treeNode)  {
  	    base.Init(context, treeNode);
-      Name = treeNode.Term.ToString(); 
+      Name = treeNode.Term.ToString();
+      AsString = Name + " (not supported)";
     }
 
     public override void EvaluateNode(EvaluationContext context, AstMode mode) {
-      context.ThrowError(this, "Construct {0} is not supported by language runtime.", Name); 
-    }
-    public override string ToString() {
-      return Role + ":" + Name + " (not supported)"; 
+      context.ThrowError(this, "Construct '{0}' is not supported (yet) by language implementation.", Name); 
     }
 
   }//class

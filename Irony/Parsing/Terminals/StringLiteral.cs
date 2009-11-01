@@ -122,8 +122,6 @@ namespace Irony.Parsing {
       //Create editor info
       if (this.EditorInfo == null)
         this.EditorInfo = new TokenEditorInfo(TokenType.String, TokenColor.String, TokenTriggers.None);
-      //set default node type
-      Ast.LiteralValueNode.AssignDefaultAstNodeType(this); 
     }//method
 
     public override IList<string> GetFirsts() {
@@ -202,11 +200,11 @@ namespace Irony.Parsing {
     
     protected override void InitDetails(ParsingContext context, CompoundTerminalBase.CompoundTokenDetails details) {
       base.InitDetails(context, details);
-      if (context.ScannerState.Value != 0) {
+      if (context.VsLineScanState.Value != 0) {
         //we are continuing partial string on the next line
-        details.Flags = context.ScannerState.TerminalFlags;
-        details.SubTypeIndex = context.ScannerState.TokenSubType;
-        var stringInfo = _subtypes[context.ScannerState.TokenSubType]; 
+        details.Flags = context.VsLineScanState.TerminalFlags;
+        details.SubTypeIndex = context.VsLineScanState.TokenSubType;
+        var stringInfo = _subtypes[context.VsLineScanState.TokenSubType]; 
         details.StartSymbol = stringInfo.Start;
         details.EndSymbol = stringInfo.End;
       }

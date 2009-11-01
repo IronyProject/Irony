@@ -17,7 +17,15 @@ using System.Threading;
 using Irony.Parsing;
 using Irony.Ast;
 
-namespace Irony.Interpreter { 
+namespace Irony.Interpreter {
+
+  enum EvaluationStatus {
+    Ready,
+    Evaluating,
+    RuntimeError,
+    Aborted,
+  }
+
   public enum JumpType {
     None = 0,
     Break,
@@ -35,19 +43,21 @@ namespace Irony.Interpreter {
     public JumpType Jump = JumpType.None;
     public AstNode GotoTarget;
     //public Closure Tail;
-    public StackFrame CurrentFrame;
-    public StringBuilder OutputBuffer = new StringBuilder(); 
+    public StackFrame TopFrame, CurrentFrame;
+    public StringBuilder OutputBuffer = new StringBuilder();
+    public int EvaluationTime;
 
     public EvaluationContext(LanguageRuntime runtime) : this(runtime, null) { }
     public EvaluationContext(LanguageRuntime runtime, StackFrame topFrame) {
       Runtime = runtime;
       CallDispatcher = new DynamicCallDispatcher(this);
       ThreadId = Thread.CurrentThread.ManagedThreadId;
-      CurrentFrame = topFrame;
-      if (CurrentFrame == null)
-        CurrentFrame = new StackFrame(new ValueSet());
+      TopFrame = topFrame;
+      if (TopFrame == null)
+        TopFrame = new StackFrame(new ValueSet());
+      CurrentFrame = TopFrame;
       Data = new DataStack();
-      Data.Init(runtime.Unassigned);//set LastPushedItem to unassigned
+      Data.Init(runtime.Unassigned); //set LastPushedItem to unassigned
     }
 
     public object LastResult {

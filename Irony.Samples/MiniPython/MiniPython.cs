@@ -24,7 +24,7 @@ namespace Irony.Samples.MiniPython {
   //  line ends in the middle of expression, with unbalanced parenthesis
   // Python is important test case for Irony as an indentation-sensitive language.
 
-  [Language("MiniPython", "0.5", "Subset of Python")]
+  [Language("MiniPython", "0.2", "Micro-subset of Python, work in progress")]
   public class MiniPythonGrammar : Irony.Parsing.Grammar {
     public MiniPythonGrammar() {
 
@@ -49,6 +49,8 @@ namespace Irony.Samples.MiniPython {
       var AssignmentStmt = new NonTerminal("AssignmentStmt", typeof(AssigmentNode));
       var Stmt = new NonTerminal("Stmt");
       var ExtStmt = new NonTerminal("ExtStmt");
+      //Just as a test for NotSupportedNode
+      var ReturnStmt = new NonTerminal("return", typeof(NotSupportedNode));
       var Block = new NonTerminal("Block", typeof(BlockNode));
       var StmtList = new NonTerminal("StmtList", typeof(StatementListNode));
 
@@ -67,11 +69,12 @@ namespace Irony.Samples.MiniPython {
       BinExpr.Rule = Expr + BinOp + Expr;
       BinOp.Rule = ToTerm("+") | "-" | "*" | "/" | "**";
       AssignmentStmt.Rule = identifier + "=" + Expr;
-      Stmt.Rule = AssignmentStmt | Expr | Empty;
+      Stmt.Rule = AssignmentStmt | Expr | ReturnStmt;
+      ReturnStmt.Rule = "return" + Expr; //Not supported for execution! - we associate NotSupportedNode with ReturnStmt
       //Eos is End-Of-Statement token produced by CodeOutlineFilter
-      ExtStmt.Rule = Stmt + Eos | Block | FunctionDef;
+      ExtStmt.Rule = Stmt + Eos | FunctionDef;
       Block.Rule = Indent + StmtList + Dedent;
-      StmtList.Rule = MakeStarRule(StmtList, ExtStmt);
+      StmtList.Rule = MakePlusRule(StmtList, ExtStmt);
 
       ParamList.Rule = MakeStarRule(ParamList, comma, identifier);
       ArgList.Rule = MakeStarRule(ArgList, comma, Expr);
@@ -82,10 +85,7 @@ namespace Irony.Samples.MiniPython {
 
       // 4. Token filter
       //we need to add continuation symbol to NonGrammarTerminals because it is not used anywhere in grammar
-      var lineContinuationTerm = ToTerm(@"\");
-      NonGrammarTerminals.Add(lineContinuationTerm);
-      var outlineFilter = new CodeOutlineFilter(OutlineOptions.ProduceIndents | OutlineOptions.CheckBraces, lineContinuationTerm);
-      TokenFilters.Add(outlineFilter);
+      NonGrammarTerminals.Add(ToTerm(@"\"));
 
       // 5. Operators precedence
       RegisterOperators(1, "+", "-");
@@ -93,13 +93,37 @@ namespace Irony.Samples.MiniPython {
       RegisterOperators(3, Associativity.Right, "**");
 
       // 6. Miscellaneous: punctuation, braces, transient nodes
-      RegisterPunctuation("(", ")", ":", "else");
+      RegisterPunctuation("(", ")", ":");
       RegisterBracePair("(", ")");
       MarkTransient(Term, Expr, Stmt, ExtStmt, UnOp, BinOp, ExtStmt, ParExpr);
 
-      //automatically add NewLine before EOF so that our BNF rules work correctly when there's no final line break in source
-      this.LanguageFlags = LanguageFlags.CreateAst | LanguageFlags.CanRunSample; // | LanguageFlags.NewLineBeforeEOF;
+      // 7. Error recovery rule
+      ExtStmt.ErrorRule = SyntaxError + Eos;
+      FunctionDef.ErrorRule = SyntaxError + Dedent; 
 
+      // 8. Initialize console attributes
+      ConsoleTitle = "Mini-Python Console";
+      ConsoleGreeting =
+@"Irony Sample Console for mini-Python.
+ 
+   Supports a small sub-set of Python: assignments, arithmetic operators, 
+   function declarations with 'def'. Supports big integer arithmetics.
+   Supports Python indentation and line-joining rules, including '\' as 
+   a line joining symbol. 
+
+Press Ctrl-C to exit the program at any time.
+";
+      ConsolePrompt = ">>>"; 
+      ConsolePromptMoreInput = "..."; 
+
+      this.LanguageFlags = LanguageFlags.CreateAst | LanguageFlags.CanRunSample;
+
+    }//constructor
+
+    public override void CreateTokenFilters(LanguageData language, TokenFilterList filters) {
+      var outlineFilter = new CodeOutlineFilter(language.GrammarData, OutlineOptions.ProduceIndents | OutlineOptions.CheckBraces, ToTerm(@"\"));
+      filters.Add(outlineFilter);
+      
     }
   }
 }//namespace

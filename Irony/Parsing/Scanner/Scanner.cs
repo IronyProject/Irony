@@ -20,73 +20,56 @@ namespace Irony.Parsing {
   // like identifier, number, literal, etc. 
 
   public class Scanner  {
-    #region Properties and Fields: Data, _source, _context, _caseSensitive, _currentToken
-    ScannerData _data;
+    #region Properties and Fields: Data, _source
+    public readonly ScannerData Data;
+    public readonly Parser Parser;
     Grammar _grammar;
-    ParsingContext _context;
     //buffered tokens can come from expanding a multi-token, when Terminal.TryMatch() returns several tokens packed into one token
-    TokenList _bufferedTokens = new TokenList();
-    public IEnumerable<Token> UnfilteredStream; //initial stream of tokens directly from terminals
-    public IEnumerable<Token> FilteredStream;   // the stream of tokens after token filters
-    public IEnumerator<Token> FilteredTokenEnumerator; //enumerator of filtered token stream
 
-    public ISourceStream Source {
-      get { return _source; }
-    } SourceStream _source;
-
+    private ParsingContext Context {
+      get { return Parser.Context; }
+    }
     #endregion
 
-    public Scanner(ScannerData data) {
-      _data = data;
-      _grammar = _data.Language.Grammar;
-    }
-
-    public void BeginScan(ParsingContext context) {
-      _context = context;
-      _bufferedTokens.Clear();
-      //create streams
-      FilteredStream = UnfilteredStream = CreateUnfilteredTokenStream();
+    public Scanner(Parser parser) {
+      Parser = parser; 
+      Data = parser.Language.ScannerData;
+      _grammar = parser.Language.Grammar;
+      Context.SourceStream = new SourceStream(this.Data, Context.TabWidth);
+      //create token streams
+      var tokenStream = GetUnfilteredTokens();
       //chain all token filters
-      foreach (TokenFilter filter in _grammar.TokenFilters) {
-        FilteredStream = filter.BeginFiltering(context, FilteredStream);
+      Context.TokenFilters.Clear();
+      _grammar.CreateTokenFilters(Data.Language, Context.TokenFilters);
+      foreach (TokenFilter filter in Context.TokenFilters) {
+        tokenStream = filter.BeginFiltering(Context, tokenStream);
       }
-      FilteredTokenEnumerator = FilteredStream.GetEnumerator(); 
+      Context.FilteredTokens = tokenStream.GetEnumerator();
     }
 
-    public void SetSource(string text) {
-      _source = new SourceStream(_data, text, 0);
+    internal void OnStatusChanged(ParserStatus oldStatus) {
     }
 
     public Token GetToken() {
-      //not in preview; check if there are previewed tokens
-      if (!_inPreview && _previewTokens.Count > 0) {
-        var result = _previewTokens[0];
-        _previewTokens.RemoveAt(0);
-        return result;
-      }
       //get new token from pipeline
-      if (!FilteredTokenEnumerator.MoveNext()) return null;
-      var token = FilteredTokenEnumerator.Current;
-      if (_inPreview)
-        _previewTokens.Add(token);
+      if (!Context.FilteredTokens.MoveNext()) return null;
+      var token = Context.FilteredTokens.Current;
+      if (Context.Status == ParserStatus.Previewing)
+        Context.PreviewTokens.Push(token);
       else 
-        _context.CurrentParseTree.Tokens.Add(token);
+        Context.CurrentParseTree.Tokens.Add(token);
       return token;
     }
 
     //This is iterator method, so it returns immediately when called directly
     // returns unfiltered, "raw" token stream
-    private Token _currentToken; //it is used only in BeginScan iterator, but we define it as a field to avoid creating local state in iterator
-    private IEnumerable<Token> CreateUnfilteredTokenStream() {
+    private IEnumerable<Token> GetUnfilteredTokens() {
       //We don't do "while(!_source.EOF())... because on EOF() we need to continue and produce EOF token 
-      //  and then do "yield break" - see below
       while (true) {  
-        _currentToken = ReadToken();
-        _context.OnTokenCreated(_currentToken);
-        yield return _currentToken;
+        Context.CurrentScannerToken = FetchToken();
+        Context.OnTokenCreated(Context.CurrentScannerToken);
+        yield return Context.CurrentScannerToken;
         //Don't yield break, continue returning EOF
-       // if (_currentToken != null && _currentToken.Terminal == _grammar.Eof)
-         // yield break;
       }//while
     }// method
 
@@ -95,94 +78,93 @@ namespace Irony.Parsing {
     // Start and End positions required by this scanner may be derived from Token : 
     //   start=token.Location.Position; end=start + token.Length;
     public Token VsReadToken(ref int state) {
-      _context.ScannerState.Value = state;
-      if (_source.EOF()) return null;
+      Context.VsLineScanState.Value = state;
+      if (Context.SourceStream.EOF()) return null;
       
       Token result;
       if (state == 0)
-        result = ReadToken();
+        result = FetchToken();
       else {
-        Terminal term = _data.MultilineTerminals[_context.ScannerState.TerminalIndex - 1];
-        result = term.TryMatch(_context, _source); 
+        Terminal term = Data.MultilineTerminals[Context.VsLineScanState.TerminalIndex - 1];
+        result = term.TryMatch(Context, Context.SourceStream); 
       }
       //set state value from context
-      state = _context.ScannerState.Value;
+      state = Context.VsLineScanState.Value;
       if (result != null && result.Terminal == _grammar.Eof)
         result = null; 
       return result;
     }
     public void VsSetSource(string text, int offset) {
-      if (_source == null)
-        _source = new SourceStream(_data, text, offset);
-      else 
-        _source.SetText(text, offset);
+      Context.SourceStream.SetText(text, offset, true);
     }
     #endregion
 
-    #region Reading token
-    private Token ReadToken() {
-      if (_bufferedTokens.Count > 0) 
-        return ReadBufferedToken(); 
-      //1. Skip whitespace. We don't need to check for EOF: at EOF we start getting 0-char, so we'll get out automatically
-      while (_grammar.WhitespaceChars.IndexOf(_source.PreviewChar) >= 0)
-        _source.PreviewPosition++;
-      //That's the token start, calc location (line and column)
-      _source.MoveLocationToPreviewPosition();
-      //AdvanceLocationTo(_source.PreviewPosition);
-      //Check for EOF
-      if (_source.EOF())
-        return CreateFinalToken(); 
+    #region Fetching tokens
+    private Token FetchToken() {
+      //1. Check if there are buffered tokens
+      if (Context.BufferedTokens.Count > 0) 
+        return Context.BufferedTokens.Pop(); 
+      //2. Skip whitespace. We don't need to check for EOF: at EOF we start getting 0-char, so we'll get out automatically
+      while (_grammar.WhitespaceChars.IndexOf(Context.SourceStream.PreviewChar) >= 0)
+        Context.SourceStream.PreviewPosition++;
+      //3. That's the token start, calc location (line and column)
+      Context.SourceStream.MoveLocationToPreviewPosition();
+      //4. Check for EOF
+      if (Context.SourceStream.EOF()) {
+        CreateFinalTokensInBuffer(); //puts Eof and optionally final NewLine tokens into buffer
+        return Context.BufferedTokens.Pop();
+      }
+      //5. Actually scan the source text and construct a new token
+      return ScanToken(); 
+    }//method
+
+    //Scans the source text and constructs a new token
+    private Token ScanToken() {
       //Find matching terminal
       // First, try terminals with explicit "first-char" prefixes, selected by current char in source
-      var terms = SelectTerminals(_source.PreviewChar);
+      var terms = SelectTerminals(Context.SourceStream.PreviewChar);
       var token = MatchTerminals(terms);
       //If no token, try FallbackTerminals
-      if (token == null && terms != _data.FallbackTerminals && _data.FallbackTerminals.Count > 0)
-        token = MatchTerminals(_data.FallbackTerminals); 
+      if (token == null && terms != Data.FallbackTerminals && Data.FallbackTerminals.Count > 0)
+        token = MatchTerminals(Data.FallbackTerminals);
       //If we don't have a token from registered terminals, try Grammar's method
-      if (token == null) 
-        token = _grammar.TryMatch(_context, _source);
+      if (token == null)
+        token = _grammar.TryMatch(Context, Context.SourceStream);
       if (token is MultiToken)
-        token = UnpackMultiToken(token); 
+        token = UnpackMultiToken(token);
       //If we have normal token then return it
       if (token != null && !token.IsError()) {
         //set position to point after the result token
-        _source.PreviewPosition = _source.Location.Position + token.Length;
-        _source.MoveLocationToPreviewPosition();
+        Context.SourceStream.PreviewPosition = Context.SourceStream.Location.Position + token.Length;
+        Context.SourceStream.MoveLocationToPreviewPosition();
         return token;
-      } 
+      }
       //we have an error: either error token or no token at all
       if (token == null)  //if no token then create error token
-        token = _source.CreateErrorToken("Invalid character: '{0}'", _source.PreviewChar);
+        token = Context.SourceStream.CreateErrorToken("Invalid character: '{0}'", Context.SourceStream.PreviewChar);
       Recover();
       return token;
-    }//method
-
-    private Token ReadBufferedToken() {
-      Token tkn = _bufferedTokens[0];
-      _bufferedTokens.RemoveAt(0);
-      return tkn;
     }
 
-    //If token is MultiToken then push all its child tokens into _bufferdTokens and return first token in buffer
+    //If token is MultiToken then push all its child tokens into _bufferdTokens and return the first token in buffer
     private Token UnpackMultiToken(Token token) {
       var mtoken = token as MultiToken;
       if (mtoken == null) return null; 
       for (int i = mtoken.ChildTokens.Count-1; i >= 0; i--)
-        _bufferedTokens.Insert(0, mtoken.ChildTokens[i]);
-      return ReadBufferedToken(); 
+        Context.BufferedTokens.Push(mtoken.ChildTokens[i]);
+      return Context.BufferedTokens.Pop();
     }
     
-    //returns EOF token or NewLine token if flag NewLineBeforeEOF set
-    private Token CreateFinalToken() {
-      var result = new Token(_grammar.Eof, _source.Location, string.Empty, _grammar.Eof.Name);
+    //creates final NewLine token (if necessary) and EOF token and puts them into _bufferedTokens
+    private void CreateFinalTokensInBuffer() {
       //check if we need extra newline before EOF
-      bool currentIsNewLine = _currentToken != null && _currentToken.Terminal == _grammar.NewLine;
+      bool currentIsNewLine = Context.CurrentScannerToken != null && Context.CurrentScannerToken.Terminal == _grammar.NewLine;
+      var eofToken = new Token(_grammar.Eof, Context.SourceStream.Location, string.Empty, _grammar.Eof.Name);
+      Context.BufferedTokens.Push(eofToken); //put it into buffer
       if (_grammar.FlagIsSet(LanguageFlags.NewLineBeforeEOF) && !currentIsNewLine) {
-        _bufferedTokens.Insert(0, result); //put it into buffer
-        result = new Token(_grammar.NewLine, _currentToken.Location, "\n", null);
-      }//if AutoNewLine
-      return result;
+        var newLineToken = new Token(_grammar.NewLine, Context.CurrentScannerToken.Location, "\n", null);
+        Context.BufferedTokens.Push(newLineToken); 
+      }//if
     }
 
     private Token MatchTerminals(TerminalList terminals) {
@@ -194,10 +176,10 @@ namespace Irony.Parsing {
         if (result != null && result.Terminal.Priority > term.Priority)
           break;
         //Reset source position and try to match
-        _source.PreviewPosition = _source.Location.Position;
-        Token token = term.TryMatch(_context, _source);
+        Context.SourceStream.PreviewPosition = Context.SourceStream.Location.Position;
+        Token token = term.TryMatch(Context, Context.SourceStream);
         if (token != null)
-          token = term.InvokeValidateToken(_context, _source, terminals, token); 
+          token = term.InvokeValidateToken(Context, Context.SourceStream, terminals, token); 
         //Take this token as result only if we don't have anything yet, or if it is longer token than previous
         if (token != null && (token.IsError() || result == null || token.Length > result.Length))
           result = token;
@@ -215,13 +197,13 @@ namespace Irony.Parsing {
       TerminalList termList;
       if (!_grammar.CaseSensitive)
         current = char.ToLowerInvariant(current);
-      if (!_data.TerminalsLookup.TryGetValue(current, out termList))
-        termList = _data.FallbackTerminals;
+      if (!Data.TerminalsLookup.TryGetValue(current, out termList))
+        termList = Data.FallbackTerminals;
       if (termList.Count <= 1)  return termList;
 
       //We have more than one candidate
       //First try calling grammar method
-      _selectedTerminalArgs.SetData(_context, current, termList); 
+      _selectedTerminalArgs.SetData(Context, current, termList); 
       _grammar.OnScannerSelectTerminal(_selectedTerminalArgs);
       if (_selectedTerminalArgs.SelectedTerminal != null) {
         _filteredTerminals.Clear();
@@ -229,9 +211,9 @@ namespace Irony.Parsing {
         return _filteredTerminals;
       }
       // Now try filter them by checking with parser which terms it expects but do it only if we're not recovering or previewing
-      if (_context.ParserIsRecovering || _inPreview)
+      if (Context.Status == ParserStatus.Recovering || Context.Status == ParserStatus.Previewing)
         return termList;
-      var parserState = _context.GetCurrentParserState();
+      var parserState = Context.CurrentParserState;
       if (parserState == null) 
         return termList;
       //we cannot modify termList - it will corrupt the list in TerminalsLookup table; we make a copy
@@ -251,18 +233,15 @@ namespace Irony.Parsing {
 
     #region Error recovery
     private bool Recover() {
-      try {
-        _context.ScannerIsRecovering = true;
-        _source.PreviewPosition++;
-        while (!_source.EOF()) {
-          if (_data.ScannerRecoverySymbols.IndexOf(_source.PreviewChar) >= 0) return true;
-          _source.PreviewPosition++;
+      Context.SourceStream.PreviewPosition++;
+      while (!Context.SourceStream.EOF()) {
+        if(Data.ScannerRecoverySymbols.IndexOf(Context.SourceStream.PreviewChar) >= 0) {
+          Context.SourceStream.MoveLocationToPreviewPosition();
+          return true;
         }
-        return false; 
-      } finally {
-        _source.MoveLocationToPreviewPosition();
-        _context.ScannerIsRecovering = false;
+        Context.SourceStream.PreviewPosition++;
       }
+      return false; 
     }
     #endregion 
 
@@ -270,39 +249,39 @@ namespace Irony.Parsing {
     //Preview mode allows custom code in grammar to help parser decide on appropriate action in case of conflict
     // Preview process is simply searching for particular tokens in "preview set", and finding out which of the 
     // tokens will come first.
-    // In preview mode, tokens returned by ReadToken are collected in _previewTokens list; after finishing preview
+    // In preview mode, tokens returned by FetchToken are collected in _previewTokens list; after finishing preview
     //  the scanner "rolls back" to original position - either by directly restoring the position, or moving the preview
     //  tokens into _bufferedTokens list, so that they will read again by parser in normal mode.
     // See c# grammar sample for an example of using preview methods
-    TokenList _previewTokens = new TokenList();
     SourceLocation _previewStartLocation;
-
-    public bool InPreview {
-      get { return _inPreview; }
-    } bool _inPreview;
 
     //Switches Scanner into preview mode
     public void BeginPreview() {
-      _inPreview = true;
-      _previewStartLocation = _source.Location;
-      _previewTokens.Clear();
+      Context.Status = ParserStatus.Previewing;
+      _previewStartLocation = Context.SourceStream.Location;
+      Context.PreviewTokens.Clear();
     }
 
     //Ends preview mode
     public void EndPreview(bool keepPreviewTokens) {
-      if (keepPreviewTokens)
-        _bufferedTokens.InsertRange(0, _previewTokens); //insert previewed tokens into buffered list, so we don't recreate them again
-      else 
+      if (keepPreviewTokens) {
+        //insert previewed tokens into buffered list, so we don't recreate them again
+        while (Context.PreviewTokens.Count > 0)
+          Context.BufferedTokens.Push(Context.PreviewTokens.Pop()); 
+      }  else
         SetSourceLocation(_previewStartLocation);
-      _previewTokens.Clear();
-      _inPreview = false;
+      Context.PreviewTokens.Clear();
+      Context.Status = ParserStatus.Parsing;
     }
     #endregion
 
     public void SetSourceLocation(SourceLocation location) {
-      foreach (var filter in _grammar.TokenFilters)
+      /*
+       * foreach (var filter in _grammar.TokenFilters)
         filter.OnSetSourceLocation(location); 
       _source.Location = location;
+    
+       */
     }
 
   }//class

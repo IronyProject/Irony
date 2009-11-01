@@ -1,4 +1,16 @@
-﻿using System;
+﻿#region License
+/* **********************************************************************************
+ * Copyright (c) Roman Ivantsov
+ * This source code is subject to terms and conditions of the MIT License
+ * for Irony. A copy of the license can be found in the License.txt file
+ * at the root of this distribution. 
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * MIT License.
+ * You must not remove this notice from this software.
+ * **********************************************************************************/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,20 +19,24 @@ using System.Text;
 namespace Irony.Parsing { 
   public partial class CoreParser {
 
-    private bool TryRecover() {
-      _context.ParserIsRecovering = true;
-      try {
-        if (_traceOn)
-          AddTraceEntry("*** RECOVERING - searching for state with error shift ***", _currentState); //add new trace entry
-        var result = TryRecoverImpl();
-        if (_traceOn) {
-          string msg = (result ? "*** RECOVERED ***" : "*** FAILED TO RECOVER ***");
-          AddTraceEntry(msg, _currentState); //add new trace entry
-        }//if
-        return result;
-      } finally {
-        _context.ParserIsRecovering = false;
-      }
+    private void ProcessParserError() {
+      Context.Status = ParserStatus.Error;
+      ReportParseError();
+      if (Context.Mode != ParseMode.CommandLine)
+        TryRecoverFromError(); 
+    }
+
+
+    private bool TryRecoverFromError() {
+      if (Context.CurrentParserInput.Term == _grammar.Eof)
+        return false; //do not recover if we're already at EOF
+      Context.Status = ParserStatus.Recovering;
+      Context.AddTrace("*** RECOVERING - searching for state with error shift ***"); //add new trace entry
+      var recovered = TryRecoverImpl();
+      string msg = (recovered ? "*** RECOVERED ***" : "*** FAILED TO RECOVER ***");
+      Context.AddTrace(msg); //add new trace entry
+      Context.Status = recovered? ParserStatus.Parsing : ParserStatus.Error; 
+      return recovered;
     }
 
     private bool TryRecoverImpl() {
@@ -29,18 +45,17 @@ namespace Irony.Parsing {
       ParserAction errorShiftAction = FindErrorShiftActionInStack();
       if (errorShiftAction == null) return false; //we failed to recover
       //2. Shift error token - execute shift action
-      if (_traceOn) AddTraceEntry();
       ExecuteShift(errorShiftAction.NewState);
       //4. Now we need to go along error production until the end, shifting tokens that CAN be shifted and ignoring others.
       //   We shift until we can reduce
-      while (_currentInput.Term != _grammar.Eof) {
+      while (Context.CurrentParserInput.Term != _grammar.Eof) {
         //Check if we can reduce
         var action = GetReduceActionInCurrentState();
         if (action != null) {
           //Clear all input token queues and buffered input, reset location back to input position token queues; 
-          _scanner.SetSourceLocation(_currentInput.Span.Location);
-          _currentInput = null;
-          InputStack.Clear();
+          Parser.Scanner.SetSourceLocation(Context.CurrentParserInput.Span.Location);
+          Context.CurrentParserInput = null;
+          Context.ParserInputStack.Clear();
           //Reduce error production - it creates parent non-terminal that "hides" error inside
           ExecuteReduce(action.ReduceProduction);
           return true; //we recovered 
@@ -56,28 +71,28 @@ namespace Irony.Parsing {
     }//method
 
     public void ResetLocationAndClearInput(SourceLocation location, int position) {
-      _currentInput = null;
-      InputStack.Clear();
-      _scanner.SetSourceLocation(location);
+      Context.CurrentParserInput = null;
+      Context.ParserInputStack.Clear();
+      Parser.Scanner.SetSourceLocation(location);
     }
 
     private ParserAction FindErrorShiftActionInStack() {
-      while (Stack.Count >= 1) {
+      while (Context.ParserStack.Count >= 1) {
         ParserAction errorShiftAction;
-        if (_currentState.Actions.TryGetValue(_grammar.SyntaxError, out errorShiftAction) && errorShiftAction.ActionType == ParserActionType.Shift)
+        if (Context.CurrentParserState.Actions.TryGetValue(_grammar.SyntaxError, out errorShiftAction) && errorShiftAction.ActionType == ParserActionType.Shift)
           return errorShiftAction;
         //pop next state from stack
-        if (Stack.Count == 1)
+        if (Context.ParserStack.Count == 1)
           return null; //don't pop the initial state
-        Stack.Pop();
-        _currentState = Stack.Top.State;
+        Context.ParserStack.Pop();
+        Context.CurrentParserState = Context.ParserStack.Top.State;
       }
       return null;
     }
 
     private ParserAction GetReduceActionInCurrentState() {
-      if (_currentState.DefaultReduceAction != null) return _currentState.DefaultReduceAction;
-      foreach (var action in _currentState.Actions.Values)
+      if (Context.CurrentParserState.DefaultReduceAction != null) return Context.CurrentParserState.DefaultReduceAction;
+      foreach (var action in Context.CurrentParserState.Actions.Values)
         if (action.ActionType == ParserActionType.Reduce)
           return action;
       return null;
@@ -85,41 +100,43 @@ namespace Irony.Parsing {
 
     private ParserAction GetShiftActionInCurrentState() {
       ParserAction result = null;
-      if (_currentState.Actions.TryGetValue(_currentInput.Term, out result) ||
-         _currentInput.Token != null && _currentInput.Token.KeyTerm != null &&
-             _currentState.Actions.TryGetValue(_currentInput.Token.KeyTerm, out result))
+      if (Context.CurrentParserState.Actions.TryGetValue(Context.CurrentParserInput.Term, out result) ||
+         Context.CurrentParserInput.Token != null && Context.CurrentParserInput.Token.KeyTerm != null &&
+             Context.CurrentParserState.Actions.TryGetValue(Context.CurrentParserInput.Token.KeyTerm, out result))
         if (result.ActionType == ParserActionType.Shift)
           return result;
       return null;
     }
 
     #region Error reporting
-    private void ReportErrorFromScanner() {
-      _context.AddError(_currentInput.Token.Location, _currentInput.Token.Value as string); 
-    }
 
     private void ReportParseError() {
       string msg;
-      if (_currentInput.Term == _grammar.Eof)
-        msg = "Unexpected end of file.";
-      else {
-        //See note about multi-threading issues in ComputeReportedExpectedSet comments.
-        if (_currentState.ReportedExpectedSet == null)
-          _currentState.ReportedExpectedSet = ComputeReportedExpectedSet(_currentState); 
-        //Filter out closing braces which are not expected based on previous input.
-        // While the closing parenthesis ")" might be expected term in a state in general, 
-        // if there was no opening parenthesis in preceding input then we would not
-        //  expect a closing one. 
-        var expectedSet = FilterBracesInExpectedSet(_currentState.ReportedExpectedSet);
-        msg = _grammar.ConstructParserErrorMessage(_context, _currentState, expectedSet, _currentInput);
-        if (string.IsNullOrEmpty(msg))
-          msg = "Syntax error";
+      if (Context.CurrentParserInput.Term == _grammar.SyntaxError) {
+        Context.AddParserError(Context.CurrentParserInput.Token.Value as string);
+        return; 
       }
-      _context.AddCompilerMessage(ParserErrorLevel.Error, _currentState, _currentInput.Span.Location, msg);
-      if (_currentTraceEntry != null) {
-        _currentTraceEntry.Message = msg;
-        _currentTraceEntry.IsError = true;
+      if (Context.CurrentParserInput.Term == _grammar.Eof) {
+        Context.AddParserError("Unexpected end of file.");
+        return; 
       }
+      if (Context.CurrentParserInput.Term == _grammar.Indent) {
+        Context.AddParserError("Unexpected indentation.");
+        return;
+      }
+      //General type of error - unexpected input
+      //See note about multi-threading issues in ComputeReportedExpectedSet comments.
+      if (Context.CurrentParserState.ReportedExpectedSet == null)
+        Context.CurrentParserState.ReportedExpectedSet = ComputeReportedExpectedSet(Context.CurrentParserState);
+      //Filter out closing braces which are not expected based on previous input.
+      // While the closing parenthesis ")" might be expected term in a state in general, 
+      // if there was no opening parenthesis in preceding input then we would not
+      //  expect a closing one. 
+      var expectedSet = FilterBracesInExpectedSet(Context.CurrentParserState.ReportedExpectedSet);
+      msg = _grammar.ConstructParserErrorMessage(Context, Context.CurrentParserState, expectedSet, Context.CurrentParserInput);
+      if (string.IsNullOrEmpty(msg))
+        msg = "Syntax error";
+      Context.AddParserError(msg);
     }
 
     //compute set of expected terms in a parser state. While there may be extended list of symbols expected at some point,
@@ -164,7 +181,7 @@ namespace Irony.Parsing {
 
     private BnfTermSet FilterBracesInExpectedSet(BnfTermSet defaultSet) {
       var result = new BnfTermSet();
-      var lastOpenBrace = OpenBraces.Count > 0 ? OpenBraces.Peek() : null;
+      var lastOpenBrace = Context.OpenBraces.Count > 0 ? Context.OpenBraces.Peek() : null;
       foreach (var bnfTerm in defaultSet) {
         var term = bnfTerm as Terminal;
         if (term == null || !term.OptionIsSet(TermOptions.IsCloseBrace)) {

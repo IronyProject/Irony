@@ -132,7 +132,7 @@ namespace Irony.Parsing {
     public override Token TryMatch(ParsingContext context, ISourceStream source) {
       Token token;
       //Try quick parse first, but only if we're not continuing
-      if (context.ScannerState.Value == 0) {
+      if (context.VsLineScanState.Value == 0) {
         token = QuickParse(context, source);
         if (token != null) return token;
         source.PreviewPosition = source.Location.Position; //revert the position
@@ -141,7 +141,7 @@ namespace Irony.Parsing {
       CompoundTokenDetails details = new CompoundTokenDetails();
       InitDetails(context, details);
 
-      if (context.ScannerState.Value == 0)
+      if (context.VsLineScanState.Value == 0)
         ReadPrefix(source, details);
       if (!ReadBody(source, details))
         return null;
@@ -159,11 +159,11 @@ namespace Irony.Parsing {
        
       if (details.IsPartial) {
         //Save terminal state so we can continue
-        context.ScannerState.TokenSubType = (byte)details.SubTypeIndex;
-        context.ScannerState.TerminalFlags = (short)details.Flags;
-        context.ScannerState.TerminalIndex = this.MultilineIndex;
+        context.VsLineScanState.TokenSubType = (byte)details.SubTypeIndex;
+        context.VsLineScanState.TerminalFlags = (short)details.Flags;
+        context.VsLineScanState.TerminalIndex = this.MultilineIndex;
       } else
-        context.ScannerState.Value = 0;
+        context.VsLineScanState.Value = 0;
       return token; 
     }
 
@@ -177,7 +177,7 @@ namespace Irony.Parsing {
 
     protected virtual void InitDetails(ParsingContext context, CompoundTokenDetails details) {
       details.PartialOk = (context.Mode == ParseMode.VsLineScan);
-      details.PartialContinues = (context.ScannerState.Value != 0); 
+      details.PartialContinues = (context.VsLineScanState.Value != 0); 
     }
 
     protected virtual Token QuickParse(ParsingContext context, ISourceStream source) {

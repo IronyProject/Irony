@@ -83,6 +83,7 @@
     <None Include="SourceSamples\JSON\Sample1.json" />
     <None Include="SourceSamples\JSON\Sample2.json" />
     <None Include="SourceSamples\JSON\Sample3.json" />
+    <None Include="SourceSamples\MiniPython\TestFunCall.py" />
     <None Include="SourceSamples\Scheme\99 bottles simple.scm" />
     <None Include="SourceSamples\Scheme\99 bottles.scm" />
     <None Include="SourceSamples\Scheme\cadr.scm" />

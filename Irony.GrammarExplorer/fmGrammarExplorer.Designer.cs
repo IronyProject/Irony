@@ -25,12 +25,12 @@ namespace Irony.GrammarExplorer {
     /// </summary>
     private void InitializeComponent() {
       this.components = new System.ComponentModel.Container();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
       this.tabGrammar = new System.Windows.Forms.TabControl();
       this.pageTerminals = new System.Windows.Forms.TabPage();
       this.txtTerms = new System.Windows.Forms.TextBox();
@@ -105,11 +105,6 @@ namespace Irony.GrammarExplorer {
       this.pageParserTrace = new System.Windows.Forms.TabPage();
       this.grpParserActions = new System.Windows.Forms.GroupBox();
       this.gridParserTrace = new System.Windows.Forms.DataGridView();
-      this.State = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.Stack = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.Input = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.Action = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.NewState = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.splitter1 = new System.Windows.Forms.Splitter();
       this.grpTokens = new System.Windows.Forms.GroupBox();
       this.lstTokens = new System.Windows.Forms.ListBox();
@@ -119,11 +114,15 @@ namespace Irony.GrammarExplorer {
       this.pageOutput = new System.Windows.Forms.TabPage();
       this.txtOutput = new System.Windows.Forms.TextBox();
       this.pnlRuntimeInfo = new System.Windows.Forms.Panel();
+      this.label13 = new System.Windows.Forms.Label();
+      this.lnkShowErrStack = new System.Windows.Forms.LinkLabel();
       this.lnkShowErrLocation = new System.Windows.Forms.LinkLabel();
       this.label5 = new System.Windows.Forms.Label();
       this.lblRunTime = new System.Windows.Forms.Label();
-      this.lnkShowErrStack = new System.Windows.Forms.LinkLabel();
-      this.label13 = new System.Windows.Forms.Label();
+      this.State = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.Stack = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.Input = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.Action = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.tabGrammar.SuspendLayout();
       this.pageTerminals.SuspendLayout();
       this.pageNonTerms.SuspendLayout();
@@ -735,8 +734,8 @@ namespace Irony.GrammarExplorer {
       // 
       // dataGridViewTextBoxColumn2
       // 
-      dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn2.DefaultCellStyle = dataGridViewCellStyle7;
+      dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      this.dataGridViewTextBoxColumn2.DefaultCellStyle = dataGridViewCellStyle1;
       this.dataGridViewTextBoxColumn2.HeaderText = "Error Level";
       this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
       this.dataGridViewTextBoxColumn2.ReadOnly = true;
@@ -755,8 +754,8 @@ namespace Irony.GrammarExplorer {
       // 
       this.dataGridViewTextBoxColumn6.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
       this.dataGridViewTextBoxColumn6.DataPropertyName = "State";
-      dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn6.DefaultCellStyle = dataGridViewCellStyle8;
+      dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      this.dataGridViewTextBoxColumn6.DefaultCellStyle = dataGridViewCellStyle2;
       this.dataGridViewTextBoxColumn6.HeaderText = "Parser State";
       this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
       this.dataGridViewTextBoxColumn6.ReadOnly = true;
@@ -812,8 +811,8 @@ namespace Irony.GrammarExplorer {
       // 
       // dataGridViewTextBoxColumn3
       // 
-      dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn3.DefaultCellStyle = dataGridViewCellStyle9;
+      dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      this.dataGridViewTextBoxColumn3.DefaultCellStyle = dataGridViewCellStyle3;
       this.dataGridViewTextBoxColumn3.HeaderText = "L, C";
       this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
       this.dataGridViewTextBoxColumn3.ReadOnly = true;
@@ -833,8 +832,8 @@ namespace Irony.GrammarExplorer {
       // 
       this.dataGridViewTextBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
       this.dataGridViewTextBoxColumn1.DataPropertyName = "State";
-      dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle10;
+      dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle4;
       this.dataGridViewTextBoxColumn1.HeaderText = "Parser State";
       this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
       this.dataGridViewTextBoxColumn1.ReadOnly = true;
@@ -969,8 +968,7 @@ namespace Irony.GrammarExplorer {
             this.State,
             this.Stack,
             this.Input,
-            this.Action,
-            this.NewState});
+            this.Action});
       this.gridParserTrace.Dock = System.Windows.Forms.DockStyle.Fill;
       this.gridParserTrace.Location = new System.Drawing.Point(3, 16);
       this.gridParserTrace.MultiSelect = false;
@@ -981,60 +979,6 @@ namespace Irony.GrammarExplorer {
       this.gridParserTrace.Size = new System.Drawing.Size(798, 109);
       this.gridParserTrace.TabIndex = 0;
       this.gridParserTrace.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridParserTrace_CellDoubleClick);
-      // 
-      // State
-      // 
-      this.State.DataPropertyName = "State";
-      dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.State.DefaultCellStyle = dataGridViewCellStyle11;
-      this.State.HeaderText = "State";
-      this.State.Name = "State";
-      this.State.ReadOnly = true;
-      this.State.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-      this.State.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.State.ToolTipText = "Double-click grid cell to navigate to state details";
-      this.State.Width = 60;
-      // 
-      // Stack
-      // 
-      this.Stack.DataPropertyName = "StackTop";
-      dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-      this.Stack.DefaultCellStyle = dataGridViewCellStyle12;
-      this.Stack.HeaderText = "Stack Top";
-      this.Stack.Name = "Stack";
-      this.Stack.ReadOnly = true;
-      this.Stack.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-      this.Stack.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.Stack.ToolTipText = "Double-click grid cell to locate node in source code";
-      this.Stack.Width = 220;
-      // 
-      // Input
-      // 
-      this.Input.DataPropertyName = "Input";
-      this.Input.HeaderText = "Input";
-      this.Input.Name = "Input";
-      this.Input.ReadOnly = true;
-      this.Input.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.Input.ToolTipText = "Double-click grid cell to locate in source code";
-      this.Input.Width = 150;
-      // 
-      // Action
-      // 
-      this.Action.DataPropertyName = "Action";
-      this.Action.HeaderText = "Action";
-      this.Action.Name = "Action";
-      this.Action.ReadOnly = true;
-      this.Action.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.Action.Width = 220;
-      // 
-      // NewState
-      // 
-      this.NewState.HeaderText = "New State";
-      this.NewState.Name = "NewState";
-      this.NewState.ReadOnly = true;
-      this.NewState.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.NewState.ToolTipText = "Double-click grid cell to navigate to state details";
-      this.NewState.Width = 90;
       // 
       // splitter1
       // 
@@ -1067,7 +1011,7 @@ namespace Irony.GrammarExplorer {
       this.lstTokens.Name = "lstTokens";
       this.lstTokens.Size = new System.Drawing.Size(272, 102);
       this.lstTokens.TabIndex = 2;
-      this.lstTokens.DoubleClick += new System.EventHandler(this.lstTokens_DoubleClick);
+      this.lstTokens.Click += new System.EventHandler(this.lstTokens_Click);
       // 
       // pnlParserTraceTop
       // 
@@ -1143,6 +1087,27 @@ namespace Irony.GrammarExplorer {
       this.pnlRuntimeInfo.Size = new System.Drawing.Size(151, 155);
       this.pnlRuntimeInfo.TabIndex = 2;
       // 
+      // label13
+      // 
+      this.label13.AutoSize = true;
+      this.label13.Location = new System.Drawing.Point(5, 24);
+      this.label13.Name = "label13";
+      this.label13.Size = new System.Drawing.Size(73, 13);
+      this.label13.TabIndex = 22;
+      this.label13.Text = "Runtime error:";
+      // 
+      // lnkShowErrStack
+      // 
+      this.lnkShowErrStack.AutoSize = true;
+      this.lnkShowErrStack.Enabled = false;
+      this.lnkShowErrStack.Location = new System.Drawing.Point(23, 69);
+      this.lnkShowErrStack.Name = "lnkShowErrStack";
+      this.lnkShowErrStack.Size = new System.Drawing.Size(79, 13);
+      this.lnkShowErrStack.TabIndex = 21;
+      this.lnkShowErrStack.TabStop = true;
+      this.lnkShowErrStack.Text = "Show full stack";
+      this.lnkShowErrStack.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkShowErrStack_LinkClicked);
+      // 
       // lnkShowErrLocation
       // 
       this.lnkShowErrLocation.AutoSize = true;
@@ -1173,26 +1138,50 @@ namespace Irony.GrammarExplorer {
       this.lblRunTime.TabIndex = 18;
       this.lblRunTime.Text = "0";
       // 
-      // lnkShowErrStack
+      // State
       // 
-      this.lnkShowErrStack.AutoSize = true;
-      this.lnkShowErrStack.Enabled = false;
-      this.lnkShowErrStack.Location = new System.Drawing.Point(23, 69);
-      this.lnkShowErrStack.Name = "lnkShowErrStack";
-      this.lnkShowErrStack.Size = new System.Drawing.Size(79, 13);
-      this.lnkShowErrStack.TabIndex = 21;
-      this.lnkShowErrStack.TabStop = true;
-      this.lnkShowErrStack.Text = "Show full stack";
-      this.lnkShowErrStack.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkShowErrStack_LinkClicked);
+      this.State.DataPropertyName = "State";
+      dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      this.State.DefaultCellStyle = dataGridViewCellStyle5;
+      this.State.HeaderText = "State";
+      this.State.Name = "State";
+      this.State.ReadOnly = true;
+      this.State.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+      this.State.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      this.State.ToolTipText = "Double-click grid cell to navigate to state details";
+      this.State.Width = 60;
       // 
-      // label13
+      // Stack
       // 
-      this.label13.AutoSize = true;
-      this.label13.Location = new System.Drawing.Point(5, 24);
-      this.label13.Name = "label13";
-      this.label13.Size = new System.Drawing.Size(73, 13);
-      this.label13.TabIndex = 22;
-      this.label13.Text = "Runtime error:";
+      this.Stack.DataPropertyName = "StackTop";
+      dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+      this.Stack.DefaultCellStyle = dataGridViewCellStyle6;
+      this.Stack.HeaderText = "Stack Top";
+      this.Stack.Name = "Stack";
+      this.Stack.ReadOnly = true;
+      this.Stack.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+      this.Stack.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      this.Stack.ToolTipText = "Double-click grid cell to locate node in source code";
+      this.Stack.Width = 220;
+      // 
+      // Input
+      // 
+      this.Input.DataPropertyName = "Input";
+      this.Input.HeaderText = "Input";
+      this.Input.Name = "Input";
+      this.Input.ReadOnly = true;
+      this.Input.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      this.Input.ToolTipText = "Double-click grid cell to locate in source code";
+      this.Input.Width = 150;
+      // 
+      // Action
+      // 
+      this.Action.DataPropertyName = "Action";
+      this.Action.HeaderText = "Action";
+      this.Action.Name = "Action";
+      this.Action.ReadOnly = true;
+      this.Action.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      this.Action.Width = 300;
       // 
       // fmGrammarExplorer
       // 
@@ -1298,11 +1287,6 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.TabPage pageParserTrace;
     private System.Windows.Forms.TreeView tvAst;
     private System.Windows.Forms.DataGridView gridParserTrace;
-    private System.Windows.Forms.DataGridViewTextBoxColumn State;
-    private System.Windows.Forms.DataGridViewTextBoxColumn Stack;
-    private System.Windows.Forms.DataGridViewTextBoxColumn Input;
-    private System.Windows.Forms.DataGridViewTextBoxColumn Action;
-    private System.Windows.Forms.DataGridViewTextBoxColumn NewState;
     private System.Windows.Forms.GroupBox grpTokens;
     private System.Windows.Forms.Panel pnlParserTraceTop;
     private System.Windows.Forms.GroupBox grpParserActions;
@@ -1344,6 +1328,10 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.CheckBox chkDisableHili;
     private System.Windows.Forms.LinkLabel lnkShowErrStack;
     private System.Windows.Forms.Label label13;
+    private System.Windows.Forms.DataGridViewTextBoxColumn State;
+    private System.Windows.Forms.DataGridViewTextBoxColumn Stack;
+    private System.Windows.Forms.DataGridViewTextBoxColumn Input;
+    private System.Windows.Forms.DataGridViewTextBoxColumn Action;
 
   }
 }

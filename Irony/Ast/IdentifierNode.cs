@@ -28,7 +28,7 @@ namespace Irony.Ast {
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
       Symbol = treeNode.Token.Value as string;
-      AsString = Symbol + "(identifier)"; 
+      AsString = Symbol; 
     }
 
 

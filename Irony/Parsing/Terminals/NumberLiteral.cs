@@ -96,10 +96,10 @@ namespace Irony.Parsing {
       base.Init(grammarData);
       if (string.IsNullOrEmpty(QuickParseTerminators))
         QuickParseTerminators = Grammar.WhitespaceChars + Grammar.Delimiters;
+      QuickParseTerminators += '\0'; //add EOF - that's how it is represented in SourceStream
       _defaultFloatTypes = new TypeCode[] { DefaultFloatType };
       if (this.EditorInfo == null) 
         this.EditorInfo = new TokenEditorInfo(TokenType.Literal, TokenColor.Number, TokenTriggers.None);
-      Ast.LiteralValueNode.AssignDefaultAstNodeType(this);
     }
 
     public override IList<string> GetFirsts() {

@@ -27,7 +27,7 @@ namespace Irony.Ast {
         //don't add if it is null; it can happen that "statement" is a comment line and statement's node is null.
         // So to make life easier for language creator we just skip if it is null
         if (child.AstNode != null) 
-          AddChild("stmt", child); 
+          AddChild(string.Empty, child); 
       }
       AsString = "Statement List";
     }

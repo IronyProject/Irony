@@ -60,6 +60,21 @@ namespace Irony.Parsing {
       var result = (token.ValueString ?? token.Text) + " (" + Name + ")";
       return result; 
     }
+
+    public override void Init(GrammarData grammarData) {
+      base.Init(grammarData);
+      CheckLiteralAstNodeType();
+    }
+
+    //By default for Literal terminals assign node type in Grammar.DefaultLiteralNodeType
+    private void CheckLiteralAstNodeType() {
+      bool assignLiteralType = (AstNodeType == null && AstNodeCreator == null &&
+          OptionIsSet(TermOptions.IsLiteral) &&  Grammar.FlagIsSet(LanguageFlags.CreateAst));
+      if (assignLiteralType)
+        AstNodeType = this.Grammar.DefaultLiteralNodeType;
+    }
+
+
     #endregion
 
     #region Events: ValidateToken

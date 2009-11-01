@@ -21,17 +21,16 @@ namespace Irony.Parsing {
     public const int DefaultTabWidth = 8;
     private int _nextNewLinePosition = -1; //private field to cache position of next \n character
     
-    public SourceStream(ScannerData scannerData, string text) : this(scannerData, text, 0, DefaultTabWidth) { }
-    public SourceStream(ScannerData scannerData, string text, int offset) : this(scannerData, text, offset, DefaultTabWidth) { }
-    public SourceStream(ScannerData scannerData, string text, int offset, int tabWidth) {
+    public SourceStream(ScannerData scannerData, int tabWidth) {
       _scannerData = scannerData;
-      _text = text;
-      SetText(text, offset);
-      _tabWidth = tabWidth;
+      TabWidth = tabWidth;
     }
-    internal void SetText(string text, int offset) {
+
+    public void SetText(string text, int offset, bool keepLineNumbering) {
       _text = text;
-      Location = new SourceLocation(offset, 0, 0);
+      //For line-by-line input, automatically increment line# for every new line
+      var line = keepLineNumbering ? _location.Line + 1 : 0;
+      Location = new SourceLocation(offset, line, 0);
       _nextNewLinePosition = text.IndexOfAny(_scannerData.LineTerminators, offset);
     }
 
@@ -56,6 +55,8 @@ namespace Irony.Parsing {
       get { return _previewPosition; }
       set { _previewPosition = value; }
     } int _previewPosition;
+
+    public int TabWidth { get; private set; }
 
 #if DEBUG
     //Slower versions with boundary checking
@@ -122,12 +123,6 @@ namespace Irony.Parsing {
       return new Token(_scannerData.Language.Grammar.SyntaxError, Location, GetPreviewText(), message);
     }
 
-
-    public int TabWidth {
-      [System.Diagnostics.DebuggerStepThrough]
-      get { return _tabWidth; }
-      set { _tabWidth = value; }
-    } int _tabWidth; // = 8;
 
     [System.Diagnostics.DebuggerStepThrough]
     public bool EOF() {

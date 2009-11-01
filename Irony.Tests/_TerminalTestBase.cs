@@ -19,16 +19,16 @@ namespace Irony.Tests {
       _grammar = new TestGrammar();
       _language = new LanguageData(_grammar); 
       _parser = new Parser(_language); 
-      _context = new ParsingContext(_parser);
-      _context.CurrentParseTree = new ParseTree(string.Empty, "source"); 
+      _context = _parser.Context;
     }
     protected void SetTerminal(Terminal term) {
       _terminal = term;
-      _terminal.Init(_parser.Language.GrammarData);
+      _terminal.Init(_language.GrammarData);
     }
     //Utilities
     public void TryMatch(string input) {
-      SourceStream source = new SourceStream(_language.ScannerData, input);
+      SourceStream source = new SourceStream(_language.ScannerData, 0);
+      source.SetText(input, 0, false);
       _token = _terminal.TryMatch(_context, source);
     }
     public void CheckType(Type type) {

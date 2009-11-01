@@ -1,4 +1,16 @@
-﻿using System;
+﻿#region License
+/* **********************************************************************************
+ * Copyright (c) Roman Ivantsov
+ * This source code is subject to terms and conditions of the MIT License
+ * for Irony. A copy of the license can be found in the License.txt file
+ * at the root of this distribution. 
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * MIT License.
+ * You must not remove this notice from this software.
+ * **********************************************************************************/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -115,7 +127,7 @@ namespace Irony.Parsing {
     }
     public override string ToString() {
       switch (this.ActionType) {
-        case ParserActionType.Shift: return "Shift to " + NewState.Name;
+        case ParserActionType.Shift: return "Shift";// +NewState.Name;
         case ParserActionType.Reduce: return "Reduce on " + ReduceProduction.ToString();
         case ParserActionType.Operator: return "Operator, shift to " + NewState.Name + "/reduce on " + ReduceProduction.ToString();
         case ParserActionType.Jump: return "Jump to " + NewState.Name;
@@ -201,8 +213,6 @@ namespace Irony.Parsing {
   public class ConflictResolutionArgs : EventArgs {
     public readonly ParsingContext Context;
     public readonly Scanner Scanner; 
-    public readonly ParserState CurrentParserState;
-    public readonly ParseTreeNode CurrentParserInput;
     public readonly ParserState NewShiftState;
     //Results 
     public ParserActionType Result; //shift, reduce or operator
@@ -210,13 +220,10 @@ namespace Irony.Parsing {
     //constructor
     internal ConflictResolutionArgs(ParsingContext context, ParserAction conflictAction) {
       Context = context;
-      Scanner = context.Parser.Scanner; 
-      var coreParser = context.Parser.CoreParser;
-      CurrentParserState = coreParser.CurrentState;
-      CurrentParserInput = coreParser.CurrentInput;
+      Scanner = Context.Parser.Scanner;
       NewShiftState = conflictAction.NewState;
       ReduceProduction = conflictAction.ReduceProduction;
-      Result = ParserActionType.Shift;
+      Result = ParserActionType.Shift; //make shift by default
     }
   }//class
 

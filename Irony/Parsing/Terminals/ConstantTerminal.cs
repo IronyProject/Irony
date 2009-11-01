@@ -34,7 +34,6 @@ namespace Irony.Parsing {
       base.Init(grammarData);
       if (this.EditorInfo == null)
         this.EditorInfo = new TokenEditorInfo(TokenType.Unknown, TokenColor.Text, TokenTriggers.None);
-      Ast.LiteralValueNode.AssignDefaultAstNodeType(this); 
     }
 
     public override Token TryMatch(ParsingContext context, ISourceStream source) {

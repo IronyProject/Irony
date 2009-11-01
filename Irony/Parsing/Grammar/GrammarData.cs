@@ -1,4 +1,16 @@
-﻿using System;
+﻿#region License
+/* **********************************************************************************
+ * Copyright (c) Roman Ivantsov
+ * This source code is subject to terms and conditions of the MIT License
+ * for Irony. A copy of the license can be found in the License.txt file
+ * at the root of this distribution. 
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * MIT License.
+ * You must not remove this notice from this software.
+ * **********************************************************************************/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,16 +45,16 @@ namespace Irony.Parsing {
     //Automatically detect transient non-terminals - whose rules are just OR of other single terms
     // nodes for these terminals would be eliminated from parse tree. Formerly this stuff was called "node bubbling"
     AutoDetectTransient = 0x02,
-    AutoDetectKeywords = 0x04, //automatically mark all words found in grammar as keywords
+    //AutoDetectKeywords = 0x04, //automatically mark all words found in grammar as keywords
     CreateAst = 0x08, //create AST nodes 
 
     //Runtime
     CanRunSample = 0x0100,
-    SupportsConsole = 0x0200,
+    SupportsCommandLine = 0x0200,
     TailRecursive = 0x0400, //Tail-recursive language - Scheme is one example
 
     //Default value
-    Default = AutoDetectKeywords,
+    Default = None,
   }
 
   public enum ParseMethod {

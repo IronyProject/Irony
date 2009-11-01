@@ -88,6 +88,20 @@ namespace Irony.Samples {
       //automatically add NewLine before EOF so that our BNF rules work correctly when there's no final line break in source
       this.LanguageFlags = LanguageFlags.CreateAst | LanguageFlags.NewLineBeforeEOF | LanguageFlags.CanRunSample; 
 
+      //Console
+      ConsoleTitle = "Irony Expression Evaluator";
+      ConsoleGreeting =
+@"Irony Sample Console for Expression Evaluator 
+
+  Supports variable assignments, arithmetic operators (+, -, *, /),
+  augmented assignments (+=, -=, etc), prefix/postfix operators ++,--. 
+  Supports big integer arithmetics.
+
+Press Ctrl-C to exit the program at any time.
+";
+      ConsolePrompt = "?";
+      ConsolePromptMoreInput = "?"; 
+
     }
   }
 }//namespace

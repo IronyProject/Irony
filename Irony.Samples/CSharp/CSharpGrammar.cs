@@ -788,7 +788,7 @@ State S188 (Inadequate)
     // accepts it:
     // List<Dictionary<string, object[,]>> genericVar; 
     public override void OnResolvingConflict(ConflictResolutionArgs args) {
-      switch(args.CurrentParserInput.Term.Name) {
+      switch(args.Context.CurrentParserInput.Term.Name) {
         case "<":
           args.Scanner.BeginPreview(); 
           int ltCount = 0;
@@ -819,13 +819,12 @@ State S188 (Inadequate)
       }
     }
 
-
     //In preview, we may run into combination '>>' which is a comletion of nested generic parameters.
     // It should be recognized as two ">" symbols, not a single ">>" operator
     // By default, the ">>" has higher priority over single ">" symbol because it is longer. 
     // When this method is called we force the selection to a single ">"
     public override void OnScannerSelectTerminal(SelectTerminalArgs args) {
-      if (args.Current == '>' && args.Scanner.InPreview) {
+      if (args.Current == '>' && args.Context.Status == ParserStatus.Previewing) {
         args.SelectedTerminal = ToTerm(">"); //select the ">" terminal
       }
     }

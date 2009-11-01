@@ -14,40 +14,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Runtime.InteropServices;
 
 namespace Irony.Parsing {
 
   public class TerminalLookupTable : Dictionary<char, TerminalList> { }
 
-  // ScannerData is a container for all info needed by scanner to read input. 
-  // ScannerData is a field in LanguageData structure and is used by Scanner. 
+  // ScannerData is a container for all detailed info needed by scanner to read input. 
   public class ScannerData {
     public readonly LanguageData Language;
     public readonly TerminalLookupTable TerminalsLookup = new TerminalLookupTable(); //hash table for fast terminal lookup by input char
     public readonly TerminalList FallbackTerminals = new TerminalList(); //terminals that have no explicit prefixes
-    public string ScannerRecoverySymbols;
+    public string ScannerRecoverySymbols; //whitespace plus delimiters - chars to look for when recovering
     public char[] LineTerminators; //used for line counting
     public readonly TerminalList MultilineTerminals = new TerminalList();
-//    public readonly TokenFilterList TokenFilters = new TokenFilterList(); 
 
     public ScannerData(LanguageData language) {
       Language  = language;
     }
   }//class
-
-  // A struct used for packing/unpacking ScannerState int value; used for VS integration.
-  [StructLayout(LayoutKind.Explicit)]
-  public struct VsScannerStateMap {
-    [FieldOffset(0)]
-    public int Value;
-    [FieldOffset(0)]
-    public byte TerminalIndex;   //1-based index of active multiline term in MultilineTerminals
-    [FieldOffset(1)]
-    public byte TokenSubType;         //terminal subtype (used in StringLiteral to identify string kind)
-    [FieldOffset(2)]
-    public short TerminalFlags;  //Terminal flags
-  }//struct
 
   public class SelectTerminalArgs : EventArgs {
     public ParsingContext Context;

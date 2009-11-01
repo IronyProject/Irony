@@ -31,12 +31,12 @@ namespace Irony.Ast {
     }
 
     public override void EvaluateNode(EvaluationContext context, AstMode mode) {
-      foreach(var expr in ChildNodes) 
-        expr.Evaluate(context, AstMode.Read);
-      //Pop all results from data stack, collect them into one list and push the list into the stack
       var result = new ValueList();
-      for (var i = 0; i < ChildNodes.Count; i++)
+      foreach (var expr in ChildNodes) {
+        expr.Evaluate(context, AstMode.Read);
         result.Add(context.Data.Pop());
+      }
+      //Push list on the stack
       context.Data.Push(result); 
     }
 

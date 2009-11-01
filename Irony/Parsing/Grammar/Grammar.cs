@@ -61,16 +61,21 @@ namespace Irony.Parsing {
 
     //Default node type; if null then GenericNode type is used. 
     public Type DefaultNodeType;
+    public Type DefaultLiteralNodeType = typeof(LiteralValueNode); //default node type for literals
 
 
     public NonTerminal Root;
     
-    public readonly TokenFilterList TokenFilters = new TokenFilterList();
-
-    public string GrammarComments; //shown in Grammar Errors page
+    public string GrammarComments; //shown in Grammar info tab
 
     public StringSet PrefixUnaryOperators;
     public StringSet PostfixUnaryOperators;
+
+    //Console-related properties, initialized in grammar constructor
+    public string ConsoleTitle;
+    public string ConsoleGreeting;
+    public string ConsolePrompt; //default prompt
+    public string ConsolePromptMoreInput; //prompt to show when more input is expected
 
     #endregion 
 
@@ -90,6 +95,11 @@ namespace Irony.Parsing {
       PrefixUnaryOperators.AddRange ("+", "-", "!", "++", "--");
       PostfixUnaryOperators.AddRange("++", "--");
       NewLinePlus = CreateNewLinePlus();
+      //Initialize console attributes
+      ConsoleTitle = "Console";
+      ConsoleGreeting = this.GetType().Name +  " Console.\r\nPress Ctrl-C to exit the program.\r\n";
+      ConsolePrompt = ">"; 
+      ConsolePromptMoreInput = "."; 
     }
     #endregion
     
@@ -173,6 +183,9 @@ namespace Irony.Parsing {
     #endregion
 
     #region virtual methods: TryMatch, CreateNode, GetSyntaxErrorMessage, CreateRuntime, RunSample
+    public virtual void CreateTokenFilters(LanguageData language, TokenFilterList filters) {
+    }
+
     //This method is called if Scanner fails to produce a token; it offers custom method a chance to produce the token    
     public virtual Token TryMatch(ParsingContext context, ISourceStream source) {
       return null;
@@ -308,9 +321,12 @@ namespace Irony.Parsing {
     // as a lookahead to Root non-terminal
     public readonly Terminal Eof = new Terminal("EOF", TokenCategory.Outline);
 
-    //End-of-Statement terminal
+    //End-of-Statement terminal - used in indentation-sensitive language to signal end-of-statement;
+    // it is not always synced with CRLF chars, and CodeOutlineFilter carefully produces Eos tokens
+    // (as well as Indent and Dedent) based on line/col information in incoming content tokens.
     public readonly Terminal Eos = new Terminal("EOS", "[end-of-statement]", TokenCategory.Outline);
-
+    
+    //Used for error tokens
     public readonly Terminal SyntaxError = new Terminal("SYNTAX_ERROR", TokenCategory.Error);
 
     public NonTerminal NewLinePlus;

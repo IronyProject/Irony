@@ -299,7 +299,8 @@ namespace Irony.Parsing.Construction {
         }
         //ReducedLookaheads
         foreach (var lkhSource in reduceItem.ReducedLookaheadSources) {
-          reduceItem.ReducedLookaheads.Add(lkhSource.Core.Current);
+          if (lkhSource.Core.Current != _grammar.SyntaxError) //do not include syntax error pseudo-terminal
+            reduceItem.ReducedLookaheads.Add(lkhSource.Core.Current);
         }
         //AllLookaheads 
         reduceItem.AllLookaheads.UnionWith(reduceItem.ReducedLookaheads);

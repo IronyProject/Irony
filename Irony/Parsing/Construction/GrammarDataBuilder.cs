@@ -1,4 +1,16 @@
-﻿using System;
+﻿#region License
+/* **********************************************************************************
+ * Copyright (c) Roman Ivantsov
+ * This source code is subject to terms and conditions of the MIT License
+ * for Irony. A copy of the license can be found in the License.txt file
+ * at the root of this distribution. 
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * MIT License.
+ * You must not remove this notice from this software.
+ * **********************************************************************************/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +35,6 @@ namespace Irony.Parsing.Construction {
       _grammarData.AugmentedRoot.Rule = _grammar.Root + _grammar.Eof;
       CollectTermsFromGrammar();
       InitTermLists(_grammarData);
-      InitTokenFilters(); 
       CreateProductions();
       ComputeNonTerminalsNullability(_grammarData);
       ComputeTailsNullability(_grammarData);
@@ -88,13 +99,12 @@ namespace Irony.Parsing.Construction {
       }
       data.Terminals.Sort(Terminal.ByName);
       //Mark keywords - any "word" symbol directly mentioned in the grammar
-      if (data.Grammar.FlagIsSet(LanguageFlags.AutoDetectKeywords)) 
-        foreach (var term in data.Terminals) {
-          var symTerm = term as KeyTerm;
-          if (symTerm == null) continue;
-          if (symTerm.Text.Length > 0 && char.IsLetter(symTerm.Text[0]))
-            symTerm.SetOption(TermOptions.IsKeyword); 
-        }//foreach term
+      foreach (var term in data.Terminals) {
+        var symTerm = term as KeyTerm;
+        if (symTerm == null) continue;
+        if (symTerm.Text.Length > 0 && char.IsLetter(symTerm.Text[0]))
+          symTerm.SetOption(TermOptions.IsKeyword); 
+      }//foreach term
       //Init all terms
       foreach (BnfTerm term in data.AllTerms)
         term.Init(data);
@@ -245,6 +255,7 @@ namespace Irony.Parsing.Construction {
       //compute prod direct firsts and initialize NT.Firsts
       foreach (var nt in data.NonTerminals) {
         foreach (var prod in nt.Productions) {
+          if (prod.IsSet(ProductionFlags.IsError)) continue; //do not include error productions, so SyntaxError is not a real lookahead
           foreach (var term in prod.RValues) {
             prod.DirectFirsts.Add(term);
             nt.DirectFirsts.Add(term);
@@ -304,11 +315,6 @@ namespace Irony.Parsing.Construction {
           nt.SetOption(TermOptions.IsTransient);
       }
     }
-    private void InitTokenFilters() {
-      foreach (var filter in _grammar.TokenFilters)
-        filter.Init(_grammarData);
-    }
-
 
     #region Grammar Validation
     private void ValidateGrammar() {

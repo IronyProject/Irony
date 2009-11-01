@@ -23,16 +23,6 @@ namespace Irony.Ast {
         case AstMode.Write: context.Data.Pop(); break;  
       }
     }
-
-    //TODO: think how to eliminate this method. Literal terminals should NOT use AstNode-derived code.
-    // Irony's AstNode is one custom implementation, one of many possible.
-    public static bool AssignDefaultAstNodeType(Terminal terminal) {
-      bool assignType = (terminal.AstNodeType == null && terminal.AstNodeCreator == null
-          && terminal.Grammar.FlagIsSet(LanguageFlags.CreateAst));
-      if (assignType)
-        terminal.AstNodeType = typeof(LiteralValueNode);
-      return assignType; 
-    }
   
   }//class
 }

@@ -22,7 +22,6 @@ using System.Configuration;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Irony.Parsing;
-using Irony.Diagnostics;
 using Irony.EditorServices;
 using Irony.Ast; 
 using Irony.Interpreter;
@@ -38,7 +37,6 @@ namespace Irony.GrammarExplorer {
     Grammar _grammar;
     LanguageData _language; 
     Parser _parser;
-    ParsingContext _parsingContext;
     ParseTree _parseTree;
     RuntimeException _runtimeError;
     bool _loaded; 
@@ -49,14 +47,15 @@ namespace Irony.GrammarExplorer {
       try {
         txtSource.Text = Settings.Default.SourceSample;
         txtSearch.Text = Settings.Default.SearchPattern;
-        var grammars = GrammarItemList.FromXml(Settings.Default.Grammars);
+        GrammarItemList grammars = GrammarItemList.FromXml(Settings.Default.Grammars);
         grammars.ShowIn(cboGrammars);
-        cboGrammars.SelectedIndex = Settings.Default.LanguageIndex; //this will start colorizer
         chkParserTrace.Checked = Settings.Default.EnableTrace;
         chkDisableHili.Checked = Settings.Default.DisableHili;
+        cboGrammars.SelectedIndex = Settings.Default.LanguageIndex; //this will build parser and start colorizer
       } catch { }
-      _loaded = true; 
+      _loaded = true;
     }
+
     private void fmExploreGrammar_FormClosing(object sender, FormClosingEventArgs e) {
       Settings.Default.SourceSample = txtSource.Text;
       Settings.Default.LanguageIndex = cboGrammars.SelectedIndex;
@@ -89,6 +88,7 @@ namespace Irony.GrammarExplorer {
       gridParserTrace.Rows.Clear();
       lstTokens.Items.Clear();
       tvParseTree.Nodes.Clear();
+      tvAst.Nodes.Clear(); 
       ClearRuntimeError(); 
       Application.DoEvents();
     }
@@ -105,8 +105,8 @@ namespace Irony.GrammarExplorer {
 
     private void ShowCompilerErrors() {
       gridCompileErrors.Rows.Clear();
-      if (_parseTree == null || _parseTree.Errors.Count == 0) return; 
-      foreach (var err in _parseTree.Errors) 
+      if (_parseTree == null || _parseTree.ParserMessages.Count == 0) return; 
+      foreach (var err in _parseTree.ParserMessages) 
         gridCompileErrors.Rows.Add(err.Location, err, err.ParserState);
       var needPageSwitch = tabBottom.SelectedTab != pageParserOutput && 
         !(tabBottom.SelectedTab == pageParserTrace && chkParserTrace.Checked);
@@ -116,9 +116,8 @@ namespace Irony.GrammarExplorer {
 
     private void ShowParseTrace() {
       gridParserTrace.Rows.Clear();
-      foreach (var entry in _parsingContext.ParserTrace) {
-        int index = gridParserTrace.Rows.Add(entry.State, entry.StackTop, entry.Input,
-            entry.Message, entry.NewState); 
+      foreach (var entry in _parser.Context.ParserTrace) {
+        int index = gridParserTrace.Rows.Add(entry.State, entry.StackTop, entry.Input, entry.Message); 
         if (entry.IsError)
           gridParserTrace.Rows[gridParserTrace.Rows.Count - 1].DefaultCellStyle.ForeColor = Color.Red;
       }
@@ -136,7 +135,7 @@ namespace Irony.GrammarExplorer {
         lblSrcLineCount.Text = (_parseTree.Tokens[_parseTree.Tokens.Count - 1].Location.Line + 1).ToString();
       lblSrcTokenCount.Text = _parseTree.Tokens.Count.ToString();
       lblCompileTime.Text = _parseTree.ParseTime.ToString();
-      lblCompileErrorCount.Text = _parseTree.Errors.Count.ToString();
+      lblCompileErrorCount.Text = _parseTree.ParserMessages.Count.ToString();
       Application.DoEvents();
       //Note: this time is "pure" compile time; actual delay after cliking "Compile" includes time to fill TreeView control 
       //  showing compiled syntax tree. 
@@ -188,9 +187,9 @@ namespace Irony.GrammarExplorer {
       txtParserStates.Text = string.Empty;
       tabBottom.SelectedTab = pageLanguage;
       if (_parser == null) return;
-      txtTerms.Text = DiagnosticUtils.PrintTerminals(_parser.Language);
-      txtNonTerms.Text = DiagnosticUtils.PrintNonTerminals(_parser.Language);
-      txtParserStates.Text = DiagnosticUtils.PrintStateList(_parser.Language);
+      txtTerms.Text = ParserDataPrinter.PrintTerminals(_parser.Language);
+      txtNonTerms.Text = ParserDataPrinter.PrintNonTerminals(_parser.Language);
+      txtParserStates.Text = ParserDataPrinter.PrintStateList(_parser.Language);
       ShowGrammarErrors();
     }//method
 
@@ -318,7 +317,6 @@ namespace Irony.GrammarExplorer {
         sw.Start();
         _language = new LanguageData(_grammar); 
         _parser = new Parser (_language);
-        _parsingContext = new ParsingContext(_parser);
         sw.Stop();
         StartHighligter();
       } finally {
@@ -331,16 +329,16 @@ namespace Irony.GrammarExplorer {
       ClearCompileResults();
       if (_parser == null || !_parser.Language.CanParse()) return; 
       _parseTree = null;
-      _parsingContext = new ParsingContext(_parser);
-      _parsingContext.SetOption(ParseOptions.TraceParser, chkParserTrace.Checked);
+      GC.Collect(); //to avoid disruption of perf times with occasional collections
+      _parser.Context.SetOption(ParseOptions.TraceParser, chkParserTrace.Checked);
       try {
-        _parser.Parse(_parsingContext, txtSource.Text, "<source>");
+        _parser.Parse(txtSource.Text, "<source>");
       } catch (Exception ex) {
         gridCompileErrors.Rows.Add(null, ex.Message, null);
         tabBottom.SelectedTab = pageParserOutput;
         throw;
       } finally {
-        _parseTree = _parsingContext.CurrentParseTree;
+        _parseTree = _parser.Context.CurrentParseTree;
         ShowCompilerErrors();
         if (chkParserTrace.Checked) {
           ShowParseTrace();
@@ -352,13 +350,14 @@ namespace Irony.GrammarExplorer {
     }
 
     private void RunSample() {
-      ClearRuntimeError(); 
+      ClearRuntimeError();
       Stopwatch sw = new Stopwatch();
       txtOutput.Text = "";
       try {
         if (_parseTree == null)
           ParseSample();
-        if (_parseTree.Errors.Count > 0) return;
+        if (_parseTree.ParserMessages.Count > 0) return;
+        GC.Collect(); //to avoid disruption of perf times with occasional collections
         sw.Start();
         string output = _grammar.RunSample(_parseTree); 
         sw.Stop();
@@ -539,8 +538,8 @@ namespace Irony.GrammarExplorer {
     }
 
     private void gridParserTrace_CellDoubleClick(object sender, DataGridViewCellEventArgs e) {
-      if (_parsingContext == null || e.RowIndex < 0 || e.RowIndex >= _parsingContext.ParserTrace.Count) return;
-      var entry = _parsingContext.ParserTrace[e.RowIndex];
+      if (_parser.Context == null || e.RowIndex < 0 || e.RowIndex >= _parser.Context.ParserTrace.Count) return;
+      var entry = _parser.Context.ParserTrace[e.RowIndex];
       switch (e.ColumnIndex) {
         case 0: //state
           LocateParserState(entry.State);
@@ -555,21 +554,19 @@ namespace Irony.GrammarExplorer {
           break;
         case 3: //action
           break;
-        case 4: //state
-          LocateParserState(entry.NewState);
-          break;
       }//switch
     }
 
-    private void lstTokens_DoubleClick(object sender, EventArgs e) {
+    private void lstTokens_Click(object sender, EventArgs e) {
       if (lstTokens.SelectedIndex < 0)
         return;
       Token token = (Token)lstTokens.SelectedItem;
       ShowSourceLocation(token.Location, token.Length);
     }
+
     private void gridCompileErrors_CellDoubleClick(object sender, DataGridViewCellEventArgs e) {
       if (e.RowIndex < 0 || e.RowIndex >= gridCompileErrors.Rows.Count) return;
-      var err = gridCompileErrors.Rows[e.RowIndex].Cells[1].Value as SyntaxError;
+      var err = gridCompileErrors.Rows[e.RowIndex].Cells[1].Value as ParserMessage;
       switch (e.ColumnIndex) {
         case 0: //state
         case 1: //stack top

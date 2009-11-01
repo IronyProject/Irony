@@ -31,7 +31,7 @@ namespace Irony.Ast {
       NameNode = AddChild("Name", treeNode.ChildNodes[1]);
       Parameters = AddChild("Parameters", treeNode.ChildNodes[2]);
       Body = AddChild("Body", treeNode.ChildNodes[3]);
-      AsString = "Function " + NameNode.ToString();
+      AsString = "<Function " + NameNode.AsString + ">";
     }
 
     public override void EvaluateNode(EvaluationContext context, AstMode mode) {

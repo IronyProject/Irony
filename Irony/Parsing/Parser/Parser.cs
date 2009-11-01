@@ -1,52 +1,93 @@
-﻿using System;
+﻿#region License
+/* **********************************************************************************
+ * Copyright (c) Roman Ivantsov
+ * This source code is subject to terms and conditions of the MIT License
+ * for Irony. A copy of the license can be found in the License.txt file
+ * at the root of this distribution. 
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * MIT License.
+ * You must not remove this notice from this software.
+ * **********************************************************************************/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace Irony.Parsing {
   //Parser class represents combination of scanner and LALR parser (CoreParser)
-  public class Parser { 
+  public class Parser {
     public readonly LanguageData Language; 
-    public readonly Scanner Scanner;
     public readonly CoreParser CoreParser;
+    public readonly Scanner Scanner;
+    public ParsingContext Context { get; internal set; }
 
-    public Parser(Grammar grammar) {
-      Language = new LanguageData(grammar);
-      Scanner = new Scanner(Language.ScannerData);
-      CoreParser = new CoreParser(Language.ParserData, Scanner);
+    public Parser(Grammar grammar) : this (new LanguageData(grammar)) { }
+    public Parser(LanguageData language) {
+      Language = language;
+      Context = new ParsingContext(this);
+      Scanner = new Scanner(this);
+      CoreParser = new CoreParser(this);
     }
 
-    public Parser(LanguageData language) {
-      Language = language; 
-      Scanner = new Scanner(Language.ScannerData);
-      CoreParser = new CoreParser(Language.ParserData, Scanner); 
+    internal void OnStatusChanged(ParserStatus oldStatus) {
+      CoreParser.OnStatusChanged(oldStatus);
+      Scanner.OnStatusChanged(oldStatus); 
+    }
+
+
+    [Obsolete("This method overload is deprecated. Use another overload without context parameter and access ParsingContext through Parser.Context property.")]
+    public ParseTree Parse(ParsingContext context, string sourceText, string fileName) {
+      return Parse(sourceText, fileName);
     }
 
     public ParseTree Parse(string sourceText) {
-      return Parse(new ParsingContext(this), sourceText, "<source>"); 
+      return Parse(sourceText, "<Source>");
     }
-    public ParseTree Parse(ParsingContext context, string sourceText, string fileName) {
-      context.CurrentParseTree = new ParseTree(sourceText, fileName);
-      Scanner.SetSource(sourceText);
-      Scanner.BeginScan(context);
+
+    public ParseTree Parse(string sourceText, string fileName) {
+      AutoReset();
+      Context.SourceStream.SetText(sourceText, 0, Context.Status == ParserStatus.AcceptedPartial);
+      Context.CurrentParseTree = new ParseTree(sourceText, fileName);
+      Context.Status = ParserStatus.Parsing;
       int start = Environment.TickCount;
-      CoreParser.Parse(context);
-      context.CurrentParseTree.ParseTime = Environment.TickCount - start;
-      if (context.CurrentParseTree.Errors.Count > 0)
-        context.CurrentParseTree.Errors.Sort(SyntaxErrorList.ByLocation);
-      return context.CurrentParseTree;
+      CoreParser.Parse();
+      Context.CurrentParseTree.ParseTime = Environment.TickCount - start;
+      UpdateParseTreeStatus(); 
+      return Context.CurrentParseTree;
+    }
+
+    private void AutoReset() {
+      switch (Context.Status) {
+        case ParserStatus.AcceptedPartial:
+          break;
+        default: //for everything else Initialize
+          Context.Status = ParserStatus.Init;
+          break; 
+      }
+    }
+
+    private void UpdateParseTreeStatus() {
+      var parseTree = Context.CurrentParseTree;
+      if (parseTree.ParserMessages.Count > 0)
+        parseTree.ParserMessages.Sort(ParserMessageList.ByLocation);
+      if (parseTree.HasErrors())
+        parseTree.Status = ParseTreeStatus.Error;
+      else if (Context.Status == ParserStatus.AcceptedPartial)
+        parseTree.Status = ParseTreeStatus.Partial;
+      else
+        parseTree.Status = ParseTreeStatus.Parsed;
     }
 
     public ParseTree ScanOnly(string sourceText, string fileName) {
-      var context = new ParsingContext(this);
-      context.CurrentParseTree = new ParseTree(sourceText, fileName);
-      Scanner.SetSource(sourceText);
-      Scanner.BeginScan(context);
+      Context.CurrentParseTree = new ParseTree(sourceText, fileName);
+      Context.SourceStream.SetText(sourceText, 0, false);
       while (true) {
         var token = Scanner.GetToken();
         if (token == null || token.Terminal == Language.Grammar.Eof) break;
       }
-      return context.CurrentParseTree;
+      return Context.CurrentParseTree;
     }
 
   

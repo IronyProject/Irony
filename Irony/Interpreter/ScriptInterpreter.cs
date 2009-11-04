@@ -154,7 +154,7 @@ namespace Irony.Interpreter {
       if (WorkerThread == null || WorkerStateIs(ThreadState.Stopped))
         return;
       WorkerThread.Abort();
-      WorkerThread.Join(TimeSpan.FromMilliseconds(100));
+      WorkerThread.Join(100);
       WorkerThread = null; 
     }
 

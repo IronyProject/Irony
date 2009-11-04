@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace Irony.Parsing {
@@ -196,7 +197,7 @@ namespace Irony.Parsing {
     private TerminalList SelectTerminals(char current) {
       TerminalList termList;
       if (!_grammar.CaseSensitive)
-        current = char.ToLowerInvariant(current);
+        current = char.ToLower(current, CultureInfo.InvariantCulture);
       if (!Data.TerminalsLookup.TryGetValue(current, out termList))
         termList = Data.FallbackTerminals;
       if (termList.Count <= 1)  return termList;

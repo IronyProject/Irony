@@ -34,8 +34,6 @@ namespace Irony.Parsing.Construction {
 
     public void Build() {
       _stateHash.Clear();
-      Stopwatch sw = new Stopwatch();
-      sw.Start(); 
       Data = _language.ParserData;
       CreateLalrParserStates(); 
       PropagateTransitionsIncludes(0);               //220 ms

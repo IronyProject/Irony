@@ -17,7 +17,6 @@ using System.Text;
 
 namespace Irony.Parsing {
 
-  [Serializable]
   public struct SourceLocation {
     public int Position;
     public int Line;

@@ -18,6 +18,7 @@ using System.IO;
 using System.Xml;
 
 namespace Irony.Parsing { 
+#if !SILVERLIGHT
   public static class ParseTreeExtensions {
 
     public static string ToXml(this ParseTree parseTree) {
@@ -60,4 +61,5 @@ namespace Irony.Parsing {
     }//method
 
   }//class
+#endif
 }//namespace

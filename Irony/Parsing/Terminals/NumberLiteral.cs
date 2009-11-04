@@ -345,8 +345,7 @@ namespace Irony.Parsing {
         if (typeCode != TypeCode.UInt64)
           details.Value = Convert.ChangeType(details.Value, typeCode, CultureInfo.InvariantCulture);
         return true;
-      } catch (Exception e) {
-        Trace.WriteLine("Error converting to integer: text=[" + details.Body + "], type=" + typeCode + ", error: " + e.Message); 
+      } catch (Exception) {
         return false;
       }
     }//method
@@ -433,10 +432,11 @@ namespace Irony.Parsing {
       return 19; //maxWordLength 20
     }
     private int GetSectionCount(int stringLength, int safeWordLength) {
-      int remainder;
-      int quotient = Math.DivRem(stringLength, safeWordLength, out remainder);
+      int quotient = stringLength / safeWordLength;
+      int remainder = stringLength - quotient;
       return remainder == 0 ? quotient : quotient + 1;
     }
+
     //radix^safeWordLength
     private ulong GetSafeWordRadix(CompoundTokenDetails details) {
       if (details.IsSet((short)NumberFlags.Hex))

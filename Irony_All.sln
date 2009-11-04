@@ -16,9 +16,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "025.Irony.Samples.Console", "Irony.Samples.Console\025.Irony.Samples.Console.csproj", "{5A31B964-CDFA-4406-9316-32A0F04CE149}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "100.IronySilverlight", "Irony\100.IronySilverlight.csproj", "{B945A137-E4C4-4DD5-9598-261F466549FE}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 6
+		SccNumberOfProjects = 7
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs05.codeplex.com/
 		SccLocalPath0 = .
@@ -37,6 +39,9 @@ Global
 		SccProjectUniqueName5 = Irony.Samples.Console\\025.Irony.Samples.Console.csproj
 		SccProjectName5 = Irony.Samples.Console
 		SccLocalPath5 = Irony.Samples.Console
+		SccProjectUniqueName6 = Irony\\100.IronySilverlight.csproj
+		SccProjectName6 = Irony
+		SccLocalPath6 = Irony
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -106,6 +111,17 @@ Global
 		{5A31B964-CDFA-4406-9316-32A0F04CE149}.Silverlight Release|Any CPU.Build.0 = Release|Any CPU
 		{5A31B964-CDFA-4406-9316-32A0F04CE149}.SpecSharp|Any CPU.ActiveCfg = Release|Any CPU
 		{5A31B964-CDFA-4406-9316-32A0F04CE149}.SpecSharp|Any CPU.Build.0 = Release|Any CPU
+		{B945A137-E4C4-4DD5-9598-261F466549FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B945A137-E4C4-4DD5-9598-261F466549FE}.FxCop|Any CPU.ActiveCfg = Release|Any CPU
+		{B945A137-E4C4-4DD5-9598-261F466549FE}.FxCop|Any CPU.Build.0 = Release|Any CPU
+		{B945A137-E4C4-4DD5-9598-261F466549FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B945A137-E4C4-4DD5-9598-261F466549FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B945A137-E4C4-4DD5-9598-261F466549FE}.Silverlight Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B945A137-E4C4-4DD5-9598-261F466549FE}.Silverlight Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B945A137-E4C4-4DD5-9598-261F466549FE}.Silverlight Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B945A137-E4C4-4DD5-9598-261F466549FE}.Silverlight Release|Any CPU.Build.0 = Release|Any CPU
+		{B945A137-E4C4-4DD5-9598-261F466549FE}.SpecSharp|Any CPU.ActiveCfg = Release|Any CPU
+		{B945A137-E4C4-4DD5-9598-261F466549FE}.SpecSharp|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

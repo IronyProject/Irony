@@ -63,9 +63,6 @@ namespace Irony.Ast {
       }
     }
 
-    public const string KeyErrorLocation = "_error_location";
-    public const string KeyErrorNode = "_error_node";
-
     public SourceLocation GetErrorAnchor() {
       return ErrorAnchor;
     }

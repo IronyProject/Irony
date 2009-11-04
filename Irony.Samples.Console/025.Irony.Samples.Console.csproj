@@ -8,8 +8,8 @@
     <ProjectGuid>{5A31B964-CDFA-4406-9316-32A0F04CE149}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Irony.Samples.ConsoleCalculator</RootNamespace>
-    <AssemblyName>Irony.Samples.ConsoleCalculator</AssemblyName>
+    <RootNamespace>Irony.Samples.Console</RootNamespace>
+    <AssemblyName>Irony.Samples.Console</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>

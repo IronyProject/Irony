@@ -93,17 +93,24 @@ namespace Irony.Interpreter {
             }
             break;
           case InterpreterStatus.RuntimeError:
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(Interpreter.LastException.Message);
-            var ex = Interpreter.LastException;
-            if (ex.InnerException != null) 
-              Console.WriteLine(ex.InnerException.ToString()); 
+            ReportException(); 
             break;
           default: break;
         }//switch
       }
 
     }//Run method
+
+    private void ReportException()  {
+      Console.ForegroundColor = ConsoleColor.Red;
+      var ex = Interpreter.LastException;
+      var runtimeEx = ex as RuntimeException;
+      if (runtimeEx != null)
+          Console.WriteLine(runtimeEx.Message + " Location: " + runtimeEx.Location.ToUiString());
+      else
+          Console.WriteLine(ex.Message);
+      //Console.WriteLine(ex.ToString());   //Uncomment to see the full stack when debugging your language  
+    }
 
     #region Reading input methods
     private enum ReadResult {

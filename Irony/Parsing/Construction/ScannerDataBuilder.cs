@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -61,7 +62,7 @@ namespace Irony.Parsing.Construction {
           //Calculate hash key for the prefix
           char hashKey = prefix[0];
           if (!_grammar.CaseSensitive)
-            hashKey = char.ToLowerInvariant(hashKey);
+            hashKey = char.ToLower(hashKey, CultureInfo.InvariantCulture);
           TerminalList currentList;
           if (!_data.TerminalsLookup.TryGetValue(hashKey, out currentList)) {
             //if list does not exist yet, create it

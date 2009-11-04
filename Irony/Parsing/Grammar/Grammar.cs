@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using Irony.Ast;
 using Irony.Interpreter;
@@ -369,7 +370,7 @@ namespace Irony.Parsing {
       }
       //create new term
       if (!CaseSensitive)
-        text = text.ToLowerInvariant();
+        text = text.ToLower(CultureInfo.InvariantCulture);
       string.Intern(text); 
       term = new KeyTerm(text, name);
       KeyTerms[text] = term;

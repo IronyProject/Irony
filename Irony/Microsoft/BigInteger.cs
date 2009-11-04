@@ -1479,10 +1479,10 @@ namespace Microsoft.Scripting.Math {
     [CLSCompliant(false)]
     public string ToString(uint radix) {
       if (radix < 2) {
-        throw new ArgumentOutOfRangeException("radix", radix, MathResources.RadixLessThan2);
+        throw new ArgumentOutOfRangeException("radix");
       }
       if (radix > 36) {
-        throw new ArgumentOutOfRangeException("radix", radix, MathResources.RadixGreaterThan36);
+        throw new ArgumentOutOfRangeException("radix");
       }
 
       int len = Length;
@@ -1768,7 +1768,7 @@ namespace Microsoft.Scripting.Math {
           if (format[0] == 'x') {
             for (int i = 0; i < res.Length; i++) {
               if (res[i] >= 'A' && res[i] <= 'F') {
-                res[i] = Char.ToLowerInvariant(res[i]);
+                res[i] = Char.ToLower(res[i], CultureInfo.InvariantCulture);
               }
             }
           }

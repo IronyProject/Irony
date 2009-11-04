@@ -98,12 +98,13 @@ namespace Irony.Parsing {
 
     public bool MatchSymbol(string symbol, bool ignoreCase) {
       try {
-        int cmp = string.Compare(_text, _previewPosition, symbol, 0, symbol.Length, ignoreCase);
+        var compType =  ignoreCase ? StringComparison.InvariantCultureIgnoreCase : StringComparison.InvariantCulture;
+        int cmp = string.Compare(_text, _previewPosition, symbol, 0, symbol.Length, compType);
         return cmp == 0;
       } catch { 
         //exception may be thrown if Position + symbol.length > text.Length; 
         // this happens not often, only at the very end of the file, so we don't check this explicitly
-        //but simply catch the exception and return false. Again, try/catch block is has no overhead
+        //but simply catch the exception and return false. Again, try/catch block has no overhead
         // if exception is not thrown. 
         return false;
       }

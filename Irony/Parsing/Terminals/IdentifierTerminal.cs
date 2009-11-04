@@ -130,7 +130,7 @@ namespace Irony.Parsing {
       if (_terminators.IndexOf(source.PreviewChar) < 0) return null; 
       var token = source.CreateToken(this);
       if (!this.GrammarData.Grammar.CaseSensitive)
-        token.Value = token.Text.ToLowerInvariant(); 
+        token.Value = token.Text.ToLower(CultureInfo.InvariantCulture);
       CheckReservedWord(token);
       return token; 
     }

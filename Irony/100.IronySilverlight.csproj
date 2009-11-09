@@ -63,6 +63,7 @@
     <Compile Include="Ast\IfNode.cs" />
     <Compile Include="Ast\LiteralValueNode.cs" />
     <Compile Include="Ast\NotSupportedNode.cs" />
+    <Compile Include="Ast\NullNode.cs" />
     <Compile Include="Ast\ParamListNode.cs" />
     <Compile Include="Ast\StatementListNode.cs" />
     <Compile Include="Ast\UnExprNode.cs" />
@@ -115,7 +116,7 @@
     <Compile Include="Parsing\Scanner\SourceStream.cs" />
     <Compile Include="Parsing\Scanner\Token.cs" />
     <Compile Include="Parsing\Scanner\TokenEditorInfo.cs" />
-    <Compile Include="Parsing\StringHelpers.cs" />
+    <Compile Include="Parsing\StringUtils.cs" />
     <Compile Include="Parsing\Terminals\CommentTerminal.cs" />
     <Compile Include="Parsing\Terminals\CompoundTerminalBase.cs" />
     <Compile Include="Parsing\Terminals\ConstantTerminal.cs" />
@@ -135,9 +136,11 @@
     <Compile Include="Parsing\TokenFilters\CodeOutlineFilter.cs" />
     <Compile Include="Parsing\TokenFilters\TokenFilter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources.Designer.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Microsoft\MathResources.resx" />
+    <EmbeddedResource Include="Resources.resx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="irony.snk" />

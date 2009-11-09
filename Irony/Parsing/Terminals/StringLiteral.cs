@@ -99,8 +99,7 @@ namespace Irony.Parsing {
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
       if (_subtypes.Count == 0) {
-        grammarData.Language.Errors.Add(GrammarErrorLevel.Error, null, 
-            "Error in string literal [{0}]: No start/end symbols specified.", this.Name);
+        grammarData.Language.Errors.Add(GrammarErrorLevel.Error, null, Resources.ErrInvStrDef, this.Name); //"Error in string literal [{0}]: No start/end symbols specified."
         return; 
       }
       //collect all start-end symbols in lists and create strings of first chars
@@ -164,7 +163,7 @@ namespace Irony.Parsing {
           //Set source position for recovery: move to the next line if linebreak is not allowed.
           if (nlPos > 0) endPos = nlPos;
           if (endPos > 0) source.PreviewPosition = endPos + 1;
-          details.Error = "Mal-formed  string literal - cannot find termination symbol.";
+          details.Error = Resources.ErrBadStrLiteral;//    "Mal-formed  string literal - cannot find termination symbol.";
           return true; //we did find start symbol, so it is definitely string, only malformed
         }//if malformed
 
@@ -254,8 +253,6 @@ namespace Irony.Parsing {
     //Extract the string content from lexeme, adjusts the escaped and double-end symbols
     protected override bool ConvertValue(CompoundTokenDetails details) {
       string value = details.Body;
-      if (value == null)
-        Debug.WriteLine("StringLiteral: Details.Value == null"); 
       bool escapeEnabled = !details.IsSet((short)StringFlags.NoEscapes);
       //Fix all escapes
       if (escapeEnabled && value.IndexOf(EscapeChar) >= 0) {
@@ -294,7 +291,7 @@ namespace Irony.Parsing {
 
       if (details.IsSet((short)StringFlags.IsChar)) {
         if (value.Length != 1) {
-          details.Error = "Invalid length of char literal - should be 1.";
+          details.Error = Resources.ErrBadChar;  //"Invalid length of char literal - should be a single character.";
           return false;
         }
         details.Value = value[0]; 
@@ -316,7 +313,7 @@ namespace Irony.Parsing {
           if (details.IsSet((short)StringFlags.AllowsUEscapes)) {
             len = (first == 'u' ? 4 : 8);
             if (segment.Length < len + 1) {
-              details.Error = "Invalid unicode escape (" + segment.Substring(len + 1) + "), expected " + len + " hex digits.";
+              details.Error = string.Format(Resources.ErrBadUnEscape, segment.Substring(len + 1), len);// "Invalid unicode escape ({0}), expected {1} hex digits."
               return segment;
             }
             digits = segment.Substring(1, len);
@@ -335,7 +332,7 @@ namespace Irony.Parsing {
             }
             //p now point to char right after the last digit
             if (p <= 1) {
-              details.Error = @"Invalid \x escape, at least one digit expected.";
+              details.Error = Resources.ErrBadXEscape; // @"Invalid \x escape, at least one digit expected.";
               return segment;
             }
             digits = segment.Substring(1, p - 1);
@@ -360,7 +357,7 @@ namespace Irony.Parsing {
           }//if
           break;
       }//switch
-      details.Error = "Invalid escape sequence: \\" + segment;
+      details.Error = string.Format(Resources.ErrInvEscape, segment); //"Invalid escape sequence: \{0}"
       return segment; 
     }//method
     #endregion

@@ -42,6 +42,7 @@ namespace Irony.Interpreter {
       Interpreter = new ScriptInterpreter(grammar);
       Interpreter.RethrowExceptions = false;
       Interpreter.ParseMode = ParseMode.CommandLine;
+      Interpreter.PrintParseErrors = false; 
     }
 
     public void Run() {
@@ -49,10 +50,10 @@ namespace Irony.Interpreter {
         RunImpl();
       } catch (Exception ex) {
         Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("Fatal error: ");
+        Console.WriteLine(Resources.ErrConsoleFatalError);
         Console.WriteLine(ex.ToString());
         Console.ForegroundColor = ConsoleColor.White;
-        Console.WriteLine("Press any key to end the program.");
+        Console.WriteLine(Resources.MsgPressAnyKeyToExit);
         Console.Read();
       }
 
@@ -73,7 +74,7 @@ namespace Irony.Interpreter {
         var result = ReadInput(out input);
         //Check the result type - it may be the response to "Abort?" question, not a script to execute. 
         switch (result) {
-          case ReadResult.AbortYes: return;
+          case ReadResult.AbortYes: return; //exit
           case ReadResult.AbortNo: continue; //while loop
           case ReadResult.Script: break; //do nothing, continue to evaluate script
         }
@@ -86,6 +87,7 @@ namespace Irony.Interpreter {
             Console.WriteLine(Interpreter.GetOutput());
             break;
           case  InterpreterStatus.SyntaxError:
+            Console.WriteLine(Interpreter.GetOutput()); //write all output we have
             Console.ForegroundColor = ConsoleColor.Red;
             foreach (var err in Interpreter.ParsedScript.ParserMessages) {
               Console.WriteLine(string.Empty.PadRight(prompt.Length + err.Location.Column) + "^"); //show err location
@@ -106,7 +108,7 @@ namespace Irony.Interpreter {
       var ex = Interpreter.LastException;
       var runtimeEx = ex as RuntimeException;
       if (runtimeEx != null)
-          Console.WriteLine(runtimeEx.Message + " Location: " + runtimeEx.Location.ToUiString());
+          Console.WriteLine(runtimeEx.Message + " " + Resources.LabelLocation + " " + runtimeEx.Location.ToUiString());
       else
           Console.WriteLine(ex.Message);
       //Console.WriteLine(ex.ToString());   //Uncomment to see the full stack when debugging your language  
@@ -125,15 +127,12 @@ namespace Irony.Interpreter {
         input = Console.ReadLine();
       } while (input == null); 
       if (!_ctrlCPressed) return ReadResult.Script;
-      _ctrlCPressed = false; 
-      switch (input) {
-        case "Y":
-        case "y":
-          return ReadResult.AbortYes;
-        case "n":
-        case "N":
-          return ReadResult.AbortNo;
-      }
+      _ctrlCPressed = false;
+      if (Resources.ConsoleYesChars.Contains(input))
+        return ReadResult.AbortYes;
+      if (Resources.ConsoleNoChars.Contains(input))
+        return ReadResult.AbortNo;
+      //anything else return NO
       return ReadResult.AbortNo;
     }
     #endregion
@@ -160,7 +159,7 @@ namespace Irony.Interpreter {
       _ctrlCPressed = true;
       if (Interpreter.IsBusy()) {
         //This is interpreter-busy situation, we do all here.
-        Console.Write("Abort script(y/n)? ");
+        Console.Write(Resources.MsgAbortScriptYN);
         string input;
         var result = ReadInput(out input);
         switch (result) {
@@ -171,9 +170,12 @@ namespace Irony.Interpreter {
             return;
         }
       } else {
-        //Ask the question; ReadInput (which is currently waiting for ReadLine return) will return the answer to the main loop
-        // The _crtlCPressed flag is already set. 
-        Console.Write("\nExit console (y/n)?");
+        //Ask the question and return; 
+        //ReadInput is currently waiting for ReadLine return; it will get the answer (Y/N), and because
+        // _ctrlCPressed flag is set, ReadInput will return the answer as AbortYes/AbortNo to the main loop in RunImpl method
+        // The _crtlCPressed flag is already set.
+        Console.WriteLine();
+        Console.Write(Resources.MsgExitConsoleYN);
       }
     }//method
     #endregion

@@ -189,7 +189,7 @@ namespace Irony.Parsing {
       var newNode = CreateParseTreeNodeForReduce(reduceProduction);
       //Prepare switching to the new state. First read the state from top of the stack 
       Context.CurrentParserState = Context.ParserStack.Top.State;
-      Context.AddTrace("Popped state from stack, pushing {0}", reduceProduction.LValue.Name);
+      Context.AddTrace(Resources.MsgTracePoppedState, reduceProduction.LValue.Name);
       // Shift to new state (LALR) or push new node into input stack(NLALR, NLALRT)
       if (Data.ParseMethod == ParseMethod.Lalr) {
         //execute shift over non-terminal
@@ -289,7 +289,7 @@ namespace Irony.Parsing {
         if (parseNode.AstNode != null && parseNode.Term != null)
           parseNode.Term.OnAstNodeCreated(parseNode);
       } catch (Exception ex) {
-        Context.AddParserMessage(ParserErrorLevel.Error, parseNode.Span.Location, "Failed to create AST node for non-terminal [{0}], error: " + ex.Message, parseNode.Term.Name); 
+        Context.AddParserMessage(ParserErrorLevel.Error, parseNode.Span.Location, Resources.ErrFailedCreateNode, parseNode.Term.Name, ex.Message); 
       }
     }
     #endregion
@@ -309,7 +309,7 @@ namespace Irony.Parsing {
           ExecuteShift(action.NewState); 
           break; 
       }
-      Context.AddTrace("Parsing conflict resolved in code.");
+      Context.AddTrace(Resources.MsgTraceConflictResolved);
  
     }
 
@@ -332,7 +332,7 @@ namespace Irony.Parsing {
         case ParserActionType.Shift: ExecuteShift(newShiftState); break;
         case ParserActionType.Reduce: ExecuteReduce(reduceProduction); break; 
       }//switch
-      Context.AddTrace("Operator - resolved to {0}", realActionType);
+      Context.AddTrace(Resources.MsgTraceOpResolved, realActionType);
     }
 
     private ParserActionType GetActionTypeForOperation() {
@@ -374,7 +374,7 @@ namespace Irony.Parsing {
 
     private Token CreateBraceMismatchErrorToken(Token closingBrace) {
       return new Token(_grammar.SyntaxError, closingBrace.Location, closingBrace.Text,
-          string.Format("Unmatched closing brace '{0}'.", closingBrace.Text));
+          string.Format(Resources.ErrUnmatchedCloseBrace, closingBrace.Text));
     }
     #endregion
 

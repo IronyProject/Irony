@@ -33,9 +33,9 @@ namespace Irony.Ast {
       var argsObj = context.Data.Pop();
       var args = argsObj as ValueList;
       if (args == null)
-        context.ThrowError(this, "Argument list not found in the stack. Expected: ValueList, found: {0}", argsObj);
+        context.ThrowError(this, Resources.ErrArgListNotFound, argsObj);
       if (args.Count != ChildNodes.Count)
-        context.ThrowError(this, "Invalid number of arguments. Expected: {0}, found: {1}", ChildNodes.Count, args.Count);
+        context.ThrowError(this, Resources.ErrWrongArgCount, ChildNodes.Count, args.Count);
 
       for(int i = 0; i < ChildNodes.Count; i++) {
         context.Data.Push(args[i]);

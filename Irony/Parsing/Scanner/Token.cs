@@ -112,7 +112,7 @@ namespace Irony.Parsing {
 
     [System.Diagnostics.DebuggerStepThrough]
     public override string ToString() {
-      return Terminal.TokenToString(this);// +" (" + Location.ToString() + ")"; 
+      return Terminal.TokenToString(this);
     }//method
 
   }//class

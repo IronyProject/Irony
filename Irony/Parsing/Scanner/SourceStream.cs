@@ -142,13 +142,13 @@ namespace Irony.Parsing {
       try {
         //show just 20 chars from current position
         if (Location.Position + 20 < _text.Length)
-          result = _text.Substring(Location.Position, 20) + " ...";
+          result = _text.Substring(Location.Position, 20) + Resources.LabelSrcHaveMore;// " ..."
         else
-          result = _text.Substring(Location.Position) + "(EOF)";
+          result = _text.Substring(Location.Position) + Resources.LabelEofMark; //"(EOF)"
       } catch (Exception) {
-        result = PreviewChar + " ...";
+        result = PreviewChar + Resources.LabelSrcHaveMore;
       }
-      return "[" + result + "], at " + Location;
+      return string.Format(Resources.MsgSrcPosToString , result, Location); //"[{0}], at {1}"
     }
 
     #region Location calculations

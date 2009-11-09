@@ -31,7 +31,7 @@ namespace Irony.Ast {
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
       if (!CheckNodeForOpSymbol(treeNode.ChildNodes[0], false) && ! CheckNodeForOpSymbol(treeNode.ChildNodes[1], true)) {
-        string msg = string.Format("Invalid unary operator node: {0}; operator symbol not registered in Grammar.Post/PrefixUnaryOperators sets.", this);
+        string msg = string.Format(Resources.ErrOpSymbolNotRegistered, this);
         throw new AstException(this, msg);
       }
       int argIndex = IsPostfix? 0 : 1;
@@ -68,7 +68,7 @@ namespace Irony.Ast {
           UnaryOp = Op == "++"? "+" : "-";
           break; 
         default:
-          string msg = string.Format("UnExprNode: no implementation for unary operator '{0}'.", Op);
+          string msg = string.Format(Resources.ErrNoImplForUnaryOp, Op);
           throw new AstException(this, msg);
       }//switch
     }//method

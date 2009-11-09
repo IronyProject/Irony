@@ -29,7 +29,7 @@ namespace Irony.Parsing.Construction {
     public bool Build() {
       try {
         if (_grammar.Root == null)
-          Language.Errors.AddAndThrow(GrammarErrorLevel.Error, null, "Root property of the grammar is not set.");
+          Language.Errors.AddAndThrow(GrammarErrorLevel.Error, null, Resources.ErrRootNotSet);
         var gbld = new GrammarDataBuilder(Language);
         gbld.Build();
         //Just in case grammar author wants to customize something...

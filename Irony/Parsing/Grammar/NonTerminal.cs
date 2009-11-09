@@ -50,7 +50,7 @@ namespace Irony.Parsing {
     public override string ToString() {
       string result = Name;
       if (string.IsNullOrEmpty(Name))
-        result = "(unnamed)";
+        result = Resources.LabelUnnamed;
       return result; 
     }
     #endregion

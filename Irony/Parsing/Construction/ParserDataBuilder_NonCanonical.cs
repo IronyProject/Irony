@@ -38,13 +38,13 @@ namespace Irony.Parsing.Construction {
         RecomputeLookaheadsAndResolveConflicts(Data.LalrStateCount);
         statesWithConflicts = GetStatesWithConflicts(Data.LalrStateCount);
         if (Data.States.Count > 3000) { //protect against infinite looping
-          _language.Errors.Add(GrammarErrorLevel.InternalError, null, "NLALR process is in indefinite loop, number of states exceeded 3000.");
+          _language.Errors.Add(GrammarErrorLevel.InternalError, null, Resources.ErrNLALRhang);
           return; 
         }
       }
       //Add advice to error list
       foreach (var core in _coresToAddWrapTailHint)
-        _language.Errors.Add(GrammarErrorLevel.Info, null, "NLALR transform: Add WrapTail() in '.' position to [{0}].", core.ToString());
+        _language.Errors.Add(GrammarErrorLevel.Info, null, Resources.MsgNLALRAdvice, core.ToString());
     }//method
 
     private ParserStateList GetStatesWithConflicts(int startIndex) {
@@ -337,9 +337,9 @@ namespace Irony.Parsing.Construction {
         }//foreach item
       }//foreach conflict
       if (srConflicts.Count > 0)
-        _language.Errors.Add(GrammarErrorLevel.Conflict, state, "Ambiguous grammar, unresolvable shift-reduce conflicts. State {0}, lookaheads [{1}]", state, srConflicts);
+        _language.Errors.Add(GrammarErrorLevel.Conflict, state, Resources.ErrAmbigGrammarSR, state, srConflicts);
       if (rrConflicts.Count > 0)
-        _language.Errors.Add(GrammarErrorLevel.Conflict, state, "Ambiguous grammar, unresolvable reduce-reduce conflicts. State {0}, lookaheads [{1}]", state, rrConflicts);
+        _language.Errors.Add(GrammarErrorLevel.Conflict, state, Resources.ErrAmbigGrammarRR, state, rrConflicts);
       //create default actions and remove them from conflict list, so we don't deal with them anymore
       ReportAndCreateDefaultActionsForConflicts(state, srConflicts, rrConflicts); 
     } // method
@@ -390,7 +390,7 @@ namespace Irony.Parsing.Construction {
         }
         //sanity check
         if (reduceItem.Lookaheads.Count == 0)
-          _language.Errors.Add(GrammarErrorLevel.InternalError, state, "ParserBuilder error: inadequate state {0}, reduce item '{1}' has no lookaheads.", state.Name, reduceItem.Core.Production);
+          _language.Errors.Add(GrammarErrorLevel.InternalError, state, Resources.ErrNoLkhds, state.Name, reduceItem.Core.Production);
       }
     }//method
 

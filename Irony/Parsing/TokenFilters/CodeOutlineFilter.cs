@@ -17,8 +17,9 @@ namespace Irony.Parsing {
     public readonly OutlineOptions Options;
     public readonly KeyTerm ContinuationTerminal; //Terminal
 
-    ParsingContext _context;
+    GrammarData _grammarData; 
     Grammar _grammar;
+    ParsingContext _context;
     bool _produceIndents;
     bool _checkBraces;
 
@@ -31,30 +32,20 @@ namespace Irony.Parsing {
 
     #region constructor
     public CodeOutlineFilter(GrammarData grammarData, OutlineOptions options, KeyTerm continuationTerminal) {
-      GrammarData = grammarData;
+      _grammarData = grammarData;
       _grammar = grammarData.Grammar;
       Options = options;
       ContinuationTerminal = continuationTerminal;
       if (ContinuationTerminal != null)
-        if (!grammarData.Grammar.NonGrammarTerminals.Contains(ContinuationTerminal))
-          grammarData.Language.Errors.Add(GrammarErrorLevel.Warning, null,
-            "CodeOutlineFilter: line continuation symbol '{0}' should be added to Grammar.NonGrammarTerminals list.",
-            ContinuationTerminal.Name);
+        if (!_grammar.NonGrammarTerminals.Contains(ContinuationTerminal))
+          _grammarData.Language.Errors.Add(GrammarErrorLevel.Warning, null, Resources.ErrOutlineFilterContSymbol, ContinuationTerminal.Name);
+            //"CodeOutlineFilter: line continuation symbol '{0}' should be added to Grammar.NonGrammarTerminals list.",
       _produceIndents = OptionIsSet(OutlineOptions.ProduceIndents);
       _checkBraces = OptionIsSet(OutlineOptions.CheckBraces);
       Reset(); 
     }
     #endregion
 
-    public override void Init(GrammarData grammarData) {
-      base.Init(grammarData);
-      //check that line continuation symbol is added to NonGrammarTerminals
-      if (ContinuationTerminal != null)
-        if (!grammarData.Grammar.NonGrammarTerminals.Contains(ContinuationTerminal))
-          grammarData.Language.Errors.Add(GrammarErrorLevel.Warning, null,
-            "CodeOutlineFilter: line continuation symbol '{0}' should be added to Grammar.NonGrammarTerminals list.",
-            ContinuationTerminal.Name);
-    }
 
     public bool OptionIsSet(OutlineOptions option) {
       return (Options & option) != 0;
@@ -116,8 +107,8 @@ namespace Irony.Parsing {
           //check that current indent exactly matches the previous indent 
           if (Indents.Peek() != currIndent) {
             //fire error
-            OutputTokens.Push(new Token(_grammar.SyntaxError, token.Location, string.Empty,
-              "Invalid dedent level, no previous matching indent found."));
+            OutputTokens.Push(new Token(_grammar.SyntaxError, token.Location, string.Empty, Resources.ErrInvDedent)); 
+              // "Invalid dedent level, no previous matching indent found."
           }
         }
       }//if _produceIndents

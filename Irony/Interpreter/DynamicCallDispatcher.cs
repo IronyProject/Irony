@@ -214,6 +214,7 @@ namespace Irony.Interpreter {
       _context.Data.Replace(argCount + 1, result);
     }//method
 */
+    //node parameter is used for error reporting
     public void ExecuteBinaryOperator(string op) {
       var arg1 = _context.Data[1];
       var arg2 = _context.Data[0];
@@ -238,7 +239,7 @@ namespace Irony.Interpreter {
       //Treating as normal call - first comes implementor (arg1), then argument (ag2); something like: 
       // a + b  =>   a._add(b)
       //ExecuteMethod(arg1, op, 1);
-      throw new RuntimeException("Operator '" + op + "' not imlemented."); 
+      _context.ThrowError(Resources.ErrOpNotImplemented, op);  
     }//method
 
     private bool TryConvertArgsOnOverflow(Type baseType) {

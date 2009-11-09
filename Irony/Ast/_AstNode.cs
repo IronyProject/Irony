@@ -106,6 +106,8 @@ namespace Irony.Ast {
     #region Utility methods: AddChild, SetParent, FlagIsSet ...
     protected AstNode AddChild(string role, ParseTreeNode childParseNode) {
       var child = (AstNode)childParseNode.AstNode;
+      if (child == null)
+          child = new NullNode(childParseNode.Term); //put a stub to throw an exception with clear message on attempt to evaluate. 
       child.Role = role;
       child.SetParent(this);
       ChildNodes.Add(child);
@@ -127,8 +129,7 @@ namespace Irony.Ast {
     }
 
     protected void InvalidAstMode(string mode) {
-      throw new Exception(string.Format("Invalid AstMode value in call to Evaluate method. Node: {0}, mode: {1}.", 
-        this.ToString(), mode));
+        throw new Exception(string.Format(Resources.ErrInvalidAstMode, this.ToString(), mode));
     }
 
     #region Visitors, Iterators

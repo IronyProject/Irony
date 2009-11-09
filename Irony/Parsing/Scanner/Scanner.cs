@@ -142,7 +142,7 @@ namespace Irony.Parsing {
       }
       //we have an error: either error token or no token at all
       if (token == null)  //if no token then create error token
-        token = Context.SourceStream.CreateErrorToken("Invalid character: '{0}'", Context.SourceStream.PreviewChar);
+        token = Context.SourceStream.CreateErrorToken(Resources.ErrInvalidChar, Context.SourceStream.PreviewChar);
       Recover();
       return token;
     }
@@ -163,7 +163,7 @@ namespace Irony.Parsing {
       var eofToken = new Token(_grammar.Eof, Context.SourceStream.Location, string.Empty, _grammar.Eof.Name);
       Context.BufferedTokens.Push(eofToken); //put it into buffer
       if (_grammar.FlagIsSet(LanguageFlags.NewLineBeforeEOF) && !currentIsNewLine) {
-        var newLineToken = new Token(_grammar.NewLine, Context.CurrentScannerToken.Location, "\n", null);
+        var newLineToken = new Token(_grammar.NewLine, Context.CurrentScannerToken.Location, Environment.NewLine, null);
         Context.BufferedTokens.Push(newLineToken); 
       }//if
     }

@@ -102,6 +102,13 @@ namespace Irony.Interpreter {
       SourceLocation loc = (sourceNode == null) ? SourceLocation.Empty : sourceNode.GetErrorAnchor(); 
       throw new RuntimeException(message, null, loc); 
     }
+    //Throws generic exception; it supposed to be caught in AstNode.Evaluate method and it will wrap it into RuntimeException
+    // with node location added
+    public void ThrowError(string message, params object[] args) {
+        if (args != null && args.Length > 0)
+            message = string.Format(message, args);
+        throw new Exception(message);
+    }
 
   }//class
 

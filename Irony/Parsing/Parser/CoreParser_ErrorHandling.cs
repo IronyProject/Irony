@@ -31,9 +31,9 @@ namespace Irony.Parsing {
       if (Context.CurrentParserInput.Term == _grammar.Eof)
         return false; //do not recover if we're already at EOF
       Context.Status = ParserStatus.Recovering;
-      Context.AddTrace("*** RECOVERING - searching for state with error shift ***"); //add new trace entry
+      Context.AddTrace(Resources.MsgTraceRecovering); //add new trace entry
       var recovered = TryRecoverImpl();
-      string msg = (recovered ? "*** RECOVERED ***" : "*** FAILED TO RECOVER ***");
+      string msg = (recovered ? Resources.MsgTraceRecoverSuccess : Resources.MsgTraceRecoverFailed);
       Context.AddTrace(msg); //add new trace entry
       Context.Status = recovered? ParserStatus.Parsing : ParserStatus.Error; 
       return recovered;
@@ -117,11 +117,11 @@ namespace Irony.Parsing {
         return; 
       }
       if (Context.CurrentParserInput.Term == _grammar.Eof) {
-        Context.AddParserError("Unexpected end of file.");
+        Context.AddParserError(Resources.ErrUnexpEof);
         return; 
       }
       if (Context.CurrentParserInput.Term == _grammar.Indent) {
-        Context.AddParserError("Unexpected indentation.");
+        Context.AddParserError(Resources.ErrUnexpIndent);
         return;
       }
       //General type of error - unexpected input
@@ -135,7 +135,7 @@ namespace Irony.Parsing {
       var expectedSet = FilterBracesInExpectedSet(Context.CurrentParserState.ReportedExpectedSet);
       msg = _grammar.ConstructParserErrorMessage(Context, Context.CurrentParserState, expectedSet, Context.CurrentParserInput);
       if (string.IsNullOrEmpty(msg))
-        msg = "Syntax error";
+        msg = Resources.ErrSyntaxErrorNoInfo;
       Context.AddParserError(msg);
     }
 

@@ -64,7 +64,7 @@ namespace Irony.Parsing {
         return source.CreateToken(this);
       if (context.Mode == ParseMode.VsLineScan)
         return CreateIncompleteToken(context, source);
-      return source.CreateErrorToken("Unclosed comment block");
+      return source.CreateErrorToken(Resources.ErrUnclosedComment);
     }
 
     private Token CreateIncompleteToken(ParsingContext context, ISourceStream source) {

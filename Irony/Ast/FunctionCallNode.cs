@@ -37,7 +37,7 @@ namespace Irony.Ast {
       TargetRef.Evaluate(context, AstMode.Read);
       var target = context.Data.Pop() as ICallTarget;
       if (target == null)
-        context.ThrowError(this, "Variable {0} is not a callable function", _targetName);
+        context.ThrowError(this, Resources.ErrVarIsNotCallable, _targetName);
       Arguments.Evaluate(context, AstMode.Read);
       target.Call(context);
     }

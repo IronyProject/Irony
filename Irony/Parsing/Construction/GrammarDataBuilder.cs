@@ -72,13 +72,13 @@ namespace Irony.Parsing.Construction {
           nt.Name = "NT" + (_unnamedCount++);
       }
       if (nt.Rule == null)
-        _language.Errors.AddAndThrow(GrammarErrorLevel.Error, null, "Non-terminal {0} has uninitialized Rule property.", nt.Name);
+        _language.Errors.AddAndThrow(GrammarErrorLevel.Error, null, Resources.ErrNtRuleIsNull, nt.Name);
       //check all child elements
       foreach (BnfTermList elemList in nt.Rule.Data)
         for (int i = 0; i < elemList.Count; i++) {
           BnfTerm child = elemList[i];
           if (child == null) {
-            _language.Errors.Add(GrammarErrorLevel.Error, null, "Rule for NonTerminal {0} contains null as an operand in position {1} in one of productions.", nt.Name, i);
+            _language.Errors.Add(GrammarErrorLevel.Error, null, Resources.ErrRuleContainsNull, nt.Name, i);
             continue; //for i loop 
           }
           //Check for nested expression - convert to non-terminal
@@ -326,8 +326,7 @@ namespace Irony.Parsing.Construction {
                   && !nt.OptionIsSet(TermOptions.IsTransient) && nt != _grammarData.AugmentedRoot)
             errorSet.Add(nt);
         if (errorSet.Count > 0)
-          this._language.Errors.Add(GrammarErrorLevel.Warning, null, 
-            "Warning: AstNodeType or AstNodeCreator is not set on non-terminals: " + errorSet.ToString());
+          this._language.Errors.Add(GrammarErrorLevel.Warning, null, Resources.ErrNodeTypeNotSetOn, errorSet.ToString());
       }
     }//method
     #endregion

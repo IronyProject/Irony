@@ -28,11 +28,11 @@ namespace Irony.Parsing {
     }
     //Line/col are zero-based internally
     public override string ToString() {
-      return "(" + Line.ToString() + ":" + Column.ToString() + ")";
+      return string.Format(Resources.FmtRowCol, Line, Column);
     }
     //Line and Column displayed to user should be 1-based
     public string ToUiString() {
-      return "(" + (Line + 1).ToString() + ":" + (Column + 1).ToString() + ")";
+      return string.Format(Resources.FmtRowCol, Line + 1, Column + 1);
     }
     public static int Compare(SourceLocation x, SourceLocation y) {
       if (x.Position < y.Position) return -1;

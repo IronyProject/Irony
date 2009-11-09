@@ -44,7 +44,7 @@ namespace Irony.Samples.MiniPython {
       var BinExpr = new NonTerminal("BinExpr", typeof(BinExprNode));
       var ParExpr = new NonTerminal("ParExpr");
       var UnExpr = new NonTerminal("UnExpr", typeof(UnExprNode));
-      var UnOp = new NonTerminal("UnOp");
+      var UnOp = new NonTerminal("UnOp", "operator");
       var BinOp = new NonTerminal("BinOp", "operator");
       var AssignmentStmt = new NonTerminal("AssignmentStmt", typeof(AssigmentNode));
       var Stmt = new NonTerminal("Stmt");

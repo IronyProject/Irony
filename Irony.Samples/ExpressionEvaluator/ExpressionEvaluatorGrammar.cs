@@ -79,10 +79,11 @@ namespace Irony.Samples {
       RegisterOperators(2, "*", "/");
       RegisterOperators(3, Associativity.Right, "**");
 
+      // 5. Punctuation and transient terms
       RegisterPunctuation("(", ")");
-      RegisterBracePair("(", ")"); 
+      RegisterBracePair("(", ")");
       MarkTransient(Term, Expr, Statement, BinOp, UnOp, PostFixOp, AssignmentOp, ProgramLine, ParExpr);
-      // The following makes error messages a little cleaner (try commenting and entering 'x y' to see the effect)
+      // The following makes error messages a little cleaner (try evaluating expr 'x y' with and without this line to see the difference)
       MarkNotReported("++", "--"); 
 
       //automatically add NewLine before EOF so that our BNF rules work correctly when there's no final line break in source

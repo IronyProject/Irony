@@ -210,7 +210,7 @@ namespace Irony.Parsing.Construction {
     // And of course, we count only kernel items (with dot NOT in the first position).
     #endregion
     public static string ComputeLR0ItemSetKey(LR0ItemSet items) {
-      if (items.Count == 0) return "";
+      if (items.Count == 0) return string.Empty;
       //Copy non-initial items to separate list, and then sort it
       LR0ItemList itemList = new LR0ItemList();
       foreach (var item in items)
@@ -314,7 +314,7 @@ namespace Irony.Parsing.Construction {
           }
         //Sanity check
         if (reduceItem.Lookaheads.Count == 0 && reduceItem.Core.Production.LValue != _language.GrammarData.AugmentedRoot)
-          _language.Errors.Add(GrammarErrorLevel.InternalError, state, "ParserBuilder error: inadequate state {0}, reduce item '{1}' has no lookaheads.", state.Name, reduceItem.Core.Production);
+          _language.Errors.Add(GrammarErrorLevel.InternalError, state, Resources.ErrNoLkhds, state.Name, reduceItem.Core.Production);
       }
     }
 
@@ -474,11 +474,9 @@ namespace Irony.Parsing.Construction {
                                                    BnfTermSet shiftReduceConflicts, BnfTermSet reduceReduceConflicts) {
       var stateData = state.BuilderData;
       if (shiftReduceConflicts.Count > 0) 
-        _language.Errors.Add(GrammarErrorLevel.Conflict, state,
-            "Shift-reduce conflict. State {0}, lookaheads [{1}]. Set to shift as preferred action.", state, shiftReduceConflicts.ToString());
+        _language.Errors.Add(GrammarErrorLevel.Conflict, state, Resources.ErrSRConflict, state, shiftReduceConflicts.ToString());
       if (reduceReduceConflicts.Count > 0)
-        _language.Errors.Add(GrammarErrorLevel.Conflict, state,
-          "Reduce-reduce conflict. State {0}, lookaheads: {1}. Set to reduce on first production in conflict set.", state, reduceReduceConflicts.ToString());
+        _language.Errors.Add(GrammarErrorLevel.Conflict, state, Resources.ErrRRConflict, state, reduceReduceConflicts.ToString());
       //Create default actions for these conflicts. For shift-reduce, default action is shift, and shift action already
       // exist for all shifts from the state, so we don't need to do anything, only report it
       //For reduce-reduce create reduce actions for the first reduce item (whatever comes first in the set). 
@@ -516,12 +514,6 @@ namespace Irony.Parsing.Construction {
     }
     #endregion
 
-    #region error reporting
-    private void __ReportParseConflicts(string message, ParserState state, BnfTermSet conflicts) {
-      if (conflicts.Count > 0) 
-        _language.Errors.Add(GrammarErrorLevel.Conflict, state, message + " State {0} on inputs: {1}", state, conflicts);
-    }
-    #endregion
   }//class
 
 

@@ -17,7 +17,7 @@ namespace Irony.Ast {
     }
 
     public override void EvaluateNode(EvaluationContext context, AstMode mode) {
-      context.ThrowError(this, "Construct '{0}' is not supported (yet) by language implementation.", Name); 
+      context.ThrowError(this, Resources.ErrConstructNotSupported, Name); 
     }
 
   }//class

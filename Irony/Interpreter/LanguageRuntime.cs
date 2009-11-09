@@ -34,7 +34,7 @@ namespace Irony.Interpreter {
     string _toString;
 
     public Unassigned() {
-      _toString = "(unassigned)";
+        _toString = Resources.LabelUnassigned;
     }
     public Unassigned(string toString) {
       _toString = toString;
@@ -118,8 +118,7 @@ namespace Irony.Interpreter {
       var baseKey = OperatorDispatchKey.CreateFromTypes(forKey.OpSymbol, baseType, baseType);
       OperatorImplementation baseImpl;
       if (! _baseOperatorImplementations.TryGetValue(baseKey, out baseImpl))
-        throw new RuntimeException(string.Format("Operator '{0}' is not defined for types {1} and {2} ",
-             forKey.OpSymbol, forKey.Arg1Type, forKey.Arg2Type));
+        throw new RuntimeException(string.Format(Resources.ErrOpNotDefinedForTypes, forKey.OpSymbol, forKey.Arg1Type, forKey.Arg2Type));
       var impl = new OperatorImplementation(forKey, baseType, baseImpl.BaseMethod, arg1Converter, arg2Converter, baseImpl.ResultConverter);
       implementations[forKey] = impl; 
       return impl; 
@@ -223,7 +222,7 @@ namespace Irony.Interpreter {
       if (fromType == toType) return null;
       var result = TypeConverters.Find(fromType, toType);
       if (result != null) return result; 
-      string err = string.Format("Cannot convert from {0} to {1}.", fromType, toType);
+      string err = string.Format(Resources.ErrCannotConvertValue, fromType, toType);
       throw new RuntimeException(err);
     }
     #endregion

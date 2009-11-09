@@ -127,13 +127,13 @@ namespace Irony.Parsing {
     }
     public override string ToString() {
       switch (this.ActionType) {
-        case ParserActionType.Shift: return "Shift";// +NewState.Name;
-        case ParserActionType.Reduce: return "Reduce on " + ReduceProduction.ToString();
-        case ParserActionType.Operator: return "Operator, shift to " + NewState.Name + "/reduce on " + ReduceProduction.ToString();
-        case ParserActionType.Jump: return "Jump to " + NewState.Name;
-        case ParserActionType.Accept: return "Accept";
+        case ParserActionType.Shift: return string.Format(Resources.LabelActionShift, NewState.Name);
+        case ParserActionType.Reduce: return string.Format(Resources.LabelActionReduce, ReduceProduction.ToStringQuoted());
+        case ParserActionType.Operator: return string.Format(Resources.LabelActionOp, NewState.Name, ReduceProduction.ToStringQuoted());
+        case ParserActionType.Jump: return string.Format(Resources.LabelActionJump, NewState.Name);
+        case ParserActionType.Accept: return Resources.LabelActionAccept;
       }
-      return "(ERROR)"; //should never happen
+      return Resources.LabelActionUnknown; //should never happen
     }
   }//class ActionRecord
 
@@ -184,6 +184,9 @@ namespace Irony.Parsing {
       return (Flags & flag) != ProductionFlags.None;
     }
 
+    public string ToStringQuoted() {
+      return "'" + ToString() + "'";
+    }
     public override string ToString() {
       return ProductionToString(this, -1); //no dot
     }

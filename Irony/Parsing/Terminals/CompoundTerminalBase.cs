@@ -153,7 +153,7 @@ namespace Irony.Parsing {
         ReadSuffix(source, details);
 
       if (!ConvertValue(details))
-        return source.CreateErrorToken("Failed to convert the value: {0}", details.Error);
+        return source.CreateErrorToken(Resources.ErrFailedConvert, details.Error); // "Failed to convert the value: {0}"
       }
       token = CreateToken(context, source, details);
        

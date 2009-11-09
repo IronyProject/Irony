@@ -39,7 +39,7 @@ namespace Irony.Interpreter {
     }
     public object Pop() {
       if (Count == 0)
-        throw new RuntimeException("Interpreter error, DataStack.Pop() operation failed - stack is empty."); 
+        throw new RuntimeException(Resources.ErrInternalErrDataPopFailed); 
       var result = Top;
       _data.RemoveAt(_data.Count - 1);
       return result; 

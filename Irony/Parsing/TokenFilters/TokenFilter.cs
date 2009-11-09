@@ -39,16 +39,11 @@ namespace Irony.Parsing {
   //     the line/column properties of the incoming tokens, and inserts them into its output. 
   #endregion
   public class TokenFilter {
-    protected GrammarData GrammarData;
-    protected Grammar Grammar; 
 
     public virtual IEnumerable<Token> BeginFiltering(ParsingContext context, IEnumerable<Token> tokens) {
       yield break;
     }
-    public virtual void Init(GrammarData grammarData) {
-      GrammarData = grammarData;
-      Grammar = GrammarData.Grammar;
-    }
+
     protected internal virtual void OnStatusChanged(ParserStatus oldStatus) {
     }
   }//class

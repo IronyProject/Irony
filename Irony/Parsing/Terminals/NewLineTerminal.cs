@@ -20,7 +20,7 @@ namespace Irony.Parsing {
   // instead of more complex alternative of using CodeOutlineFilter. 
   public class NewLineTerminal : Terminal {
     public NewLineTerminal(string name) : base(name, TokenCategory.Outline) {
-      base.DisplayName = "[line break]";
+      base.DisplayName = Resources.LabelLineBreak;  // "[line break]";
       this.Options |= TermOptions.IsPunctuation;
     }
 

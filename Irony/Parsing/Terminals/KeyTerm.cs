@@ -70,8 +70,8 @@ namespace Irony.Parsing {
       return Text;
     }
     public override string TokenToString(Token token) {
-      var keyw = OptionIsSet(TermOptions.IsKeyword)? " (Keyword)" : " (Key symbol)";
-      var result = (token.ValueString ?? token.Text) + keyw;
+      var keyw = OptionIsSet(TermOptions.IsKeyword)? Resources.LabelKeyword : Resources.LabelKeySymbol ; //"(Keyword)" : "(Key symbol)"
+      var result = (token.ValueString ?? token.Text) + " " + keyw;
       return result; 
     }
     #endregion

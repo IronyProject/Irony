@@ -75,7 +75,7 @@ namespace Irony.Parsing {
     }
     public override string ToString() {
       if (Term == null) //special case for initial node pushed into the stack at parser start
-        return "(INITIAL STATE)";
+        return Resources.LabelInitialState;
       if (Token == null)
         return Term.Name;
       else 

@@ -97,8 +97,8 @@ namespace Irony.Parsing {
       PostfixUnaryOperators.AddRange("++", "--");
       NewLinePlus = CreateNewLinePlus();
       //Initialize console attributes
-      ConsoleTitle = "Console";
-      ConsoleGreeting = this.GetType().Name +  " Console.\r\nPress Ctrl-C to exit the program.\r\n";
+      ConsoleTitle = Resources.MsgDefaultConsoleTitle;
+      ConsoleGreeting = string.Format(Resources.MsgDefaultConsoleGreeting, this.GetType().Name);
       ConsolePrompt = ">"; 
       ConsolePromptMoreInput = "."; 
     }
@@ -235,8 +235,8 @@ namespace Irony.Parsing {
     //Constructs the error message in situation when parser has no available action for current input.
     // override this method if you want to change this message
     public virtual string ConstructParserErrorMessage(ParsingContext context, ParserState state, BnfTermSet expectedTerms, ParseTreeNode currentInput) {
-      string msg = "Syntax error" + (expectedTerms.Count == 0 ? "." : ", expected: " + expectedTerms.ToErrorString() + ".");
-      return msg; 
+      return string.Format(Resources.ErrParserUnexpInput, expectedTerms.ToErrorString());
+       
     }
     
     public virtual LanguageRuntime CreateRuntime() {
@@ -325,7 +325,7 @@ namespace Irony.Parsing {
     //End-of-Statement terminal - used in indentation-sensitive language to signal end-of-statement;
     // it is not always synced with CRLF chars, and CodeOutlineFilter carefully produces Eos tokens
     // (as well as Indent and Dedent) based on line/col information in incoming content tokens.
-    public readonly Terminal Eos = new Terminal("EOS", "[end-of-statement]", TokenCategory.Outline);
+    public readonly Terminal Eos = new Terminal("EOS", Resources.LabelEosLabel, TokenCategory.Outline);
     
     //Used for error tokens
     public readonly Terminal SyntaxError = new Terminal("SYNTAX_ERROR", TokenCategory.Error);

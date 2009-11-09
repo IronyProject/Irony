@@ -39,7 +39,7 @@ namespace Irony.Ast {
           if (context.TryGetValue(Symbol, out value))
             context.Data.Push(value); 
           else 
-            context.ThrowError(this, "Variable " + Symbol + " not defined.", null, this.GetErrorAnchor());
+            context.ThrowError(this, Resources.ErrVarNotDefined, Symbol);
           break; 
         case AstMode.Write:
           context.SetValue(Symbol, context.Data.Pop()); 

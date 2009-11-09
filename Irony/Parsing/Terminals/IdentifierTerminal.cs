@@ -186,11 +186,11 @@ namespace Irony.Parsing {
         case 'u': len = 4; break;
         case 'U': len = 8; break; 
         default:
-          details.Error = "Invalid escape symbol, expected 'u' or 'U' only.";
+          details.Error = Resources.ErrInvEscSymbol; // "Invalid escape symbol, expected 'u' or 'U' only."
           return '\0'; 
       }
       if (source.PreviewPosition + len > source.Text.Length) {
-        details.Error = "Invalid escape symbol";
+        details.Error = Resources.ErrInvEscSeq; // "Invalid escape sequence";
         return '\0';
       }
       source.PreviewPosition++; //move to the first digit

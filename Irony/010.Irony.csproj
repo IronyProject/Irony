@@ -54,6 +54,7 @@
     <Compile Include="Ast\BlockNode.cs" />
     <Compile Include="Ast\FunctionCallNode.cs" />
     <Compile Include="Ast\FunctionDefNode.cs" />
+    <Compile Include="Ast\NullNode.cs" />
     <Compile Include="Ast\ParamListNode.cs" />
     <Compile Include="Ast\ExpressionListNode.cs" />
     <Compile Include="Ast\NotSupportedNode.cs" />
@@ -65,7 +66,7 @@
     <Compile Include="Ast\LiteralValueNode.cs" />
     <Compile Include="Parsing\Grammar\GrammarError.cs" />
     <Compile Include="Parsing\Parser\ParseTreeExtensions.cs" />
-    <Compile Include="Parsing\StringHelpers.cs" />
+    <Compile Include="Parsing\StringUtils.cs" />
     <Compile Include="Parsing\Parser\CoreParser_ErrorHandling.cs" />
     <Compile Include="Parsing\Parser\ParserTrace.cs" />
     <Compile Include="Parsing\Terminals\RegExLiteral.cs" />
@@ -137,6 +138,11 @@
     <Compile Include="Interpreter\StackFrame.cs" />
     <Compile Include="Interpreter\LanguageRuntime.cs" />
     <Compile Include="EditorServices\EditorAdapter.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Microsoft\MathResources.resx">
@@ -144,6 +150,10 @@
       <LastGenOutput>MathResources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
       <CustomToolNamespace>Microsoft.Scripting.Math</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

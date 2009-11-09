@@ -230,14 +230,14 @@ namespace Irony.Parsing {
       if (!IsSet(NumberFlags.AllowLetterAfter)) {
         var current = source.PreviewChar;
         if (char.IsLetter(current) || current == '_') 
-          return source.CreateErrorToken("Number cannot be followed by a letter"); 
+          return source.CreateErrorToken(Resources.ErrNoLetterAfterNum); // "Number cannot be followed by a letter." 
       }
       return base.InvokeValidateToken(context, source, terminals, token);
     }
 
     protected override bool ConvertValue(CompoundTokenDetails details) {
       if (String.IsNullOrEmpty(details.Body)) {
-        details.Error = "Invalid number.";
+        details.Error = Resources.ErrInvNumber;  // "Invalid number.";
         return false;
       }
 
@@ -303,7 +303,7 @@ namespace Irony.Parsing {
     private bool ConvertToFloat(TypeCode typeCode, CompoundTokenDetails details) {
       //only decimal numbers can be fractions
       if (details.IsSet((short)(NumberFlags.Binary | NumberFlags.Octal | NumberFlags.Hex))) {
-        details.Error = "Invalid number.";
+        details.Error = Resources.ErrInvNumber; //  "Invalid number.";
         return false;
       }
       string body = details.Body;
@@ -390,7 +390,7 @@ namespace Irony.Parsing {
           startIndex -= wordLength;
         }
       } catch {
-        details.Error = "Invalid number.";
+        details.Error = Resources.ErrInvNumber;//  "Invalid number.";
         return false;
       }
       //produce big integer

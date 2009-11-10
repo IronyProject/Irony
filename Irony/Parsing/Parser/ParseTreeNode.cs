@@ -74,8 +74,8 @@ namespace Irony.Parsing {
       Associativity = associativity;
     }
     public override string ToString() {
-      if (Term == null) //special case for initial node pushed into the stack at parser start
-        return Resources.LabelInitialState;
+      if(Term == null) //special case for initial node pushed into the stack at parser start
+        return string.Empty; //  Resources.LabelInitialState;
       if (Token == null)
         return Term.Name;
       else 

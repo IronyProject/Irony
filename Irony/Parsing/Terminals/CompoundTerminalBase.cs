@@ -83,8 +83,8 @@ namespace Irony.Parsing {
       PrefixFlags.Add(prefix, flags);
       Prefixes.Add(prefix);
     }
-    public void AddSuffixCodes(string suffix, params TypeCode[] codes) {
-			SuffixTypeCodes.Add(suffix, codes);
+    public void AddSuffix(string suffix, params TypeCode[] typeCodes) {
+			SuffixTypeCodes.Add(suffix, typeCodes);
 			Suffixes.Add(suffix);
 		}
     #endregion
@@ -152,8 +152,11 @@ namespace Irony.Parsing {
       } else {
         ReadSuffix(source, details);
 
-      if (!ConvertValue(details))
-        return source.CreateErrorToken(Resources.ErrFailedConvert, details.Error); // "Failed to convert the value: {0}"
+        if(!ConvertValue(details)) {
+          if (string.IsNullOrEmpty(details.Error))
+            details.Error = Resources.ErrInvNumber;
+          return source.CreateErrorToken(details.Error); // "Failed to convert the value: {0}"
+        }
       }
       token = CreateToken(context, source, details);
        

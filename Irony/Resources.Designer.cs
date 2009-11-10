@@ -151,6 +151,15 @@ namespace Irony {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot convert literal {0} to type {1}..
+        /// </summary>
+        internal static string ErrCannotConvertValueToType {
+            get {
+                return ResourceManager.GetString("ErrCannotConvertValueToType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} State {1} on inputs: {2}.
         /// </summary>
         internal static string ErrConflictMsgTemplate {
@@ -183,15 +192,6 @@ namespace Irony {
         internal static string ErrDupRegexSwitch {
             get {
                 return ResourceManager.GetString("ErrDupRegexSwitch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to convert the value: {0}.
-        /// </summary>
-        internal static string ErrFailedConvert {
-            get {
-                return ResourceManager.GetString("ErrFailedConvert", resourceCulture);
             }
         }
         
@@ -817,7 +817,16 @@ namespace Irony {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to *** FAILED TO RECOVER ***.
+        ///   Looks up a localized string similar to RECOVERING: {0}.
+        /// </summary>
+        internal static string MsgTraceRecoverAction {
+            get {
+                return ResourceManager.GetString("MsgTraceRecoverAction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FAILED TO RECOVER.
         /// </summary>
         internal static string MsgTraceRecoverFailed {
             get {
@@ -826,7 +835,16 @@ namespace Irony {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to *** RECOVERING - searching for state with error shift ***.
+        ///   Looks up a localized string similar to RECOVERING: Found state with shift on error : {0}.
+        /// </summary>
+        internal static string MsgTraceRecoverFoundState {
+            get {
+                return ResourceManager.GetString("MsgTraceRecoverFoundState", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RECOVERING: popping stack, looking for state with error shift.
         /// </summary>
         internal static string MsgTraceRecovering {
             get {
@@ -835,7 +853,34 @@ namespace Irony {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to *** RECOVERED ***.
+        ///   Looks up a localized string similar to RECOVERING: Reached end of error production, reducing..
+        /// </summary>
+        internal static string MsgTraceRecoverReducing {
+            get {
+                return ResourceManager.GetString("MsgTraceRecoverReducing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RECOVERING: Shifting Error term, {0}.
+        /// </summary>
+        internal static string MsgTraceRecoverShiftError {
+            get {
+                return ResourceManager.GetString("MsgTraceRecoverShiftError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RECOVERING: shifting until the end of error production..
+        /// </summary>
+        internal static string MsgTraceRecoverShiftTillEnd {
+            get {
+                return ResourceManager.GetString("MsgTraceRecoverShiftTillEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RECOVERED.
         /// </summary>
         internal static string MsgTraceRecoverSuccess {
             get {

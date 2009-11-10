@@ -302,13 +302,13 @@
     <value>Popped state from stack, pushing {0}</value>
   </data>
   <data name="MsgTraceRecoverFailed" xml:space="preserve">
-    <value>*** FAILED TO RECOVER ***</value>
+    <value>FAILED TO RECOVER</value>
   </data>
   <data name="MsgTraceRecovering" xml:space="preserve">
-    <value>*** RECOVERING - searching for state with error shift ***</value>
+    <value>RECOVERING: popping stack, looking for state with error shift</value>
   </data>
   <data name="MsgTraceRecoverSuccess" xml:space="preserve">
-    <value>*** RECOVERED ***</value>
+    <value>RECOVERED</value>
   </data>
   <data name="LabelEofMark" xml:space="preserve">
     <value>(EOF)</value>
@@ -334,8 +334,8 @@
   <data name="ErrDupRegexSwitch" xml:space="preserve">
     <value>Duplicate switch '{0}' for regular expression.</value>
   </data>
-  <data name="ErrFailedConvert" xml:space="preserve">
-    <value>Failed to convert the value: {0}</value>
+  <data name="ErrCannotConvertValueToType" xml:space="preserve">
+    <value>Cannot convert literal {0} to type {1}.</value>
   </data>
   <data name="ErrInvEscape" xml:space="preserve">
     <value>Invalid escape sequence: \{0}.</value>
@@ -378,5 +378,20 @@
   </data>
   <data name="ErrOutlineFilterContSymbol" xml:space="preserve">
     <value>CodeOutlineFilter: line continuation symbol '{0}' should be added to Grammar.NonGrammarTerminals list.</value>
+  </data>
+  <data name="MsgTraceRecoverAction" xml:space="preserve">
+    <value>RECOVERING: {0}</value>
+  </data>
+  <data name="MsgTraceRecoverFoundState" xml:space="preserve">
+    <value>RECOVERING: Found state with shift on error : {0}</value>
+  </data>
+  <data name="MsgTraceRecoverReducing" xml:space="preserve">
+    <value>RECOVERING: Reached end of error production, reducing.</value>
+  </data>
+  <data name="MsgTraceRecoverShiftError" xml:space="preserve">
+    <value>RECOVERING: Shifting Error term, {0}</value>
+  </data>
+  <data name="MsgTraceRecoverShiftTillEnd" xml:space="preserve">
+    <value>RECOVERING: shifting until the end of error production.</value>
   </data>
 </root>

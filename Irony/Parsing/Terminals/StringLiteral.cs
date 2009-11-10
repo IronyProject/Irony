@@ -22,16 +22,20 @@ namespace Irony.Parsing {
     None = 0,
     IsChar = 0x01,
     AllowsDoubledQuote = 0x02, //Convert doubled start/end symbol to a single symbol; for ex. in SQL, '' -> '
-    AllowsLineBreak = 0x04,
-    HasEscapes = 0x08,     
-    NoEscapes = 0x10, 
-    AllowsUEscapes = 0x20, 
-    AllowsXEscapes = 0x40,
+    AllowsLineBreak    = 0x04,
+    //unused           = 0x08
+    NoEscapes          = 0x10, 
+    AllowsUEscapes     = 0x20, 
+    AllowsXEscapes     = 0x40,
     AllowsOctalEscapes = 0x80,
     AllowsAllEscapes = AllowsUEscapes | AllowsXEscapes | AllowsOctalEscapes,
 
   }
   public class StringLiteral : CompoundTerminalBase {
+
+    public enum StringFlagsInternal : short {
+      HasEscapes = 0x100,     
+    }
 
     #region StringSubType
     class StringSubType {
@@ -256,7 +260,7 @@ namespace Irony.Parsing {
       bool escapeEnabled = !details.IsSet((short)StringFlags.NoEscapes);
       //Fix all escapes
       if (escapeEnabled && value.IndexOf(EscapeChar) >= 0) {
-        details.Flags |= (int) StringFlags.HasEscapes;
+        details.Flags |= (int) StringFlagsInternal.HasEscapes;
         string[] arr = value.Split(EscapeChar);
         bool ignoreNext = false;
         //we skip the 0 element as it is not preceeded by "\"

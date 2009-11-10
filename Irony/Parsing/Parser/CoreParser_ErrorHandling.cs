@@ -31,7 +31,7 @@ namespace Irony.Parsing {
       if (Context.CurrentParserInput.Term == _grammar.Eof)
         return false; //do not recover if we're already at EOF
       Context.Status = ParserStatus.Recovering;
-      Context.AddTrace(Resources.MsgTraceRecovering); //add new trace entry
+      Context.AddTrace(Resources.MsgTraceRecovering); // *** RECOVERING - searching for state with error shift *** 
       var recovered = TryRecoverImpl();
       string msg = (recovered ? Resources.MsgTraceRecoverSuccess : Resources.MsgTraceRecoverFailed);
       Context.AddTrace(msg); //add new trace entry
@@ -44,19 +44,25 @@ namespace Irony.Parsing {
       // and error terminal is current. This state would have a shift action on error token. 
       ParserAction errorShiftAction = FindErrorShiftActionInStack();
       if (errorShiftAction == null) return false; //we failed to recover
+      Context.AddTrace(Resources.MsgTraceRecoverFoundState, Context.CurrentParserState); 
       //2. Shift error token - execute shift action
+      Context.AddTrace(Resources.MsgTraceRecoverShiftError, errorShiftAction);
       ExecuteShift(errorShiftAction.NewState);
       //4. Now we need to go along error production until the end, shifting tokens that CAN be shifted and ignoring others.
       //   We shift until we can reduce
+      Context.AddTrace(Resources.MsgTraceRecoverShiftTillEnd);
       while (Context.CurrentParserInput.Term != _grammar.Eof) {
         //Check if we can reduce
         var action = GetReduceActionInCurrentState();
         if (action != null) {
           //Clear all input token queues and buffered input, reset location back to input position token queues; 
-          Parser.Scanner.SetSourceLocation(Context.CurrentParserInput.Span.Location);
-          Context.CurrentParserInput = null;
+          Context.SetSourceLocation(Context.CurrentParserInput.Span.Location);
           Context.ParserInputStack.Clear();
+          Context.CurrentParserInput = null;
+       
           //Reduce error production - it creates parent non-terminal that "hides" error inside
+          Context.AddTrace(Resources.MsgTraceRecoverReducing);
+          Context.AddTrace(Resources.MsgTraceRecoverAction, action);
           ExecuteReduce(action.ReduceProduction);
           return true; //we recovered 
         }
@@ -73,7 +79,7 @@ namespace Irony.Parsing {
     public void ResetLocationAndClearInput(SourceLocation location, int position) {
       Context.CurrentParserInput = null;
       Context.ParserInputStack.Clear();
-      Parser.Scanner.SetSourceLocation(location);
+      Context.SetSourceLocation(location);
     }
 
     private ParserAction FindErrorShiftActionInStack() {

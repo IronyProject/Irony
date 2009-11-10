@@ -46,6 +46,8 @@ namespace Irony.Parsing {
 
     protected internal virtual void OnStatusChanged(ParserStatus oldStatus) {
     }
+    protected internal virtual void OnSetSourceLocation(SourceLocation location) {
+    }
   }//class
 
   public class TokenFilterList : List<TokenFilter> { }

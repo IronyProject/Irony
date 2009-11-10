@@ -32,7 +32,7 @@ namespace Irony.Parsing.Construction {
     internal void Build() {
       _data = _language.ScannerData;
       _data.LineTerminators = _grammar.LineTerminators.ToCharArray();
-      _data.ScannerRecoverySymbols = _grammar.WhitespaceChars + _grammar.Delimiters;
+      _data.ScannerRecoverySymbols = _grammar.WhitespaceChars + _grammar.Delimiters + "\n";
       InitMultilineTerminalsList();
       BuildTerminalsLookupTable();
     }

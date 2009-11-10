@@ -33,14 +33,20 @@ namespace Irony.Samples {
            and then checks the terminals agains the ExpectedTerms set in the parser state. 
            As you might see in Grammar Explorer, the conflict is resolved successfully. 
            */
-            #region Initialisation
 
-
-            // Define the Terminals
+            //Terminals
             var lineNumber = new NumberLiteral("LINE_NUMBER", NumberFlags.IntOnly);
             var fileNumber = new NumberLiteral("FILE_NUMBER", NumberFlags.IntOnly);
             var number = new NumberLiteral("NUMBER", NumberFlags.AllowStartEndDot);
-            var variable = new IdentifierTerminal("Identifier", "$%!", string.Empty);
+            //ints that are too long for int32 are converted to int64
+            number.DefaultIntTypes = new TypeCode[] {TypeCode.Int32, TypeCode.Int64}; 
+
+            var variable = new IdentifierTerminal("Identifier");
+            variable.AddSuffix("$", TypeCode.String);
+            variable.AddSuffix("%", TypeCode.Int32); 
+            variable.AddSuffix("!", TypeCode.Single);
+            variable.AddSuffix("#", TypeCode.Double); 
+          
             var stringLiteral = new StringLiteral("STRING", "\"", StringFlags.None);
             //Important: do not add comment term to base.NonGrammarTerminals list - we do use this terminal in grammar rules
             var userFunctionName = variable;
@@ -57,7 +63,7 @@ namespace Irony.Samples {
             var pound_opt = new NonTerminal("pound_opt");
             pound_opt.Rule = Empty | "#";
 
-            // Define the non-terminals
+            // Non-terminals
             var PROGRAM = new NonTerminal("PROGRAM");
             var LINE = new NonTerminal("LINE");
             var LINE_CONTENT_OPT = new NonTerminal("LINE_CONTENT_OPT");
@@ -110,10 +116,7 @@ namespace Irony.Samples {
             // set the PROGRAM to be the root node of BASIC programs.
             this.Root = PROGRAM;
 
-            #endregion
-
-            #region Grammar declaration
-            // A program is a bunch of lines
+            // BNF Rules
             PROGRAM.Rule = MakePlusRule(PROGRAM, LINE);
 
             // A line can be an empty line, or it's a number followed by a statement list ended by a new-line.
@@ -200,12 +203,10 @@ namespace Irony.Samples {
             //TODO: check number of arguments for particular function in node constructor
             ARG_LIST.Rule = MakePlusRule(ARG_LIST, comma, EXPR);
 
-            #endregion
 
-            #region Punctuation
+            //Punctuation and Transient elements
             RegisterPunctuation("(", ")", ",");
             MarkTransient(EXPR, PRINT_ARG); 
-            #endregion
 
             this.LanguageFlags = LanguageFlags.NewLineBeforeEOF; 
 

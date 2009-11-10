@@ -31,8 +31,8 @@ namespace Irony.Parsing {
     public static StringLiteral CreateVbString(string name) {
       StringLiteral term = new StringLiteral(name);
       term.AddStartEnd("\"", StringFlags.NoEscapes | StringFlags.AllowsDoubledQuote);
-      term.AddSuffixCodes("$", TypeCode.String);
-      term.AddSuffixCodes("c", TypeCode.Char);
+      term.AddSuffix("$", TypeCode.String);
+      term.AddSuffix("c", TypeCode.Char);
       return term;
     }
 
@@ -56,12 +56,12 @@ namespace Irony.Parsing {
       term.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.UInt32, TypeCode.Int64, TypeCode.UInt64 };
       term.DefaultFloatType = TypeCode.Double;
       term.AddPrefix("0x", NumberFlags.Hex);
-      term.AddSuffixCodes("u", TypeCode.UInt32, TypeCode.UInt64);
-      term.AddSuffixCodes("l", TypeCode.Int64, TypeCode.UInt64);
-      term.AddSuffixCodes("ul", TypeCode.UInt64);
-      term.AddSuffixCodes("f", TypeCode.Single);
-			term.AddSuffixCodes("d", TypeCode.Double);
-      term.AddSuffixCodes("m", TypeCode.Decimal);
+      term.AddSuffix("u", TypeCode.UInt32, TypeCode.UInt64);
+      term.AddSuffix("l", TypeCode.Int64, TypeCode.UInt64);
+      term.AddSuffix("ul", TypeCode.UInt64);
+      term.AddSuffix("f", TypeCode.Single);
+			term.AddSuffix("d", TypeCode.Double);
+      term.AddSuffix("m", TypeCode.Decimal);
       return term;
     }
     //http://www.microsoft.com/downloads/details.aspx?FamilyId=6D50D709-EAA4-44D7-8AF3-E14280403E6E&displaylang=en section 2
@@ -71,20 +71,20 @@ namespace Irony.Parsing {
       //term.DefaultFloatType = TypeCode.Double; it is default
       term.AddPrefix("&H", NumberFlags.Hex);
       term.AddPrefix("&O", NumberFlags.Octal);
-      term.AddSuffixCodes("S", TypeCode.Int16);
-      term.AddSuffixCodes("I", TypeCode.Int32);
-      term.AddSuffixCodes("%", TypeCode.Int32);
-      term.AddSuffixCodes("L", TypeCode.Int64);
-      term.AddSuffixCodes("&", TypeCode.Int64);
-      term.AddSuffixCodes("D", TypeCode.Decimal);
-      term.AddSuffixCodes("@", TypeCode.Decimal);
-      term.AddSuffixCodes("F", TypeCode.Single);
-      term.AddSuffixCodes("!", TypeCode.Single);
-      term.AddSuffixCodes("R", TypeCode.Double);
-      term.AddSuffixCodes("#", TypeCode.Double);
-      term.AddSuffixCodes("US", TypeCode.UInt16);
-      term.AddSuffixCodes("UI", TypeCode.UInt32);
-      term.AddSuffixCodes("UL", TypeCode.UInt64);
+      term.AddSuffix("S", TypeCode.Int16);
+      term.AddSuffix("I", TypeCode.Int32);
+      term.AddSuffix("%", TypeCode.Int32);
+      term.AddSuffix("L", TypeCode.Int64);
+      term.AddSuffix("&", TypeCode.Int64);
+      term.AddSuffix("D", TypeCode.Decimal);
+      term.AddSuffix("@", TypeCode.Decimal);
+      term.AddSuffix("F", TypeCode.Single);
+      term.AddSuffix("!", TypeCode.Single);
+      term.AddSuffix("R", TypeCode.Double);
+      term.AddSuffix("#", TypeCode.Double);
+      term.AddSuffix("US", TypeCode.UInt16);
+      term.AddSuffix("UI", TypeCode.UInt32);
+      term.AddSuffix("UL", TypeCode.UInt64);
       return term;
     }
     //http://docs.python.org/ref/numbers.html
@@ -97,8 +97,8 @@ namespace Irony.Parsing {
       //term.DefaultFloatTypes = new TypeCode[] { TypeCode.Decimal, TypeCode.Double };
       term.AddPrefix("0x", NumberFlags.Hex);
       term.AddPrefix("0", NumberFlags.Octal);
-      term.AddSuffixCodes("L", TypeCode.Int64, NumberLiteral.TypeCodeBigInt);
-      term.AddSuffixCodes("J", NumberLiteral.TypeCodeImaginary);
+      term.AddSuffix("L", TypeCode.Int64, NumberLiteral.TypeCodeBigInt);
+      term.AddSuffix("J", NumberLiteral.TypeCodeImaginary);
       return term;
     }
 
@@ -118,7 +118,7 @@ namespace Irony.Parsing {
       term.AddPrefix("#d", NumberFlags.None);
       term.AddPrefix("#i", NumberFlags.None); // inexact prefix, has no effect
       term.AddPrefix("#e", NumberFlags.None); // exact prefix, has no effect
-      term.AddSuffixCodes("J", NumberLiteral.TypeCodeImaginary);
+      term.AddSuffix("J", NumberLiteral.TypeCodeImaginary);
       return term;
     }
 

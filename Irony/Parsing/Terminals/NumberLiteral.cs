@@ -29,23 +29,26 @@ namespace Irony.Parsing {
 
     AllowStartEndDot  = 0x01,     //python : http://docs.python.org/ref/floating.html
     IntOnly           = 0x02,
-    AvoidPartialFloat = 0x04,     //for use with IntOnly flag; essentially tells terminal to avoid matching integer if 
+    NoDotAfterInt     = 0x04,     //for use with IntOnly flag; essentially tells terminal to avoid matching integer if 
                                   // it is followed by dot (or exp symbol) - leave to another terminal that will handle float numbers
-    AllowSign   = 0x08,
+    AllowSign         = 0x08,
     DisableQuickParse = 0x10,
-    AllowLetterAfter = 0x20,      // allow number be followed by a letter or underscore; by default this flag is not set, so "3a" would not be 
+    AllowLetterAfter  = 0x20,      // allow number be followed by a letter or underscore; by default this flag is not set, so "3a" would not be 
                                   //  recognized as number followed by an identifier
 
-    //The following should be used with 
+    //The following should be used with base-identifying prefixes
     Binary = 0x0100, //e.g. GNU GCC C Extension supports binary number literals
     Octal =  0x0200,
     Hex =    0x0400,
-    HasDot = 0x1000,
-    HasExp = 0x2000,
   }
 
-  //TODO: For VB, we may need to add a flag to automatically use long instead of int (default) when number is too large
   public class NumberLiteral : CompoundTerminalBase {
+    //Flags for internal use
+    public enum NumberFlagsInternal : short {
+      HasDot = 0x1000,
+      HasExp = 0x2000,
+    }
+
     #region Public Consts
     //currently using TypeCodes for identifying numeric types
     public const TypeCode TypeCodeBigInt = (TypeCode)30;
@@ -152,8 +155,10 @@ namespace Irony.Parsing {
 
     protected override void ReadSuffix(ISourceStream source, CompoundTokenDetails details) {
       base.ReadSuffix(source, details);
-      if (string.IsNullOrEmpty(details.Suffix))
-        details.TypeCodes = details.IsSet((short) (NumberFlags.HasDot | NumberFlags.HasExp)) ? _defaultFloatTypes : DefaultIntTypes;
+      if(string.IsNullOrEmpty(details.Suffix)) {
+        var isFloat = details.IsSet((short)(NumberFlagsInternal.HasDot | NumberFlagsInternal.HasExp));
+        details.TypeCodes =  isFloat ? _defaultFloatTypes : DefaultIntTypes;
+      }
     }
 
     protected override bool ReadBody(ISourceStream source, CompoundTokenDetails details) {
@@ -182,13 +187,13 @@ namespace Irony.Parsing {
         bool isDot = current == DecimalSeparator;
         if (allowFloat && isDot) {
           //If we had seen already a dot or exponent, don't accept this one;
-          bool hasDotOrExp = details.IsSet((short) (NumberFlags.HasDot | NumberFlags.HasExp));
+          bool hasDotOrExp = details.IsSet((short) (NumberFlagsInternal.HasDot | NumberFlagsInternal.HasExp));
           if (hasDotOrExp) break; //from while loop
           //In python number literals (NumberAllowPointFloat) a point can be the first and last character,
           //We accept dot only if it is followed by a digit
           if (digits.IndexOf(source.NextPreviewChar) < 0 && !IsSet(NumberFlags.AllowStartEndDot))
             break; //from while loop
-          details.Flags |= (int) NumberFlags.HasDot;
+          details.Flags |= (int) NumberFlagsInternal.HasDot;
           source.PreviewPosition++;
           continue;
         }
@@ -196,7 +201,7 @@ namespace Irony.Parsing {
         bool isExpSymbol = (details.ExponentSymbol == null) && ExponentSymbols.IndexOf(current) >= 0;
         if (!allowFloat && foundDigits && (isDot || isExpSymbol)) {
           //If no partial float allowed then return false - it is not integer, let float terminal recognize it as float
-          if (IsSet(NumberFlags.AvoidPartialFloat)) return false;  
+          if (IsSet(NumberFlags.NoDotAfterInt)) return false;  
           //otherwise break, it is integer and we're done reading digits
           break;
         }
@@ -211,7 +216,7 @@ namespace Irony.Parsing {
             break;  //Exponent should be followed by either sign or digit
           //ok, we've got real exponent
           details.ExponentSymbol = current.ToString(); //remember the exp char
-          details.Flags |= (int) NumberFlags.HasExp;
+          details.Flags |= (int) NumberFlagsInternal.HasExp;
           source.PreviewPosition++;
           if (nextIsSign)
             source.PreviewPosition++; //skip +/- explicitly so we don't have to deal with them on the next iteration
@@ -293,7 +298,8 @@ namespace Irony.Parsing {
     }//method
 
     private bool QuickConvertToDouble(CompoundTokenDetails details) {
-      if (details.IsSet((short)(NumberFlags.Binary | NumberFlags.Octal | NumberFlags.Hex | NumberFlags.HasExp))) return false; 
+      if (details.IsSet((short)(NumberFlags.Binary | NumberFlags.Octal | NumberFlags.Hex))) return false; 
+      if (details.IsSet((short)(NumberFlagsInternal.HasExp))) return false; 
       if (DecimalSeparator != '.') return false;
       double dvalue;
       if (!double.TryParse(details.Body, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out dvalue)) return false;
@@ -309,11 +315,11 @@ namespace Irony.Parsing {
       string body = details.Body;
       //Some languages allow exp symbols other than E. Check if it is the case, and change it to E
       // - otherwise .NET conversion methods may fail
-      if (details.IsSet((short)NumberFlags.HasExp) && details.ExponentSymbol.ToUpper() != "E")
+      if (details.IsSet((short)NumberFlagsInternal.HasExp) && details.ExponentSymbol.ToUpper() != "E")
         body = body.Replace(details.ExponentSymbol, "E");
 
       //'.' decimal seperator required by invariant culture
-      if (details.IsSet((short)NumberFlags.HasDot) && DecimalSeparator != '.')
+      if (details.IsSet((short)NumberFlagsInternal.HasDot) && DecimalSeparator != '.')
         body = body.Replace(DecimalSeparator, '.');
 
       switch (typeCode) {
@@ -346,6 +352,7 @@ namespace Irony.Parsing {
           details.Value = Convert.ChangeType(details.Value, typeCode, CultureInfo.InvariantCulture);
         return true;
       } catch (Exception) {
+        details.Error = string.Format(Resources.ErrCannotConvertValueToType, details.Value, typeCode.ToString());
         return false;
       }
     }//method
@@ -360,6 +367,7 @@ namespace Irony.Parsing {
           details.Value = Convert.ToUInt64(details.Body, radix);
         return true; 
       } catch(OverflowException) {
+        details.Error = string.Format(Resources.ErrCannotConvertValueToType, details.Value, TypeCode.UInt64.ToString());
         return false;
       }
     }

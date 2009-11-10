@@ -26,16 +26,21 @@ namespace Irony.Parsing {
   public enum IdFlags : short {
     None = 0,
     AllowsEscapes = 0x01,
-    CanStartWithEscape = 0x03,  
+    CanStartWithEscape = 0x03, //bit 2 with bit 1 together  
     
     IsNotKeyword = 0x10,
     NameIncludesPrefix = 0x20,
 
-    HasEscapes = 0x100,     
   }
+
   public class UnicodeCategoryList : List<UnicodeCategory> { }
 
   public class IdentifierTerminal : CompoundTerminalBase {
+
+    //Id flags for internal use
+    internal enum IdFlagsInternal : short {
+      HasEscapes = 0x100,     
+    }
 
 
     //Note that extraChars, extraFirstChars are used to form AllFirstChars and AllChars fields, which in turn 
@@ -101,8 +106,6 @@ namespace Irony.Parsing {
 
     //Override to assign IsKeyword flag to keyword tokens
     protected override Token CreateToken(ParsingContext context, ISourceStream source, CompoundTokenDetails details) {
-      if (details.IsSet((short)IdFlags.NameIncludesPrefix) && !string.IsNullOrEmpty(details.Prefix))
-        details.Value = details.Prefix + details.Body;
       Token token = base.CreateToken(context, source, details);
       if (details.IsSet((short)IdFlags.IsNotKeyword))
         return token;
@@ -197,7 +200,7 @@ namespace Irony.Parsing {
       string digits = source.Text.Substring(source.PreviewPosition, len);
       char result = (char)Convert.ToUInt32(digits, 16);
       source.PreviewPosition += len;
-      details.Flags |= (int) IdFlags.HasEscapes;
+      details.Flags |= (int) IdFlagsInternal.HasEscapes;
       return result;
     }
 

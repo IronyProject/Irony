@@ -234,7 +234,7 @@ namespace Irony.Parsing {
 
     #region Error recovery
     private bool Recover() {
-      Context.SourceStream.PreviewPosition++;
+      //Context.SourceStream.PreviewPosition++;
       while (!Context.SourceStream.EOF()) {
         if(Data.ScannerRecoverySymbols.IndexOf(Context.SourceStream.PreviewChar) >= 0) {
           Context.SourceStream.MoveLocationToPreviewPosition();
@@ -270,20 +270,12 @@ namespace Irony.Parsing {
         while (Context.PreviewTokens.Count > 0)
           Context.BufferedTokens.Push(Context.PreviewTokens.Pop()); 
       }  else
-        SetSourceLocation(_previewStartLocation);
+        Context.SetSourceLocation(_previewStartLocation);
       Context.PreviewTokens.Clear();
       Context.Status = ParserStatus.Parsing;
     }
     #endregion
 
-    public void SetSourceLocation(SourceLocation location) {
-      /*
-       * foreach (var filter in _grammar.TokenFilters)
-        filter.OnSetSourceLocation(location); 
-      _source.Location = location;
-    
-       */
-    }
 
   }//class
 

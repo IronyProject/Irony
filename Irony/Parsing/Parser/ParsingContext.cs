@@ -73,8 +73,8 @@ namespace Irony.Parsing {
     // but we define it as a field to avoid creating local state in iterator
     internal Token CurrentScannerToken; 
 
-    public ISourceStream Source;
     internal SourceStream SourceStream;
+    public ISourceStream Source { get { return SourceStream; } }
 
     public VsScannerStateMap VsLineScanState; //State variable used in line scanning mode for VS integration
 
@@ -169,6 +169,12 @@ namespace Irony.Parsing {
       Parser.OnStatusChanged(oldStatus);
       foreach (var filter in TokenFilters)
         filter.OnStatusChanged(oldStatus);
+    }
+
+    public void SetSourceLocation(SourceLocation location) {
+      foreach (var filter in TokenFilters)
+        filter.OnSetSourceLocation(location); 
+      SourceStream.Location = location;
     }
 
   }//class

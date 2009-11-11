@@ -28,7 +28,7 @@ namespace Irony.Samples {
 
   [Language("ExpressionEvaluator", "1.0", "Multi-line expression evaluator")]
   public class ExpressionEvaluatorGrammar : Irony.Parsing.Grammar {
-    public ExpressionEvaluatorGrammar() {
+    public ExpressionEvaluatorGrammar() : base(false) { //false means case insensitive
       this.GrammarComments =
         @"Simple expression evaluator. ";
       // 1. Terminals

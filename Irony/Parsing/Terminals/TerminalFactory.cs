@@ -111,7 +111,8 @@ namespace Irony.Parsing {
       NumberLiteral term = new NumberLiteral(name);
       term.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.Int64, NumberLiteral.TypeCodeBigInt };
       term.DefaultFloatType = TypeCode.Double; // it is default
-      term.ExponentSymbols = "sfdl";
+      term.AddExponentSymbols("sSfF", TypeCode.Single); 
+      term.AddExponentSymbols("dDlL", TypeCode.Double); 
       term.AddPrefix("#b", NumberFlags.Binary);
       term.AddPrefix("#o", NumberFlags.Octal);
       term.AddPrefix("#x", NumberFlags.Hex);

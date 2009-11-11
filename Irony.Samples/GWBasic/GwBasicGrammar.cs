@@ -37,9 +37,14 @@ namespace Irony.Samples {
             //Terminals
             var lineNumber = new NumberLiteral("LINE_NUMBER", NumberFlags.IntOnly);
             var fileNumber = new NumberLiteral("FILE_NUMBER", NumberFlags.IntOnly);
+            
             var number = new NumberLiteral("NUMBER", NumberFlags.AllowStartEndDot);
             //ints that are too long for int32 are converted to int64
-            number.DefaultIntTypes = new TypeCode[] {TypeCode.Int32, TypeCode.Int64}; 
+            number.DefaultIntTypes = new TypeCode[] {TypeCode.Int32, TypeCode.Int64};
+            number.AddExponentSymbols("eE", TypeCode.Single); 
+            number.AddExponentSymbols("dD", TypeCode.Double);
+            number.AddSuffix("!", TypeCode.Single);
+            number.AddSuffix("#", TypeCode.Double); 
 
             var variable = new IdentifierTerminal("Identifier");
             variable.AddSuffix("$", TypeCode.String);
@@ -206,7 +211,7 @@ namespace Irony.Samples {
 
             //Punctuation and Transient elements
             RegisterPunctuation("(", ")", ",");
-            MarkTransient(EXPR, PRINT_ARG); 
+            MarkTransient(EXPR, PRINT_ARG, STATEMENT, LINE_CONTENT_OPT, VARIABLE_OR_FUNCTION_EXPR, COMMENT_OPT); 
 
             this.LanguageFlags = LanguageFlags.NewLineBeforeEOF; 
 

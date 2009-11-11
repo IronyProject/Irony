@@ -42,12 +42,16 @@ namespace Irony.Parsing {
     Hex =    0x0400,
   }
 
+
   public class NumberLiteral : CompoundTerminalBase {
+    
     //Flags for internal use
     public enum NumberFlagsInternal : short {
       HasDot = 0x1000,
       HasExp = 0x2000,
     }
+    //nested helper class
+    public class ExponentsTable : Dictionary<char, TypeCode> { }
 
     #region Public Consts
     //currently using TypeCodes for identifying numeric types
@@ -72,19 +76,23 @@ namespace Irony.Parsing {
     public void AddPrefix(string prefix, NumberFlags flags) {
       PrefixFlags.Add(prefix, (short) flags);
       Prefixes.Add(prefix);
-   }
+    }
+    public void AddExponentSymbols(string symbols, TypeCode floatType) {
+      foreach(var exp in symbols)
+        _exponentsTable[exp] = floatType;
+    }
     #endregion
 
     #region Public fields/properties: ExponentSymbols, Suffixes
     public NumberFlags Flags;
     public string QuickParseTerminators;
-    public string ExponentSymbols = "eE"; //most of the time; in some languages (Scheme) we have more
     public char DecimalSeparator = '.';
 
     //Default types are assigned to literals without suffixes; first matching type used
     public TypeCode[] DefaultIntTypes = new TypeCode[] { TypeCode.Int32 };
     public TypeCode DefaultFloatType = TypeCode.Double;
-    private TypeCode[] _defaultFloatTypes;
+    private ExponentsTable _exponentsTable = new ExponentsTable(); 
+    private string _allExponentSymbols; 
 
     public bool IsSet(NumberFlags flag) {
       return (Flags & flag) != 0;
@@ -100,7 +108,16 @@ namespace Irony.Parsing {
       if (string.IsNullOrEmpty(QuickParseTerminators))
         QuickParseTerminators = Grammar.WhitespaceChars + Grammar.Delimiters;
       QuickParseTerminators += '\0'; //add EOF - that's how it is represented in SourceStream
-      _defaultFloatTypes = new TypeCode[] { DefaultFloatType };
+      //Default Exponent symbols if table is empty 
+      if(_exponentsTable.Count == 0 && !IsSet(NumberFlags.IntOnly)) {
+        _exponentsTable['e'] = DefaultFloatType;
+        _exponentsTable['E'] = DefaultFloatType;
+      }
+      // collect all exponent symbols
+      _allExponentSymbols = string.Empty;
+      foreach(var exp in _exponentsTable.Keys)
+        _allExponentSymbols += exp; 
+
       if (this.EditorInfo == null) 
         this.EditorInfo = new TokenEditorInfo(TokenType.Literal, TokenColor.Number, TokenTriggers.None);
     }
@@ -153,14 +170,6 @@ namespace Irony.Parsing {
       base.ReadPrefix(source, details);
     }//method
 
-    protected override void ReadSuffix(ISourceStream source, CompoundTokenDetails details) {
-      base.ReadSuffix(source, details);
-      if(string.IsNullOrEmpty(details.Suffix)) {
-        var isFloat = details.IsSet((short)(NumberFlagsInternal.HasDot | NumberFlagsInternal.HasExp));
-        details.TypeCodes =  isFloat ? _defaultFloatTypes : DefaultIntTypes;
-      }
-    }
-
     protected override bool ReadBody(ISourceStream source, CompoundTokenDetails details) {
       //remember start - it may be different from source.TokenStart, we may have skipped prefix
       int start = source.PreviewPosition;
@@ -198,7 +207,7 @@ namespace Irony.Parsing {
           continue;
         }
         //3. Check if it is int number followed by dot or exp symbol
-        bool isExpSymbol = (details.ExponentSymbol == null) && ExponentSymbols.IndexOf(current) >= 0;
+        bool isExpSymbol = (details.ExponentSymbol == null) && _allExponentSymbols.IndexOf(current) >= 0;
         if (!allowFloat && foundDigits && (isDot || isExpSymbol)) {
           //If no partial float allowed then return false - it is not integer, let float terminal recognize it as float
           if (IsSet(NumberFlags.NoDotAfterInt)) return false;  
@@ -245,6 +254,7 @@ namespace Irony.Parsing {
         details.Error = Resources.ErrInvNumber;  // "Invalid number.";
         return false;
       }
+      AssignTypeCodes(details); 
 
       //Try quick paths
       switch (details.TypeCodes[0]) {
@@ -277,6 +287,29 @@ namespace Irony.Parsing {
       return false; 
     }//method
 
+    private void AssignTypeCodes(CompoundTokenDetails details) {
+      //Type could be assigned when we read suffix; if so, just exit
+      if (details.TypeCodes != null) return; 
+      //Decide on float types
+      var hasDot = details.IsSet((short)(NumberFlagsInternal.HasDot));
+      var hasExp = details.IsSet((short)(NumberFlagsInternal.HasExp));
+      var isFloat = (hasDot || hasExp); 
+      if (!isFloat) {  
+        details.TypeCodes = DefaultIntTypes;
+        return; 
+      }
+      //so we have a float. If we have exponent symbol then use it to select type
+      if (hasExp) {
+        TypeCode code;
+        if (_exponentsTable.TryGetValue(details.ExponentSymbol[0], out code)) {
+          details.TypeCodes = new TypeCode[] {code};
+          return; 
+        }
+      }//if hasExp
+      //Finally assign default float type
+      details.TypeCodes = new TypeCode[] {DefaultFloatType};
+    }
+
     #endregion
 
     #region private utilities
@@ -306,6 +339,8 @@ namespace Irony.Parsing {
       details.Value = dvalue;
       return true; 
     }
+
+
     private bool ConvertToFloat(TypeCode typeCode, CompoundTokenDetails details) {
       //only decimal numbers can be fractions
       if (details.IsSet((short)(NumberFlags.Binary | NumberFlags.Octal | NumberFlags.Hex))) {

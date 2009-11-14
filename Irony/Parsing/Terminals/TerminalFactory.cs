@@ -102,15 +102,17 @@ namespace Irony.Parsing {
       return term;
     }
 
-    //Note - this is incomplete implementation; need to add functionality to NumberTerminal class to support type detection based 
-    // on exponent symbol. 
-    // From R6RS:
+    // About exponent symbols, extract from R6RS:
     //  ... representations of number objects may be written with an exponent marker that indicates the desired precision 
-    // of the inexact representation. The letters s, f, d, and l specify the use of short, single, double, and long precision, respectively. 
+    // of the inexact representation. The letters s, f, d, and l specify the use of short, single, double, and long precision, respectively.
+    // ...
+    // In addition, the exponent marker e specifies the default precision for the implementation. The default precision 
+    //  has at least as much precision as double, but implementations may wish to allow this default to be set by the user.
     public static NumberLiteral CreateSchemeNumber(string name) {
       NumberLiteral term = new NumberLiteral(name);
       term.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.Int64, NumberLiteral.TypeCodeBigInt };
       term.DefaultFloatType = TypeCode.Double; // it is default
+      term.AddExponentSymbols("eE", TypeCode.Double); //default precision for platform, double 
       term.AddExponentSymbols("sSfF", TypeCode.Single); 
       term.AddExponentSymbols("dDlL", TypeCode.Double); 
       term.AddPrefix("#b", NumberFlags.Binary);

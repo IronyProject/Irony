@@ -30,14 +30,15 @@ namespace Irony.Samples {
   public class ExpressionEvaluatorGrammar : Irony.Parsing.Grammar {
     public ExpressionEvaluatorGrammar() : base(false) { //false means case insensitive
       this.GrammarComments =
-        @"Simple expression evaluator. ";
+        "Simple expression evaluator. Case-insensitive. Supports big integers and float data types, variables, assignments, " +
+        "arithmetic operations, augmented assignments (+=, -=), inc/dec (++,--)" ;
       // 1. Terminals
       var number = new NumberLiteral("number");
       //Let's allow big integers (with unlimited number of digits):
       number.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.Int64, NumberLiteral.TypeCodeBigInt };
       var identifier = new IdentifierTerminal("identifier");
-      var comment = new CommentTerminal("comment", "#", "\n", "\r"); //new
-      //comment must to be added to NonGrammarTerminals list; it is not used directly in grammar rules,
+      var comment = new CommentTerminal("comment", "#", "\n", "\r"); 
+      //comment must be added to NonGrammarTerminals list; it is not used directly in grammar rules,
       // so we add it to this list to let Scanner know that it is also a valid terminal. 
       base.NonGrammarTerminals.Add(comment);
 

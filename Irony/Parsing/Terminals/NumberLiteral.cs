@@ -34,7 +34,8 @@ namespace Irony.Parsing {
     AllowSign         = 0x08,
     DisableQuickParse = 0x10,
     AllowLetterAfter  = 0x20,      // allow number be followed by a letter or underscore; by default this flag is not set, so "3a" would not be 
-                                  //  recognized as number followed by an identifier
+                                   //  recognized as number followed by an identifier
+    AllowUnderscore   = 0x40,      // Ruby allows underscore inside number: 1_234
 
     //The following should be used with base-identifying prefixes
     Binary = 0x0100, //e.g. GNU GCC C Extension supports binary number literals
@@ -85,7 +86,6 @@ namespace Irony.Parsing {
 
     #region Public fields/properties: ExponentSymbols, Suffixes
     public NumberFlags Flags;
-    public string QuickParseTerminators;
     public char DecimalSeparator = '.';
 
     //Default types are assigned to literals without suffixes; first matching type used
@@ -105,9 +105,6 @@ namespace Irony.Parsing {
     #region overrides
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
-      if (string.IsNullOrEmpty(QuickParseTerminators))
-        QuickParseTerminators = Grammar.WhitespaceChars + Grammar.Delimiters;
-      QuickParseTerminators += '\0'; //add EOF - that's how it is represented in SourceStream
       //Default Exponent symbols if table is empty 
       if(_exponentsTable.Count == 0 && !IsSet(NumberFlags.IntOnly)) {
         _exponentsTable['e'] = DefaultFloatType;
@@ -141,7 +138,7 @@ namespace Irony.Parsing {
       if (IsSet(NumberFlags.DisableQuickParse)) return null;
       char current = source.PreviewChar;
       //it must be a digit followed by a terminator
-      if (!char.IsDigit(current) || QuickParseTerminators.IndexOf(source.NextPreviewChar) < 0)
+      if (!char.IsDigit(current) || Grammar.Delimiters.IndexOf(source.NextPreviewChar) < 0)
         return null; 
       int iValue = current - '0';
       object value = null;
@@ -174,7 +171,7 @@ namespace Irony.Parsing {
       //remember start - it may be different from source.TokenStart, we may have skipped prefix
       int start = source.PreviewPosition;
       char current = source.PreviewChar;
-      if (current == '-' || current == '+') {
+      if (IsSet(NumberFlags.AllowSign) && (current == '-' || current == '+')) {
         details.Sign = current.ToString();
         source.PreviewPosition++;
       }
@@ -186,8 +183,8 @@ namespace Irony.Parsing {
 
       while (!source.EOF()) {
         current = source.PreviewChar;
-        //1. If it is a digit, just continue going
-        if (digits.IndexOf(current) >= 0) {
+        //1. If it is a digit, just continue going; the same for '_' if it is allowed
+        if (digits.IndexOf(current) >= 0 || IsSet(NumberFlags.AllowUnderscore) && current == '_') {
           source.PreviewPosition++;
           foundDigits = true; 
           continue;
@@ -255,6 +252,9 @@ namespace Irony.Parsing {
         return false;
       }
       AssignTypeCodes(details); 
+      //check for underscore
+      if (IsSet(NumberFlags.AllowUnderscore) && details.Body.Contains("_"))
+        details.Body = details.Body.Replace("_", string.Empty); 
 
       //Try quick paths
       switch (details.TypeCodes[0]) {

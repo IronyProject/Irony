@@ -31,6 +31,44 @@ namespace Irony.Tests {
       Assert.IsTrue((string)_token.Value == "abc_", "Failed to parse identifier containing escape sequence \\U");
     }//method
 
+    [TestMethod]
+    public void TestIdentifierCaseRestrictions() {
+      var id = new IdentifierTerminal("identifier"); 
+      id.CaseRestriction = CaseRestriction.None;
+      SetTerminal(id);
+
+      TryMatch("aAbB");
+      Assert.IsTrue(_token != null, "Failed to scan an identifier aAbB.");
+
+      id.CaseRestriction = CaseRestriction.FirstLower;
+      SetTerminal(id);
+      TryMatch("BCD");
+      Assert.IsTrue(_token == null, "Erroneously recognized an identifier BCD with FirstLower restriction.");
+      TryMatch("bCd ");
+      Assert.IsTrue(_token != null && _token.ValueString == "bCd", "Failed to scan identifier bCd with FirstLower restriction.");
+
+      id.CaseRestriction = CaseRestriction.FirstUpper;
+      SetTerminal(id);
+      TryMatch("cDE");
+      Assert.IsTrue(_token == null, "Erroneously recognized an identifier cDE with FirstUpper restriction.");
+      TryMatch("CdE");
+      Assert.IsTrue(_token != null && _token.ValueString == "CdE", "Failed to scan identifier CdE with FirstUpper restriction.");
+
+      id.CaseRestriction = CaseRestriction.AllLower;
+      SetTerminal(id);
+      TryMatch("DeF");
+      Assert.IsTrue(_token == null, "Erroneously recognized an identifier DeF with AllLower restriction.");
+      TryMatch("def");
+      Assert.IsTrue(_token != null && _token.ValueString == "def", "Failed to scan identifier def with AllLower restriction.");
+
+      id.CaseRestriction = CaseRestriction.AllUpper;
+      SetTerminal(id);
+      TryMatch("EFg ");
+      Assert.IsTrue(_token == null, "Erroneously recognized an identifier EFg with AllUpper restriction.");
+      TryMatch("EFG");
+      Assert.IsTrue(_token != null && _token.ValueString == "EFG", "Failed to scan identifier EFG with AllUpper restriction.");
+    }//method
+
   }//class
 }//namespace
 

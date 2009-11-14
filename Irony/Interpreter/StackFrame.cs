@@ -18,7 +18,9 @@ using Irony.Ast;
 
 namespace Irony.Interpreter { 
 
-  public class ValueSet : Dictionary<string, object> { }
+  public class ValueSet : Dictionary<string, object> {
+    public ValueSet(int capacity, StringComparer comparer) : base(comparer) { }
+  }
   public class ValueList : List<object> { }
 
   public class StackFrame {
@@ -31,11 +33,11 @@ namespace Irony.Interpreter {
       Values = globals; 
     }
 
-    public StackFrame(string methodName, StackFrame caller, StackFrame parent) {
+    public StackFrame(string methodName, StackFrame caller, StackFrame parent, StringComparer languageStringComparer) {
       MethodName = methodName; 
       Caller = caller;
       Parent = parent;
-      Values = new ValueSet(); 
+      Values = new ValueSet(8, languageStringComparer); 
     }
 
     public StackFrame GetFrame(int scopeLevel) {

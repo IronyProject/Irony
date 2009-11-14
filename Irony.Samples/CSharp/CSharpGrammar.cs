@@ -617,7 +617,7 @@ namespace Irony.Samples.CSharp {
       //B.2.7. Classes
       class_declaration.Rule = member_header + "class" + identifier + type_parameter_list_opt +
         bases_opt + type_parameter_constraints_clauses_opt + class_body;
-      class_body.Rule = Lbr + member_declaration.Star() + Rbr;
+      class_body.Rule = Lbr + member_declarations_opt + Rbr;
       bases_opt.Rule = Empty | colon + base_type_list;
       base_type_list.Rule = MakePlusRule(base_type_list, comma, qual_name_with_targs);
 
@@ -637,7 +637,8 @@ namespace Irony.Samples.CSharp {
       member_declaration.Rule = constant_declaration | field_declaration | method_declaration
          | property_declaration | event_declaration | indexer_declaration
          | operator_declaration | conversion_operator_declaration
-         | constructor_declaration | destructor_declaration | type_declaration;
+         | constructor_declaration | destructor_declaration | type_declaration 
+         | SyntaxError + ";" | SyntaxError + "}" ;
       member_declarations_opt.Rule = MakeStarRule(member_declarations_opt, null, member_declaration);
 
       //Modifiers - see note #1 in Notes.txt file

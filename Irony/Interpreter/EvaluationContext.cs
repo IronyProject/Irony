@@ -38,6 +38,7 @@ namespace Irony.Interpreter {
   public partial class EvaluationContext  {
     public readonly int ThreadId; 
     public LanguageRuntime Runtime;
+    public readonly StringComparer LanguageStringComparer; 
     public DataStack Data;
     public DynamicCallDispatcher CallDispatcher;
     public JumpType Jump = JumpType.None;
@@ -47,14 +48,12 @@ namespace Irony.Interpreter {
     public StringBuilder OutputBuffer = new StringBuilder();
     public int EvaluationTime;
 
-    public EvaluationContext(LanguageRuntime runtime) : this(runtime, null) { }
-    public EvaluationContext(LanguageRuntime runtime, StackFrame topFrame) {
+    public EvaluationContext(LanguageRuntime runtime) {
       Runtime = runtime;
+      LanguageStringComparer = Runtime.Language.Grammar.LanguageStringComparer;
       CallDispatcher = new DynamicCallDispatcher(this);
       ThreadId = Thread.CurrentThread.ManagedThreadId;
-      TopFrame = topFrame;
-      if (TopFrame == null)
-        TopFrame = new StackFrame(new ValueSet());
+      TopFrame = new StackFrame(new ValueSet(100, LanguageStringComparer));
       CurrentFrame = TopFrame;
       Data = new DataStack();
       Data.Init(runtime.Unassigned); //set LastPushedItem to unassigned
@@ -71,7 +70,7 @@ namespace Irony.Interpreter {
     }
 
     public void PushFrame(string methodName, AstNode node, StackFrame parent) {
-      CurrentFrame = new StackFrame(methodName, CurrentFrame, parent);
+      CurrentFrame = new StackFrame(methodName, CurrentFrame, parent, LanguageStringComparer);
     }
     public void PopFrame() {
       CurrentFrame = CurrentFrame.Caller;

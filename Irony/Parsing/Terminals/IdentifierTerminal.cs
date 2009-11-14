@@ -23,6 +23,7 @@ namespace Irony.Parsing {
 
   #endregion
 
+  [Flags]
   public enum IdFlags : short {
     None = 0,
     AllowsEscapes = 0x01,
@@ -30,7 +31,14 @@ namespace Irony.Parsing {
     
     IsNotKeyword = 0x10,
     NameIncludesPrefix = 0x20,
+  }
 
+  public enum CaseRestriction {
+    None,
+    FirstUpper,
+    FirstLower,
+    AllUpper,
+    AllLower
   }
 
   public class UnicodeCategoryList : List<UnicodeCategory> { }
@@ -66,9 +74,9 @@ namespace Irony.Parsing {
     //Used in QuickParse only!
     public string AllChars;
     public string AllFirstChars;
-    private string _terminators;
     public TokenEditorInfo KeywordEditorInfo = new TokenEditorInfo(TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
     public IdFlags Flags; //flags for the case when there are no prefixes
+    public CaseRestriction CaseRestriction;
 
     public readonly UnicodeCategoryList StartCharCategories = new UnicodeCategoryList(); //categories of first char
     public readonly UnicodeCategoryList CharCategories = new UnicodeCategoryList();      //categories of all other chars
@@ -78,7 +86,20 @@ namespace Irony.Parsing {
     #region overrides
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
-      _terminators = Grammar.WhitespaceChars + Grammar.Delimiters;
+      AllChars = AllChars?? String.Empty;
+      AllFirstChars = AllFirstChars ?? string.Empty;
+      //Adjust case restriction. We adjust only first chars; if first char is ok, we will scan the rest without restriction 
+      // and then check casing for entire identifier
+      switch(CaseRestriction) {
+        case CaseRestriction.AllLower:
+        case CaseRestriction.FirstLower:
+          AllFirstChars = AllFirstChars.ToLower();
+          break;
+        case CaseRestriction.AllUpper:
+        case CaseRestriction.FirstUpper:
+          AllFirstChars = AllFirstChars.ToUpper();
+          break;
+      }
       if (this.StartCharCategories.Count > 0 && !Grammar.FallbackTerminals.Contains(this))
         Grammar.FallbackTerminals.Add(this);
       if (this.EditorInfo == null) 
@@ -86,6 +107,7 @@ namespace Irony.Parsing {
       if (this.AstNodeType == null && this.AstNodeCreator == null && grammarData.Grammar.FlagIsSet(LanguageFlags.CreateAst))
         this.AstNodeType = typeof(Irony.Ast.IdentifierNode);
     }
+
     //TODO: put into account non-Ascii aplhabets specified by means of Unicode categories!
     public override IList<string> GetFirsts() {
       StringList list = new StringList();
@@ -99,6 +121,27 @@ namespace Irony.Parsing {
         list.Add(this.EscapeChar.ToString());
       return list;
     }
+
+    private void AdjustCasing() {
+      switch(CaseRestriction) {
+        case CaseRestriction.None: break; 
+        case CaseRestriction.FirstLower:
+          AllFirstChars = AllFirstChars.ToLower();
+          break; 
+        case CaseRestriction.FirstUpper:
+          AllFirstChars = AllFirstChars.ToUpper();
+          break; 
+        case CaseRestriction.AllLower:
+          AllFirstChars = AllFirstChars.ToLower();
+          AllChars = AllChars.ToLower(); 
+          break; 
+        case CaseRestriction.AllUpper:
+          AllFirstChars = AllFirstChars.ToUpper();
+          AllChars = AllChars.ToUpper(); 
+          break; 
+      }//switch
+    }//method
+
     protected override void InitDetails(ParsingContext context, CompoundTokenDetails details) {
       base.InitDetails(context, details);
       details.Flags = (short)Flags;
@@ -130,10 +173,14 @@ namespace Irony.Parsing {
       while (AllChars.IndexOf(source.PreviewChar) >= 0 && !source.EOF())
         source.PreviewPosition++;
       //if it is not a terminator then cancel; we need to go through full algorithm
-      if (_terminators.IndexOf(source.PreviewChar) < 0) return null; 
+      if (Grammar.Delimiters.IndexOf(source.PreviewChar) < 0) return null; 
       var token = source.CreateToken(this);
-      if (!this.GrammarData.Grammar.CaseSensitive)
-        token.Value = token.Text.ToLower(CultureInfo.InvariantCulture);
+      if(CaseRestriction != CaseRestriction.None && !CheckCaseRestriction(token.ValueString))
+        return null; 
+      //!!! Do not convert to common case (all-lower) for case-insensitive grammar. Let identifiers remain as is, 
+      //  it is responsibility of interpreter to provide case-insensitive read/write operations for identifiers
+      // if (!this.GrammarData.Grammar.CaseSensitive)
+      //    token.Value = token.Text.ToLower(CultureInfo.InvariantCulture);
       CheckReservedWord(token);
       return token; 
     }
@@ -144,7 +191,7 @@ namespace Irony.Parsing {
       CharList outputChars = new CharList();
       while (!source.EOF()) {
         char current = source.PreviewChar;
-        if (_terminators.IndexOf(current) >= 0) break;
+        if (Grammar.Delimiters.IndexOf(current) >= 0) break;
         if (allowEscapes && current == this.EscapeChar) {
           current = ReadUnicodeEscape(source, details);
           //We  need to back off the position. ReadUnicodeEscape sets the position to symbol right after escape digits.  
@@ -167,19 +214,32 @@ namespace Irony.Parsing {
         return false;
       //Convert collected chars to string
       details.Body =  new string(outputChars.ToArray());
+      if (!CheckCaseRestriction(details.Body))
+        return false; 
       return !string.IsNullOrEmpty(details.Body); 
     }
 
     private bool CharOk(char ch, bool first) {
       //first check char lists, then categories
       string all = first? AllFirstChars : AllChars;
-      if(all.IndexOf(ch) >= 0) return true; 
+      if(all.IndexOf(ch) >= 0) return true;
       //check categories
       UnicodeCategory chCat = char.GetUnicodeCategory(ch);
       UnicodeCategoryList catList = first ? StartCharCategories : CharCategories;
       if (catList.Contains(chCat)) return true;
       return false; 
     }
+
+    private bool CheckCaseRestriction(string body) {
+      switch(CaseRestriction) {
+        case CaseRestriction.FirstLower: return Char.IsLower(body, 0);  
+        case CaseRestriction.FirstUpper: return Char.IsUpper(body, 0);  
+        case CaseRestriction.AllLower: return body.ToLower() == body; 
+        case CaseRestriction.AllUpper: return body.ToUpper() == body;  
+        default : return true; 
+      }
+    }//method
+    
 
     private char ReadUnicodeEscape(ISourceStream source, CompoundTokenDetails details) {
       //Position is currently at "\" symbol

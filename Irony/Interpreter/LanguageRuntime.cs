@@ -49,6 +49,13 @@ namespace Irony.Interpreter {
   //Note: mark the derived language-specific class as sealed - important for JIT optimizations
   // details here: http://www.codeproject.com/KB/dotnet/JITOptimizations.aspx
   public partial class LanguageRuntime {
+
+    public LanguageRuntime(LanguageData language) {
+      Language = language;
+      Init();
+    }
+    
+    public readonly LanguageData Language;
     public readonly TypeList BaseTypeSequence = new TypeList();
     public readonly TypeConverterTable TypeConverters = new TypeConverterTable();
     // This is the original operator implementations table containing implementations for base type
@@ -60,11 +67,10 @@ namespace Irony.Interpreter {
     // each context (associated with its own thread) has its own instance. This instance is initialized
     // from this original table in method CreateOperatorImplementationsTable(). 
     private OperatorImplementationTable _baseOperatorImplementations;
+
+
     //public readonly MetaObjectTable MetaObjects = new MetaObjectTable();
-
     //public readonly FunctionBindingTable FunctionBindings = new FunctionBindingTable();
-
-
     //Converter of the result for comparison operation; converts bool value to values
     // specific for the language
     public TypeConverter BoolResultConverter = null;
@@ -75,9 +81,6 @@ namespace Irony.Interpreter {
       return value != Unassigned;
     }
 
-    public LanguageRuntime() {
-      Init();
-    }
     public virtual bool IsTrue(object value) {
       return value != NullObject;
     }

@@ -310,6 +310,40 @@ namespace Irony.Tests {
 
     }
 
-  
+    [TestMethod]
+    public void TestSchemeNumber() {
+      double eps = 0.0001;
+      SetTerminal(TerminalFactory.CreateSchemeNumber("Number"));
+
+
+      //Just test default float value (double), and exp symbols (e->double, s->single, d -> double)
+      TryMatch("123.4 ");
+      CheckType(typeof(double));
+      Assert.IsTrue(Math.Abs((double)_token.Value - 123.4) < eps, "Failed to read double value #1");
+
+      TryMatch("1234e-1 ");
+      CheckType(typeof(double));
+      Assert.IsTrue(Math.Abs((double)_token.Value - 1234e-1) < eps, "Failed to read single value #2");
+
+      TryMatch("1234s-1 ");
+      CheckType(typeof(Single));
+      Assert.IsTrue(Math.Abs((Single)_token.Value - 1234e-1) < eps, "Failed to read single value #3");
+
+      TryMatch("12.34d+01 ");
+      CheckType(typeof(double));
+      Assert.IsTrue(Math.Abs((double)_token.Value - 123.4) < eps, "Failed to read double value  #4");
+    }//method
+
+    [TestMethod]
+    public void TestNumberWithUnderscore() {
+      var number = new NumberLiteral("number", NumberFlags.AllowUnderscore);
+      SetTerminal(number);
+
+      //Simple integers and suffixes
+      TryMatch("1_234_567");
+      CheckType(typeof(int));
+      Assert.IsTrue((int)_token.Value == 1234567, "Failed to read int value with underscores in it");
+    }//method
+
   }//class
 }//namespace

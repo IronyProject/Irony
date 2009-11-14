@@ -40,12 +40,15 @@ namespace Irony.Interpreter {
     public Exception LastException {get; private set;}
 
     public InterpreterStatus Status { get; private set; }
-    public readonly ValueSet Globals = new ValueSet();
+    
     public bool RethrowExceptions = true;
     public bool PrintParseErrors = true; 
     public ParseMode ParseMode {
       get { return Parser.Context.Mode; }
       set { Parser.Context.Mode = value; }
+    }
+    public ValueSet Globals { 
+      get { return EvaluationContext.TopFrame.Values; } 
     }
     //internal, real status of interpreter. The public Status field gets updated only on exit from public methods
     // We want to make sure external code sees interpeter as BUSY until we actually completed operation internally 
@@ -57,10 +60,9 @@ namespace Irony.Interpreter {
 
     public ScriptInterpreter(LanguageData language) {
       Language = language;
-      Runtime = Language.Grammar.CreateRuntime();
+      Runtime = Language.Grammar.CreateRuntime(Language);
       Parser = new Parser(Language);
-      var topFrame = new StackFrame(Globals);
-      EvaluationContext = new EvaluationContext(Runtime, topFrame);
+      EvaluationContext = new EvaluationContext(Runtime);
       Status = _internalStatus = InterpreterStatus.Ready;
     }
     #endregion 

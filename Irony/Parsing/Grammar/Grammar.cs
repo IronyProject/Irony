@@ -27,12 +27,13 @@ namespace Irony.Parsing {
     /// Can be set to false only through a parameter to grammar constructor.
     /// </summary>
     public readonly bool CaseSensitive = true;
+    public readonly StringComparer LanguageStringComparer; 
     
     public ParseMethod ParseMethod = ParseMethod.Lalr;
 
     //List of chars that unambigously identify the start of new token. 
-    //used in scanner error recovery, and in quick parse path in Number literals 
-    public string Delimiters = ",;[](){}";
+    //used in scanner error recovery, and in quick parse path in NumberLiterals, Identifiers 
+    public string Delimiters = " \t\r\n\v,;[](){}\0"; //  '\0' is EOF, that's how it is represented in source stream
 
     public string WhitespaceChars = " \t\r\n\v";
     
@@ -88,11 +89,11 @@ namespace Irony.Parsing {
       _currentGrammar = this;
       this.CaseSensitive = caseSensitive;
       bool ignoreCase =  !this.CaseSensitive;
-      StringComparer comparer = StringComparer.Create(System.Globalization.CultureInfo.InvariantCulture, ignoreCase);
-      KeyTerms = new KeyTermTable(comparer);
+      LanguageStringComparer = StringComparer.Create(System.Globalization.CultureInfo.InvariantCulture, ignoreCase);
+      KeyTerms = new KeyTermTable(LanguageStringComparer);
       //Initialize unary operators sets
-      PrefixUnaryOperators = new StringSet(comparer);
-      PostfixUnaryOperators = new StringSet(comparer);
+      PrefixUnaryOperators = new StringSet(LanguageStringComparer);
+      PostfixUnaryOperators = new StringSet(LanguageStringComparer);
       PrefixUnaryOperators.AddRange ("+", "-", "!", "++", "--");
       PostfixUnaryOperators.AddRange("++", "--");
       NewLinePlus = CreateNewLinePlus();
@@ -239,8 +240,8 @@ namespace Irony.Parsing {
        
     }
     
-    public virtual LanguageRuntime CreateRuntime() {
-      return new LanguageRuntime();
+    public virtual LanguageRuntime CreateRuntime(LanguageData data) {
+      return new LanguageRuntime(data);
     }
 
     //This method allows custom implementation of running a sample in Grammar Explorer

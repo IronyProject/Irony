@@ -57,8 +57,10 @@ namespace Irony.Parsing {
     }
 
     public virtual string TokenToString(Token token) {
-      var result = (token.ValueString ?? token.Text) + " (" + Name + ")";
-      return result; 
+      if (token.ValueString == this.Name)
+        return token.ValueString;
+      else 
+        return (token.ValueString ?? token.Text) + " (" + Name + ")";
     }
 
     public override void Init(GrammarData grammarData) {

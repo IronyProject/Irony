@@ -173,7 +173,7 @@ namespace Irony.Parsing {
       while (AllChars.IndexOf(source.PreviewChar) >= 0 && !source.EOF())
         source.PreviewPosition++;
       //if it is not a terminator then cancel; we need to go through full algorithm
-      if (Grammar.Delimiters.IndexOf(source.PreviewChar) < 0) return null; 
+      if (GrammarData.WhitespaceAndDelimiters.IndexOf(source.PreviewChar) < 0) return null; 
       var token = source.CreateToken(this);
       if(CaseRestriction != CaseRestriction.None && !CheckCaseRestriction(token.ValueString))
         return null; 
@@ -191,7 +191,7 @@ namespace Irony.Parsing {
       CharList outputChars = new CharList();
       while (!source.EOF()) {
         char current = source.PreviewChar;
-        if (Grammar.Delimiters.IndexOf(current) >= 0) break;
+        if (GrammarData.WhitespaceAndDelimiters.IndexOf(current) >= 0) break;
         if (allowEscapes && current == this.EscapeChar) {
           current = ReadUnicodeEscape(source, details);
           //We  need to back off the position. ReadUnicodeEscape sets the position to symbol right after escape digits.  

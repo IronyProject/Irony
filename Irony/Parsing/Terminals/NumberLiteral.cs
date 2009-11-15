@@ -138,7 +138,7 @@ namespace Irony.Parsing {
       if (IsSet(NumberFlags.DisableQuickParse)) return null;
       char current = source.PreviewChar;
       //it must be a digit followed by a terminator
-      if (!char.IsDigit(current) || Grammar.Delimiters.IndexOf(source.NextPreviewChar) < 0)
+      if (!char.IsDigit(current) || GrammarData.WhitespaceAndDelimiters.IndexOf(source.NextPreviewChar) < 0)
         return null; 
       int iValue = current - '0';
       object value = null;

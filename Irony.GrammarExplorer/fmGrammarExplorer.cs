@@ -22,7 +22,6 @@ using System.Configuration;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Irony.Parsing;
-using Irony.EditorServices;
 using Irony.Ast; 
 using Irony.Interpreter;
 using Irony.GrammarExplorer.Properties;
@@ -77,7 +76,7 @@ namespace Irony.GrammarExplorer {
       txtGrammarComments.Text = string.Empty;
     }
 
-    private void ClearCompileResults() {
+    private void ClearParserOutput() {
       lblSrcLineCount.Text = string.Empty;
       lblSrcTokenCount.Text = "";
       lblCompileTime.Text = "";
@@ -89,7 +88,6 @@ namespace Irony.GrammarExplorer {
       lstTokens.Items.Clear();
       tvParseTree.Nodes.Clear();
       tvAst.Nodes.Clear(); 
-      ClearRuntimeError(); 
       Application.DoEvents();
     }
 
@@ -252,7 +250,7 @@ namespace Irony.GrammarExplorer {
       tabBottom.SelectedTab = pageOutput; 
     }
 
-    private void ClearRuntimeError() {
+    private void ClearRuntimeInfo() {
       lnkShowErrLocation.Enabled = false;
       lnkShowErrStack.Enabled = false; 
       _runtimeError = null;
@@ -326,7 +324,7 @@ namespace Irony.GrammarExplorer {
     }
 
     private void ParseSample() {
-      ClearCompileResults();
+      ClearParserOutput();
       if (_parser == null || !_parser.Language.CanParse()) return; 
       _parseTree = null;
       GC.Collect(); //to avoid disruption of perf times with occasional collections
@@ -350,7 +348,7 @@ namespace Irony.GrammarExplorer {
     }
 
     private void RunSample() {
-      ClearRuntimeError();
+      ClearRuntimeInfo();
       Stopwatch sw = new Stopwatch();
       txtOutput.Text = "";
       try {
@@ -410,6 +408,9 @@ namespace Irony.GrammarExplorer {
       if (_highlighter == null) return;
       _highlighter.Dispose();
       _highlighter = null;
+      ClearHighlighting(); 
+    }
+    private void ClearHighlighting() {
       var txt = txtSource.Text;
       txtSource.Clear(); 
       txtSource.Text = txt; //remove all old highlighting
@@ -499,7 +500,9 @@ namespace Irony.GrammarExplorer {
     private void cboGrammars_SelectedIndexChanged(object sender, EventArgs e) {
       try {
         ClearLanguageInfo();
-        ClearCompileResults();
+        ClearParserOutput();
+        ClearRuntimeInfo(); 
+
         _changingGrammar = true;
         CreateGrammar();
         ShowLanguageInfo();

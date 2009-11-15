@@ -18,7 +18,7 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using Irony.Parsing;
 
-namespace Irony.EditorServices {
+namespace Irony.GrammarExplorer {
 
   public class EditorAdapter {
     Parser _parser;
@@ -34,7 +34,6 @@ namespace Irony.EditorServices {
     public EditorAdapter(LanguageData language) {
       _parser = new Parser(language); 
       _scanner = _parser.Scanner;
-      _parseTree = new ParseTree(string.Empty, "Source");
       _colorizerThread = new Thread(ColorizerLoop);
       _colorizerThread.IsBackground = true;
       _parserThread = new Thread(ParserLoop);
@@ -48,13 +47,17 @@ namespace Irony.EditorServices {
     }
 
     public void Stop() {
-      _stopped = true;
-      _parserThread.Join(500);
-      if (_parserThread.IsAlive)
-        _parserThread.Abort();
-      _colorizerThread.Join(500);
-      if (_colorizerThread.IsAlive)
-        _colorizerThread.Abort();
+      try {
+        _stopped = true;
+        _parserThread.Join(500);
+        if(_parserThread.IsAlive)
+          _parserThread.Abort();
+        _colorizerThread.Join(500);
+        if(_colorizerThread.IsAlive)
+          _colorizerThread.Abort();
+      } catch (Exception ex) {
+        System.Diagnostics.Debug.WriteLine("Error when stopping EditorAdapter: " + ex.Message); 
+      }
     }
 
     public void SetNewText(string text) {
@@ -71,7 +74,7 @@ namespace Irony.EditorServices {
     private  void ParseSource(string newText) {
       //Explicitly catch the case when new text is empty
       if (newText != string.Empty) {
-        _parseTree = _parser.ScanOnly(newText, "Source");
+        _parseTree = _parser.Parse(newText);// .ScanOnly(newText, "Source");
       }
       //notify views
       var views = GetViews();

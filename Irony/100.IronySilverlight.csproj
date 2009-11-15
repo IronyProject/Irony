@@ -69,8 +69,6 @@
     <Compile Include="Ast\UnExprNode.cs" />
     <Compile Include="Ast\_AstInterfaces.cs" />
     <Compile Include="Ast\_AstNode.cs" />
-    <Compile Include="EditorServices\EditorAdapter.cs" />
-    <Compile Include="EditorServices\EditorViewAdapter.cs" />
     <Compile Include="Interpreter\DataStack.cs" />
     <Compile Include="Interpreter\DynamicCallDispatcher.cs" />
     <Compile Include="Interpreter\EvaluationContext.cs" />

@@ -33,7 +33,7 @@ namespace Irony.Parsing {
 
     //List of chars that unambigously identify the start of new token. 
     //used in scanner error recovery, and in quick parse path in NumberLiterals, Identifiers 
-    public string Delimiters = " \t\r\n\v,;[](){}\0"; //  '\0' is EOF, that's how it is represented in source stream
+    public string Delimiters = null; 
 
     public string WhitespaceChars = " \t\r\n\v";
     

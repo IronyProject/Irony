@@ -234,9 +234,10 @@ namespace Irony.Parsing {
 
     #region Error recovery
     private bool Recover() {
-      //Context.SourceStream.PreviewPosition++;
+      Context.SourceStream.PreviewPosition++;
+      var wsd = Data.Language.GrammarData.WhitespaceAndDelimiters;
       while (!Context.SourceStream.EOF()) {
-        if(Data.ScannerRecoverySymbols.IndexOf(Context.SourceStream.PreviewChar) >= 0) {
+        if(wsd.IndexOf(Context.SourceStream.PreviewChar) >= 0) {
           Context.SourceStream.MoveLocationToPreviewPosition();
           return true;
         }

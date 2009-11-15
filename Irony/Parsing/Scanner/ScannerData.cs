@@ -24,9 +24,8 @@ namespace Irony.Parsing {
     public readonly LanguageData Language;
     public readonly TerminalLookupTable TerminalsLookup = new TerminalLookupTable(); //hash table for fast terminal lookup by input char
     public readonly TerminalList FallbackTerminals = new TerminalList(); //terminals that have no explicit prefixes
-    public string ScannerRecoverySymbols; //whitespace plus delimiters - chars to look for when recovering
-    public char[] LineTerminators; //used for line counting
     public readonly TerminalList MultilineTerminals = new TerminalList();
+    public char[] LineTerminatorsArray; //used for line counting
 
     public ScannerData(LanguageData language) {
       Language  = language;

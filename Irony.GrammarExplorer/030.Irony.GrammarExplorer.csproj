@@ -62,6 +62,8 @@
       <DependentUpon>fmSelectGrammars.cs</DependentUpon>
     </Compile>
     <Compile Include="GrammarItemList.cs" />
+    <Compile Include="Highlighter\EditorAdapter.cs" />
+    <Compile Include="Highlighter\EditorViewAdapter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="fmGrammarExplorer.resx">
@@ -101,13 +103,16 @@
     <Compile Include="fmShowException.Designer.cs">
       <DependentUpon>fmShowException.cs</DependentUpon>
     </Compile>
-    <Compile Include="RichTextBoxHighlighter.cs" />
+    <Compile Include="Highlighter\RichTextBoxHighlighter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Irony\010.Irony.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
       <Name>010.Irony</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Highlighter\AboutCodeHighlighter.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

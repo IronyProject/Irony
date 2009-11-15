@@ -31,8 +31,7 @@ namespace Irony.Parsing.Construction {
 
     internal void Build() {
       _data = _language.ScannerData;
-      _data.LineTerminators = _grammar.LineTerminators.ToCharArray();
-      _data.ScannerRecoverySymbols = _grammar.Delimiters;
+      _data.LineTerminatorsArray = _grammar.LineTerminators.ToCharArray();
       InitMultilineTerminalsList();
       BuildTerminalsLookupTable();
     }

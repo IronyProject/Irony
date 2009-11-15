@@ -17,7 +17,7 @@ using System.Text;
 using System.Threading;
 using Irony.Parsing;
 
-namespace Irony.EditorServices {
+namespace Irony.GrammarExplorer {
   public delegate void ColorizeMethod(); 
   public interface IUIThreadInvoker {
     void InvokeOnUIThread(ColorizeMethod colorize);

@@ -26,6 +26,7 @@ namespace Irony.Parsing {
     public readonly BnfTermSet AllTerms = new BnfTermSet();
     public readonly TerminalList Terminals = new TerminalList();
     public readonly NonTerminalList NonTerminals = new NonTerminalList();
+    public string WhitespaceAndDelimiters { get; internal set; }
 
     public GrammarData(LanguageData language) {
       Language = language;

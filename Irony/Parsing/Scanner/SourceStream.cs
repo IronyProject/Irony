@@ -31,7 +31,7 @@ namespace Irony.Parsing {
       //For line-by-line input, automatically increment line# for every new line
       var line = keepLineNumbering ? _location.Line + 1 : 0;
       Location = new SourceLocation(offset, line, 0);
-      _nextNewLinePosition = text.IndexOfAny(_scannerData.LineTerminators, offset);
+      _nextNewLinePosition = text.IndexOfAny(_scannerData.LineTerminatorsArray, offset);
     }
 
     #region ISourceStream Members
@@ -169,7 +169,7 @@ namespace Irony.Parsing {
       //First count \n chars in the string fragment
       int lineStart = _nextNewLinePosition;
       int nlCount = 1; //we start after old _nextNewLinePosition, so we count one NewLine char
-      CountCharsInText(_text, _scannerData.LineTerminators, lineStart + 1, _previewPosition - 1, ref nlCount, ref lineStart);
+      CountCharsInText(_text, _scannerData.LineTerminatorsArray, lineStart + 1, _previewPosition - 1, ref nlCount, ref lineStart);
       _location.Line += nlCount;
       //at this moment lineStart is at start of line where newPosition is located 
       //Calc # of tab chars from lineStart to newPosition to adjust column#
@@ -185,7 +185,7 @@ namespace Irony.Parsing {
         _location.Column += (TabWidth - 1) * tabCount; // "-1" to count for tab char itself
 
       //finally cache new line and assign TokenStart
-      _nextNewLinePosition = _text.IndexOfAny(_scannerData.LineTerminators, _previewPosition);
+      _nextNewLinePosition = _text.IndexOfAny(_scannerData.LineTerminatorsArray, _previewPosition);
     }
 
     private static void CountCharsInText(string text, char[] chars, int from, int until, ref int count, ref int lastCharOccurrencePosition) {

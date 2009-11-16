@@ -60,7 +60,6 @@ namespace Irony.Samples {
             var comma = ToTerm(",", "comma");
             var colon = ToTerm(":", "colon");
 
-
             var comma_opt = new NonTerminal("comma_opt");
             comma_opt.Rule = Empty | ",";
             var semi_opt = new NonTerminal("semi_opt");
@@ -177,7 +176,7 @@ namespace Irony.Samples {
             RANDOMIZE_STMT.Rule = "randomize" + EXPR;
 
             // An expression is a number, or a variable, a string, or the result of a binary comparison.
-            EXPR.Rule = number | variable | FUN_CALL | stringLiteral | BINARY_EXPR
+            EXPR.Rule = number | variable | FUN_CALL | stringLiteral | BINARY_EXPR 
                       | "(" + EXPR + ")" | UNARY_EXPR;
             BINARY_EXPR.Rule = EXPR + BINARY_OP + EXPR;
             UNARY_EXPR.Rule = SIGN + EXPR;

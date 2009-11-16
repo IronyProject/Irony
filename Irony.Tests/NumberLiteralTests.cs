@@ -303,12 +303,11 @@ namespace Irony.Tests {
       Assert.IsTrue(_token.Value.ToString() == sbig, "Failed to read big integer value");
 
       //Quick parse
-/*
       TryMatch("1,");
       CheckType(typeof(int));
       Assert.IsTrue(_token.Details == null, "Quick parse test failed: ScanDetails object is found in token - quick parse path should produce this object.");
       Assert.IsTrue((int)_token.Value == 1, "Failed to read quick-parse value");
-*/
+
     }
 
     [TestMethod]

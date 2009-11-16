@@ -7,8 +7,10 @@ using Irony.Parsing;
 namespace Irony.Tests {
   public class TestGrammar : Grammar {
     public TestGrammar() {
-      this.Root = new NonTerminal("root"); 
-      this.Root.Rule = Empty; 
+      var root = new NonTerminal("root"); 
+      root.Rule = Empty; 
+      this.Root = root; 
+      this.Delimiters = ",;(){}"; //important for quick-parse tests
     }
   }
 }

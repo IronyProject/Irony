@@ -69,6 +69,10 @@
     <Compile Include="Parsing\StringUtils.cs" />
     <Compile Include="Parsing\Parser\CoreParser_ErrorHandling.cs" />
     <Compile Include="Parsing\Parser\ParserTrace.cs" />
+    <Compile Include="Parsing\Terminals\DataLiteralBase.cs" />
+    <Compile Include="Parsing\Terminals\DsvLiteral.cs" />
+    <Compile Include="Parsing\Terminals\FixedLengthLiteral.cs" />
+    <Compile Include="Parsing\Terminals\QuotedValueLiteral.cs" />
     <Compile Include="Parsing\Terminals\RegExLiteral.cs" />
     <Compile Include="Parsing\Terminals\FreeTextLiteral.cs" />
     <Compile Include="Parsing\Terminals\ValidateTokenEvent.cs" />

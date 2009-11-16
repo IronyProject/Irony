@@ -187,6 +187,15 @@ namespace Irony {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not find a closing quote for quoted value..
+        /// </summary>
+        internal static string ErrDsvNoClosingQuote {
+            get {
+                return ResourceManager.GetString("ErrDsvNoClosingQuote", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Duplicate switch &apos;{0}&apos; for regular expression..
         /// </summary>
         internal static string ErrDupRegexSwitch {

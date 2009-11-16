@@ -394,4 +394,7 @@
   <data name="MsgTraceRecoverShiftTillEnd" xml:space="preserve">
     <value>RECOVERING: shifting until the end of error production.</value>
   </data>
+  <data name="ErrDsvNoClosingQuote" xml:space="preserve">
+    <value>Could not find a closing quote for quoted value.</value>
+  </data>
 </root>

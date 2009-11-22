@@ -67,44 +67,23 @@ namespace Irony.Parsing {
     private IEnumerable<Token> GetUnfilteredTokens() {
       //We don't do "while(!_source.EOF())... because on EOF() we need to continue and produce EOF token 
       while (true) {  
-        Context.CurrentScannerToken = FetchToken();
-        Context.OnTokenCreated(Context.CurrentScannerToken);
-        yield return Context.CurrentScannerToken;
+        Context.CurrentTerminals.Clear(); 
+        Context.PreviousToken = Context.CurrentToken;
+        Context.CurrentToken = null; 
+        NextToken();
+        Context.OnTokenCreated();
+        yield return Context.CurrentToken;
         //Don't yield break, continue returning EOF
       }//while
     }// method
 
-    #region VS Integration methods
-    //Use this method for VS integration; VS language package requires scanner that returns tokens one-by-one. 
-    // Start and End positions required by this scanner may be derived from Token : 
-    //   start=token.Location.Position; end=start + token.Length;
-    public Token VsReadToken(ref int state) {
-      Context.VsLineScanState.Value = state;
-      if (Context.SourceStream.EOF()) return null;
-      
-      Token result;
-      if (state == 0)
-        result = FetchToken();
-      else {
-        Terminal term = Data.MultilineTerminals[Context.VsLineScanState.TerminalIndex - 1];
-        result = term.TryMatch(Context, Context.SourceStream); 
-      }
-      //set state value from context
-      state = Context.VsLineScanState.Value;
-      if (result != null && result.Terminal == _grammar.Eof)
-        result = null; 
-      return result;
-    }
-    public void VsSetSource(string text, int offset) {
-      Context.SourceStream.SetText(text, offset, true);
-    }
-    #endregion
-
-    #region Fetching tokens
-    private Token FetchToken() {
+    #region Scanning tokens
+    private void NextToken() {
       //1. Check if there are buffered tokens
-      if (Context.BufferedTokens.Count > 0) 
-        return Context.BufferedTokens.Pop(); 
+      if(Context.BufferedTokens.Count > 0) {
+        Context.CurrentToken = Context.BufferedTokens.Pop();
+        return; 
+      }
       //2. Skip whitespace. We don't need to check for EOF: at EOF we start getting 0-char, so we'll get out automatically
       while (_grammar.WhitespaceChars.IndexOf(Context.SourceStream.PreviewChar) >= 0)
         Context.SourceStream.PreviewPosition++;
@@ -113,123 +92,132 @@ namespace Irony.Parsing {
       //4. Check for EOF
       if (Context.SourceStream.EOF()) {
         CreateFinalTokensInBuffer(); //puts Eof and optionally final NewLine tokens into buffer
-        return Context.BufferedTokens.Pop();
+        Context.CurrentToken = Context.BufferedTokens.Pop();
+        return; 
       }
       //5. Actually scan the source text and construct a new token
-      return ScanToken(); 
+      ScanToken(); 
     }//method
 
     //Scans the source text and constructs a new token
-    private Token ScanToken() {
+    private void ScanToken() {
       //Find matching terminal
       // First, try terminals with explicit "first-char" prefixes, selected by current char in source
-      var terms = SelectTerminals(Context.SourceStream.PreviewChar);
-      var token = MatchTerminals(terms);
-      //If no token, try FallbackTerminals
-      if (token == null && terms != Data.FallbackTerminals && Data.FallbackTerminals.Count > 0)
-        token = MatchTerminals(Data.FallbackTerminals);
-      //If we don't have a token from registered terminals, try Grammar's method
-      if (token == null)
-        token = _grammar.TryMatch(Context, Context.SourceStream);
-      if (token is MultiToken)
-        token = UnpackMultiToken(token);
+      ComputeCurrentTerminals();
+      //If we have more than one candidate; let grammar method select
+      if (Context.CurrentTerminals.Count > 1)
+        _grammar.OnScannerSelectTerminal(Context);
+ 
+      MatchTerminals();
+      //If we don't have a token from terminals, try Grammar's method
+      if (Context.CurrentToken == null)
+        Context.CurrentToken = _grammar.TryMatch(Context, Context.SourceStream);
+      if (Context.CurrentToken is MultiToken)
+        UnpackMultiToken();
+      var token = Context.CurrentToken;
       //If we have normal token then return it
       if (token != null && !token.IsError()) {
         //set position to point after the result token
         Context.SourceStream.PreviewPosition = Context.SourceStream.Location.Position + token.Length;
         Context.SourceStream.MoveLocationToPreviewPosition();
-        return token;
+        return;
       }
       //we have an error: either error token or no token at all
       if (token == null)  //if no token then create error token
-        token = Context.SourceStream.CreateErrorToken(Resources.ErrInvalidChar, Context.SourceStream.PreviewChar);
+        Context.CurrentToken = Context.SourceStream.CreateErrorToken(Resources.ErrInvalidChar, Context.SourceStream.PreviewChar);
       Recover();
-      return token;
+      
     }
 
     //If token is MultiToken then push all its child tokens into _bufferdTokens and return the first token in buffer
-    private Token UnpackMultiToken(Token token) {
-      var mtoken = token as MultiToken;
-      if (mtoken == null) return null; 
+    private void UnpackMultiToken() {
+      var mtoken = Context.CurrentToken as MultiToken;
+      if (mtoken == null) return; 
       for (int i = mtoken.ChildTokens.Count-1; i >= 0; i--)
         Context.BufferedTokens.Push(mtoken.ChildTokens[i]);
-      return Context.BufferedTokens.Pop();
+      Context.CurrentToken = Context.BufferedTokens.Pop();
     }
     
     //creates final NewLine token (if necessary) and EOF token and puts them into _bufferedTokens
     private void CreateFinalTokensInBuffer() {
       //check if we need extra newline before EOF
-      bool currentIsNewLine = Context.CurrentScannerToken != null && Context.CurrentScannerToken.Terminal == _grammar.NewLine;
+      bool previousIsNewLine = Context.PreviousToken != null && Context.PreviousToken.Terminal == _grammar.NewLine;
       var eofToken = new Token(_grammar.Eof, Context.SourceStream.Location, string.Empty, _grammar.Eof.Name);
       Context.BufferedTokens.Push(eofToken); //put it into buffer
-      if (_grammar.FlagIsSet(LanguageFlags.NewLineBeforeEOF) && !currentIsNewLine) {
-        var newLineToken = new Token(_grammar.NewLine, Context.CurrentScannerToken.Location, Environment.NewLine, null);
+      if (_grammar.FlagIsSet(LanguageFlags.NewLineBeforeEOF) && !previousIsNewLine) {
+        var newLineToken = new Token(_grammar.NewLine, Context.SourceStream.Location, Environment.NewLine, null);
         Context.BufferedTokens.Push(newLineToken); 
       }//if
     }
 
-    private Token MatchTerminals(TerminalList terminals) {
-      Token result = null;
-      foreach (Terminal term in terminals) {
+    private void ComputeCurrentTerminals() {
+      TerminalList termsForCurrentChar;
+      if(!Data.TerminalsLookup.TryGetValue(Context.SourceStream.PreviewChar, out termsForCurrentChar)) 
+        return;
+      //if we are recovering, previewing or there's no parser state, then return list as is
+      // Also return list as is if there are token filters
+      // Token filters inject/remove tokens from the stream, so the tokens parser is expecting might be different from
+      // scanner can scan
+      if(Context.Status == ParserStatus.Recovering || Context.Status == ParserStatus.Previewing 
+          || Context.CurrentParserState == null || Context.TokenFilters.Count > 0) {
+        Context.CurrentTerminals.AddRange(termsForCurrentChar);
+        return; 
+      }
+      // Try filtering terms by checking with parser which terms it expects; 
+      var parserState = Context.CurrentParserState;
+      foreach(var term in termsForCurrentChar) {
+        if(parserState.ExpectedTerms.Contains(term) || _grammar.NonGrammarTerminals.Contains(term))
+          Context.CurrentTerminals.Add(term);
+      }
+
+    }//method
+
+    private void MatchTerminals() {
+      Token priorToken = null;
+      foreach (Terminal term in Context.CurrentTerminals) {
         // Check if the term has lower priority that result token we already have; 
         //  if term.Priority is lower then we don't need to check anymore, higher priority wins
         // Note that terminals in the list are sorted in descending priority order
-        if (result != null && result.Terminal.Priority > term.Priority)
-          break;
+        if (priorToken  != null && priorToken.Terminal.Priority > term.Priority)
+          return;
         //Reset source position and try to match
         Context.SourceStream.PreviewPosition = Context.SourceStream.Location.Position;
-        Token token = term.TryMatch(Context, Context.SourceStream);
-        if (token != null)
-          token = term.InvokeValidateToken(Context, Context.SourceStream, terminals, token); 
-        //Take this token as result only if we don't have anything yet, or if it is longer token than previous
-        if (token != null && (token.IsError() || result == null || token.Length > result.Length))
-          result = token;
-        if (result != null && result.IsError()) break;
+        var token = term.TryMatch(Context, Context.SourceStream);
+        if (token == null) continue; 
+        //skip it if it is shorter than previous token
+        if (priorToken != null && !priorToken.IsError() && (token.Length < priorToken.Length))
+          continue; 
+        Context.CurrentToken = token; //now it becomes current token
+        term.InvokeValidateToken(Context); //validate it
+        if (Context.CurrentToken == null) continue; //if it was rejected
+        priorToken = Context.CurrentToken;
       }
-      return result; 
+    }//method
+
+    #endregion
+
+    #region VS Integration methods
+    //Use this method for VS integration; VS language package requires scanner that returns tokens one-by-one. 
+    // Start and End positions required by this scanner may be derived from Token : 
+    //   start=token.Location.Position; end=start + token.Length;
+    public Token VsReadToken(ref int state) {
+      Context.VsLineScanState.Value = state;
+      if (Context.SourceStream.EOF()) return null;
+      if (state == 0)
+        NextToken();
+      else {
+        Terminal term = Data.MultilineTerminals[Context.VsLineScanState.TerminalIndex - 1];
+        Context.CurrentToken = term.TryMatch(Context, Context.SourceStream); 
+      }
+      //set state value from context
+      state = Context.VsLineScanState.Value;
+      if (Context.CurrentToken != null && Context.CurrentToken.Terminal == _grammar.Eof)
+        return null; 
+      return Context.CurrentToken;
     }
-
-    //list for filterered terminals
-    private TerminalList _filteredTerminals = new TerminalList();
-    //reuse single instance to avoid garbage generation
-    private SelectTerminalArgs _selectedTerminalArgs = new SelectTerminalArgs(); 
-    
-    private TerminalList SelectTerminals(char current) {
-      TerminalList termList;
-      if (!_grammar.CaseSensitive)
-        current = char.ToLower(current, CultureInfo.InvariantCulture);
-      if (!Data.TerminalsLookup.TryGetValue(current, out termList))
-        termList = Data.FallbackTerminals;
-      if (termList.Count <= 1)  return termList;
-
-      //We have more than one candidate
-      //First try calling grammar method
-      _selectedTerminalArgs.SetData(Context, current, termList); 
-      _grammar.OnScannerSelectTerminal(_selectedTerminalArgs);
-      if (_selectedTerminalArgs.SelectedTerminal != null) {
-        _filteredTerminals.Clear();
-        _filteredTerminals.Add(_selectedTerminalArgs.SelectedTerminal);
-        return _filteredTerminals;
-      }
-      // Now try filter them by checking with parser which terms it expects but do it only if we're not recovering or previewing
-      if (Context.Status == ParserStatus.Recovering || Context.Status == ParserStatus.Previewing)
-        return termList;
-      var parserState = Context.CurrentParserState;
-      if (parserState == null) 
-        return termList;
-      //we cannot modify termList - it will corrupt the list in TerminalsLookup table; we make a copy
-      _filteredTerminals.Clear();
-      foreach(var term in termList) {
-        if (parserState.ExpectedTerms.Contains(term) || _grammar.NonGrammarTerminals.Contains(term))
-          _filteredTerminals.Add(term);
-      }
-      //Now, if filtered list is empty then ran into error. Don't report it as scanner error - scanner still has options, 
-      // let parser report it
-      if (_filteredTerminals.Count == 0)
-        return termList;
-      else 
-        return _filteredTerminals;
-    }//Select
+    public void VsSetSource(string text, int offset) {
+      Context.SourceStream.SetText(text, offset, true);
+    }
     #endregion
 
     #region Error recovery

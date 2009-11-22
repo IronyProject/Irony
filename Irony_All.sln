@@ -93,6 +93,7 @@ Global
 		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.FxCop|Any CPU.ActiveCfg = Release|Any CPU
 		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.FxCop|Any CPU.Build.0 = Release|Any CPU
 		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.Silverlight Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.Silverlight Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.Silverlight Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -115,7 +116,6 @@ Global
 		{B945A137-E4C4-4DD5-9598-261F466549FE}.FxCop|Any CPU.ActiveCfg = Release|Any CPU
 		{B945A137-E4C4-4DD5-9598-261F466549FE}.FxCop|Any CPU.Build.0 = Release|Any CPU
 		{B945A137-E4C4-4DD5-9598-261F466549FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B945A137-E4C4-4DD5-9598-261F466549FE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B945A137-E4C4-4DD5-9598-261F466549FE}.Silverlight Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B945A137-E4C4-4DD5-9598-261F466549FE}.Silverlight Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B945A137-E4C4-4DD5-9598-261F466549FE}.Silverlight Release|Any CPU.ActiveCfg = Release|Any CPU

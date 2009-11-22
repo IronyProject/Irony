@@ -825,10 +825,12 @@ State S188 (Inadequate)
     // It should be recognized as two ">" symbols, not a single ">>" operator
     // By default, the ">>" has higher priority over single ">" symbol because it is longer. 
     // When this method is called we force the selection to a single ">"
-    public override void OnScannerSelectTerminal(SelectTerminalArgs args) {
-      if (args.Current == '>' && args.Context.Status == ParserStatus.Previewing) {
-        args.SelectedTerminal = ToTerm(">"); //select the ">" terminal
+    public override void OnScannerSelectTerminal(ParsingContext context) {
+      if (context.Source.PreviewChar == '>' && context.Status == ParserStatus.Previewing) {
+        context.CurrentTerminals.Clear();
+        context.CurrentTerminals.Add(ToTerm(">")); //select the ">" terminal
       }
+      base.OnScannerSelectTerminal(context); 
     }
     #endregion
 

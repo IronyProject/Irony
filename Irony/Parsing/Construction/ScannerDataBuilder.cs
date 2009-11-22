@@ -47,37 +47,51 @@ namespace Irony.Parsing.Construction {
 
     private void BuildTerminalsLookupTable() {
       _data.TerminalsLookup.Clear();
-      _data.FallbackTerminals.AddRange(_grammar.FallbackTerminals);
       foreach (Terminal term in _grammarData.Terminals) {
-        IList<string> prefixes = term.GetFirsts();
-        if (prefixes == null || prefixes.Count == 0) {
-          if (!_data.FallbackTerminals.Contains(term))
-            _data.FallbackTerminals.Add(term);
+        IList<string> firsts = term.GetFirsts();
+        if (firsts == null || firsts.Count == 0) {
+          if (!_grammar.FallbackTerminals.Contains(term))
+            _grammar.FallbackTerminals.Add(term);
           continue; //foreach term
         }
         //Go through prefixes one-by-one
-        foreach (string prefix in prefixes) {
+        foreach (string prefix in firsts) {
           if (string.IsNullOrEmpty(prefix)) continue;
           //Calculate hash key for the prefix
           char hashKey = prefix[0];
-          if (!_grammar.CaseSensitive)
-            hashKey = char.ToLower(hashKey, CultureInfo.InvariantCulture);
-          TerminalList currentList;
-          if (!_data.TerminalsLookup.TryGetValue(hashKey, out currentList)) {
-            //if list does not exist yet, create it
-            currentList = new TerminalList();
-            _data.TerminalsLookup[hashKey] = currentList;
-          }
-          //add terminal to the list
-          if (!currentList.Contains(term))
-            currentList.Add(term);
-        }
+          if(_grammar.CaseSensitive)
+            AddTerminalToLookup(hashKey, term);
+          else {
+            AddTerminalToLookup(char.ToLower(hashKey), term);
+            AddTerminalToLookup(char.ToUpper(hashKey), term);
+          }//if
+        }//foreach prefix in firsts
       }//foreach term
-      //Sort all terminal lists by reverse priority, so that terminal with higher priority comes first in the list
-      foreach (TerminalList list in _data.TerminalsLookup.Values)
-        if (list.Count > 1)
+
+      //Now add Fallback terminals to every list, then sort lists by reverse priority
+      // so that terminal with higher priority comes first in the list
+      foreach(TerminalList list in _data.TerminalsLookup.Values) {
+        foreach(var fterm in _grammar.FallbackTerminals)
+          if (!list.Contains(fterm))
+            list.Add(fterm);
+        if(list.Count > 1)
           list.Sort(Terminal.ByPriorityReverse);
+      }//foreach list
+ 
     }//method
+
+    private void AddTerminalToLookup(char hashKey, Terminal term) {
+      TerminalList currentList;
+      if (!_data.TerminalsLookup.TryGetValue(hashKey, out currentList)) {
+        //if list does not exist yet, create it
+        currentList = new TerminalList();
+        _data.TerminalsLookup[hashKey] = currentList;
+      }
+      //add terminal to the list
+      if (!currentList.Contains(term))
+        currentList.Add(term);
+
+    }
 
   }//class
 

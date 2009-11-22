@@ -36,13 +36,13 @@ namespace Irony.Parsing {
     IsTransient =      0x0400,  // Transient non-terminal - should be removed from the AST tree.
     IsNotReported =    0x0800,  // Exclude from expected terminals list on syntax error
     
-    //internal flags
-    IsList           = 0x1000,
     //calculated flags
     IsNullable =     0x010000,
     IsVisible =      0x020000,
     IsKeyword =      0x040000,
     IsMultiline =    0x100000,
+    //internal flags
+    IsList         = 0x200000,
   }
 
   public delegate void AstNodeCreator(ParsingContext context, ParseTreeNode parseNode);

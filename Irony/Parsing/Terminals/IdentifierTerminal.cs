@@ -100,6 +100,7 @@ namespace Irony.Parsing {
           AllFirstChars = AllFirstChars.ToUpper();
           break;
       }
+      //if there are "first" chars defined by categories, add the terminal to FallbackTerminals
       if (this.StartCharCategories.Count > 0 && !Grammar.FallbackTerminals.Contains(this))
         Grammar.FallbackTerminals.Add(this);
       if (this.EditorInfo == null) 

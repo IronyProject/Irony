@@ -63,18 +63,19 @@ namespace Irony.Parsing {
     public ParseTree CurrentParseTree { get; internal set; }
     public readonly TokenStack OpenBraces = new TokenStack();
     public ParserTrace ParserTrace = new ParserTrace();
+    public ISourceStream Source { get { return SourceStream; } }
+    //list for terminals - for current parser state and current input char
+    public TerminalList CurrentTerminals = new TerminalList();
+    public Token CurrentToken;
+    public Token PreviousToken; 
 
-    //Scanner fields
+    //Internal fields
+    internal SourceStream SourceStream;
     internal TokenFilterList TokenFilters = new TokenFilterList();
     internal TokenStack BufferedTokens = new TokenStack();
     internal IEnumerator<Token> FilteredTokens; //stream of tokens after filter
     internal TokenStack PreviewTokens = new TokenStack();
-    //CurrentToken is used only in Scanner.GetUnfilteredTokens iterator, 
-    // but we define it as a field to avoid creating local state in iterator
-    internal Token CurrentScannerToken; 
-
-    internal SourceStream SourceStream;
-    public ISourceStream Source { get { return SourceStream; } }
+    internal ParsingEventArgs SharedParsingEventArgs;
 
     public VsScannerStateMap VsLineScanState; //State variable used in line scanning mode for VS integration
 
@@ -100,18 +101,17 @@ namespace Irony.Parsing {
 #if DEBUG
       Options |= ParseOptions.GrammarDebugging;
 #endif
+      SharedParsingEventArgs = new ParsingEventArgs(this); 
     }
     #endregion
 
 
     #region Events: TokenCreated
-    public event EventHandler<TokenCreatedEventArgs> TokenCreated;
-    TokenCreatedEventArgs _tokenArgs = new TokenCreatedEventArgs(null);
+    public event EventHandler<ParsingEventArgs> TokenCreated;
 
-    internal void OnTokenCreated(Token token) {
-      if (TokenCreated == null) return;
-      _tokenArgs.Token = token;
-      TokenCreated(this, _tokenArgs);
+    internal void OnTokenCreated() {
+      if (TokenCreated != null)
+        TokenCreated(this, SharedParsingEventArgs);
     }
     #endregion
 

@@ -66,6 +66,7 @@
     <Compile Include="Ast\LiteralValueNode.cs" />
     <Compile Include="Parsing\Grammar\GrammarError.cs" />
     <Compile Include="Parsing\Parser\ParseTreeExtensions.cs" />
+    <Compile Include="Parsing\Parser\ParsingEventArgs.cs" />
     <Compile Include="Parsing\StringUtils.cs" />
     <Compile Include="Parsing\Parser\CoreParser_ErrorHandling.cs" />
     <Compile Include="Parsing\Parser\ParserTrace.cs" />
@@ -75,7 +76,6 @@
     <Compile Include="Parsing\Terminals\QuotedValueLiteral.cs" />
     <Compile Include="Parsing\Terminals\RegExLiteral.cs" />
     <Compile Include="Parsing\Terminals\FreeTextLiteral.cs" />
-    <Compile Include="Parsing\Terminals\ValidateTokenEvent.cs" />
     <Compile Include="Parsing\Terminals\_ISourceStream.cs" />
     <Compile Include="Parsing\Grammar\GrammarData.cs" />
     <Compile Include="Parsing\Grammar\LanguageAttribute.cs" />

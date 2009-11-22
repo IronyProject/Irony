@@ -23,7 +23,6 @@ namespace Irony.Parsing {
   public class ScannerData {
     public readonly LanguageData Language;
     public readonly TerminalLookupTable TerminalsLookup = new TerminalLookupTable(); //hash table for fast terminal lookup by input char
-    public readonly TerminalList FallbackTerminals = new TerminalList(); //terminals that have no explicit prefixes
     public readonly TerminalList MultilineTerminals = new TerminalList();
     public char[] LineTerminatorsArray; //used for line counting
 
@@ -32,19 +31,4 @@ namespace Irony.Parsing {
     }
   }//class
 
-  public class SelectTerminalArgs : EventArgs {
-    public ParsingContext Context;
-    public Scanner Scanner;
-    public char Current;
-    public TerminalList Terminals;
-    public Terminal SelectedTerminal;
-    internal void SetData(ParsingContext context, char current, TerminalList terminals) {
-      Context = context;
-      Scanner = Context.Parser.Scanner; 
-      Current = current;
-      Terminals = terminals;
-      SelectedTerminal = null; 
-    }
-
-  }
 }//namespace

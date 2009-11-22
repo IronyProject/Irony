@@ -236,13 +236,14 @@ namespace Irony.Parsing {
       details.Body = source.Text.Substring(start, end - start);
       return true;
     }
-    protected internal override Token InvokeValidateToken(ParsingContext context, ISourceStream source, TerminalList terminals, Token token) {
+    protected internal override void InvokeValidateToken(ParsingContext context) {
       if (!IsSet(NumberFlags.AllowLetterAfter)) {
-        var current = source.PreviewChar;
-        if (char.IsLetter(current) || current == '_') 
-          return source.CreateErrorToken(Resources.ErrNoLetterAfterNum); // "Number cannot be followed by a letter." 
+        var current = context.Source.PreviewChar;
+        if(char.IsLetter(current) || current == '_') {
+          context.CurrentToken = context.Source.CreateErrorToken(Resources.ErrNoLetterAfterNum); // "Number cannot be followed by a letter." 
+        }
       }
-      return base.InvokeValidateToken(context, source, terminals, token);
+      base.InvokeValidateToken(context);
     }
 
     protected override bool ConvertValue(CompoundTokenDetails details) {

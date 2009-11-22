@@ -96,7 +96,6 @@ namespace Irony.Parsing {
       PostfixUnaryOperators = new StringSet(LanguageStringComparer);
       PrefixUnaryOperators.AddRange ("+", "-", "!", "++", "--");
       PostfixUnaryOperators.AddRange("++", "--");
-      NewLinePlus = CreateNewLinePlus();
       //Initialize console attributes
       ConsoleTitle = Resources.MsgDefaultConsoleTitle;
       ConsoleGreeting = string.Format(Resources.MsgDefaultConsoleGreeting, this.GetType().Name);
@@ -213,11 +212,10 @@ namespace Irony.Parsing {
 
     /// <summary>
     /// Override this method to help scanner select a terminal to create token when there are more than one candidates
-    /// for an input char
+    /// for an input char. Context.CurrentTerminals contains candidate terminals; leave a single terminal in this list
+    /// as the one to use.
     /// </summary>
-    public virtual void OnScannerSelectTerminal(SelectTerminalArgs args) {
-
-    }
+    public virtual void OnScannerSelectTerminal(ParsingContext context) { }
 
     /// <summary>
     /// Override this method to provide custom conflict resolution; for example, custom code may decide proper shift or reduce
@@ -331,16 +329,27 @@ namespace Irony.Parsing {
     //Used for error tokens
     public readonly Terminal SyntaxError = new Terminal("SYNTAX_ERROR", TokenCategory.Error);
 
-    public NonTerminal NewLinePlus;
+    public NonTerminal NewLinePlus {
+      get {
+        if(_newLinePlus == null) {
+          _newLinePlus = new NonTerminal("LF+");
+          _newLinePlus.Options |= TermOptions.IsPunctuation; //will be later renamed to DeleteAfterParse
+          _newLinePlus.Rule = MakePlusRule(_newLinePlus, NewLine);
+        }
+        return _newLinePlus;
+      }
+    } NonTerminal _newLinePlus;
 
-    private NonTerminal CreateNewLinePlus() {
-      NewLine.SetOption(TermOptions.IsTransient); 
-      var result = new NonTerminal("LF+");
-      result.SetOption(TermOptions.IsList);
-      result.Rule = NewLine | result + NewLine;
-      return result;
-    }
-
+    public NonTerminal NewLineStar {
+      get {
+        if(_newLineStar == null) {
+          _newLineStar = new NonTerminal("LF*");
+          _newLineStar.Options |= TermOptions.IsPunctuation; //will be later renamed to DeleteAfterParse
+          _newLineStar.Rule = MakeStarRule(_newLineStar, NewLine);
+        }
+        return _newLineStar;
+      }
+    } NonTerminal _newLineStar;
 
     #endregion
 

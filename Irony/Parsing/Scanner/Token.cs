@@ -30,18 +30,6 @@ namespace Irony.Parsing {
     Error,
   }
 
-  public class TokenCreatedEventArgs : EventArgs {
-    internal TokenCreatedEventArgs(Token token) {
-      _token = token;
-    }
-    public Token Token {
-      get { return _token; }
-      internal set { _token = value; }
-    } Token _token;
-
-  }//class
-
-
   public class TokenList : List<Token> {}
   public class TokenStack : Stack<Token> { }
 

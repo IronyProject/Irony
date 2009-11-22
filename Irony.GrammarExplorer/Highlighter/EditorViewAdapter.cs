@@ -50,6 +50,7 @@ namespace Irony.GrammarExplorer {
     public ParseTree Tree;
     public ViewData(ParseTree tree) {
       this.Tree = tree;
+      if (tree == null) return; 
       NotColoredTokens.AddRange(tree.Tokens); 
     }
   }

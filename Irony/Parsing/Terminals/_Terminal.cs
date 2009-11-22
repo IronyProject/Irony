@@ -80,13 +80,10 @@ namespace Irony.Parsing {
     #endregion
 
     #region Events: ValidateToken
-    private ValidateTokenEventArgs _validateTokenArgs = new ValidateTokenEventArgs(); 
-    public event EventHandler<ValidateTokenEventArgs> ValidateToken;
-    protected internal virtual Token InvokeValidateToken(ParsingContext context, ISourceStream source, TerminalList terminals, Token token) {
-      if (ValidateToken == null) return token;
-      _validateTokenArgs.Init(context, source, terminals, token);
-      ValidateToken(this, _validateTokenArgs);
-      return _validateTokenArgs.Token;
+    public event EventHandler<ParsingEventArgs> ValidateToken;
+    protected internal virtual void InvokeValidateToken(ParsingContext context) {
+      if (ValidateToken != null)
+        ValidateToken(this,  context.SharedParsingEventArgs);
     }
 
     #endregion

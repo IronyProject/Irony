@@ -61,7 +61,7 @@ namespace Irony.Parsing {
       if (result != null) return result;
       //if it is LineComment, it is ok to hit EOF without final line-break; just return all until end.
       if (_isLineComment)
-        return source.CreateToken(this);
+        return source.CreateToken(this.OutputTerminal);
       if (context.Mode == ParseMode.VsLineScan)
         return CreateIncompleteToken(context, source);
       return source.CreateErrorToken(Resources.ErrUnclosedComment);
@@ -69,7 +69,7 @@ namespace Irony.Parsing {
 
     private Token CreateIncompleteToken(ParsingContext context, ISourceStream source) {
       source.PreviewPosition = source.Text.Length;
-      Token result = source.CreateToken(this);
+      Token result = source.CreateToken(this.OutputTerminal);
       result.Flags |= TokenFlags.IsIncomplete;
       context.VsLineScanState.TerminalIndex = this.MultilineIndex;
       return result; 
@@ -101,7 +101,7 @@ namespace Irony.Parsing {
             // For line comment, leave LF symbol there, it might be important to have a separate LF token
             if (!_isLineComment)
               source.PreviewPosition += endSymbol.Length;
-            return source.CreateToken(this); 
+            return source.CreateToken(this.OutputTerminal); 
           }//if
         }//foreach endSymbol
         source.PreviewPosition++; //move to the next char and try again    

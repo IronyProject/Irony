@@ -151,7 +151,7 @@ namespace Irony.Parsing {
         default: return null; 
       }
       source.PreviewPosition++;
-      return source.CreateToken(this, value);
+      return source.CreateToken(this.OutputTerminal, value);
     }
 
     protected override void InitDetails(ParsingContext context, CompoundTokenDetails details) {

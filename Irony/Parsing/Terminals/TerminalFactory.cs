@@ -162,11 +162,14 @@ namespace Irony.Parsing {
       return id;
     }
 
-    public static StringLiteral CreateSqlExtIdentifier(string name) {
-      StringLiteral term = new StringLiteral(name);
+    //Covers simple identifiers like abcd, and also quoted versions: [abc d], "abc d".
+    public static IdentifierTerminal CreateSqlExtIdentifier(Grammar grammar, string name) {
+      var id = new IdentifierTerminal(name);
+      StringLiteral term = new StringLiteral(name + "_qouted");
       term.AddStartEnd("[", "]", StringFlags.NoEscapes);
       term.AddStartEnd("\"", StringFlags.NoEscapes);
-      return term;
+      term.SetOutputTerminal(grammar, id); //term will be added to NonGrammarTerminals automatically 
+      return id;
     }
 
   }//class

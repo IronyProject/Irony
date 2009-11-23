@@ -151,15 +151,13 @@ namespace Irony.Parsing {
     }
 
     private void ComputeCurrentTerminals() {
-      TerminalList termsForCurrentChar;
-      if(!Data.TerminalsLookup.TryGetValue(Context.SourceStream.PreviewChar, out termsForCurrentChar)) 
-        return;
+      TerminalList termsForCurrentChar = Data.TerminalsLookup[Context.SourceStream.PreviewChar]; 
       //if we are recovering, previewing or there's no parser state, then return list as is
       // Also return list as is if there are token filters
       // Token filters inject/remove tokens from the stream, so the tokens parser is expecting might be different from
       // scanner can scan
       if(Context.Status == ParserStatus.Recovering || Context.Status == ParserStatus.Previewing 
-          || Context.CurrentParserState == null || Context.TokenFilters.Count > 0) {
+          || Context.CurrentParserState == null || _grammar.FlagIsSet(LanguageFlags.DisableScannerParserLink)) {
         Context.CurrentTerminals.AddRange(termsForCurrentChar);
         return; 
       }

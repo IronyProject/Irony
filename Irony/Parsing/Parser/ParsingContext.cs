@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace Irony.Parsing {
 
@@ -52,6 +53,7 @@ namespace Irony.Parsing {
     public ParseMode Mode = ParseMode.File;
     public int MaxErrors = 20; //maximum error count to report
     public int TabWidth = 8;
+    public CultureInfo Culture; //defaults to Grammar.DefaultCulture, might be changed by app code
 
     #region properties and fields
     //Parser fields
@@ -66,7 +68,7 @@ namespace Irony.Parsing {
     public ISourceStream Source { get { return SourceStream; } }
     //list for terminals - for current parser state and current input char
     public TerminalList CurrentTerminals = new TerminalList();
-    public Token CurrentToken;
+    public Token CurrentToken; //The terminal just scanned by Scanner
     public Token PreviousToken; 
 
     //Internal fields
@@ -97,6 +99,10 @@ namespace Irony.Parsing {
     public ParsingContext(Parser parser) {
       this.Parser = parser;
       Language = Parser.Language;
+      Culture = Language.Grammar.DefaultCulture;
+      //This might be a problem for multi-threading - if we have several contexts on parallel threads with different culture.
+      //Resources.Culture is static property (this is not Irony's fault, this is auto-generated file).
+      Resources.Culture = Culture; 
       //We assume that if Irony is compiled in Debug mode, then developer is debugging his grammar/language implementation
 #if DEBUG
       Options |= ParseOptions.GrammarDebugging;

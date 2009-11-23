@@ -127,14 +127,5 @@ namespace Irony.Tests {
       Assert.IsTrue(_token.IsError(), "Failed to detect error in multi-char sequence.");
     }
 
-    [TestMethod]
-    public void TestSqlIdentifier() {
-      SetTerminal(TerminalFactory.CreateSqlExtIdentifier("identifier"));
-      TryMatch(@"[a b c]  ");
-      Assert.IsTrue((string)_token.Value == "a b c", "Failed to process bracketted identifier [a b c]");
-      TryMatchDoubles(@"'a b c'  ");
-      Assert.IsTrue((string)_token.Value == "a b c", "Failed to process double-quoted identifier \"a b c\"");
-    }
-
   }//class
 }//namespace

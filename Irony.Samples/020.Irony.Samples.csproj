@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CSharp\CSharpGrammar.cs" />
+    <Compile Include="DataGrammars\SampleCsvGrammar.cs" />
     <Compile Include="FullTextSearchQueryConverter\SearchGrammar.cs" />
     <Compile Include="Json\JsonGrammar.cs" />
     <Compile Include="MiniPython\MiniPython.cs" />
@@ -80,6 +81,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="SourceSamples\DataFiles\CarModels.csv" />
     <None Include="SourceSamples\JSON\Sample1.json" />
     <None Include="SourceSamples\JSON\Sample2.json" />
     <None Include="SourceSamples\JSON\Sample3.json" />

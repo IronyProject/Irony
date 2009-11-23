@@ -102,7 +102,7 @@ namespace Irony.Parsing {
         if (char.IsLetter(currChar) || currChar == '_')
           return source.CreateErrorToken(Resources.ErrInvRegexSwitch, currChar); // "Invalid switch '{0}' for regular expression"  
       }
-      var token = source.CreateToken(this);
+      var token = source.CreateToken(this.OutputTerminal);
       //we have token, now what's left is to set its Value field. It is either pattern itself, or Regex instance
       string pattern = token.Text.Substring(1, patternLen); //exclude start and end symbol
       object value = pattern; 

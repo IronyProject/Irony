@@ -115,8 +115,10 @@ Press Ctrl-C to exit the program at any time.
 ";
       ConsolePrompt = ">>>"; 
       ConsolePromptMoreInput = "..."; 
-
-      this.LanguageFlags = LanguageFlags.CreateAst | LanguageFlags.CanRunSample;
+      
+      //We have to disable scanner-parser link. With TokenFilter sitting between scanner and parser, scanner can no longer 
+      // use the expected terminals in current parser state to filter current current candidate terminals
+      this.LanguageFlags = LanguageFlags.DisableScannerParserLink | LanguageFlags.CreateAst | LanguageFlags.CanRunSample;
 
     }//constructor
 

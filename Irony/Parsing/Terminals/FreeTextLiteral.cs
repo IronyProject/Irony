@@ -70,7 +70,7 @@ namespace Irony.Parsing {
         if (CheckTerminators(source, ref tokenText))
           break; //from while (true)        
       }
-      return source.CreateToken(this, tokenText);
+      return source.CreateToken(this.OutputTerminal, tokenText);
     }
 
     private bool CheckEscape(ISourceStream source, ref string tokenText) {

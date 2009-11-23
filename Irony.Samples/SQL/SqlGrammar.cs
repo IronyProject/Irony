@@ -17,8 +17,7 @@ namespace Irony.Samples.SQL {
       NonGrammarTerminals.Add(lineComment);
       var number = new NumberLiteral("number");
       var string_literal = new StringLiteral("string", "'", StringFlags.AllowsDoubledQuote);
-      var name = new IdentifierTerminal("name");
-      var name_ext = TerminalFactory.CreateSqlExtIdentifier("name_ext");
+      var Id_simple = TerminalFactory.CreateSqlExtIdentifier(this, "id_simple"); //covers normal identifiers (abc) and quoted id's ([abc d], "abc d")
       var comma = ToTerm(",");
       var dot = ToTerm(".");
       var CREATE = ToTerm("CREATE"); 
@@ -51,7 +50,6 @@ namespace Irony.Samples.SQL {
 
       //Non-terminals
       var Id = new NonTerminal("Id");
-      var Id_simple = new NonTerminal("id_simple");  
       var stmt = new NonTerminal("stmt");
       var createTableStmt = new NonTerminal("createTableStmt");
       var createIndexStmt = new NonTerminal("createIndexStmt");
@@ -128,7 +126,6 @@ namespace Irony.Samples.SQL {
       stmtList.Rule = MakePlusRule(stmtList, stmtLine);
 
       //ID
-      Id_simple.Rule = name | name_ext;
       Id.Rule = MakePlusRule(Id, dot, Id_simple);
 
       stmt.Rule = createTableStmt | createIndexStmt | alterStmt 
@@ -223,7 +220,7 @@ namespace Irony.Samples.SQL {
       betweenExpr.Rule = expression + notOpt + "BETWEEN" + expression + "AND" + expression;
       notOpt.Rule = Empty | NOT;
       //funCall covers some psedo-operators and special forms like ANY(...), SOME(...), ALL(...), EXISTS(...), IN(...)
-      funCall.Rule = name + "(" + funArgs  + ")";
+      funCall.Rule = Id + "(" + funArgs  + ")";
       funArgs.Rule = selectStmt | exprList;
       inStmt.Rule = expression + "IN" + "(" + exprList + ")";
 
@@ -238,7 +235,7 @@ namespace Irony.Samples.SQL {
 
       RegisterPunctuation(",", "(", ")");
       RegisterPunctuation(semiOpt);
-      base.MarkTransient(stmt, Id_simple, term, asOpt, aliasOpt, stmtLine, binOp, expression);
+      base.MarkTransient(stmt, term, asOpt, aliasOpt, stmtLine, binOp, expression);
 
     }//constructor
 

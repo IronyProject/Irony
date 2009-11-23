@@ -59,9 +59,8 @@ namespace Irony.Parsing {
     // collection to see if they can produce it. 
     // Note that IdentifierTerminal automatically add itself to this collection if its StartCharCategories list is not empty, 
     // so programmer does not need to do this explicitly
-    public readonly TerminalList FallbackTerminals = new TerminalList();
+    public readonly TerminalSet FallbackTerminals = new TerminalSet();
 
-    //Default node type; if null then GenericNode type is used. 
     public Type DefaultNodeType;
     public Type DefaultLiteralNodeType = typeof(LiteralValueNode); //default node type for literals
 
@@ -70,6 +69,9 @@ namespace Irony.Parsing {
     
     public string GrammarComments; //shown in Grammar info tab
 
+    public CultureInfo DefaultCulture = CultureInfo.InvariantCulture;
+
+    //TODO: refactor UnaryOpNode, remove this nonsense
     public StringSet PrefixUnaryOperators;
     public StringSet PostfixUnaryOperators;
 

@@ -46,7 +46,7 @@ namespace Irony.Parsing {
     //Automatically detect transient non-terminals - whose rules are just OR of other single terms
     // nodes for these terminals would be eliminated from parse tree. Formerly this stuff was called "node bubbling"
     AutoDetectTransient = 0x02,
-    //AutoDetectKeywords = 0x04, //automatically mark all words found in grammar as keywords
+    DisableScannerParserLink = 0x04, //in grammars that define TokenFilters (like Python) this flag should be set
     CreateAst = 0x08, //create AST nodes 
 
     //Runtime

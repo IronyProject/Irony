@@ -171,7 +171,7 @@ namespace Irony.Parsing {
     }
 
     protected virtual Token CreateToken(ParsingContext context, ISourceStream source, CompoundTokenDetails details) {
-      var token = source.CreateToken(this, details.Value);
+      var token = source.CreateToken(this.OutputTerminal, details.Value);
       token.Details = details;
       if (details.IsPartial) 
         token.Flags |= TokenFlags.IsIncomplete;

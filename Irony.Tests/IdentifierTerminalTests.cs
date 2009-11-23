@@ -69,6 +69,18 @@ namespace Irony.Tests {
       Assert.IsTrue(_token != null && _token.ValueString == "EFG", "Failed to scan identifier EFG with AllUpper restriction.");
     }//method
 
+    /*
+    [TestMethod]
+    public void TestSqlIdentifier() {
+      var id = TerminalFactory.CreateSqlExtIdentifier(_grammar, "identifier");
+      SetTerminal(id.OutputTerminal);
+      TryMatch(@"[a b c]  ");
+      Assert.IsTrue((string)_token.Value == "a b c", "Failed to process bracketted identifier [a b c]");
+      TryMatch("\"a b c\"  "); //"a b c"
+      Assert.IsTrue((string)_token.Value == "a b c", "Failed to process double-quoted identifier \"a b c\"");
+    }
+    */
+
   }//class
 }//namespace
 

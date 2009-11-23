@@ -46,12 +46,10 @@ namespace Irony.Parsing.Construction {
     }
 
     private void BuildTerminalsLookupTable() {
-      _data.TerminalsLookup.Clear();
       foreach (Terminal term in _grammarData.Terminals) {
         IList<string> firsts = term.GetFirsts();
         if (firsts == null || firsts.Count == 0) {
-          if (!_grammar.FallbackTerminals.Contains(term))
-            _grammar.FallbackTerminals.Add(term);
+          _grammar.FallbackTerminals.Add(term);
           continue; //foreach term
         }
         //Go through prefixes one-by-one
@@ -68,12 +66,12 @@ namespace Irony.Parsing.Construction {
         }//foreach prefix in firsts
       }//foreach term
 
+      //Add Fallback terminals to TerminalsLookup special field that contains list to return as default, when there is no key char in the table
+      _data.TerminalsLookup.FallbackTerminals.AddRange(_grammar.FallbackTerminals); 
       //Now add Fallback terminals to every list, then sort lists by reverse priority
       // so that terminal with higher priority comes first in the list
       foreach(TerminalList list in _data.TerminalsLookup.Values) {
-        foreach(var fterm in _grammar.FallbackTerminals)
-          if (!list.Contains(fterm))
-            list.Add(fterm);
+        list.AddRange(_grammar.FallbackTerminals);
         if(list.Count > 1)
           list.Sort(Terminal.ByPriorityReverse);
       }//foreach list

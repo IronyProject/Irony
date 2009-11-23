@@ -24,24 +24,33 @@ namespace Irony.Parsing {
   // format. However, if you consider all escaping and double-quote enclosing rules, then a custom reader solution would not seem so trivial.
   // So DsvLiteral can simplify this task.  
   public class DsvLiteral : DataLiteralBase {
-    public string Separator = ",";
-    private char[] _separators;
+    public string Terminator = ",";
+    public bool ConsumeTerminator = true; //if true, the source pointer moves after the separator 
+    private char[] _terminators;
 
-    public DsvLiteral(string name, TypeCode dataType, string separator)  : this(name, dataType) {
-      Separator = separator;
+    //For last value on the line specify terminator = null; the DsvLiteral will then look for NewLine as terminator
+    public DsvLiteral(string name, TypeCode dataType, string terminator)  : this(name, dataType) {
+      Terminator = terminator;
     }
     public DsvLiteral(string name, TypeCode dataType) : base(name, dataType) { }
 
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
-      _separators = new char[] { Separator[0], '\n', '\r'};
+      if (Terminator == null)
+        _terminators = new char[] { '\n', '\r'}; 
+      else 
+        _terminators = new char[] { Terminator[0]}; 
     }
 
     protected override string ReadBody(ParsingContext context, ISourceStream source) {
+      string body;
       if (source.PreviewChar == '"')
-        return ReadQuotedBody(context, source);
+        body = ReadQuotedBody(context, source);
       else
-        return ReadNotQuotedBody(context, source); 
+        body = ReadNotQuotedBody(context, source); 
+      if (ConsumeTerminator && Terminator != null)
+        MoveSourcePositionAfterTerminator(source);
+      return body; 
     }
 
     private string ReadQuotedBody(ParsingContext context, ISourceStream source) {
@@ -53,29 +62,42 @@ namespace Irony.Parsing {
         if (until < 0)
           throw new Exception(Resources.ErrDsvNoClosingQuote); // "Could not find a closing quote for quoted value."
         source.PreviewPosition = until; //now points at double-quote
-        var piece = source.Text .Substring(from, until - from);
-        if (source.NextPreviewChar != dQuoute && sb == null)
+        var piece = source.Text.Substring(from, until - from);
+        source.PreviewPosition++; //move after double quote
+        if (source.PreviewChar != dQuoute && sb == null)
           return piece; //quick path - if sb (string builder) was not created yet, we are looking at the very first segment;
                         // and if we found a standalone dquote, then we are done - the "piece" is the result. 
         if (sb == null)
           sb = new StringBuilder(100);
         sb.Append(piece);
-        if (source.NextPreviewChar != dQuoute)
+        if (source.PreviewChar != dQuoute)
           return sb.ToString();
         //we have doubled double-quote; add a single double-quoute char to the result and move over both symbols
         sb.Append(dQuoute);
-        from = source.PreviewPosition + 2;        
+        from = source.PreviewPosition + 1;        
       }
     }
 
     private string ReadNotQuotedBody(ParsingContext context, ISourceStream source) {
       var startPos = source.Location.Position;
-      var sepPos = source.Text.IndexOfAny(_separators, startPos);
+      var sepPos = source.Text.IndexOfAny(_terminators, startPos);
       if (sepPos < 0)
-        sepPos = source.Text.Length + 1;
+        sepPos = source.Text.Length;
+      source.PreviewPosition = sepPos;
       var valueText = source.Text.Substring(startPos, sepPos - startPos);
       return valueText;
     }
+
+    private void MoveSourcePositionAfterTerminator(ISourceStream source) {
+      while(!source.EOF()) {
+        while(source.PreviewChar != Terminator[0])
+          source.PreviewPosition++;
+        if(source.MatchSymbol(Terminator, !Grammar.CaseSensitive)) {
+          source.PreviewPosition += Terminator.Length;
+          return;
+        }//if
+      }//while
+    }//method
 
   }//class
 

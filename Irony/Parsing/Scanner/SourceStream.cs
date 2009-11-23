@@ -133,7 +133,10 @@ namespace Irony.Parsing {
 
     //returns substring from Location.Position till (PreviewPosition - 1)
     private string GetPreviewText() {
-      string text = _text.Substring(_location.Position, _previewPosition - _location.Position);
+      var until = _previewPosition;
+
+      if (until > _text.Length) until = _text.Length + 1;
+      string text = _text.Substring(_location.Position, until - _location.Position);
       return text;
     }
 

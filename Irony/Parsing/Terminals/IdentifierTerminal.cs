@@ -101,7 +101,7 @@ namespace Irony.Parsing {
           break;
       }
       //if there are "first" chars defined by categories, add the terminal to FallbackTerminals
-      if (this.StartCharCategories.Count > 0 && !Grammar.FallbackTerminals.Contains(this))
+      if (this.StartCharCategories.Count > 0)
         Grammar.FallbackTerminals.Add(this);
       if (this.EditorInfo == null) 
         this.EditorInfo = new TokenEditorInfo(TokenType.Identifier, TokenColor.Identifier, TokenTriggers.None);
@@ -175,7 +175,7 @@ namespace Irony.Parsing {
         source.PreviewPosition++;
       //if it is not a terminator then cancel; we need to go through full algorithm
       if (GrammarData.WhitespaceAndDelimiters.IndexOf(source.PreviewChar) < 0) return null; 
-      var token = source.CreateToken(this);
+      var token = source.CreateToken(this.OutputTerminal);
       if(CaseRestriction != CaseRestriction.None && !CheckCaseRestriction(token.ValueString))
         return null; 
       //!!! Do not convert to common case (all-lower) for case-insensitive grammar. Let identifiers remain as is, 

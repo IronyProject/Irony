@@ -18,9 +18,9 @@ using System.Text;
 namespace Irony.Parsing {
 
   public class TerminalLookupTable : Dictionary<char, TerminalList> { 
-    public TerminalList FallbackTerminals = new TerminalList(); //to return when there is no key/value pair
+    public TerminalList FallbackTerminals = new TerminalList(); //to return when there is no key in the dictionary
 
-    public TerminalList this[char key] {
+    public new TerminalList this[char key] {
       get {
       TerminalList value; 
       if (base.TryGetValue(key, out value))

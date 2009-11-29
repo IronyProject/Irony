@@ -135,7 +135,7 @@ namespace Irony.Parsing {
     private string GetPreviewText() {
       var until = _previewPosition;
 
-      if (until > _text.Length) until = _text.Length + 1;
+      if (until > _text.Length) until = _text.Length;
       string text = _text.Substring(_location.Position, until - _location.Position);
       return text;
     }

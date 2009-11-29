@@ -44,6 +44,7 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +71,7 @@
     <None Include="SourceSamples\c#\TestLessThanOp.cs" />
     <Compile Include="SQL\SqlGrammar.cs" />
     <Compile Include="TestGrammars\NewickGrammar.cs" />
+    <Compile Include="Wiki\CodePlexWikiGrammar.cs" />
     <None Include="TestGrammars\GrammarEx434.cs" />
     <None Include="TestGrammars\GrammarEx446.cs" />
     <None Include="TestGrammars\GrammarExL514.cs" />
@@ -92,32 +94,33 @@
     <None Include="SourceSamples\Scheme\Fib.scm" />
     <Content Include="CSharp\Notes.txt" />
     <Content Include="NonCanonTestGrammars\_about_noncanon_grammars.txt" />
-    <Content Include="SourceSamples\99 bottles.bas" />
-    <Content Include="SourceSamples\ExprSample.txt" />
-    <Content Include="SourceSamples\Newick.txt" />
-    <Content Include="SourceSamples\NonCanonTestSamples\NonCanonTest1.txt" />
-    <Content Include="SourceSamples\Script.NET\Arithmetic.txt" />
-    <Content Include="SourceSamples\Script.NET\ArraysGenerics.txt" />
-    <Content Include="SourceSamples\Script.NET\bubblesort.txt" />
-    <Content Include="SourceSamples\Script.NET\Contracts.txt" />
-    <Content Include="SourceSamples\Script.NET\EmbeddedObject.txt" />
-    <Content Include="SourceSamples\Script.NET\Forms.txt" />
-    <Content Include="SourceSamples\Script.NET\GCD.txt" />
-    <Content Include="SourceSamples\Script.NET\Graphs.txt" />
-    <Content Include="SourceSamples\Script.NET\metafeatures.txt" />
-    <Content Include="SourceSamples\Script.NET\metafeatures_ast.txt" />
-    <Content Include="SourceSamples\Script.NET\Mutant.txt" />
-    <Content Include="SourceSamples\Script.NET\QuickSort.txt" />
-    <Content Include="SourceSamples\Script.NET\Recursion.txt" />
-    <Content Include="SourceSamples\Script.NET\RSS.txt" />
-    <Content Include="SourceSamples\Script.NET\UIAutomation_FW3.txt" />
-    <Content Include="SourceSamples\Script.NET\WinForms.txt" />
-    <Content Include="SourceSamples\SearchGrammar\Search1.txt" />
-    <Content Include="SourceSamples\SQL\sql_op_test.txt" />
-    <Content Include="SourceSamples\SQL\sql_sample1.txt" />
-    <Content Include="SourceSamples\SQL\sql_sample2.txt" />
-    <Content Include="SourceSamples\SQL\sql_sample3.txt" />
-    <Content Include="SourceSamples\_about.txt" />
+    <None Include="SourceSamples\99 bottles.bas" />
+    <None Include="SourceSamples\ExprSample.txt" />
+    <None Include="SourceSamples\Newick.txt" />
+    <None Include="SourceSamples\NonCanonTestSamples\NonCanonTest1.txt" />
+    <None Include="SourceSamples\Script.NET\Arithmetic.txt" />
+    <None Include="SourceSamples\Script.NET\ArraysGenerics.txt" />
+    <None Include="SourceSamples\Script.NET\bubblesort.txt" />
+    <None Include="SourceSamples\Script.NET\Contracts.txt" />
+    <None Include="SourceSamples\Script.NET\EmbeddedObject.txt" />
+    <None Include="SourceSamples\Script.NET\Forms.txt" />
+    <None Include="SourceSamples\Script.NET\GCD.txt" />
+    <None Include="SourceSamples\Script.NET\Graphs.txt" />
+    <None Include="SourceSamples\Script.NET\metafeatures.txt" />
+    <None Include="SourceSamples\Script.NET\metafeatures_ast.txt" />
+    <None Include="SourceSamples\Script.NET\Mutant.txt" />
+    <None Include="SourceSamples\Script.NET\QuickSort.txt" />
+    <None Include="SourceSamples\Script.NET\Recursion.txt" />
+    <None Include="SourceSamples\Script.NET\RSS.txt" />
+    <None Include="SourceSamples\Script.NET\UIAutomation_FW3.txt" />
+    <None Include="SourceSamples\Script.NET\WinForms.txt" />
+    <None Include="SourceSamples\SearchGrammar\Search1.txt" />
+    <None Include="SourceSamples\SQL\sql_op_test.txt" />
+    <None Include="SourceSamples\SQL\sql_sample1.txt" />
+    <None Include="SourceSamples\SQL\sql_sample2.txt" />
+    <None Include="SourceSamples\SQL\sql_sample3.txt" />
+    <None Include="SourceSamples\Wiki\Sample1_codeplex.txt" />
+    <None Include="SourceSamples\_about.txt" />
     <Content Include="SQL\Sql89-GoldParser.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

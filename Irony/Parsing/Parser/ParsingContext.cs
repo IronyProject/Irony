@@ -159,17 +159,20 @@ namespace Irony.Parsing {
     private void OnStatusChanged(ParserStatus oldStatus) {
       switch (Status) {
         case ParserStatus.Init:
-          ParserTrace.Clear();
-          CurrentParseTree = null;
-          CurrentParserInput = null;
-          OpenBraces.Clear();
           CurrentParserState = Language.ParserData.InitialState; //set the current state to InitialState
+          CurrentParserInput = null;
           ParserStack.Clear();
           ParserStack.Push(new ParseTreeNode(CurrentParserState));
-          
-          BufferedTokens.Clear();
           ParserInputStack.Clear();
+          CurrentParseTree = null;
+          OpenBraces.Clear();
+          ParserTrace.Clear();
+          CurrentTerminals.Clear(); 
+          CurrentToken = null;
+          PreviousToken = null; 
+          BufferedTokens.Clear();
           PreviewTokens.Clear(); 
+          Values.Clear();          
           break;
       }
       Parser.OnStatusChanged(oldStatus);

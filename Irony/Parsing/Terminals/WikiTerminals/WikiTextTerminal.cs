@@ -6,6 +6,8 @@ using System.Text;
 namespace Irony.Parsing {
   //Handles plain text
   public class WikiTextTerminal : WikiTerminalBase {
+    public const char NoEscape = '\0'; 
+    public char EscapeChar = NoEscape;
     private char[] _stopChars;
 
     public WikiTextTerminal(string name) : base(name, WikiTermType.Text, string.Empty, string.Empty, string.Empty) {
@@ -22,6 +24,8 @@ namespace Irony.Parsing {
           if (!string.IsNullOrEmpty(first))
             stopCharSet.Add(first[0]); 
       }//foreach term
+      if (EscapeChar != NoEscape)  
+        stopCharSet.Add(EscapeChar);
       _stopChars = stopCharSet.ToArray(); 
     }
 
@@ -31,13 +35,19 @@ namespace Irony.Parsing {
     }
 
     public override Token TryMatch(ParsingContext context, ISourceStream source) {
+      bool isEscape = source.PreviewChar == EscapeChar && EscapeChar != NoEscape;
+      if(isEscape) {
+        //return a token containing only escaped char
+        var value = source.NextPreviewChar.ToString(); 
+        source.PreviewPosition += 2; 
+        return source.CreateToken(this.OutputTerminal, value);  
+      }
       var stopIndex = source.Text.IndexOfAny(_stopChars, source.Location.Position + 1);
       if (stopIndex == source.Location.Position) return null; 
       if (stopIndex < 0) stopIndex = source.Text.Length; 
       source.PreviewPosition = stopIndex;
-      var token = source.CreateToken(this.OutputTerminal);
-      return token; 
-    }
+      return source.CreateToken(this.OutputTerminal);
+    }//method
 
   }//class
 

@@ -212,9 +212,16 @@ namespace Irony.Samples {
             RegisterPunctuation("(", ")", ",");
             MarkTransient(EXPR, PRINT_ARG, STATEMENT, LINE_CONTENT_OPT, VARIABLE_OR_FUNCTION_EXPR, COMMENT_OPT); 
 
-            this.LanguageFlags = LanguageFlags.NewLineBeforeEOF; 
+            this.LanguageFlags = LanguageFlags.NewLineBeforeEOF;
 
-      }//constructor
+            lineNumber.ValidateToken += identifier_ValidateToken;
+
+      }
+
+        void identifier_ValidateToken(object sender, ParsingEventArgs e) {
+          if (e.Context.CurrentToken.ValueString.Length > 4)
+            e.Context.CurrentToken = e.Context.Source.CreateErrorToken("Identifier cannot be longer than 4 characters"); 
+        }//constructor
 
     }//class
 }//namespace

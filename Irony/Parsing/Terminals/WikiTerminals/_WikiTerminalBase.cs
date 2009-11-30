@@ -6,6 +6,7 @@ using System.Text;
 namespace Irony.Parsing {
   public enum WikiTermType {
     Text,
+    Element,
     Format,
     Heading,
     List,

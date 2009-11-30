@@ -71,7 +71,9 @@
     <None Include="SourceSamples\c#\TestLessThanOp.cs" />
     <Compile Include="SQL\SqlGrammar.cs" />
     <Compile Include="TestGrammars\NewickGrammar.cs" />
-    <Compile Include="Wiki\CodePlexWikiGrammar.cs" />
+    <Compile Include="Wiki\WikiCodeplexGrammar.cs" />
+    <Compile Include="Wiki\WikiCreoleGrammar.cs" />
+    <Compile Include="Wiki\WikiHtmlConverter.cs" />
     <None Include="TestGrammars\GrammarEx434.cs" />
     <None Include="TestGrammars\GrammarEx446.cs" />
     <None Include="TestGrammars\GrammarExL514.cs" />
@@ -121,6 +123,7 @@
     <None Include="SourceSamples\SQL\sql_sample3.txt" />
     <None Include="SourceSamples\Wiki\Sample1_codeplex.txt" />
     <None Include="SourceSamples\_about.txt" />
+    <Content Include="SourceSamples\Wiki\Sample1_creole.txt" />
     <Content Include="SQL\Sql89-GoldParser.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

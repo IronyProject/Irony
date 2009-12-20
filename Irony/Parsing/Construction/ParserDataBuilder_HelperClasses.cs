@@ -189,8 +189,6 @@ namespace Irony.Parsing.Construction {
     //Lookahead info for reduce items
     public TransitionSet Lookbacks = new TransitionSet(); 
     public TerminalSet Lookaheads = new TerminalSet();
-    //Lookahead sources are needed for retrieving Precedence hints associated with lookaheads
-    public LRItemSet LookaheadSources = new LRItemSet();
 
     public LRItem(ParserState state, LR0Item core) {
       State = state;

@@ -183,11 +183,8 @@ namespace Irony.Parsing.Construction {
           }//foreach includeTrans
         }//foreach lookbackTrans
         //Now merge all shift terminals from all source states
-        foreach(var state in sourceStates) {
+        foreach(var state in sourceStates) 
           reduceItem.Lookaheads.UnionWith(state.BuilderData.ShiftTerminals);
-          foreach(var shiftItem in state.BuilderData.ShiftItems) 
-            reduceItem.LookaheadSources.Add(shiftItem); //we'll need source items for retrieving precedence hints
-        }
         //Sanity check
         if (reduceItem.Lookaheads.Count == 0)
           _language.Errors.Add(GrammarErrorLevel.InternalError, reduceItem.State, "Reduce item '{0}' in state {1} has no lookaheads.", reduceItem.Core, reduceItem.State);

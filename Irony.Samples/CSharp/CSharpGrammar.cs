@@ -509,7 +509,7 @@ namespace Irony.Samples.CSharp {
       //I think it's a mistake; there must be additional entry here for arithm expressions, so we put them here. 
       // We also have to add "is" and "as" expressions here, as we don't build entire hierarchy of elements for expressing
       // precedence (where they appear in original spec); so we put them here 
-      bin_op.Rule = lt   
+      bin_op.Rule = lt       
                   | "||" | "&&" | "|" | "^" | "&" | "==" | "!=" | ">" | "<=" | ">=" | "<<" | ">>" | "+" | "-" | "*" | "/" | "%"
                   | "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "<<=" | ">>="
                   | "is" | "as" | "??";

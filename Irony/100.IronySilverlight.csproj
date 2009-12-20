@@ -81,11 +81,11 @@
     <Compile Include="Microsoft\Complex64.cs" />
     <Compile Include="Microsoft\HashSet.cs" />
     <Compile Include="Microsoft\MathResources.Designer.cs" />
+    <Compile Include="Parsing\Construction\StopwatchCustom.cs" />
     <Compile Include="Parsing\Construction\GrammarDataBuilder.cs" />
     <Compile Include="Parsing\Construction\LanguageDataBuilder.cs" />
     <Compile Include="Parsing\Construction\ParserDataBuilder.cs" />
     <Compile Include="Parsing\Construction\ParserDataBuilder_HelperClasses.cs" />
-    <Compile Include="Parsing\Construction\ParserDataBuilder_NonCanonical.cs" />
     <Compile Include="Parsing\Construction\ScannerDataBuilder.cs" />
     <Compile Include="Parsing\Grammar\BnfExpression.cs" />
     <Compile Include="Parsing\Grammar\BnfTerm.cs" />
@@ -95,6 +95,7 @@
     <Compile Include="Parsing\Grammar\GrammarHint.cs" />
     <Compile Include="Parsing\Grammar\LanguageAttribute.cs" />
     <Compile Include="Parsing\Grammar\NonTerminal.cs" />
+    <Compile Include="Parsing\Grammar\TermReportGroups.cs" />
     <Compile Include="Parsing\LanguageData.cs" />
     <Compile Include="Parsing\Parser\CoreParser.cs" />
     <Compile Include="Parsing\Parser\CoreParser_ErrorHandling.cs" />

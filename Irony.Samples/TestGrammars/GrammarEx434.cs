@@ -13,21 +13,21 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.Compiler;
+using Irony.Parsing;
 
 
 namespace Irony.Samples {
   //Expression grammar (4.19), from example 4.34 in Dragon book, p.222
-  class GrammarEx434 : Irony.Compiler.Grammar {
+  class GrammarEx434 : Grammar {
     public GrammarEx434() {
       NonTerminal E = new NonTerminal("E");
       NonTerminal T = new NonTerminal("T");
       NonTerminal F = new NonTerminal("F");
       Terminal id = new Terminal("id");
 
-      E.Expression = E + "+" + T | T;
-      T.Expression = T + "*" + F | F;
-      F.Expression = "(" + E + ")" | id;
+      E.Rule = E + "+" + T | T;
+      T.Rule = T + "*" + F | F;
+      F.Rule = "(" + E + ")" | id;
       this.Root = E;
     }
 /* LR(0) item list for above grammar (identical to fig. 4.35 in dragon book, p.225) 

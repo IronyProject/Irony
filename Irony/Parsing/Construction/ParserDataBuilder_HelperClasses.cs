@@ -13,221 +13,207 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 
-
+//Helper data classes for ParserDataBuilder
+// Note about using LRItemSet vs LRItemList. 
+// It appears that in many places the LRItemList would be a better (and faster) choice than LRItemSet. 
+// Many of the sets are actually lists and don't require hashset's functionality. 
+// But surprisingly, using LRItemSet proved to have much better performance (twice faster for lookbacks/lookaheads computation), so LRItemSet
+// is used everywhere.
 namespace Irony.Parsing.Construction { 
 
   internal class ParserStateData {
     public readonly ParserState State;
-    public readonly LR0ItemSet Cores = new LR0ItemSet();
     public readonly LRItemSet AllItems = new LRItemSet();
     public readonly LRItemSet ShiftItems = new LRItemSet();
     public readonly LRItemSet ReduceItems = new LRItemSet();
+    public readonly LRItemSet InitialItems = new LRItemSet();
     public readonly BnfTermSet ShiftTerms = new BnfTermSet();
-    public readonly ShiftTransitionSet ShiftTransitions = new ShiftTransitionSet();  
-    public readonly BnfTermSet Conflicts = new BnfTermSet();
-    public readonly BnfTermSet ResolvedConflicts = new BnfTermSet();
-    public readonly NonTerminalSet NonCanonicalLookaheads = new NonTerminalSet();
-    public readonly BnfTermSet JumpLookaheads = new BnfTermSet();
-    public ParserState JumpTarget;
-    public bool InitialLookaheadsComputed;
-
-    public string Key;
-    public readonly bool IsNonCanonical;
+    public readonly TerminalSet ShiftTerminals = new TerminalSet();
+    public readonly TerminalSet Conflicts = new TerminalSet();
+    public readonly TerminalSet ResolvedConflicts = new TerminalSet();
+    public readonly bool IsInadequate;
+    public LR0ItemSet AllCores = new LR0ItemSet();
 
     //used for creating canonical states from core set
-    public ParserStateData(ParserState state, LR0ItemSet kernelCores, string coresKey) {
+    public ParserStateData(ParserState state, LR0ItemSet kernelCores) {
       State = state;
-      Key = coresKey;
       foreach (var core in kernelCores)
         AddItem(core);
+      IsInadequate =  ReduceItems.Count > 1 || ReduceItems.Count == 1 && ShiftItems.Count > 0;
     }
-    //Used for creating non-canonical states
-    public ParserStateData(ParserState state, LRItemSet items) {
-      State = state;
-      IsNonCanonical = true;
-      foreach (var item in items)
-        AddItem(item);
-    }//method
 
-    public LRItem AddItem(LR0Item core) {
-      var item = AllItems.FindByCore(core);
-      if (item != null) return item;
-      item = new LRItem(State, core);
-      AddItem(item);
-      //If current term is non-terminal, expand it
-      var currNt = core.Current as NonTerminal;
-      if (currNt == null) return item;
-      foreach (var prod in currNt.Productions) {
-        var expItem = AddItem(prod.LR0Items[0]);
-        item.Expansions.Add(expItem);
-      }
-      return item;
-    }//method
-
-    public void AddItem(LRItem item) {
-      if (AllItems.Contains(item)) return;
-      AllItems.Add(item);
-      Cores.Add(item.Core);
+    public void AddItem(LR0Item core) {
+      //Check if a core had been already added. If yes, simply return
+      if(!AllCores.Add(core))return ; 
+      //Create new item, add it to AllItems, InitialItems, ReduceItems or ShiftItems
+      var item = new LRItem(State, core);
+      AllItems.Add(item); 
       if (item.Core.IsFinal)
         ReduceItems.Add(item);
-      else {
+      else
         ShiftItems.Add(item);
-        ShiftTerms.Add(item.Core.Current);
-      }
-    }
-    public bool IsInadequate {
-      get { return ReduceItems.Count > 1 || ReduceItems.Count == 1 && ShiftItems.Count > 0; } //reduce/reduce or shift/reduce
-    }
+      if (item.Core.IsInitial)
+        InitialItems.Add(item); 
+      if (core.IsFinal) return; 
+      //Add current term to ShiftTerms
+      if (!ShiftTerms.Add(core.Current)) return; 
+      if (core.Current is Terminal)
+        ShiftTerminals.Add(core.Current as Terminal); 
+      //If current term (core.Current) is a new non-terminal, expand it
+      var currNt = core.Current as NonTerminal;
+      if (currNt == null) return; 
+      foreach(var prod in currNt.Productions) 
+        AddItem(prod.LR0Items[0]);
+    }//method
 
-    public BnfTermSet GetShiftReduceConflicts() {
-      var result = new BnfTermSet();
+    public TransitionTable Transitions {
+      get {
+        if(_transitions == null)
+          _transitions = new TransitionTable();
+        return _transitions;
+      }
+    } TransitionTable _transitions; 
+
+    //A set of states reachable through shifts over nullable non-terminals. Computed on demand
+    public ParserStateSet ReadStateSet {
+      get {
+        if(_readStateSet == null) {
+          _readStateSet = new ParserStateSet(); 
+          foreach(var shiftTerm in State.BuilderData.ShiftTerms)
+            if (shiftTerm.OptionIsSet(TermOptions.IsNullable)) {
+              var targetState = State.Actions[shiftTerm].NewState;
+              _readStateSet.Add(targetState);
+              _readStateSet.UnionWith(targetState.BuilderData.ReadStateSet); //we shouldn't get into loop here, the chain of reads is finite
+            }
+        }//if 
+        return _readStateSet;
+      }
+    } ParserStateSet _readStateSet; 
+
+
+    public TerminalSet GetShiftReduceConflicts() {
+      var result = new TerminalSet();
       result.UnionWith(Conflicts);
-      result.IntersectWith(ShiftTerms);
+      result.IntersectWith(ShiftTerminals);
       return result;
     }
-    public BnfTermSet GetReduceReduceConflicts() {
-      var result = new BnfTermSet();
+    public TerminalSet GetReduceReduceConflicts() {
+      var result = new TerminalSet();
       result.UnionWith(Conflicts);
-      result.ExceptWith(ShiftTerms);
+      result.ExceptWith(ShiftTerminals);
       return result;
     }
 
   }//class
 
-  //An object representing inter-state shifts. Defines Includes, IncludedBy sets that 
-  // are used for efficient lookahead computation (see Grune, Jacobs "Parsing Techniques" 2nd ed, section 9.7, p. 309)
-  // The "efficient" part (transitive closure using SCC) is not implemented yet
-  internal class ShiftTransition {
+  //An object representing inter-state transitions. Defines Includes, IncludedBy that are used for efficient lookahead computation 
+  internal class Transition {
     public readonly ParserState FromState;
-    public ParserState ToState;
-    public readonly BnfTerm OverTerm;
-    //shift items associated with transition, such that item.current = OverNonTerminal
-    public readonly LRItemSet ShiftItems;
-    //shifted items of ShiftItems plus shifts over nulls
-    public readonly LRItemSet LookaheadSources = new LRItemSet();
-
-    public readonly ShiftTransitionSet Includes = new ShiftTransitionSet();
-    public readonly ShiftTransitionSet IncludedBy = new ShiftTransitionSet();
-
+    public readonly ParserState ToState;
+    public readonly NonTerminal OverNonTerminal;
+    public readonly LRItemSet Items;
+    public readonly TransitionSet Includes = new TransitionSet();
+    public readonly TransitionSet IncludedBy = new TransitionSet();
     int _hashCode;
-    internal int _lastChecked;
-    internal int _lastChanged;
 
-    public ShiftTransition(ParserState fromState, BnfTerm overTerm, LRItemSet shiftItems) {
+    public Transition(ParserState fromState, NonTerminal overNonTerminal) {
       FromState = fromState;
-      OverTerm = overTerm;
-      ShiftItems = shiftItems;
-      _hashCode = unchecked(fromState.GetHashCode() - overTerm.GetHashCode());
-      //Add self to state's set of transitions
-      fromState.BuilderData.ShiftTransitions.Add(this);
-      //Assign self to Transition field of all shift items
-      foreach (var shiftItem in ShiftItems)
-        shiftItem.Transition = this;
+      OverNonTerminal = overNonTerminal;
+      ToState = fromState.Actions[overNonTerminal].NewState; 
+      _hashCode = unchecked(fromState.GetHashCode() - overNonTerminal.GetHashCode());
+      fromState.BuilderData.Transitions.Add(overNonTerminal, this);   
+      Items = fromState.BuilderData.ShiftItems.SelectByCurrent(overNonTerminal);
+      foreach(var item in Items) {
+        item.Transition = this;
+      }
+      
     }//constructor
 
-
-    public bool Include(ShiftTransition other) {
-      bool result = Includes.Add(other);
-      if (!result) return false;
+    public void Include(Transition other) {
+      if (!IncludeTransition(other)) return; 
+      //include children
+      foreach(var child in other.Includes) {
+        IncludeTransition(child); 
+      }
+    }
+    private bool IncludeTransition(Transition other) {
+      if (!Includes.Add(other)) return false; 
       other.IncludedBy.Add(this);
-      return result;
+      //propagate "up"
+      foreach(var incBy in IncludedBy)
+        incBy.IncludeTransition(other);
+      return true; 
     }
 
-    public bool Include(ShiftTransitionSet includeTransitions) {
-      bool result = false; 
-      foreach (var trans in includeTransitions)
-        result |= Include(trans);
-      return result; 
+
+/*
+    public void Include(Transition other) {
+      IncludeWithoutChildren(other); 
+      //propagate children
+      foreach(var child in other.Includes)
+        IncludeWithoutChildren(child); 
     }
 
+
+    private void IncludeWithoutChildren(Transition other) {
+      if (!Includes.Add(other)) 
+        return; 
+      other.IncludedBy.Add(this);
+      //propagate "up"
+      foreach(var incBy in IncludedBy)
+        incBy.IncludeWithoutChildren(other);
+    }
+*/
     public override string ToString() {
-      return FromState.Name + "->" + ToState.Name + "/" + OverTerm.Name;
+      return FromState.Name + " -> (over " + OverNonTerminal.Name + ") -> " + ToState.Name;
     }
     public override int GetHashCode() {
       return _hashCode;
     }
   }//class
 
-  internal class ShiftTransitionSet : HashSet<ShiftTransition> { }
+  internal class TransitionSet : HashSet<Transition> { }
+  internal class TransitionList : List<Transition> { }
+  internal class TransitionTable : Dictionary<NonTerminal, Transition> { }
 
   internal class LRItem {
     public readonly ParserState State;
     public readonly LR0Item Core;
-    //these helper fields are used in lookahead computations
+    //these properties are used in lookahead computations
     public LRItem ShiftedItem;
-    public ShiftTransition Transition; 
-    public readonly ShiftTransitionSet Lookbacks = new ShiftTransitionSet();
-    public readonly LRItemSet Expansions = new LRItemSet(); //Only direct expansions
-    public string Key;
+    public Transition Transition; 
+    int _hashCode;
 
-    public readonly LRItemSet ReducedLookaheadSources = new LRItemSet();
-    public readonly BnfTermSet ReducedLookaheads = new BnfTermSet(); //fully-reduced lookaheads
-    public readonly BnfTermSet AllLookaheads = new BnfTermSet();   //all lookaheads, canonical and non-canonical
-    public readonly BnfTermSet Lookaheads = new BnfTermSet(); //actual active lookaheads
+    //Lookahead info for reduce items
+    public TransitionSet Lookbacks = new TransitionSet(); 
+    public TerminalSet Lookaheads = new TerminalSet();
+    //Lookahead sources are needed for retrieving Precedence hints associated with lookaheads
+    public LRItemSet LookaheadSources = new LRItemSet();
 
     public LRItem(ParserState state, LR0Item core) {
       State = state;
       Core = core;
-      Key = state.Name + "/" + core.ID;
+      _hashCode = unchecked(state.GetHashCode() + core.GetHashCode());
     }
     public override string ToString() {
-      string s = Core.ToString();
-      if (this.Core.IsFinal) 
-        s += " [" + Lookaheads.ToString() + "]";
-      return s; 
-    }
-    public string ToString(BnfTermSet exceptLookaheads) {
-      string s = Core.ToString();
-      if (!this.Core.IsFinal) return s;
-      var lkhds = new BnfTermSet();
-      lkhds.UnionWith(Lookaheads);
-      lkhds.ExceptWith(exceptLookaheads);
-      s += " [" + lkhds.ToString() + "]";
-      return s;
-    }
-    //direct expansions plus expansions of expansions; computed on demand
-    public LRItemSet AllExpansions {
-      get {
-        if (_allExpansions == null)
-          ComputeAllExpansions(); 
-        return _allExpansions;
-      }
-    } LRItemSet _allExpansions;
-
-    private void ComputeAllExpansions() {
-      _allExpansions = new LRItemSet();
-      _allExpansions.UnionWith(Expansions);
-      var newItems = new LRItemSet();
-      bool done = false;
-      while (!done) {
-        newItems.Clear();
-        foreach (var expItem in _allExpansions)
-          newItems.UnionWith(expItem.Expansions);
-        var oldCount = _allExpansions.Count;
-        _allExpansions.UnionWith(newItems);
-        done = (_allExpansions.Count == oldCount);
-      }
+      return Core.ToString();
     }
     public override int GetHashCode() {
-      return Key.GetHashCode();
+      return _hashCode; 
     }
+    
   }//LRItem class
 
-  internal class LRItemList : List<LRItem> { }
+  internal class LRItemList : List<LRItem> {}
 
   internal class LRItemSet : HashSet<LRItem> {
+
     public LRItem FindByCore(LR0Item core) {
       foreach (LRItem item in this)
         if (item.Core == core) return item;
       return null;
-    }
-    public LRItemSet SelectByLValue(NonTerminal lvalue) {
-      var result = new LRItemSet();
-      foreach (var item in this)
-        if (item.Core.Production.LValue == lvalue)
-          result.Add(item);
-      return result; 
     }
     public LRItemSet SelectByCurrent(BnfTerm current) {
       var result = new LRItemSet();
@@ -236,12 +222,15 @@ namespace Irony.Parsing.Construction {
           result.Add(item);
       return result;
     }
-    public LR0ItemSet GetCores() {
-      var result = new LR0ItemSet();
+
+    public LRItemSet SelectItemsWithNullableTails() {
+      var result = new LRItemSet();
       foreach (var item in this)
-        result.Add(item.Core);
+        if (item.Core.TailIsNullable)
+          result.Add(item);
       return result;
     }
+
     public LR0ItemSet GetShiftedCores() {
       var result = new LR0ItemSet();
       foreach (var item in this)
@@ -249,66 +238,44 @@ namespace Irony.Parsing.Construction {
           result.Add(item.Core.ShiftedItem);
       return result;
     }
-    public LRItemSet SelectByLookahead(BnfTerm lookahead) {
+    public LRItemSet SelectByLookahead(Terminal lookahead) {
       var result = new LRItemSet();
       foreach (var item in this)
         if (item.Lookaheads.Contains(lookahead))
           result.Add(item);
       return result;
     }
-    public LRItemSet SelectByReducedLookahead(BnfTerm lookahead) {
-      var result = new LRItemSet();
-      foreach (var item in this)
-        if (item.ReducedLookaheads.Contains(lookahead))
-          result.Add(item);
-      return result;
-    }
-    public LRItemSet SelectNonFinal() {
-      var result = new LRItemSet();
-      foreach (var item in this)
-        if (item.Core.Current != null)
-          result.Add(item);
-      return result;
-    }
-    public GrammarHintList GetHints(HintType hintType) {
-      var result = new GrammarHintList();
-      foreach (var item in this)
-        if (item.Core.HasHints())
+
+    public GrammarHint FindHint(HintType hintType) {
+      foreach(var item in this) 
+        if (item.Core.Hints.Count > 0)
           foreach(var hint in item.Core.Hints)
-            if (hint.HintType == hintType)
-          result.Add(hint);
-      return result;
+            if (hint.HintType == hintType) return hint; 
+      return null; 
     }
-  }
+  }//class
 
   public partial class LR0Item {
-    public Production Production;
-    public int Position;
+    public readonly Production Production;
+    public readonly int Position;
+    public readonly BnfTerm Current;
     public bool TailIsNullable;
-    public GrammarHintList Hints;
+    public GrammarHintList Hints = new GrammarHintList();
 
     //automatically generated IDs - used for building keys for lists of kernel LR0Items
     // which in turn are used to quickly lookup parser states in hash
     internal readonly int ID;
 
-    public LR0Item(int id, Production production, int position) : this(id, production, position, null)  { }
-
     public LR0Item(int id, Production production, int position, GrammarHintList hints) {
       ID = id;
       Production = production;
       Position = position;
-      Hints = hints; 
+      Current = (Position < Production.RValues.Count) ? Production.RValues[Position] : null;  
+      if (hints != null)
+        Hints.AddRange(hints); 
       _hashCode = ID.ToString().GetHashCode();
-    }
-    //The after-dot element
-    public BnfTerm Current {
-      get {
-        if (Position < Production.RValues.Count)
-          return Production.RValues[Position];
-        else
-          return null;
-      }
-    }
+    }//method
+
     public LR0Item ShiftedItem {
       get {
         if (Position >= Production.LR0Items.Count - 1)
@@ -325,9 +292,6 @@ namespace Irony.Parsing.Construction {
     }
     public bool IsFinal {
       get { return Position == Production.RValues.Count; }
-    }
-    public bool HasHints() {
-      return Hints != null && Hints.Count > 0;
     }
     public override string ToString() {
       return Production.ProductionToString(Production, Position);

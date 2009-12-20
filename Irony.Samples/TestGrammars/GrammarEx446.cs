@@ -13,7 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.Compiler;
+using Irony.Parsing;
 
 namespace Irony.Samples {
   //Sample grammar for lookaheads calculation
@@ -21,17 +21,17 @@ namespace Irony.Samples {
   // LALR(1) items set for this grammar is provided in fig. 4.45 on page 245.
   // Note that the table in the book contains kernel-only items for each state,
   //  while we print out all items
-  class GrammarEx446  : Irony.Compiler.Grammar {
+  class GrammarEx446  : Grammar {
     public GrammarEx446() {
       // A' is augmented root
       NonTerminal S = new NonTerminal("S");
       NonTerminal L = new NonTerminal("L");
       NonTerminal R = new NonTerminal("R");
-      Terminal id = new Terminal("id");
+      Terminal id = new IdentifierTerminal("id");
 
-      S.Expression = L + "=" + R | R;
-      L.Expression = "*" + R | id;
-      R.Expression = L;
+      S.Rule = L + "=" + R | R;
+      L.Rule = "*" + R | id;
+      R.Rule = L;
       this.Root = S;
     }//method
 //Expected state set:

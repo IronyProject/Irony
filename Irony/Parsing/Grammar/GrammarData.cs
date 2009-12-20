@@ -26,6 +26,7 @@ namespace Irony.Parsing {
     public readonly BnfTermSet AllTerms = new BnfTermSet();
     public readonly TerminalList Terminals = new TerminalList();
     public readonly NonTerminalList NonTerminals = new NonTerminalList();
+    public readonly StringSet ClosingBraces = new StringSet(); 
     public string WhitespaceAndDelimiters { get; internal set; }
 
     public GrammarData(LanguageData language) {
@@ -43,9 +44,7 @@ namespace Irony.Parsing {
     //Be careful - use this flag ONLY if you use NewLine terminal in grammar explicitly!
     // - it happens only in line-based languages like Basic.
     NewLineBeforeEOF = 0x01,
-    //Automatically detect transient non-terminals - whose rules are just OR of other single terms
-    // nodes for these terminals would be eliminated from parse tree. Formerly this stuff was called "node bubbling"
-    AutoDetectTransient = 0x02,
+    // NOT_USED = 0x02,
     DisableScannerParserLink = 0x04, //in grammars that define TokenFilters (like Python) this flag should be set
     CreateAst = 0x08, //create AST nodes 
 
@@ -56,11 +55,6 @@ namespace Irony.Parsing {
 
     //Default value
     Default = None,
-  }
-
-  public enum ParseMethod {
-    Lalr,    //canonical LALR
-    Nlalr,   //non-canonical LALR
   }
 
   //Operator associativity types

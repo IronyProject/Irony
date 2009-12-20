@@ -24,6 +24,7 @@ namespace Irony.Parsing {
     None = 0x0,
     ConsumeTerminator = 0x01, //move source pointer beyond terminator (so token "consumes" it from input), but don't include it in token text
     IncludeTerminator = 0x02, // include terminator into token text/value
+    AllowEof = 0x04, // treat EOF as legitimate terminator
   }
 
   public class FreeTextLiteral : Terminal {
@@ -60,7 +61,12 @@ namespace Irony.Parsing {
       while (true) {
         //Find next position
         var newPos = source.Text.IndexOfAny(_stopChars, source.PreviewPosition);
-        if (newPos == -1) return null;
+        if(newPos == -1) {
+          if(IsSet(FreeTextOptions.AllowEof))
+            return source.CreateToken(this.OutputTerminal, source.Text.Substring(source.PreviewPosition));
+          else
+            return null;
+        }
         tokenText += source.Text.Substring(source.PreviewPosition, newPos - source.PreviewPosition);
         source.PreviewPosition = newPos;
         //if it is escape, add escaped text and continue search

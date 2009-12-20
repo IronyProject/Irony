@@ -601,15 +601,6 @@ namespace Irony {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Jump to {0}..
-        /// </summary>
-        internal static string LabelActionJump {
-            get {
-                return ResourceManager.GetString("LabelActionJump", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Operator, shift to {0}/reduce on {1}..
         /// </summary>
         internal static string LabelActionOp {

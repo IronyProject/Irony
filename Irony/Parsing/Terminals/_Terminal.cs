@@ -25,8 +25,8 @@ namespace Irony.Parsing {
         this.SetOption(TermOptions.IsPunctuation);
       OutputTerminal = this; 
     }
-    public Terminal(string name, string displayName, TokenCategory category) : this(name, category) {
-      this.DisplayName = displayName;
+    public Terminal(string name, string errorAlias, TokenCategory category) : this(name, category) {
+      this.ErrorAlias = errorAlias;
     }
     #endregion
 
@@ -110,9 +110,23 @@ namespace Irony.Parsing {
     public const int LowestPriority = -1000;
     public const int HighestPriority = 1000;
     public const int ReservedWordsPriority = 900; //almost top one
+ 
+    public static string TerminalsToString(IEnumerable<Terminal> terminals, string separator) {
+      var sb = new StringBuilder();
+      foreach (var term in terminals) {
+        sb.Append(term.ToString());
+        sb.Append(separator);
+      }
+      return sb.ToString().Trim();
+    }
+  
   }//class
 
-  public class TerminalSet : HashSet<Terminal> { }
+  public class TerminalSet : HashSet<Terminal> {
+    public override string ToString() {
+      return Terminal.TerminalsToString(this, " "); 
+    }
+  }
 
   //No-duplicates list of terminals
   public class TerminalList : List<Terminal> {
@@ -123,6 +137,9 @@ namespace Irony.Parsing {
     public new void AddRange(IEnumerable<Terminal> terminals) {
       foreach(var terminal in terminals)
         Add(terminal); 
+    }
+    public override string ToString() {
+      return Terminal.TerminalsToString(this, " "); 
     }
   }
 

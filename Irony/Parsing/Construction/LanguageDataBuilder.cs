@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace Irony.Parsing.Construction {
   internal class LanguageDataBuilder { 
@@ -27,9 +28,11 @@ namespace Irony.Parsing.Construction {
     }
 
     public bool Build() {
+      var sw = new StopwatchCustom(); 
       try {
         if (_grammar.Root == null)
           Language.Errors.AddAndThrow(GrammarErrorLevel.Error, null, Resources.ErrRootNotSet);
+        sw.Start(); 
         var gbld = new GrammarDataBuilder(Language);
         gbld.Build();
         //Just in case grammar author wants to customize something...
@@ -46,6 +49,8 @@ namespace Irony.Parsing.Construction {
         return false; //grammar error should be already added to Language.Errors collection
       } finally {
         Language.ErrorLevel = Language.Errors.GetMaxLevel();
+        sw.Stop(); 
+        Language.ConstructionTime = sw.ElapsedMilliseconds; 
       }
 
     }

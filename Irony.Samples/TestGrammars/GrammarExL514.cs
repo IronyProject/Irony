@@ -13,7 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Irony.Compiler;
+using Irony.Parsing;
 
 namespace Irony.Samples {
   //Sample grammar for lookaheads calculation
@@ -21,12 +21,12 @@ namespace Irony.Samples {
   // Grammar:
   //      A -> (A) | a
   // LALR(1) item list for this grammar is provided in example 5.17 on page 225.
-  class GrammarExL514 : Irony.Compiler.Grammar {
+  class GrammarExL514 : Grammar {
     public GrammarExL514() {
       NonTerminal A = new NonTerminal("A");
       Terminal a = new Terminal("a");
 
-      A.Expression = "(" + A + ")" | a; 
+      A.Rule = "(" + A + ")" | a; 
       this.Root = A;
     }//method
 

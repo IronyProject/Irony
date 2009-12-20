@@ -79,8 +79,8 @@ namespace Irony.GrammarExplorer {
     private void ClearParserOutput() {
       lblSrcLineCount.Text = string.Empty;
       lblSrcTokenCount.Text = "";
-      lblCompileTime.Text = "";
-      lblCompileErrorCount.Text = "";
+      lblParseTime.Text = "";
+      lblParseErrorCount.Text = "";
 
       lstTokens.Items.Clear();
       gridCompileErrors.Rows.Clear();
@@ -132,11 +132,10 @@ namespace Irony.GrammarExplorer {
       if (_parseTree.Tokens.Count > 0)
         lblSrcLineCount.Text = (_parseTree.Tokens[_parseTree.Tokens.Count - 1].Location.Line + 1).ToString();
       lblSrcTokenCount.Text = _parseTree.Tokens.Count.ToString();
-      lblCompileTime.Text = _parseTree.ParseTime.ToString();
-      lblCompileErrorCount.Text = _parseTree.ParserMessages.Count.ToString();
+      lblParseTime.Text = _parseTree.ParseTime.ToString();
+      lblParseErrorCount.Text = _parseTree.ParserMessages.Count.ToString();
       Application.DoEvents();
-      //Note: this time is "pure" compile time; actual delay after cliking "Compile" includes time to fill TreeView control 
-      //  showing compiled syntax tree. 
+      //Note: this time is "pure" parse time; actual delay after cliking "Compile" includes time to fill ParseTree, AstTree controls 
     }
 
     private void ShowParseTree() {
@@ -178,6 +177,8 @@ namespace Irony.GrammarExplorer {
     }
 
     private void ShowParserConstructionResults() {
+      lblParserStateCount.Text = _language.ParserData.States.Count.ToString(); 
+      lblParserConstrTime.Text = _language.ConstructionTime.ToString();
       txtParserStates.Text = string.Empty;
       gridGrammarErrors.Rows.Clear();
       txtTerms.Text = string.Empty;
@@ -300,8 +301,8 @@ namespace Irony.GrammarExplorer {
     private void CreateGrammar() {
       GrammarItem selItem = cboGrammars.SelectedItem as GrammarItem;
       _grammar = selItem.CreateGrammar();
-      cboParseMethod.SelectedIndex = (int) _grammar.ParseMethod;
     }
+
     private void ConstructParser() {
       StopHighlighter();
       btnRun.Enabled = false;
@@ -309,18 +310,10 @@ namespace Irony.GrammarExplorer {
       _parseTree = null;
 
       btnRun.Enabled = _grammar.FlagIsSet(LanguageFlags.CanRunSample); 
-      _grammar.ParseMethod = (ParseMethod)cboParseMethod.SelectedIndex;
-      Stopwatch sw = new Stopwatch();
-      try {
-        sw.Start();
-        _language = new LanguageData(_grammar); 
-        _parser = new Parser (_language);
-        sw.Stop();
-        StartHighligter();
-      } finally {
-        ShowParserConstructionResults();
-        lblParserConstrTime.Text = sw.ElapsedMilliseconds.ToString();
-      }//finally
+      _language = new LanguageData(_grammar); 
+      _parser = new Parser (_language);
+      ShowParserConstructionResults();
+      StartHighligter();
     }
 
     private void ParseSample() {
@@ -545,6 +538,7 @@ namespace Irony.GrammarExplorer {
       var entry = _parser.Context.ParserTrace[e.RowIndex];
       switch (e.ColumnIndex) {
         case 0: //state
+        case 3: //action
           LocateParserState(entry.State);
           break;
         case 1: //stack top
@@ -554,8 +548,6 @@ namespace Irony.GrammarExplorer {
         case 2: //input
           if (entry.Input != null)
             ShowSourceLocationAndTraceToken(entry.Input.Span.Location, entry.Input.Span.Length);
-          break;
-        case 3: //action
           break;
       }//switch
     }
@@ -584,16 +576,10 @@ namespace Irony.GrammarExplorer {
 
     private void gridGrammarErrors_CellDoubleClick(object sender, DataGridViewCellEventArgs e) {
       if (e.RowIndex < 0 || e.RowIndex >= gridGrammarErrors.Rows.Count) return;
-      switch (e.ColumnIndex) {
-        case 2: //input
-          var state = gridGrammarErrors.Rows[e.RowIndex].Cells[2].Value as ParserState;
-          if (state != null)
-            LocateParserState(state);
-          break;
-      }//switch
-
+      var state = gridGrammarErrors.Rows[e.RowIndex].Cells[2].Value as ParserState;
+      if (state != null)
+        LocateParserState(state);
     }
-
 
     private void btnSearch_Click(object sender, EventArgs e) {
       DoSearch();

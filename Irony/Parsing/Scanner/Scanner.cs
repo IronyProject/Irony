@@ -164,7 +164,7 @@ namespace Irony.Parsing {
       // Try filtering terms by checking with parser which terms it expects; 
       var parserState = Context.CurrentParserState;
       foreach(var term in termsForCurrentChar) {
-        if(parserState.ExpectedTerms.Contains(term) || _grammar.NonGrammarTerminals.Contains(term))
+        if(parserState.ExpectedTerminals.Contains(term) || _grammar.NonGrammarTerminals.Contains(term))
           Context.CurrentTerminals.Add(term);
       }
 
@@ -173,8 +173,8 @@ namespace Irony.Parsing {
     private void MatchTerminals() {
       Token priorToken = null;
       foreach (Terminal term in Context.CurrentTerminals) {
-        // Check if the term has lower priority that result token we already have; 
-        //  if term.Priority is lower then we don't need to check anymore, higher priority wins
+        // If we have priorToken from prior term in the list, check if prior term has higher priority than this term; 
+        //  if term.Priority is lower then we don't need to check anymore, higher priority (in prior token) wins
         // Note that terminals in the list are sorted in descending priority order
         if (priorToken  != null && priorToken.Terminal.Priority > term.Priority)
           return;

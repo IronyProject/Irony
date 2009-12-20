@@ -27,10 +27,6 @@ namespace Irony.Parsing {
     /// </summary>
     ResolveToReduce,
     /// <summary>
-    /// Instruction to resolve conflict to operator
-    /// </summary>
-    ResolveToOperator,
-    /// <summary>
     /// Instruction to resolve the conflict using special code in grammar in OnResolvingConflict method.
     /// </summary>
     ResolveInCode,
@@ -41,18 +37,22 @@ namespace Irony.Parsing {
     /// </summary>
     Precedence,
     /// <summary>
-    /// An instruction to NLALR parser builder to wrap production tail into new transient non-terminal to resolve 
-    /// parsing conflicts.
-    /// </summary>
-    WrapTail, 
-    /// <summary>
     /// Provided for all custom hints that derived solutions may introduce 
     /// </summary>
     Custom
   }
 
 
-  public class GrammarHintList : List<GrammarHint> {}
+  public class GrammarHintList : List<GrammarHint> {
+#if SILVERLIGHT
+    public delegate bool HintPredicate(GrammarHint hint);
+    public GrammarHint Find(HintPredicate match) {
+      foreach(var hint in this)
+        if (match(hint)) return hint; 
+      return null; 
+    }
+#endif 
+  }
 
   //Hints are additional instructions for parser added inside BNF expressions.
   // Hint refers to specific position inside the expression (production), so hints are associated with LR0Item object 

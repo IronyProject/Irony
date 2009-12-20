@@ -16,7 +16,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 using Irony.Parsing;
+
 
 namespace Irony.GrammarExplorer {
 
@@ -40,7 +42,7 @@ namespace Irony.GrammarExplorer {
       _parserThread.IsBackground = true;
     }
     public void Activate() {
-      if ((_colorizerThread.ThreadState & ThreadState.Running) == 0) {
+      if ((_colorizerThread.ThreadState & System.Threading.ThreadState.Running) == 0) {
         _parserThread.Start();
         _colorizerThread.Start();
       }
@@ -111,11 +113,17 @@ namespace Irony.GrammarExplorer {
 
     private void ParserLoop() {
       while (!_stopped) {
-        string newtext = Interlocked.Exchange(ref _newText, null);
-        if (newtext != null)  {
-          ParseSource(newtext);
+        try {
+          string newtext = Interlocked.Exchange(ref _newText, null);
+          if(newtext != null) {
+            ParseSource(newtext);
+          }
+          Thread.Sleep(10);
+        } catch(Exception ex) {
+          fmShowException.ShowException(ex);
+          System.Windows.Forms.MessageBox.Show("Fatal error in code colorizer. Colorizing had been disabled."); 
+          _stopped = true; 
         }
-        Thread.Sleep(10);
       }//while
     }
 

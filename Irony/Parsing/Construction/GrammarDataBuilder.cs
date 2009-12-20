@@ -36,12 +36,11 @@ namespace Irony.Parsing.Construction {
       CollectTermsFromGrammar();
       AssignWhitespaceAndDelimiters(); 
       InitTermLists(_grammarData);
+      FillOperatorReportGroup(); 
+      FindClosingBraces(); 
       CreateProductions();
       ComputeNonTerminalsNullability(_grammarData);
       ComputeTailsNullability(_grammarData);
-      ComputeFirsts(_grammarData);
-      if (_grammar.FlagIsSet(LanguageFlags.AutoDetectTransient))
-        DetectTransientNonTerminals(_grammarData);
       ValidateGrammar(); 
     }
 
@@ -92,6 +91,23 @@ namespace Irony.Parsing.Construction {
         }//for i
     }//method
 
+    private void FillOperatorReportGroup() {
+      foreach(var group in _grammar.TermReportGroups)
+        if(group.GroupType == TermReportGroupType.Operator) {
+          foreach(var term in _grammarData.Terminals)
+            if (term.OptionIsSet(TermOptions.IsOperator))
+              group.Terminals.Add(term); 
+          return; 
+        }
+    }
+
+    private void FindClosingBraces() {
+      foreach(var term in _grammar.KeyTerms.Values) {
+        if (term.OptionIsSet(TermOptions.IsCloseBrace))
+          _grammarData.ClosingBraces.Add(term.Text);
+      }
+    }
+
     private void AssignWhitespaceAndDelimiters() {
       var delims = _grammar.Delimiters;
         //if it was not assigned by language creator, let's guess them
@@ -140,30 +156,10 @@ namespace Irony.Parsing.Construction {
           allData.AddRange(nt.ErrorRule.Data);
         //actually create productions for each sequence
         foreach (BnfTermList prodOperands in allData) {
-          CheckWrapTailHints(_grammarData, nt, prodOperands);
           Production prod = CreateProduction(nt, prodOperands);
           nt.Productions.Add(prod);
         }//foreach prodOperands
       }
-    }
-
-    private static void CheckWrapTailHints(GrammarData data, NonTerminal nonTerminal, BnfTermList operands) {
-      //WrapTail hint doesn't make sense in last position, so we start with Count-2
-      for (int i = operands.Count - 2; i >= 0; i--) {
-        var hint = operands[i] as GrammarHint;
-        if (hint == null || hint.HintType != HintType.WrapTail) continue;
-        //we have WrapTail hint; wrap all operands after this into new non-terminal
-        var wrapNt = new NonTerminal(nonTerminal.Name + "_tail" + nonTerminal._tailCount++);
-        wrapNt.SetOption(TermOptions.IsTransient);
-        wrapNt.Rule = new BnfExpression();
-        for (int j = i + 1; j < operands.Count; j++) {
-          wrapNt.Rule.Data[0].Add(operands[j]);
-        }
-        operands.RemoveRange(i, operands.Count - i);
-        operands.Add(wrapNt);
-        data.AllTerms.Add(wrapNt);
-        data.NonTerminals.Add(wrapNt);
-      }//for i
     }
 
     private Production CreateProduction(NonTerminal lvalue, BnfTermList operands) {
@@ -180,10 +176,9 @@ namespace Irony.Parsing.Construction {
           hints.Add(hint);
           continue;
         }
-        //Add the operand info and LR0 Item
-        LR0Item item = new LR0Item(_lastItemId++, prod, prod.RValues.Count, hints);
-        prod.LR0Items.Add(item);
+        //Add the operand and create LR0 Item
         prod.RValues.Add(operand);
+        prod.LR0Items.Add(new LR0Item(_lastItemId++, prod, prod.RValues.Count - 1, hints));
         hints = null;
       }//foreach operand
       //set the flags
@@ -264,72 +259,6 @@ namespace Irony.Parsing.Construction {
               break; //for i
           }//for i
         }//foreach prod
-      }
-    }
-
-    //computes DirectFirsts, Firsts for non-terminals and productions
-    private static void ComputeFirsts(GrammarData data) {
-      //compute prod direct firsts and initialize NT.Firsts
-      foreach (var nt in data.NonTerminals) {
-        foreach (var prod in nt.Productions) {
-          if (prod.IsSet(ProductionFlags.IsError)) continue; //do not include error productions, so SyntaxError is not a real lookahead
-          foreach (var term in prod.RValues) {
-            prod.DirectFirsts.Add(term);
-            nt.DirectFirsts.Add(term);
-            nt.Firsts.Add(term);
-            if (!term.OptionIsSet(TermOptions.IsNullable)) break; //foreach term
-          }
-        }
-      }//foreach nt
-
-      //propagate NT.Firsts
-      int time = 0;
-      var done = false;
-      var newSet = new BnfTermSet();
-      while (!done) {
-        done = true;
-        foreach (var nt in data.NonTerminals) {
-          newSet.Clear();
-          foreach (var first in nt.Firsts) {
-            var ntFirst = first as NonTerminal;
-            if (ntFirst != null && ntFirst._lastChanged >= nt._lastChecked)
-              newSet.UnionWith(ntFirst.Firsts);
-          }
-          nt._lastChecked = time++;
-          var oldCount = nt.Firsts.Count;
-          nt.Firsts.UnionWith(newSet);
-          if (nt.Firsts.Count > oldCount) {
-            done = false;
-            nt._lastChanged = time;
-          }
-        }//foreach nt
-      }//while
-
-      //compute prod.Firsts
-      foreach (var nt in data.NonTerminals) {
-        foreach (var prod in nt.Productions) {
-          prod.Firsts.UnionWith(prod.DirectFirsts);
-          foreach (var directFirst in prod.DirectFirsts) {
-            var ntDirectFirst = directFirst as NonTerminal;
-            if (ntDirectFirst != null)
-              prod.Firsts.UnionWith(ntDirectFirst.Firsts);
-          }//foreach directFirst
-        }//foreach prod
-      }//foreach nt
-    }//method
-
-    //Automatically detect transient non-terminals; these are nonterminals that have rules with single-element productions:
-    //  N.rule = A | B | C;
-    private static void DetectTransientNonTerminals(GrammarData data) {
-      foreach (NonTerminal nt in data.NonTerminals) {
-        var transient = true;
-        foreach (var prod in nt.Productions)
-          if (prod.RValues.Count != 1) {
-            transient = false;
-            break;
-          }
-        if (transient)
-          nt.SetOption(TermOptions.IsTransient);
       }
     }
 

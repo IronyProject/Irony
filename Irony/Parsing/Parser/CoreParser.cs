@@ -58,10 +58,11 @@ namespace Irony.Parsing {
     private void ReadInput() {
       if (Context.ParserInputStack.Count > 0)
         Context.ParserInputStack.Pop(); 
-      if (Context.ParserInputStack.Count == 0)
-        FetchToken();
-      else 
+      if (Context.ParserInputStack.Count > 0) {
         Context.CurrentParserInput = Context.ParserInputStack.Top;
+        return; 
+      }
+      FetchToken();
     }
 
     private void FetchToken() {
@@ -79,10 +80,12 @@ namespace Irony.Parsing {
 
     #region execute actions
     private void ExecuteAction() {
-      if (Context.CurrentParserInput == null)
+      //Read input only if DefaultReduceAction is null - in this case the state does not contain ExpectedSet,
+      // so parser cannot assist scanner when it needs to select terminal and therefore can fail
+      if (Context.CurrentParserInput == null && Context.CurrentParserState.DefaultReduceAction == null)
         ReadInput();
       //Check scanner error
-      if (Context.CurrentParserInput.IsError) {
+      if (Context.CurrentParserInput != null && Context.CurrentParserInput.IsError) {
         ProcessParserError();
         return;
       }
@@ -98,11 +101,10 @@ namespace Irony.Parsing {
       Context.AddTrace("{0}", action);
       //Execute it
       switch (action.ActionType) {
-        case ParserActionType.Shift: ExecuteShift(action.NewState); break;
-        case ParserActionType.Operator: ExecuteOperatorAction(action.NewState, action.ReduceProduction); break;
-        case ParserActionType.Reduce: ExecuteReduce(action.ReduceProduction); break;
+        case ParserActionType.Shift: ExecuteShift(action); break;
+        case ParserActionType.Operator: ExecuteOperatorAction(action); break;
+        case ParserActionType.Reduce: ExecuteReduce(action); break;
         case ParserActionType.Code: ExecuteConflictAction (action); break;
-        case ParserActionType.Jump: ExecuteNonCanonicalJump(action); break;
         case ParserActionType.Accept: ExecuteAccept(action); break; 
       }
     }
@@ -126,81 +128,54 @@ namespace Irony.Parsing {
       // if this does not work, try as an identifier that happens to match a keyword but is in fact identifier
       Token inputToken = Context.CurrentParserInput.Token;
       if (inputToken != null && inputToken.KeyTerm != null) {
-        var asSym = inputToken.KeyTerm;
-        if (Context.CurrentParserState.Actions.TryGetValue(asSym, out action)) {
+        var keyTerm = inputToken.KeyTerm;
+        if (Context.CurrentParserState.Actions.TryGetValue(keyTerm, out action)) {
           #region comments
-          // Ok, we found match as a symbol
+          // Ok, we found match as a key term (keyword or special symbol)
           // Backpatch the token's term. For example in most cases keywords would be recognized as Identifiers by Scanner.
           // Identifier would also check with SymbolTerms table and set AsSymbol field to SymbolTerminal if there exist
           // one for token content. So we first find action by Symbol if there is one; if we find action, then we 
           // patch token's main terminal to AsSymbol value.  This is important for recognizing keywords (for colorizing), 
           // and for operator precedence algorithm to work when grammar uses operators like "AND", "OR", etc. 
-          //TODO: This is not quite correct action, and we can run into trouble with some languages that have keywords that 
+          //TODO: This might be not quite correct action, and we can run into trouble with some languages that have keywords that 
           // are not reserved words. But proper implementation would require substantial addition to parser code: 
           // when running into errors, we need to check the stack for places where we made this "interpret as Symbol"
           // decision, roll back the stack and try to reinterpret as identifier
           #endregion
-          inputToken.SetTerminal(asSym);
-          Context.CurrentParserInput.Term = asSym;
-          Context.CurrentParserInput.Precedence = asSym.Precedence;
-          Context.CurrentParserInput.Associativity = asSym.Associativity;
+          inputToken.SetTerminal(keyTerm);
+          Context.CurrentParserInput.Term = keyTerm;
+          Context.CurrentParserInput.Precedence = keyTerm.Precedence;
+          Context.CurrentParserInput.Associativity = keyTerm.Associativity;
           return action;
         }
       }
-
       //Try to get by main Terminal, only if it is not the same as symbol
       if (Context.CurrentParserState.Actions.TryGetValue(Context.CurrentParserInput.Term, out action))
         return action;
-      //for non-canonical methods, we may encounter reduced lookaheads while the state does not expect it.
-      // the reduced lookahead was "created" for other state with canonical conflict, helped resolved it, 
-      // but remained on the stack, and now gets as lookahead state that does not expect it. In this case,
-      // if we don't find action by reduced term, we should retry it by first child, recursively
-      if (Data.ParseMethod != ParseMethod.Lalr) {
-        action = GetActionFromChildRec(Context.CurrentParserInput);
-        if (action != null)
-          return action;
-      }
-      //Return JumpAction or null if it is not defined
-      return Context.CurrentParserState.JumpAction;
+      return null;
     }
 
-    //For NLALR, when non-canonical lookahead had been already reduced, the action for the input in some state
-    // might be still for its child term.
-    private ParserAction GetActionFromChildRec(ParseTreeNode input) {
-      var firstChild = input.FirstChild;
-      if (firstChild == null) return null;
-      ParserAction action;
-      if (Context.CurrentParserState.Actions.TryGetValue(firstChild.Term, out action)) {
-        if (action.ActionType == ParserActionType.Reduce) //it applies only to reduce actions
-          return action;
-      }
-      action = GetActionFromChildRec(firstChild);
-      return action; 
-    }
 
-    private void ExecuteShift(ParserState newState) {
-      Context.ParserStack.Push(Context.CurrentParserInput, newState);
-      Context.CurrentParserState = newState;
-      ReadInput();
+    private void ExecuteShift(ParserAction action) {
+      Context.ParserStack.Push(Context.CurrentParserInput, action.NewState);
+      Context.CurrentParserState = action.NewState;
+      Context.CurrentParserInput = null; 
+      if (action.NewState.DefaultReduceAction == null) //read only if new state is NOT single-reduce state
+        ReadInput(); 
     }
 
     #region ExecuteReduce
-    private void ExecuteReduce(Production reduceProduction) {
+    private void ExecuteReduce(ParserAction action) {
+      var reduceProduction = action.ReduceProduction; 
       var newNode = CreateParseTreeNodeForReduce(reduceProduction);
       //Prepare switching to the new state. First read the state from top of the stack 
       Context.CurrentParserState = Context.ParserStack.Top.State;
       Context.AddTrace(Resources.MsgTracePoppedState, reduceProduction.LValue.Name);
-      // Shift to new state (LALR) or push new node into input stack(NLALR, NLALRT)
-      if (Data.ParseMethod == ParseMethod.Lalr) {
-        //execute shift over non-terminal
-        var action = Context.CurrentParserState.Actions[reduceProduction.LValue];
-        Context.ParserStack.Push(newNode, action.NewState);
-        Context.CurrentParserState = action.NewState;
-      } else {
-        //NLALR - push it back into input stack
-        Context.ParserInputStack.Push(newNode);
-        Context.CurrentParserInput = newNode;
-      }
+      // Shift to new state (LALR) 
+      //execute shift over non-terminal
+      var shift = Context.CurrentParserState.Actions[reduceProduction.LValue];
+      Context.ParserStack.Push(newNode, shift.NewState);
+      Context.CurrentParserState = shift.NewState;
     }
     
     private ParseTreeNode CreateParseTreeNodeForReduce(Production reduceProduction) {
@@ -299,24 +274,20 @@ namespace Irony.Parsing {
       _grammar.OnResolvingConflict(args);
       switch(args.Result) {
         case ParserActionType.Reduce:
-          ExecuteReduce(args.ReduceProduction);
+          ExecuteReduce(new ParserAction(ParserActionType.Reduce, null, args.ReduceProduction));
           break; 
         case ParserActionType.Operator:
-          ExecuteOperatorAction(action.NewState, args.ReduceProduction);
+          ExecuteOperatorAction(new ParserAction(ParserActionType.Operator, action.NewState, args.ReduceProduction));
           break;
         case ParserActionType.Shift:
         default:
-          ExecuteShift(action.NewState); 
+          ExecuteShift(action); 
           break; 
       }
       Context.AddTrace(Resources.MsgTraceConflictResolved);
  
     }
 
-
-    private void ExecuteNonCanonicalJump(ParserAction action) {
-      Context.CurrentParserState = action.NewState;
-    }
 
     private void ExecuteAccept(ParserAction action) {
       Context.CurrentParseTree.Root = PopStackNode();
@@ -326,26 +297,27 @@ namespace Irony.Parsing {
 
 
 
-    private void ExecuteOperatorAction(ParserState newShiftState, Production reduceProduction) {
-      var realActionType = GetActionTypeForOperation();
+    private void ExecuteOperatorAction(ParserAction action) {
+      var realActionType = GetActionTypeForOperation(action);
       switch (realActionType) {
-        case ParserActionType.Shift: ExecuteShift(newShiftState); break;
-        case ParserActionType.Reduce: ExecuteReduce(reduceProduction); break; 
+        case ParserActionType.Shift: ExecuteShift(action); break;
+        case ParserActionType.Reduce: ExecuteReduce(action); break; 
       }//switch
       Context.AddTrace(Resources.MsgTraceOpResolved, realActionType);
     }
 
-    private ParserActionType GetActionTypeForOperation() {
+    private ParserActionType GetActionTypeForOperation(ParserAction action) {
       for (int i = Context.ParserStack.Count - 1; i >= 0; i--) {
-        var  prev = Context.ParserStack[i];
-        if (prev == null) continue; 
-        if (prev.Precedence == BnfTerm.NoPrecedence) continue;
+        var  prevNode = Context.ParserStack[i];
+        if (prevNode == null) continue; 
+        if (prevNode.Precedence == BnfTerm.NoPrecedence) continue;
         ParserActionType result;
         //if previous operator has the same precedence then use associativity
-        if (prev.Precedence == Context.CurrentParserInput.Precedence)
-          result = Context.CurrentParserInput.Associativity == Associativity.Left ? ParserActionType.Reduce : ParserActionType.Shift;
+        var input = Context.CurrentParserInput;
+        if (prevNode.Precedence == input.Precedence)
+          result = input.Associativity == Associativity.Left ? ParserActionType.Reduce : ParserActionType.Shift;
         else
-          result = prev.Precedence > Context.CurrentParserInput.Precedence ? ParserActionType.Reduce : ParserActionType.Shift;
+          result = prevNode.Precedence > input.Precedence  ? ParserActionType.Reduce : ParserActionType.Shift;
         return result;
       }
       //If no operators found on the stack, do simple shift

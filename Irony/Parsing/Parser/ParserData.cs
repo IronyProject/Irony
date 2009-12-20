@@ -26,14 +26,11 @@ namespace Irony.Parsing {
   using Irony.Parsing.Construction;
   public class ParserData {
     public readonly LanguageData Language;
-    public ParseMethod ParseMethod;
     public ParserState InitialState;
     public ParserState FinalState;
     public readonly ParserStateList States = new ParserStateList();
-    public int LalrStateCount; //number of canonical LALR states; after this count all states are non-canonical
     public ParserData(LanguageData language) {
       Language = language;
-      ParseMethod = Language.Grammar.ParseMethod;
     }
   }
 
@@ -43,16 +40,14 @@ namespace Irony.Parsing {
     public readonly ParserActionTable Actions = new ParserActionTable();
     //Defined for states with a single reduce item; Parser.GetAction returns this action if it is not null.
     public ParserAction DefaultReduceAction;
-    //Action to jump to non-canonical state when there's no action for current lookahead in Actions table
-    public ParserAction JumpAction;
-    //Expected terms contains both terminals and non-terminals and is to be used in 
+    //Expected terms contains terminals is to be used in 
     //Parser-advise-to-Scanner facility would use it to filter current terminals when Scanner has more than one terminal for current char,
     //   it can ask Parser to filter the list using the ExpectedTerminals in current Parser state. 
-    public readonly BnfTermSet ExpectedTerms = new BnfTermSet();
+    public readonly TerminalSet ExpectedTerminals = new TerminalSet();
     //Used for error reporting, we would use it to include list of expected terms in error message 
     // It is reduced compared to ExpectedTerms - some terms are "merged" into other non-terminals (with non-empty DisplayName)
     //   to make message shorter and cleaner. It is computed on-demand in CoreParser
-    public BnfTermSet ReportedExpectedSet;
+    public StringSet ReportedExpectedSet;
     internal ParserStateData BuilderData; //transient, used only during automaton construction and may be cleared after that
 
     public ParserState(string name) {
@@ -79,7 +74,6 @@ namespace Irony.Parsing {
     Reduce,
     Operator,  //shift or reduce depending on operator associativity and precedence
     Code, //conflict resolution made in resolution method in grammar;  
-    Jump, // transition to non-canonical state
     Accept,
   }
 
@@ -87,50 +81,25 @@ namespace Irony.Parsing {
     public ParserActionType ActionType;
     //Shift action
     public readonly ParserState NewState;
-    public readonly int Precedence; //precedence for shift symbol, either from operator symbol or from precedence grammar hint
-    public readonly Associativity Associativity = Associativity.Left;
     //Reduce action parameters
     public Production ReduceProduction; 
 
-    protected ParserAction(ParserActionType actionType, ParserState newState, Production reduceProduction)
-        : this(actionType, newState, reduceProduction, KeyTerm.NoPrecedence, Associativity.Left) { 
-    }
-    protected ParserAction(ParserActionType actionType, ParserState newState, Production reduceProduction, 
-            int precedence, Associativity associativity) {
+    internal ParserAction(ParserActionType actionType, ParserState newState, Production reduceProduction) {
       this.ActionType = actionType;
       this.NewState = newState;
       this.ReduceProduction = reduceProduction;
-      this.Precedence = precedence;
-      this.Associativity = associativity;
     }
-    public static ParserAction CreateShift(ParserState newState) {
-      return new ParserAction(ParserActionType.Shift, newState, null, 0, Associativity.Left);
+    
+    internal void ChangeToOperatorAction(Production reduceProduction) {
+      ActionType = ParserActionType.Operator; 
+      ReduceProduction = reduceProduction;
     }
-    public static ParserAction CreateShift(ParserState newState, int precedence, Associativity associativity) {
-      return new ParserAction(ParserActionType.Shift, newState, null, precedence, associativity);
-    }
-    public static ParserAction CreateReduce(Production reduceProduction) {
-      return new ParserAction(ParserActionType.Reduce, null, reduceProduction);
-    }
-    public static ParserAction CreateOperator(ParserState newState, Production reduceProduction) {
-      return new ParserAction(ParserActionType.Operator, newState, reduceProduction);
-    }
-    public static ParserAction CreateCodeAction(ParserState newState, Production reduceProduction) {
-      var action = new ParserAction(ParserActionType.Code, newState, reduceProduction);
-      return action; 
-    }
-    public static ParserAction CreateAccept() {
-      return new ParserAction(ParserActionType.Accept, null, null);
-    }
-    public static ParserAction CreateJump(ParserState nonCanonicalState) {
-      return new ParserAction(ParserActionType.Jump, nonCanonicalState, null);
-    }
+
     public override string ToString() {
       switch (this.ActionType) {
         case ParserActionType.Shift: return string.Format(Resources.LabelActionShift, NewState.Name);
         case ParserActionType.Reduce: return string.Format(Resources.LabelActionReduce, ReduceProduction.ToStringQuoted());
         case ParserActionType.Operator: return string.Format(Resources.LabelActionOp, NewState.Name, ReduceProduction.ToStringQuoted());
-        case ParserActionType.Jump: return string.Format(Resources.LabelActionJump, NewState.Name);
         case ParserActionType.Accept: return Resources.LabelActionAccept;
       }
       return Resources.LabelActionUnknown; //should never happen
@@ -173,8 +142,6 @@ namespace Irony.Parsing {
     public readonly NonTerminal LValue;                              // left-side element
     public readonly BnfTermList RValues = new BnfTermList();         //the right-side elements sequence
     internal readonly Construction.LR0ItemList LR0Items = new Construction.LR0ItemList();        //LR0 items based on this production 
-    public readonly BnfTermSet Firsts = new BnfTermSet();
-    public readonly BnfTermSet DirectFirsts = new BnfTermSet();
 
     public Production(NonTerminal lvalue) {
       LValue = lvalue;

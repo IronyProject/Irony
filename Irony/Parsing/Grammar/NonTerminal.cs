@@ -25,9 +25,9 @@ namespace Irony.Parsing {
 
     #region constructors
     public NonTerminal(string name)  : base(name, null) { }  //by default display name is null
-    public NonTerminal(string name, string displayName) : base(name, displayName) { }
-    public NonTerminal(string name, string displayName, Type nodeType) : base(name, displayName, nodeType ) { }
-    public NonTerminal(string name, string displayName,  AstNodeCreator nodeCreator) : base(name, displayName, nodeCreator) {}
+    public NonTerminal(string name, string errorAlias) : base(name, errorAlias) { }
+    public NonTerminal(string name, string errorAlias, Type nodeType) : base(name, errorAlias, nodeType ) { }
+    public NonTerminal(string name, string errorAlias,  AstNodeCreator nodeCreator) : base(name, errorAlias, nodeCreator) {}
     public NonTerminal(string name, Type nodeType) : base(name, null, nodeType) { }
     public NonTerminal(string name, AstNodeCreator nodeCreator) : base(name, null, nodeCreator) { }
     public NonTerminal(string name, BnfExpression expression)
@@ -57,13 +57,6 @@ namespace Irony.Parsing {
 
     #region data used by Parser builder
     public readonly ProductionList Productions = new ProductionList();
-    public readonly BnfTermSet Firsts = new BnfTermSet();
-    public readonly BnfTermSet DirectFirsts = new BnfTermSet();
-    internal int _tailCount; //for generating unique names for tails
-
-    internal int _lastChecked; //used in computation of Firsts
-    internal int _lastChanged;
-
     #endregion
 
   }//class

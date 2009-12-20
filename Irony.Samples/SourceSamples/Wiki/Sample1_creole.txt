@@ -4,8 +4,8 @@ normal
 
 
 = Heading 1
-== Heading 2
-=== Heading 3
+== Heading 2=
+=== Heading 3 **not** //parsed//, ending '=' symbols are ignored  ===
 
 horizontal line
 ----
@@ -31,6 +31,8 @@ Numbered lists
 {{{   not **formatted** //text// }}}
 
 Forced line break:
+This is the first line,\\and this is the second.
+ 
 Link
 [[http://www.google.com]]
 

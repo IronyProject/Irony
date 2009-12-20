@@ -27,7 +27,7 @@ namespace Irony.Parsing {
   public class KeyTerm : Terminal {
     public KeyTerm(string text, string name)  : base(name) {
       Text = text;
-      base.DisplayName = Text;
+      base.ErrorAlias = Text;
 
     }
 

@@ -40,16 +40,17 @@ namespace Irony.Parsing {
         }
         if (state.BuilderData.ReduceItems.Count > 0) {
           sb.AppendLine("  Reduce items:");
-          foreach (LRItem item in state.BuilderData.ReduceItems)
-            sb.AppendLine("    " + item.ToString(state.BuilderData.JumpLookaheads));
+          foreach(LRItem item in state.BuilderData.ReduceItems) {
+            var sItem = item.ToString();
+            if (item.Lookaheads.Count > 0)
+              sItem += " [" + item.Lookaheads.ToString() + "]";
+            sb.AppendLine("    " + sItem);
+          }
         }
-        bool headerPrinted = false;
+        sb.Append("  Transitions: ");
         foreach (BnfTerm key in state.Actions.Keys) {
           ParserAction action = state.Actions[key];
-          if (action.ActionType != ParserActionType.Shift && action.ActionType != ParserActionType.Jump) continue;
-          if (!headerPrinted)
-            sb.Append("  Transitions: ");
-          headerPrinted = true;
+          if (action.ActionType != ParserActionType.Shift) continue;
           sb.Append(key.ToString());
           if (action.ActionType == ParserActionType.Shift)
             sb.Append("->"); //shift
@@ -57,9 +58,6 @@ namespace Irony.Parsing {
           sb.Append(", ");
         }
         sb.AppendLine();
-        if (state.BuilderData.JumpLookaheads.Count > 0) 
-          //two spaces between 'state' and state name - important for locating state from parser trace
-          sb.AppendLine("  Jump to non-canonical state  " + state.BuilderData.JumpTarget + " on lookaheads: " + state.BuilderData.JumpLookaheads.ToString());
         sb.AppendLine();
       }//foreach
       return sb.ToString();
@@ -78,7 +76,7 @@ namespace Irony.Parsing {
       StringBuilder sb = new StringBuilder();
       foreach (NonTerminal nt in language.GrammarData.NonTerminals) {
         sb.Append(nt.Name);
-        sb.Append(nt.OptionIsSet(TermOptions.IsNullable) ? "  (Nullable) " : "");
+        sb.Append(nt.OptionIsSet(TermOptions.IsNullable) ? "  (Nullable) " : string.Empty);
         sb.AppendLine();
         foreach (Production pr in nt.Productions) {
           sb.Append("   ");

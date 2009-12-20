@@ -22,7 +22,6 @@ namespace Irony.Parsing {
   }
 
   public enum TokenCategory {
-    //Literal,
     Content,
     Outline, //newLine, indent, dedent
     Comment,
@@ -35,26 +34,19 @@ namespace Irony.Parsing {
 
   //Tokens are produced by scanner and fed to parser, optionally passing through Token filters in between. 
   public class Token  {
-    private Terminal _terminal; 
+    public Terminal Terminal {get; private set;} 
+    public KeyTerm KeyTerm;
     public readonly SourceLocation Location; 
     public readonly string Text;
     
-    public object Value {
-      get { return _value; }
-      set {
-        _value = value;
-        _valueString = (value == null ? string.Empty : value.ToString());
-      }
-    } object _value;
-
+    public object Value;
     public string ValueString {
-      get { return _valueString; }
-    } string _valueString; 
+      get { return (Value == null ? string.Empty : Value.ToString()); }
+    } 
 
     public object Details;
     public TokenFlags Flags; 
     public TokenEditorInfo EditorInfo;
-    public KeyTerm KeyTerm;
 
     public Token(Terminal term, SourceLocation location, string text, object value)  {
       SetTerminal(term);
@@ -64,11 +56,8 @@ namespace Irony.Parsing {
       Value = value; 
     }
 
-    public Terminal Terminal {
-      get { return _terminal; }
-    }
     public void SetTerminal(Terminal terminal) {
-      _terminal = terminal; 
+      Terminal = terminal; 
       this.EditorInfo = Terminal.EditorInfo;  //set to term's EditorInfo by default
     }
 

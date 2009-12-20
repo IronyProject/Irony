@@ -47,11 +47,15 @@ namespace Irony.Parsing {
       Context.AddTrace(Resources.MsgTraceRecoverFoundState, Context.CurrentParserState); 
       //2. Shift error token - execute shift action
       Context.AddTrace(Resources.MsgTraceRecoverShiftError, errorShiftAction);
-      ExecuteShift(errorShiftAction.NewState);
+      ExecuteShift(errorShiftAction);
       //4. Now we need to go along error production until the end, shifting tokens that CAN be shifted and ignoring others.
       //   We shift until we can reduce
       Context.AddTrace(Resources.MsgTraceRecoverShiftTillEnd);
-      while (Context.CurrentParserInput.Term != _grammar.Eof) {
+      while (true) {
+        if (Context.CurrentParserInput == null) 
+          ReadInput(); 
+        if (Context.CurrentParserInput.Term == _grammar.Eof)
+          return false; 
         //Check if we can reduce
         var action = GetReduceActionInCurrentState();
         if (action != null) {
@@ -63,17 +67,16 @@ namespace Irony.Parsing {
           //Reduce error production - it creates parent non-terminal that "hides" error inside
           Context.AddTrace(Resources.MsgTraceRecoverReducing);
           Context.AddTrace(Resources.MsgTraceRecoverAction, action);
-          ExecuteReduce(action.ReduceProduction);
+          ExecuteReduce(action);
           return true; //we recovered 
         }
         //No reduce action in current state. Try to shift current token or throw it away or reduce
         action = GetShiftActionInCurrentState();
-        if (action != null)
-          ExecuteShift(action.NewState); //shift input token
-        else
-          ReadInput(); //throw away input token
+        if(action != null)
+          ExecuteShift(action); //shift input token
+        else //simply read input
+          ReadInput(); 
       }
-      return false;
     }//method
 
     public void ResetLocationAndClearInput(SourceLocation location, int position) {
@@ -145,61 +148,59 @@ namespace Irony.Parsing {
       Context.AddParserError(msg);
     }
 
-    //compute set of expected terms in a parser state. While there may be extended list of symbols expected at some point,
+    // Computes set of expected terms in a parser state. While there may be extended list of symbols expected at some point,
     // we want to reorganize and reduce it. For example, if the current state expects all arithmetic operators as an input,
     // it would be better to not list all operators (+, -, *, /, etc) but simply put "operator" covering them all. 
-    // To be able to do this, grammar writer can set non-empty DisplayName on Operator non-terminal - this is an indicator for 
-    // Irony to wrap all sub-elements of the rule and report them as "operator". The following code takes "raw" list of 
-    // expected terms from the state, finds terms that have a DisplayName assinged and removes other terms that are covered 
-    // by this display name. 
-    // Note about multi-threading. When used in multi-threaded environment (web server), the LanguageData would be shared in 
+    // To achieve this grammar writer can group operators (or any other terminals) into named groups using Grammar's methods
+    // AddTermReportGroup, AddNoReportGroup etc. Then instead of reporting each operator separately, Irony would include 
+    // a single "group name" to represent them all.
+    // The "expected report set" is not computed during parser construction (it would bite considerable time), but on demand during parsing, 
+    // when error is detected and the expected set is actually needed for error message. 
+    // Multi-threading concerns. When used in multi-threaded environment (web server), the LanguageData would be shared in 
     // application-wide cache to avoid rebuilding the parser data on every request. The LanguageData is immutable, except 
     // this one case - the expected sets are constructed late by CoreParser on the when-needed basis. 
     // We don't do any locking here, just compute the set and on return from this function the state field is assigned. 
     // We assume that this field assignment is an atomic, concurrency-safe operation. The worst thing that might happen
     // is "double-effort" when two threads start computing the same set around the same time, and the last one to finish would 
     // leave its result in the state field. 
-    private BnfTermSet ComputeReportedExpectedSet(ParserState state) {
-      //Compute reduced expected terms - to be used in error reporting
-      //1. Scan Expected terms, add non-terminals with non-empty DisplayName to reduced set, and collect all their firsts
-      var reducedSet = new BnfTermSet();
-      var allFirsts = new BnfTermSet();
-      foreach (var term in state.ExpectedTerms) {
-        if (term.OptionIsSet(TermOptions.IsNotReported)) continue; 
-        var nt = term as NonTerminal;
-        if (nt == null) continue;
-        if (!reducedSet.Contains(nt) && !string.IsNullOrEmpty(nt.DisplayName) && !allFirsts.Contains(nt)) {
-          reducedSet.Add(nt);
-          allFirsts.UnionWith(nt.Firsts);
+    private StringSet ComputeReportedExpectedSet(ParserState state) {
+      var terms = new TerminalSet(); 
+      terms.UnionWith(state.ExpectedTerminals);
+      var result = new StringSet(); 
+      //Eliminate no-report terminals
+      foreach(var group in _grammar.TermReportGroups)
+        if (group.GroupType == TermReportGroupType.Exclude) 
+            terms.ExceptWith(group.Terminals); 
+      //Add normal and operator groups
+      foreach(var group in _grammar.TermReportGroups)
+        if(group.GroupType == TermReportGroupType.Normal || group.GroupType == TermReportGroupType.Operator && terms.Overlaps(group.Terminals)) {
+          result.Add(group.Alias); 
+          terms.ExceptWith(group.Terminals);
         }
-      }
-      //2. Now go thru all expected terms and add only those that are NOT in the allFirsts set.
-      foreach (var term in state.ExpectedTerms) {
-        if (term.OptionIsSet(TermOptions.IsNotReported)) continue;
-        if (!reducedSet.Contains(term) && !allFirsts.Contains(term) && (term is Terminal || !string.IsNullOrEmpty(term.DisplayName)))
-          reducedSet.Add(term);
-      }
-      //3. Clean-up reduced set: remove pseudo terms
-      if (reducedSet.Contains(_grammar.Eof)) reducedSet.Remove(_grammar.Eof);
-      if (reducedSet.Contains(_grammar.SyntaxError)) reducedSet.Remove(_grammar.SyntaxError);
-      return reducedSet;
+      //Add remaining terminals "as is"
+      foreach(var terminal in terms)
+        result.Add(terminal.ErrorAlias); 
+      return result;     
     }
 
-    private BnfTermSet FilterBracesInExpectedSet(BnfTermSet defaultSet) {
-      var result = new BnfTermSet();
-      var lastOpenBrace = Context.OpenBraces.Count > 0 ? Context.OpenBraces.Peek() : null;
-      foreach (var bnfTerm in defaultSet) {
-        var term = bnfTerm as Terminal;
-        if (term == null || !term.OptionIsSet(TermOptions.IsCloseBrace)) {
-          result.Add(bnfTerm);
-          continue; 
-        }
-        //we have a close brace
-        var skip = lastOpenBrace == null //if there were no opening braces then all close braces should be removed
-                 || term != lastOpenBrace.Terminal.IsPairFor;
-        if (!skip) 
-          result.Add(bnfTerm);
-      }//foreach
+    private StringSet FilterBracesInExpectedSet(StringSet stateExpectedSet) {
+      var result = new StringSet();
+      result.UnionWith(stateExpectedSet);
+      //Find what brace we expect
+      var nextClosingBrace = string.Empty;
+      if (Context.OpenBraces.Count > 0) {
+        var lastOpenBraceTerm = Context.OpenBraces.Peek().KeyTerm;
+        var nextClosingBraceTerm = lastOpenBraceTerm.IsPairFor as KeyTerm;
+        if (nextClosingBraceTerm != null) 
+          nextClosingBrace = nextClosingBraceTerm.Text; 
+      }
+
+      //Now check all closing braces in result set, and leave only nextClosingBrace
+      foreach(var closingBrace in Data.Language.GrammarData.ClosingBraces) {
+        if (result.Contains(closingBrace) && closingBrace != nextClosingBrace)
+          result.Remove(closingBrace); 
+        
+      }
       return result; 
     }
     #endregion

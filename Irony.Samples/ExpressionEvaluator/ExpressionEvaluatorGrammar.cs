@@ -78,7 +78,8 @@ namespace Irony.Samples {
       // 4. Operators precedence
       RegisterOperators(1, "+", "-");
       RegisterOperators(2, "*", "/");
-      RegisterOperators(3, Associativity.Right, "**");
+      // 3 is reserved for unary operators
+      RegisterOperators(4, Associativity.Right, "**");
 
       // 5. Punctuation and transient terms
       RegisterPunctuation("(", ")");

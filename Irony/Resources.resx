@@ -274,9 +274,6 @@
   <data name="LabelActionAccept" xml:space="preserve">
     <value>Accept</value>
   </data>
-  <data name="LabelActionJump" xml:space="preserve">
-    <value>Jump to {0}.</value>
-  </data>
   <data name="LabelActionOp" xml:space="preserve">
     <value>Operator, shift to {0}/reduce on {1}.</value>
   </data>

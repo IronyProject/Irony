@@ -64,7 +64,9 @@
     <Compile Include="Interpreter\RuntimeException.cs" />
     <Compile Include="Interpreter\ScriptInterpreter.cs" />
     <Compile Include="Ast\LiteralValueNode.cs" />
+    <Compile Include="Parsing\Construction\StopwatchCustom.cs" />
     <Compile Include="Parsing\Grammar\GrammarError.cs" />
+    <Compile Include="Parsing\Grammar\TermReportGroups.cs" />
     <Compile Include="Parsing\Parser\ParseTreeExtensions.cs" />
     <Compile Include="Parsing\Parser\ParsingEventArgs.cs" />
     <Compile Include="Parsing\StringUtils.cs" />
@@ -86,7 +88,6 @@
     <Compile Include="Parsing\LanguageData.cs" />
     <Compile Include="Parsing\Construction\LanguageDataBuilder.cs" />
     <Compile Include="Parsing\Construction\GrammarDataBuilder.cs" />
-    <Compile Include="Parsing\Construction\ParserDataBuilder_NonCanonical.cs" />
     <Compile Include="Parsing\Construction\ParserDataBuilder_HelperClasses.cs" />
     <Compile Include="Parsing\Construction\ParserDataBuilder.cs" />
     <Compile Include="Parsing\Construction\ScannerDataBuilder.cs" />
@@ -164,6 +165,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="irony.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Parsing\Construction\_about_parser_construction.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

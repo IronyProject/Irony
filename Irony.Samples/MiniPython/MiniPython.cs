@@ -101,7 +101,12 @@ namespace Irony.Samples.MiniPython {
       ExtStmt.ErrorRule = SyntaxError + Eos;
       FunctionDef.ErrorRule = SyntaxError + Dedent; 
 
-      // 8. Initialize console attributes
+      // 8. Syntax error reporting
+      AddNoReportGroup("(");
+      AddNoReportGroup(Eos); 
+      AddOperatorReportGroup("operator"); 
+
+      // 9. Initialize console attributes
       ConsoleTitle = "Mini-Python Console";
       ConsoleGreeting =
 @"Irony Sample Console for mini-Python.

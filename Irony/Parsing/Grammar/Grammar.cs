@@ -29,8 +29,6 @@ namespace Irony.Parsing {
     public readonly bool CaseSensitive = true;
     public readonly StringComparer LanguageStringComparer; 
     
-    public ParseMethod ParseMethod = ParseMethod.Lalr;
-
     //List of chars that unambigously identify the start of new token. 
     //used in scanner error recovery, and in quick parse path in NumberLiterals, Identifiers 
     public string Delimiters = null; 
@@ -46,6 +44,8 @@ namespace Irony.Parsing {
     public bool FlagIsSet(LanguageFlags flag) {
       return (LanguageFlags & flag) != 0;
     }
+
+    public TermReportGroupList TermReportGroups = new TermReportGroupList(); 
     #endregion
 
     //Terminals not present in grammar expressions and not reachable from the Root
@@ -112,8 +112,6 @@ namespace Irony.Parsing {
       foreach (var word in reservedWords) {
         var wdTerm = ToTerm(word);
         wdTerm.SetOption(TermOptions.IsReservedWord);
-        //Reserved words get the highest priority, so they get to be tried before identifiers
-        wdTerm.Priority = 1000 + word.Length;
       }
     }
     #endregion 
@@ -235,8 +233,8 @@ namespace Irony.Parsing {
     }
     //Constructs the error message in situation when parser has no available action for current input.
     // override this method if you want to change this message
-    public virtual string ConstructParserErrorMessage(ParsingContext context, ParserState state, BnfTermSet expectedTerms, ParseTreeNode currentInput) {
-      return string.Format(Resources.ErrParserUnexpInput, expectedTerms.ToErrorString());
+    public virtual string ConstructParserErrorMessage(ParsingContext context, ParserState state, StringSet expectedTerms, ParseTreeNode currentInput) {
+      return string.Format(Resources.ErrParserUnexpInput, expectedTerms.ToString(" "));
        
     }
     
@@ -300,13 +298,65 @@ namespace Irony.Parsing {
     protected GrammarHint ResolveInCode() {
       return new GrammarHint(HintType.ResolveInCode, null); 
     }
-    protected GrammarHint WrapTail() {
-      return new GrammarHint(HintType.WrapTail, null);
+    protected GrammarHint ImplyPrecedenceHere(int precedence) {
+      return ImplyPrecedenceHere(precedence, Associativity.Left); 
     }
-    protected GrammarHint ImplyPrecedence(int precedence) {
-      return new GrammarHint(HintType.Precedence, precedence);
+    protected GrammarHint ImplyPrecedenceHere(int precedence, Associativity associativity) {
+      var hint = new GrammarHint(HintType.Precedence, null);
+      hint.Precedence = precedence;
+      hint.Associativity = associativity;
+      return hint; 
     }
 
+    #endregion
+
+    #region Term report group methods
+    /// <summary>
+    /// Creates a terminal reporting group, so all terminals in the group will be reported as a single "alias" in syntex error messages like
+    /// "Syntax error, expected: [list of terms]"
+    /// </summary>
+    /// <param name="alias">An alias for all terminals in the group.</param>
+    /// <param name="symbols">Symbols to be included into the group.</param>
+    protected void AddTermReportGroup(string alias, params string[] symbols) {
+      TermReportGroups.Add(new TermReportGroup(alias, TermReportGroupType.Normal, SymbolsToTerms(symbols)));
+    }
+    /// <summary>
+    /// Creates a terminal reporting group, so all terminals in the group will be reported as a single "alias" in syntex error messages like
+    /// "Syntax error, expected: [list of terms]"
+    /// </summary>
+    /// <param name="alias">An alias for all terminals in the group.</param>
+    /// <param name="terminals">Terminals to be included into the group.</param>
+    protected void AddTermReportGroup(string alias, params Terminal[] terminals) {
+      TermReportGroups.Add(new TermReportGroup(alias, TermReportGroupType.Normal, terminals));
+    }
+    /// <summary>
+    /// Adds symbols to a group with no-report type, so symbols will not be shown in expected lists in syntax error messages. 
+    /// </summary>
+    /// <param name="symbols">Symbols to exclude.</param>
+    protected void AddNoReportGroup(params string[] symbols) {
+      TermReportGroups.Add(new TermReportGroup(string.Empty, TermReportGroupType.Normal, SymbolsToTerms(symbols)));
+    }
+    /// <summary>
+    /// Adds symbols to a group with no-report type, so symbols will not be shown in expected lists in syntax error messages. 
+    /// </summary>
+    /// <param name="symbols">Symbols to exclude.</param>
+    protected void AddNoReportGroup(params Terminal[] terminals) {
+      TermReportGroups.Add(new TermReportGroup(string.Empty, TermReportGroupType.Normal, terminals));
+    }
+    /// <summary>
+    /// Adds a group and an alias for all operator symbols used in the grammar.
+    /// </summary>
+    /// <param name="alias">An alias for operator symbols.</param>
+    protected void AddOperatorReportGroup(string alias) {
+      TermReportGroups.Add(new TermReportGroup(alias, TermReportGroupType.Operator, null)); //operators will be filled later
+    }
+
+    private IEnumerable<Terminal> SymbolsToTerms(IEnumerable<string> symbols) {
+      var termList = new TerminalList(); 
+      foreach(var symbol in symbols)
+        termList.Add(ToTerm(symbol));
+      return termList; 
+    }
     #endregion
 
     #region Standard terminals: EOF, Empty, NewLine, Indent, Dedent

@@ -45,7 +45,7 @@ namespace Irony.Samples {
           if (term == grammar.Eof) break; 
         }
         if (term is WikiTerminalBase) 
-          ProcessWikiElement(token); 
+          ProcessWikiToken(token); 
         else if(term == grammar.NewLine) {
           ProcessNewLine(token);
         } else //non-wike element and not new line 
@@ -67,7 +67,7 @@ namespace Irony.Samples {
       _currentHeader = null; 
     }//method
 
-    private void ProcessWikiElement(Token token) {
+    private void ProcessWikiToken(Token token) {
       //we check that token actually contains some chars - to allow "invisible spaces" after last table tag
       if(_lastTableTag != null && !_insideCell && token.ValueString.Trim().Length > 0) {
         _output.Append(_lastTableTag.OpenHtmlTag);

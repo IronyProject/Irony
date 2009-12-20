@@ -51,14 +51,14 @@ namespace Irony.Parsing {
   public abstract class BnfTerm {
     #region consructors
     public BnfTerm(string name) : this(name, name) { }
-    public BnfTerm(string name, string displayName) {
+    public BnfTerm(string name, string errorAlias) {
       Name = name;
-      DisplayName = displayName;
+      ErrorAlias = errorAlias;
     }
-    public BnfTerm(string name, string displayName, Type nodeType) : this(name, displayName) {
+    public BnfTerm(string name, string errorAlias, Type nodeType) : this(name, errorAlias) {
       AstNodeType = nodeType;
     }
-    public BnfTerm(string name, string displayName, AstNodeCreator nodeCreator) : this(name, displayName) {
+    public BnfTerm(string name, string errorAlias, AstNodeCreator nodeCreator) : this(name, errorAlias) {
       AstNodeCreator = nodeCreator;  
     }
     #endregion
@@ -69,8 +69,6 @@ namespace Irony.Parsing {
     }
 
     public override string ToString() {
-      if (!string.IsNullOrEmpty(DisplayName)) 
-          return DisplayName;
       return Name;
     }
     public override int GetHashCode() {
@@ -83,8 +81,8 @@ namespace Irony.Parsing {
     #region properties: Name, DisplayName, Key, Options
     public string Name;
   
-    //DisplayName is used in error reporting, e.g. "Syntax error, expected <list-of-display-names>". 
-    public string DisplayName;
+    //ErrorAlias is used in error reporting, e.g. "Syntax error, expected <list-of-display-names>". 
+    public string ErrorAlias;
     public TermOptions Options;
     protected GrammarData GrammarData;
     public int Precedence = NoPrecedence;
@@ -203,23 +201,7 @@ namespace Irony.Parsing {
   }//class
 
   public class BnfTermList : List<BnfTerm> { }
-  public class BnfTermSet : HashSet<BnfTerm> {
-    public override string ToString() {
-      var sb = new StringBuilder();
-      foreach (var term in this) {
-        sb.Append(term.ToString());
-        sb.Append(" ");
-      }
-      return sb.ToString().Trim();
-    }
-    public string ToErrorString() {
-      var slist = new StringList();
-      foreach (var term in this) {
-        slist.Add(term.DisplayName);
-      }
-      return slist.ToString(", ");
-    }
-  }
+  public class BnfTermSet : HashSet<BnfTerm> {}
 
   public class AstNodeEventArgs : EventArgs {
     public AstNodeEventArgs(ParseTreeNode parseTreeNode) {

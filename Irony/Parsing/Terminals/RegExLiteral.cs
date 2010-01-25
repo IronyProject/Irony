@@ -26,7 +26,7 @@ namespace Irony.Parsing {
   // (this is the job of regex engine), we only need to correctly recognize the end of expression
 
   [Flags]
-  public enum RegexFlags {
+  public enum RegexTermOptions {
     None = 0, 
     AllowLetterAfter = 0x01, //if not set (default) then any following letter (after legal switches) is reported as invalid switch
     CreateRegExObject = 0x02,  //if set, token.Value contains Regex object; otherwise, it contains a pattern (string)
@@ -43,7 +43,7 @@ namespace Irony.Parsing {
     public Char EscapeSymbol='\\';
     public RegexSwitchTable Switches = new RegexSwitchTable();
     public RegexOptions DefaultOptions = RegexOptions.None;
-    public RegexFlags Flags = RegexFlags.Default;
+    public RegexTermOptions Options = RegexTermOptions.Default;
 
     private char[] _stopChars; 
 
@@ -51,7 +51,7 @@ namespace Irony.Parsing {
       Switches.Add('i', RegexOptions.IgnoreCase);
       Switches.Add('g', RegexOptions.None); //not sure what to do with this flag? anybody, any advice?
       Switches.Add('m', RegexOptions.Multiline);
-      base.SetOption(TermOptions.IsLiteral);
+      base.SetFlag(TermFlags.IsLiteral);
     }
 
     public RegExLiteral(string name, char startEndSymbol, char escapeSymbol) : base(name) {
@@ -91,13 +91,13 @@ namespace Irony.Parsing {
       RegexOptions options = RegexOptions.None;
       var switches = string.Empty;
       while(ReadSwitch(source, ref options)) {
-        if (FlagIsSet(RegexFlags.UniqueSwitches) && switches.Contains(source.PreviewChar))
+        if (IsSet(RegexTermOptions.UniqueSwitches) && switches.Contains(source.PreviewChar))
           return source.CreateErrorToken(Resources.ErrDupRegexSwitch, source.PreviewChar); // "Duplicate switch '{0}' for regular expression" 
         switches += source.PreviewChar.ToString();
         source.PreviewPosition++; 
       }
       //check following symbol
-      if (!FlagIsSet(RegexFlags.AllowLetterAfter)) {
+      if (!IsSet(RegexTermOptions.AllowLetterAfter)) {
         var currChar = source.PreviewChar;
         if (char.IsLetter(currChar) || currChar == '_')
           return source.CreateErrorToken(Resources.ErrInvRegexSwitch, currChar); // "Invalid switch '{0}' for regular expression"  
@@ -106,7 +106,7 @@ namespace Irony.Parsing {
       //we have token, now what's left is to set its Value field. It is either pattern itself, or Regex instance
       string pattern = token.Text.Substring(1, patternLen); //exclude start and end symbol
       object value = pattern; 
-      if (FlagIsSet(RegexFlags.CreateRegExObject)) {
+      if (IsSet(RegexTermOptions.CreateRegExObject)) {
         value = new Regex(pattern, options);
       }
       token.Value = value; 
@@ -133,8 +133,8 @@ namespace Irony.Parsing {
       return result; 
     }
 
-    public bool FlagIsSet(RegexFlags flag) {
-      return (Flags & flag) != 0;
+    public bool IsSet(RegexTermOptions option) {
+      return (Options & option) != 0;
     }
 
   }//class

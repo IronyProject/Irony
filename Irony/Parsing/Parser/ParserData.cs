@@ -27,6 +27,7 @@ namespace Irony.Parsing {
   public class ParserData {
     public readonly LanguageData Language;
     public ParserState InitialState;
+    public ParserStateTable InitialStates = new ParserStateTable(); //extra entries into automaton
     public ParserState FinalState;
     public readonly ParserStateList States = new ParserStateList();
     public ParserData(LanguageData language) {
@@ -34,12 +35,11 @@ namespace Irony.Parsing {
     }
   }
 
-
   public class ParserState {
     public readonly string Name;
     public readonly ParserActionTable Actions = new ParserActionTable();
     //Defined for states with a single reduce item; Parser.GetAction returns this action if it is not null.
-    public ParserAction DefaultReduceAction;
+    public ParserAction DefaultAction;
     //Expected terms contains terminals is to be used in 
     //Parser-advise-to-Scanner facility would use it to filter current terminals when Scanner has more than one terminal for current char,
     //   it can ask Parser to filter the list using the ExpectedTerminals in current Parser state. 
@@ -68,6 +68,7 @@ namespace Irony.Parsing {
   public class ParserStateList : List<ParserState> { }
   public class ParserStateSet : HashSet<ParserState> { }
   public class ParserStateHash : Dictionary<string, ParserState> { }
+  public class ParserStateTable : Dictionary<NonTerminal, ParserState> { }
 
   public enum ParserActionType {
     Shift,
@@ -78,11 +79,9 @@ namespace Irony.Parsing {
   }
 
   public class ParserAction {
-    public ParserActionType ActionType;
-    //Shift action
-    public readonly ParserState NewState;
-    //Reduce action parameters
-    public Production ReduceProduction; 
+    public ParserActionType ActionType {get;private set;}
+    public ParserState NewState {get;private set;}        // for Shift action
+    public Production ReduceProduction {get;private set;} // for Reduce action
 
     internal ParserAction(ParserActionType actionType, ParserState newState, Production reduceProduction) {
       this.ActionType = actionType;
@@ -116,25 +115,6 @@ namespace Irony.Parsing {
     IsEmpty = 0x08,
     //Indicates that it is a main production for list formation, in the form: "list->list+delim?+elem"
     IsListBuilder = 0x10,
-    #region comments
-    //Indicates that the right-side expression consists of a transient list (with IsTransient and IsList flags set)
-    // plus optional punctuation terms (IsPunctuation flag is set). 
-    // When reducing this production the child nodes of transient list are copied into child nodes of the 
-    // new node.For example, for the production:
-    //  MList -> "(" + NList + ")"
-    // If we want to indicate that MList is the "real" list we're interested in, and we want to put 
-    // all elements from NList into MList, then we mark left and right parenthesis as punctuation, 
-    // and NList as transient term using MarkTransient method. NList must be a list (setup using MakeStarList
-    // or MakePlusList), while MList does not need to be a list. 
-    // The parser then will move NList.ChildNodes to MList.ChildNodes, and discard the NList. 
-    // Look at JSon sample grammar as an example; it has the following production:
-    //  Object -> "{" + PropertyList + "}"
-    // Normally in the parse tree we would expect Object node to have a child PropertyList which in turn 
-    // contains Property nodes. We wanted to get rid of PropertyList, so we declare braces as punctuation, 
-    // and mark PropertyList as Transient. As a result, Property nodes appear directly under the Object node
-    // in the parse tree. The same goes for Array node. 
-    #endregion
-    TransientListCopy   = 0x20,
   }
 
   public class Production {

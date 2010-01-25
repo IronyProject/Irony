@@ -121,7 +121,7 @@ namespace Irony.Interpreter {
       var baseKey = OperatorDispatchKey.CreateFromTypes(forKey.OpSymbol, baseType, baseType);
       OperatorImplementation baseImpl;
       if (! _baseOperatorImplementations.TryGetValue(baseKey, out baseImpl))
-        throw new RuntimeException(string.Format(Resources.ErrOpNotDefinedForTypes, forKey.OpSymbol, forKey.Arg1Type, forKey.Arg2Type));
+        throw new Exception(string.Format(Resources.ErrOpNotDefinedForTypes, forKey.OpSymbol, forKey.Arg1Type, forKey.Arg2Type));
       var impl = new OperatorImplementation(forKey, baseType, baseImpl.BaseMethod, arg1Converter, arg2Converter, baseImpl.ResultConverter);
       implementations[forKey] = impl; 
       return impl; 
@@ -226,7 +226,7 @@ namespace Irony.Interpreter {
       var result = TypeConverters.Find(fromType, toType);
       if (result != null) return result; 
       string err = string.Format(Resources.ErrCannotConvertValue, fromType, toType);
-      throw new RuntimeException(err);
+      throw new Exception(err);
     }
     #endregion
 
@@ -245,8 +245,7 @@ namespace Irony.Interpreter {
       if (condition) return;
       if (args != null)
         message = string.Format(message, args);
-      RuntimeException exc = new RuntimeException(message);
-      throw exc;
+      throw new RuntimeException(message);
     }
 
 

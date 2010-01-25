@@ -38,7 +38,7 @@ namespace Irony.Parsing {
     public FreeTextLiteral(string name, FreeTextOptions freeTextOptions, params string[] terminators) : base(name) {
       FreeTextOptions = freeTextOptions; 
       Terminators.UnionWith(terminators);
-      base.SetOption(TermOptions.IsLiteral);
+      base.SetFlag(TermFlags.IsLiteral);
     }//constructor
 
     public override IList<string> GetFirsts() {
@@ -62,9 +62,10 @@ namespace Irony.Parsing {
         //Find next position
         var newPos = source.Text.IndexOfAny(_stopChars, source.PreviewPosition);
         if(newPos == -1) {
-          if(IsSet(FreeTextOptions.AllowEof))
-            return source.CreateToken(this.OutputTerminal, source.Text.Substring(source.PreviewPosition));
-          else
+          if(IsSet(FreeTextOptions.AllowEof)) {
+            source.PreviewPosition = source.Text.Length;
+            return source.CreateToken(this.OutputTerminal);
+          }  else
             return null;
         }
         tokenText += source.Text.Substring(source.PreviewPosition, newPos - source.PreviewPosition);

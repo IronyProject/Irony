@@ -52,23 +52,26 @@
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Ast\AssigmentNode.cs" />
-    <Compile Include="Ast\AstException.cs" />
-    <Compile Include="Ast\BinExprNode.cs" />
-    <Compile Include="Ast\BlockNode.cs" />
-    <Compile Include="Ast\ExpressionListNode.cs" />
-    <Compile Include="Ast\FunctionCallNode.cs" />
-    <Compile Include="Ast\FunctionDefNode.cs" />
-    <Compile Include="Ast\IdentifierNode.cs" />
-    <Compile Include="Ast\IfNode.cs" />
-    <Compile Include="Ast\LiteralValueNode.cs" />
-    <Compile Include="Ast\NotSupportedNode.cs" />
-    <Compile Include="Ast\NullNode.cs" />
-    <Compile Include="Ast\ParamListNode.cs" />
-    <Compile Include="Ast\StatementListNode.cs" />
-    <Compile Include="Ast\UnExprNode.cs" />
-    <Compile Include="Ast\_AstInterfaces.cs" />
-    <Compile Include="Ast\_AstNode.cs" />
+    <Compile Include="Ast\PrimitiveNodes\IdentifierNode.cs" />
+    <Compile Include="Ast\PrimitiveNodes\LiteralValueNode.cs" />
+    <Compile Include="Ast\PrimitiveNodes\StringTemplateNode.cs" />
+    <Compile Include="Ast\Base\AstException.cs" />
+    <Compile Include="Ast\Base\AstInterfaces.cs" />
+    <Compile Include="Ast\Base\AstNode.cs" />
+    <Compile Include="Ast\Statements\AssignmentNode.cs" />
+    <Compile Include="Ast\Statements\BlockNode.cs" />
+    <Compile Include="Ast\Expressions\BinaryOperationNode.cs" />
+    <Compile Include="Ast\Expressions\ExpressionListNode.cs" />
+    <Compile Include="Ast\Expressions\IncDecNode.cs" />
+    <Compile Include="Ast\Expressions\UnaryOperationNode.cs" />
+    <Compile Include="Ast\Functions\FunctionCallNode.cs" />
+    <Compile Include="Ast\Functions\FunctionDefNode.cs" />
+    <Compile Include="Ast\Statements\IfNode.cs" />
+    <Compile Include="Ast\Functions\ParamListNode.cs" />
+    <Compile Include="Ast\SpecialNodes\EmptyStatementNode.cs" />
+    <Compile Include="Ast\SpecialNodes\NotSupportedNode.cs" />
+    <Compile Include="Ast\SpecialNodes\NullNode.cs" />
+    <Compile Include="Ast\Statements\StatementListNode.cs" />
     <Compile Include="Interpreter\DataStack.cs" />
     <Compile Include="Interpreter\DynamicCallDispatcher.cs" />
     <Compile Include="Interpreter\EvaluationContext.cs" />
@@ -77,11 +80,12 @@
     <Compile Include="Interpreter\RuntimeException.cs" />
     <Compile Include="Interpreter\ScriptInterpreter.cs" />
     <Compile Include="Interpreter\StackFrame.cs" />
+    <Compile Include="Interpreter\ValuesTable.cs" />
     <Compile Include="Microsoft\BigInteger.cs" />
     <Compile Include="Microsoft\Complex64.cs" />
-    <Compile Include="Microsoft\HashSet.cs" />
+    <Compile Include="SilverlightOnly\HashSet.cs" />
     <Compile Include="Microsoft\MathResources.Designer.cs" />
-    <Compile Include="Parsing\Construction\StopwatchCustom.cs" />
+    <Compile Include="SilverlightOnly\Stopwatch.cs" />
     <Compile Include="Parsing\Construction\GrammarDataBuilder.cs" />
     <Compile Include="Parsing\Construction\LanguageDataBuilder.cs" />
     <Compile Include="Parsing\Construction\ParserDataBuilder.cs" />
@@ -117,6 +121,7 @@
     <Compile Include="Parsing\Scanner\Token.cs" />
     <Compile Include="Parsing\Scanner\TokenEditorInfo.cs" />
     <Compile Include="Parsing\StringUtils.cs" />
+    <Compile Include="Parsing\SymbolTable.cs" />
     <Compile Include="Parsing\Terminals\CommentTerminal.cs" />
     <Compile Include="Parsing\Terminals\CompoundTerminalBase.cs" />
     <Compile Include="Parsing\Terminals\ConstantTerminal.cs" />
@@ -126,6 +131,7 @@
     <Compile Include="Parsing\Terminals\FixedLengthLiteral.cs" />
     <Compile Include="Parsing\Terminals\FreeTextLiteral.cs" />
     <Compile Include="Parsing\Terminals\IdentifierTerminal.cs" />
+    <Compile Include="Parsing\Terminals\ImpliedSymbolTerminal.cs" />
     <Compile Include="Parsing\Terminals\KeyTerm.cs" />
     <Compile Include="Parsing\Terminals\NewLineTerminal.cs" />
     <Compile Include="Parsing\Terminals\NumberLiteral.cs" />
@@ -151,6 +157,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="irony.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Parsing\Construction\_about_parser_construction.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\v3.0\Microsoft.Silverlight.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

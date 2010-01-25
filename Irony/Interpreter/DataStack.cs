@@ -39,7 +39,7 @@ namespace Irony.Interpreter {
     }
     public object Pop() {
       if (Count == 0)
-        throw new RuntimeException(Resources.ErrInternalErrDataPopFailed); 
+        throw new Exception(Resources.ErrInternalErrDataPopFailed); 
       var result = Top;
       _data.RemoveAt(_data.Count - 1);
       return result; 

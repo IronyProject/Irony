@@ -22,18 +22,31 @@ namespace Irony.Parsing {
     public readonly CoreParser CoreParser;
     public readonly Scanner Scanner;
     public ParsingContext Context { get; internal set; }
+    public readonly NonTerminal Root;
+    internal readonly ParserState InitialState;
 
     public Parser(Grammar grammar) : this (new LanguageData(grammar)) { }
-    public Parser(LanguageData language) {
+    public Parser(LanguageData language) : this(language, null)  {}
+    public Parser(LanguageData language, NonTerminal root) {
       Language = language;
       Context = new ParsingContext(this);
       Scanner = new Scanner(this);
       CoreParser = new CoreParser(this);
+      Root = root; 
+      if(Root == null) {
+        Root = Language.Grammar.Root;
+        InitialState = Language.ParserData.InitialState;
+      } else {
+        if(Root != Language.Grammar.Root && !Language.Grammar.SnippetRoots.Contains(Root))
+          throw new Exception(string.Format(Resources.ErrRootNotRegistered, root.Name));
+        InitialState = Language.ParserData.InitialStates[Root]; 
+      }
     }
 
-    internal void OnStatusChanged(ParserStatus oldStatus) {
-      CoreParser.OnStatusChanged(oldStatus);
-      Scanner.OnStatusChanged(oldStatus); 
+    internal void Reset() {
+      Context.Reset(); 
+      CoreParser.Reset();
+      Scanner.Reset(); 
     }
 
 
@@ -47,7 +60,8 @@ namespace Irony.Parsing {
     }
 
     public ParseTree Parse(string sourceText, string fileName) {
-      AutoReset();
+      if (Context.Status != ParserStatus.AcceptedPartial)
+        Reset(); 
       Context.SourceStream.SetText(sourceText, 0, Context.Status == ParserStatus.AcceptedPartial);
       Context.CurrentParseTree = new ParseTree(sourceText, fileName);
       Context.Status = ParserStatus.Parsing;
@@ -56,16 +70,6 @@ namespace Irony.Parsing {
       Context.CurrentParseTree.ParseTime = Environment.TickCount - start;
       UpdateParseTreeStatus(); 
       return Context.CurrentParseTree;
-    }
-
-    private void AutoReset() {
-      switch (Context.Status) {
-        case ParserStatus.AcceptedPartial:
-          break;
-        default: //for everything else Initialize
-          Context.Status = ParserStatus.Init;
-          break; 
-      }
     }
 
     private void UpdateParseTreeStatus() {

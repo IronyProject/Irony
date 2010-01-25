@@ -18,32 +18,26 @@ using Irony.Ast;
 
 namespace Irony.Interpreter { 
 
-  public class ValueSet : Dictionary<string, object> {
-    public ValueSet(int capacity, StringComparer comparer) : base(comparer) { }
-  }
-  public class ValueList : List<object> { }
-
   public class StackFrame {
+    public readonly EvaluationContext Context;
     public string MethodName; //for debugging purposes
     public StackFrame Parent; //Lexical parent - not the same as the caller
     public StackFrame Caller;
-    public ValueSet Values; //global values for top frame; parameters and local variables for method frame
+    internal ValuesTable Values; //global values for top frame; parameters and local variables for method frame
 
-    public StackFrame(ValueSet globals) {
-      Values = globals; 
+    public StackFrame(EvaluationContext context, ValuesTable globals) {
+      Context = context; 
+      Values = globals;
+      if (Values == null)
+        Values = new ValuesTable(100);
     }
 
-    public StackFrame(string methodName, StackFrame caller, StackFrame parent, StringComparer languageStringComparer) {
+    public StackFrame(EvaluationContext context, string methodName, StackFrame caller, StackFrame parent) {
       MethodName = methodName; 
       Caller = caller;
       Parent = parent;
-      Values = new ValueSet(8, languageStringComparer); 
+      Values = new ValuesTable(8); 
     }
-
-    public StackFrame GetFrame(int scopeLevel) {
-      StackFrame result = this;
-      return result;
-    }//method
 
   }//class
 

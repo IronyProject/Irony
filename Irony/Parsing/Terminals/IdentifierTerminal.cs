@@ -24,7 +24,7 @@ namespace Irony.Parsing {
   #endregion
 
   [Flags]
-  public enum IdFlags : short {
+  public enum IdOptions : short {
     None = 0,
     AllowsEscapes = 0x01,
     CanStartWithEscape = 0x03, //bit 2 with bit 1 together  
@@ -55,27 +55,27 @@ namespace Irony.Parsing {
     // are used in QuickParse. Only if QuickParse fails, the process switches to full version with checking every
     // char's category
     #region constructors and initialization
-    public IdentifierTerminal(string name) : this(name, IdFlags.None) {
+    public IdentifierTerminal(string name) : this(name, IdOptions.None) {
     }
-    public IdentifierTerminal(string name, IdFlags flags) : this(name, "_", "_") {
-      Flags = flags; 
+    public IdentifierTerminal(string name, IdOptions flags) : this(name, "_", "_") {
+      Options = flags; 
     }
     public IdentifierTerminal(string name, string extraChars, string extraFirstChars): base(name) {
       AllFirstChars = Strings.AllLatinLetters + extraFirstChars;
       AllChars = Strings.AllLatinLetters + Strings.DecimalDigits + extraChars;
     }
 
-    public void AddPrefix(string prefix, IdFlags flags) {
+    public void AddPrefix(string prefix, IdOptions flags) {
       base.AddPrefixFlag(prefix, (short)flags);
     }
     #endregion
 
-    #region properties: ExtraChars, ExtraFirstChars
+    #region properties: AllChars, AllFirstChars
     //Used in QuickParse only!
     public string AllChars;
     public string AllFirstChars;
     public TokenEditorInfo KeywordEditorInfo = new TokenEditorInfo(TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
-    public IdFlags Flags; //flags for the case when there are no prefixes
+    public IdOptions Options; //flags for the case when there are no prefixes
     public CaseRestriction CaseRestriction;
 
     public readonly UnicodeCategoryList StartCharCategories = new UnicodeCategoryList(); //categories of first char
@@ -118,7 +118,7 @@ namespace Irony.Parsing {
       char[] chars = AllFirstChars.ToCharArray();
       foreach (char ch in chars)
         list.Add(ch.ToString());
-      if ((Flags & IdFlags.CanStartWithEscape) != 0)
+      if ((Options & IdOptions.CanStartWithEscape) != 0)
         list.Add(this.EscapeChar.ToString());
       return list;
     }
@@ -145,13 +145,14 @@ namespace Irony.Parsing {
 
     protected override void InitDetails(ParsingContext context, CompoundTokenDetails details) {
       base.InitDetails(context, details);
-      details.Flags = (short)Flags;
+      details.Flags = (short)Options;
     }
 
     //Override to assign IsKeyword flag to keyword tokens
     protected override Token CreateToken(ParsingContext context, ISourceStream source, CompoundTokenDetails details) {
       Token token = base.CreateToken(context, source, details);
-      if (details.IsSet((short)IdFlags.IsNotKeyword))
+      token.Symbol = context.Symbols.TextToSymbol(token.ValueString); 
+      if (details.IsSet((short)IdOptions.IsNotKeyword))
         return token;
       //check if it is keyword
       CheckReservedWord(token);
@@ -162,7 +163,7 @@ namespace Irony.Parsing {
       if (Grammar.KeyTerms.TryGetValue(token.Text, out keyTerm)) {
         token.KeyTerm = keyTerm;
         //if it is reserved word, then overwrite terminal
-        if (keyTerm.OptionIsSet(TermOptions.IsReservedWord))
+        if (keyTerm.FlagIsSet(TermFlags.IsReservedWord))
           token.SetTerminal(keyTerm); 
       }
     }
@@ -174,7 +175,7 @@ namespace Irony.Parsing {
       while (AllChars.IndexOf(source.PreviewChar) >= 0 && !source.EOF())
         source.PreviewPosition++;
       //if it is not a terminator then cancel; we need to go through full algorithm
-      if (GrammarData.WhitespaceAndDelimiters.IndexOf(source.PreviewChar) < 0) return null; 
+      if (GrammarData.WhitespaceAndDelimiters.IndexOf(source.PreviewChar) < 0) return null;
       var token = source.CreateToken(this.OutputTerminal);
       if(CaseRestriction != CaseRestriction.None && !CheckCaseRestriction(token.ValueString))
         return null; 
@@ -183,12 +184,13 @@ namespace Irony.Parsing {
       // if (!this.GrammarData.Grammar.CaseSensitive)
       //    token.Value = token.Text.ToLower(CultureInfo.InvariantCulture);
       CheckReservedWord(token);
+      token.Symbol = context.Symbols.TextToSymbol(token.ValueString); 
       return token; 
     }
 
     protected override bool ReadBody(ISourceStream source, CompoundTokenDetails details) {
       int start = source.PreviewPosition;
-      bool allowEscapes = details.IsSet((short)IdFlags.AllowsEscapes);
+      bool allowEscapes = details.IsSet((short)IdOptions.AllowsEscapes);
       CharList outputChars = new CharList();
       while (!source.EOF()) {
         char current = source.PreviewChar;
@@ -266,7 +268,7 @@ namespace Irony.Parsing {
     }
 
     protected override bool ConvertValue(CompoundTokenDetails details) {
-      if (details.IsSet((short)IdFlags.NameIncludesPrefix))
+      if (details.IsSet((short)IdOptions.NameIncludesPrefix))
         details.Value = details.Prefix + details.Body;
       else
         details.Value = details.Body;

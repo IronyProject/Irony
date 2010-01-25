@@ -38,7 +38,9 @@ namespace Irony.Interpreter {
   public partial class EvaluationContext  {
     public readonly int ThreadId; 
     public LanguageRuntime Runtime;
-    public readonly StringComparer LanguageStringComparer; 
+    public readonly bool LanguageCaseSensitive;
+    public readonly SymbolTable Symbols = new SymbolTable();
+    public readonly ValuesTable Globals;
     public DataStack Data;
     public DynamicCallDispatcher CallDispatcher;
     public JumpType Jump = JumpType.None;
@@ -50,10 +52,13 @@ namespace Irony.Interpreter {
 
     public EvaluationContext(LanguageRuntime runtime) {
       Runtime = runtime;
-      LanguageStringComparer = Runtime.Language.Grammar.LanguageStringComparer;
+      LanguageCaseSensitive = Runtime.Language.Grammar.CaseSensitive;
+      Symbols = Runtime.Language.GrammarData.Symbols;
+      //Globals = new GlobalValuesTable(100, Symbols, LanguageCaseSensitive);
+      Globals = new ValuesTable(100);
       CallDispatcher = new DynamicCallDispatcher(this);
       ThreadId = Thread.CurrentThread.ManagedThreadId;
-      TopFrame = new StackFrame(new ValueSet(100, LanguageStringComparer));
+      TopFrame = new StackFrame(this, Globals);
       CurrentFrame = TopFrame;
       Data = new DataStack();
       Data.Init(runtime.Unassigned); //set LastPushedItem to unassigned
@@ -70,37 +75,36 @@ namespace Irony.Interpreter {
     }
 
     public void PushFrame(string methodName, AstNode node, StackFrame parent) {
-      CurrentFrame = new StackFrame(methodName, CurrentFrame, parent, LanguageStringComparer);
+      CurrentFrame = new StackFrame(this, methodName, CurrentFrame, parent);
     }
     public void PopFrame() {
       CurrentFrame = CurrentFrame.Caller;
     }
 
-    public bool TryGetValue(string name, out object value) {
-      if (CurrentFrame.Values.TryGetValue(name, out value)) return true; 
+    public bool TryGetValue(Symbol symbol, out object value) {
+      var keySymbol = LanguageCaseSensitive ? symbol : symbol.LowerSymbol;
+      if (CurrentFrame.Values.TryGetValue(keySymbol, out value)) return true; 
       var frame = CurrentFrame.Parent;
       while (frame != null) {
-        if (frame.Values.TryGetValue(name, out value)) return true;
+        if (frame.Values.TryGetValue(keySymbol, out value)) return true;
         frame = frame.Parent;
       }
       value = null; 
       return false; 
     }
-    public void SetValue(string name, object value) {
-      CurrentFrame.Values[name] = value; 
+
+    public void SetValue(Symbol symbol, object value) {
+      var keySymbol = LanguageCaseSensitive ? symbol : symbol.LowerSymbol;
+      CurrentFrame.Values[keySymbol] = value; 
     }
 
     public void Write(string text) {
-      if (OutputBuffer != null)
-        OutputBuffer.Append(text); 
+      OutputBuffer.Append(text); 
+    }
+    public void WriteLine(string text) {
+      OutputBuffer.AppendLine(text); 
     }
 
-    public void ThrowError(IInterpretedAstNode sourceNode, string message, params object[] args) {
-      if (args != null && args.Length > 0)
-        message = string.Format(message, args);
-      SourceLocation loc = (sourceNode == null) ? SourceLocation.Empty : sourceNode.GetErrorAnchor(); 
-      throw new RuntimeException(message, null, loc); 
-    }
     //Throws generic exception; it supposed to be caught in AstNode.Evaluate method and it will wrap it into RuntimeException
     // with node location added
     public void ThrowError(string message, params object[] args) {

@@ -44,7 +44,7 @@ namespace Irony.Parsing {
       yield break;
     }
 
-    protected internal virtual void OnStatusChanged(ParserStatus oldStatus) {
+    public virtual void Reset() {
     }
     protected internal virtual void OnSetSourceLocation(SourceLocation location) {
     }

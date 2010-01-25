@@ -46,6 +46,12 @@ namespace Irony.Parsing {
         if (err.Level == ParserErrorLevel.Error) return true;
       return false; 
     }//method
+
+    public void CopyMessages(ParserMessageList others, SourceLocation baseLocation, string messagePrefix) {
+      foreach(var other in others) 
+        this.ParserMessages.Add(new ParserMessage(other.Level, baseLocation + other.Location, messagePrefix + other.Message, other.ParserState)); 
+    }//
+
   }//class
 
 }

@@ -21,7 +21,7 @@ namespace Irony.Parsing {
   public class NewLineTerminal : Terminal {
     public NewLineTerminal(string name) : base(name, TokenCategory.Outline) {
       base.ErrorAlias = Resources.LabelLineBreak;  // "[line break]";
-      this.Options |= TermOptions.IsPunctuation;
+      this.Flags |= TermFlags.IsPunctuation;
     }
 
     public string LineTerminators = "\n\r\v";

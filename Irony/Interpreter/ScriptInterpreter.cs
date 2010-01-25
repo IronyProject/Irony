@@ -47,7 +47,7 @@ namespace Irony.Interpreter {
       get { return Parser.Context.Mode; }
       set { Parser.Context.Mode = value; }
     }
-    public ValueSet Globals { 
+    public ValuesTable Globals { 
       get { return EvaluationContext.TopFrame.Values; } 
     }
     //internal, real status of interpreter. The public Status field gets updated only on exit from public methods
@@ -231,7 +231,7 @@ namespace Irony.Interpreter {
 
     private static void Check(bool condition, string message) {
       if (!condition)
-        throw new RuntimeException(message);
+        throw new Exception(message);
     }
 
     #endregion 

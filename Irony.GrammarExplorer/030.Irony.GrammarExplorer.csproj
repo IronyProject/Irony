@@ -106,13 +106,13 @@
     <Compile Include="Highlighter\RichTextBoxHighlighter.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Highlighter\AboutCodeHighlighter.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Irony\010.Irony.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
       <Name>010.Irony</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Highlighter\AboutCodeHighlighter.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

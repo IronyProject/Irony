@@ -143,18 +143,13 @@ namespace Irony.GrammarExplorer {
       if (_parseTree == null) return; 
       AddParseNodeRec(null, _parseTree.Root);
     }
-    private void AddParseNodeRec(TreeNode parent, ParseTreeNode nodeInfo) {
-      if (nodeInfo == null) return;
-      Token token = nodeInfo.AstNode as Token;
-      if (token != null) {
-        if (token.Terminal.Category != TokenCategory.Content) return; 
-      }
-      string txt = nodeInfo.ToString();
-      TreeNode newNode = (parent == null? 
-        tvParseTree.Nodes.Add(txt) : parent.Nodes.Add(txt) );
-      newNode.Tag = nodeInfo; 
-      foreach(var child in nodeInfo.ChildNodes)
-        AddParseNodeRec(newNode, child);
+    private void AddParseNodeRec(TreeNode parent, ParseTreeNode node) {
+      if (node == null) return;
+      string txt = node.ToString();
+      TreeNode tvNode = (parent == null? tvParseTree.Nodes.Add(txt) : parent.Nodes.Add(txt) );
+      tvNode.Tag = node; 
+      foreach(var child in node.ChildNodes)
+        AddParseNodeRec(tvNode, child);
     }
 
     private void ShowAstTree() {
@@ -303,7 +298,7 @@ namespace Irony.GrammarExplorer {
       _grammar = selItem.CreateGrammar();
     }
 
-    private void ConstructParser() {
+    private void CreateParser() {
       StopHighlighter();
       btnRun.Enabled = false;
       txtOutput.Text = string.Empty;
@@ -499,7 +494,7 @@ namespace Irony.GrammarExplorer {
         _changingGrammar = true;
         CreateGrammar();
         ShowLanguageInfo();
-        ConstructParser();
+        CreateParser();
       } finally {
         _changingGrammar = false; //in case of exception
       }
@@ -530,7 +525,7 @@ namespace Irony.GrammarExplorer {
       //changing grammar causes setting of parse method combo, so to prevent double-call to ConstructParser
       // we don't do it here if _changingGrammar is set
       if (!_changingGrammar) 
-        ConstructParser();
+        CreateParser();
     }
 
     private void gridParserTrace_CellDoubleClick(object sender, DataGridViewCellEventArgs e) {

@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irony.Parsing { 
+namespace Irony.Parsing {
 
   public static class Strings {
     public const string AllLatinLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -30,6 +30,7 @@ namespace Irony.Parsing {
       list.CopyTo(arr, 0);
       return string.Join(separator, arr);
     }
+
   }//class
 
   public class StringDictionary : Dictionary<string, string> { }

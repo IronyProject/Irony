@@ -43,6 +43,12 @@ namespace Irony.Parsing {
       get { return _empty; }
     } static SourceLocation _empty = new SourceLocation();  
 
+    public static SourceLocation operator + (SourceLocation x, SourceLocation y) {
+      return new SourceLocation(x.Position + y.Position, x.Line + y.Line, x.Column + y.Column); 
+    }
+    public static SourceLocation operator + (SourceLocation x, int offset) {
+      return new SourceLocation(x.Position + offset, x.Line, x.Column + offset); 
+    }
   }//SourceLocation
 
   public struct SourceSpan {

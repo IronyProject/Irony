@@ -30,7 +30,7 @@ namespace Irony.Tests {
     //The following "sign" test methods and a fix are contributed by ashmind codeplex user
      [TestMethod]
     public void TestSignedDoesNotMatchSingleMinus() {
-      var number = new NumberLiteral("number", NumberFlags.AllowSign);
+      var number = new NumberLiteral("number", NumberOptions.AllowSign);
       SetTerminal(number);
       TryMatch("-");
       Assert.IsNull(_token, "Parsed single '-' as a number value.");
@@ -38,7 +38,7 @@ namespace Irony.Tests {
 
     [TestMethod]
     public void TestSignedDoesNotMatchSinglePlus() {
-       var number = new NumberLiteral("number", NumberFlags.AllowSign);
+       var number = new NumberLiteral("number", NumberOptions.AllowSign);
        SetTerminal(number);
        TryMatch("+");
        Assert.IsNull(_token, "Parsed single '+' as a number value.");
@@ -46,7 +46,7 @@ namespace Irony.Tests {
     
     [TestMethod]
     public void TestSignedMatchesNegativeCorrectly() {
-      var number = new NumberLiteral("number", NumberFlags.AllowSign);
+      var number = new NumberLiteral("number", NumberOptions.AllowSign);
       SetTerminal(number);
       TryMatch("-500");
       Assert.AreEqual(-500, _token.Value, "Negative number was parsed incorrectly; expected: {0}, scanned: {1}", "-500", _token.Value);
@@ -336,7 +336,7 @@ namespace Irony.Tests {
 
     [TestMethod]
     public void TestNumberWithUnderscore() {
-      var number = new NumberLiteral("number", NumberFlags.AllowUnderscore);
+      var number = new NumberLiteral("number", NumberOptions.AllowUnderscore);
       SetTerminal(number);
 
       //Simple integers and suffixes

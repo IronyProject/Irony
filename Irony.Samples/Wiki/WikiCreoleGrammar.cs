@@ -79,7 +79,7 @@ http://www.wikicreole.org/";
       this.WhitespaceChars = string.Empty;
       MarkTransient(wikiElement); 
       //We need to clear punctuation flag on NewLine, so it is not removed from parse tree
-      NewLine.SetOption(TermOptions.IsPunctuation, false); 
+      NewLine.SetFlag(TermFlags.IsPunctuation, false); 
       this.LanguageFlags |= LanguageFlags.DisableScannerParserLink | LanguageFlags.NewLineBeforeEOF | LanguageFlags.CanRunSample;
  
     }

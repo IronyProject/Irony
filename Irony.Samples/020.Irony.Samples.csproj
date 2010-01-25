@@ -55,7 +55,6 @@
     <Compile Include="MiniPython\MiniPython.cs" />
     <Compile Include="GWBasic\GwBasicGrammar.cs" />
     <Compile Include="ExpressionEvaluator\ExpressionEvaluatorGrammar.cs" />
-    <Compile Include="Script.NET\ScriptDotNetGrammar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scheme\SchemeGrammar.cs" />
     <None Include="SourceSamples\c#\bottles-v11-long.cs" />
@@ -66,7 +65,6 @@
     <None Include="SourceSamples\c#\ParserControlDataBuilder.cs" />
     <None Include="SourceSamples\c#\TestLessThanOp.cs" />
     <Compile Include="SQL\SqlGrammar.cs" />
-    <Compile Include="DataGrammars\NewickGrammar.cs" />
     <Compile Include="Wiki\WikiCodeplexGrammar.cs" />
     <Compile Include="Wiki\WikiCreoleGrammar.cs" />
     <Compile Include="Wiki\WikiHtmlConverter.cs" />
@@ -75,16 +73,10 @@
     <None Include="TestGrammars\GrammarExL514.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Irony\010.Irony.csproj">
-      <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
-      <Name>010.Irony</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="SourceSamples\DataFiles\CarModels.csv" />
-    <None Include="SourceSamples\JSON\Sample1.json" />
-    <None Include="SourceSamples\JSON\Sample2.json" />
-    <None Include="SourceSamples\JSON\Sample3.json" />
+    <None Include="SourceSamples\DataFiles\Sample1.json" />
+    <None Include="SourceSamples\DataFiles\Sample2.json" />
+    <None Include="SourceSamples\DataFiles\Sample3.json" />
     <None Include="SourceSamples\MiniPython\TestFunCall.py" />
     <None Include="SourceSamples\Scheme\99 bottles simple.scm" />
     <None Include="SourceSamples\Scheme\99 bottles.scm" />
@@ -92,25 +84,8 @@
     <None Include="SourceSamples\Scheme\Fib.scm" />
     <Content Include="CSharp\Notes.txt" />
     <None Include="SourceSamples\99 bottles.bas" />
-    <None Include="SourceSamples\ExprSample.txt" />
-    <None Include="SourceSamples\Newick.txt" />
+    <None Include="SourceSamples\ExpressionEvaluator\OpSample.txt" />
     <None Include="SourceSamples\NonCanonTestSamples\NonCanonTest1.txt" />
-    <None Include="SourceSamples\Script.NET\Arithmetic.txt" />
-    <None Include="SourceSamples\Script.NET\ArraysGenerics.txt" />
-    <None Include="SourceSamples\Script.NET\bubblesort.txt" />
-    <None Include="SourceSamples\Script.NET\Contracts.txt" />
-    <None Include="SourceSamples\Script.NET\EmbeddedObject.txt" />
-    <None Include="SourceSamples\Script.NET\Forms.txt" />
-    <None Include="SourceSamples\Script.NET\GCD.txt" />
-    <None Include="SourceSamples\Script.NET\Graphs.txt" />
-    <None Include="SourceSamples\Script.NET\metafeatures.txt" />
-    <None Include="SourceSamples\Script.NET\metafeatures_ast.txt" />
-    <None Include="SourceSamples\Script.NET\Mutant.txt" />
-    <None Include="SourceSamples\Script.NET\QuickSort.txt" />
-    <None Include="SourceSamples\Script.NET\Recursion.txt" />
-    <None Include="SourceSamples\Script.NET\RSS.txt" />
-    <None Include="SourceSamples\Script.NET\UIAutomation_FW3.txt" />
-    <None Include="SourceSamples\Script.NET\WinForms.txt" />
     <None Include="SourceSamples\SearchGrammar\Search1.txt" />
     <None Include="SourceSamples\SQL\sql_op_test.txt" />
     <None Include="SourceSamples\SQL\sql_sample1.txt" />
@@ -118,8 +93,15 @@
     <None Include="SourceSamples\SQL\sql_sample3.txt" />
     <None Include="SourceSamples\Wiki\Sample1_codeplex.txt" />
     <None Include="SourceSamples\_about.txt" />
+    <Content Include="SourceSamples\ExpressionEvaluator\StringSample.txt" />
     <Content Include="SourceSamples\Wiki\Sample1_creole.txt" />
     <Content Include="SQL\Sql89-GoldParser.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Irony\010.Irony.csproj">
+      <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
+      <Name>010.Irony</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

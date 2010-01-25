@@ -23,15 +23,17 @@ namespace Irony.Samples {
   // y = -x + 5
   //  the result of calculation is the result of last expression or assignment.
   //  Irony's default  runtime provides expression evaluation. 
-  //  supports inc/dec operators (++,--), both prefix and postfix,
-  //  and combined assignment operators like +=, -=, etc.
+  //  supports inc/dec operators (++,--), both prefix and postfix, and combined assignment operators like +=, -=, etc.
+  //  Supports string operations and Ruby-like active strings with embedded expressions - added temporarily 
+  //  to test this functionality.
 
   [Language("ExpressionEvaluator", "1.0", "Multi-line expression evaluator")]
   public class ExpressionEvaluatorGrammar : Irony.Parsing.Grammar {
     public ExpressionEvaluatorGrammar() : base(false) { //false means case insensitive
-      this.GrammarComments =
-        "Simple expression evaluator. Case-insensitive. Supports big integers and float data types, variables, assignments, " +
-        "arithmetic operations, augmented assignments (+=, -=), inc/dec (++,--)" ;
+      this.GrammarComments =@"
+Simple expression evaluator. Case-insensitive. Supports big integers and float data types, variables, assignments,
+arithmetic operations, augmented assignments (+=, -=), inc/dec (++,--).
+Strings with embedded expressions - temporarily added to test this functionality." ;
       // 1. Terminals
       var number = new NumberLiteral("number");
       //Let's allow big integers (with unlimited number of digits):
@@ -42,37 +44,46 @@ namespace Irony.Samples {
       // so we add it to this list to let Scanner know that it is also a valid terminal. 
       base.NonGrammarTerminals.Add(comment);
 
+      //String literal with embedded expressions  ------------------------------------------------------------------
+      var stringLit = new StringLiteral("string", "\"", StringOptions.AllowsAllEscapes | StringOptions.IsTemplate); 
+      var Expr = new NonTerminal("Expr"); //declare it here to use in template definition 
+      var templateSettings = new StringTemplateSettings(); //by default set to Ruby-style settings 
+      templateSettings.ExpressionRoot = Expr; //this defines how to evaluate expressions inside template
+      this.SnippetRoots.Add(Expr);
+      stringLit.AstNodeConfig = templateSettings;
+      //--------------------------------------------------------------------------------------------------------
+
       // 2. Non-terminals
-      var Expr = new NonTerminal("Expr");
       var Term = new NonTerminal("Term");
-      var BinExpr = new NonTerminal("BinExpr", typeof(BinExprNode));
+      var BinExpr = new NonTerminal("BinExpr", typeof(BinaryOperationNode));
       var ParExpr = new NonTerminal("ParExpr");
-      var UnExpr = new NonTerminal("UnExpr", typeof(UnExprNode));
+      var UnExpr = new NonTerminal("UnExpr", typeof(UnaryOperationNode));
       var UnOp = new NonTerminal("UnOp");
       var BinOp = new NonTerminal("BinOp", "operator");
-      var PostFixExpr = new NonTerminal("PostFixExpr", typeof(UnExprNode));
-      var PostFixOp = new NonTerminal("PostFixOp");
-      var AssignmentStmt = new NonTerminal("AssignmentStmt", typeof(AssigmentNode));
+      var PrefixIncDec = new NonTerminal("PrefixIncDec", typeof(IncDecNode));
+      var PostfixIncDec = new NonTerminal("PostfixIncDec", typeof(IncDecNode));
+      var IncDecOp = new NonTerminal("IncDecOp");
+      var AssignmentStmt = new NonTerminal("AssignmentStmt", typeof(AssignmentNode));
       var AssignmentOp = new NonTerminal("AssignmentOp", "assignment operator");
       var Statement = new NonTerminal("Statement");
-      var ProgramLine = new NonTerminal("ProgramLine");
       var Program = new NonTerminal("Program", typeof(StatementListNode));
 
       // 3. BNF rules
-      Expr.Rule = Term | UnExpr | BinExpr | PostFixExpr;
-      Term.Rule = number | ParExpr | identifier;
+      Expr.Rule = Term | UnExpr | BinExpr | PrefixIncDec | PostfixIncDec;
+      Term.Rule = number | ParExpr | identifier | stringLit;
       ParExpr.Rule = "(" + Expr + ")";
       UnExpr.Rule = UnOp + Term;
-      UnOp.Rule = ToTerm("+") | "-" | "++" | "--";
+      UnOp.Rule = ToTerm("+") | "-"; 
       BinExpr.Rule = Expr + BinOp + Expr;
       BinOp.Rule = ToTerm("+") | "-" | "*" | "/" | "**";
-      PostFixExpr.Rule = Term + PostFixOp;
-      PostFixOp.Rule = ToTerm("++") | "--";
+      PrefixIncDec.Rule = IncDecOp + identifier;
+      PostfixIncDec.Rule = identifier + IncDecOp;
+      IncDecOp.Rule = ToTerm("++") | "--";
       AssignmentStmt.Rule = identifier + AssignmentOp + Expr;
       AssignmentOp.Rule = ToTerm("=") | "+=" | "-=" | "*=" | "/=";
       Statement.Rule = AssignmentStmt | Expr | Empty;
-      ProgramLine.Rule = Statement + NewLine;
-      Program.Rule = MakeStarRule(Program, ProgramLine);
+      Program.Rule = MakePlusRule(Program, NewLine, Statement);
+
       this.Root = Program;       // Set grammar root
 
       // 4. Operators precedence
@@ -84,29 +95,32 @@ namespace Irony.Samples {
       // 5. Punctuation and transient terms
       RegisterPunctuation("(", ")");
       RegisterBracePair("(", ")");
-      MarkTransient(Term, Expr, Statement, BinOp, UnOp, PostFixOp, AssignmentOp, ProgramLine, ParExpr);
+      MarkTransient(Term, Expr, Statement, BinOp, UnOp, IncDecOp, AssignmentOp, ParExpr);
       // The following makes error messages a little cleaner (try evaluating expr 'x y' with and without this line to see the difference)
       MarkNotReported("++", "--"); 
 
-      //automatically add NewLine before EOF so that our BNF rules work correctly when there's no final line break in source
-      this.LanguageFlags = LanguageFlags.CreateAst | LanguageFlags.NewLineBeforeEOF | LanguageFlags.CanRunSample; 
+      //7. Language flags. 
+      // Automatically add NewLine before EOF so that our BNF rules work correctly when there's no final line break in source
+      //this.LanguageFlags = LanguageFlags.CreateAst | LanguageFlags.NewLineBeforeEOF | LanguageFlags.CanRunSample; 
+      this.LanguageFlags = LanguageFlags.CreateAst | LanguageFlags.CanRunSample; 
 
-      //Console
+      //6. Console
       ConsoleTitle = "Irony Expression Evaluator";
       ConsoleGreeting =
 @"Irony Sample Console for Expression Evaluator 
 
   Supports variable assignments, arithmetic operators (+, -, *, /),
-  augmented assignments (+=, -=, etc), prefix/postfix operators ++,--. 
-  Supports big integer arithmetics.
+  augmented assignments (+=, -=, etc), prefix/postfix operators ++,--, string operations. 
+  Supports big integer arithmetics, string operations.
+  Supports strings with embedded expressions : ""name: #{name}""
 
 Press Ctrl-C to exit the program at any time.
 ";
       ConsolePrompt = "?";
       ConsolePromptMoreInput = "?"; 
-
     }
-  }
+  }//class
+
 }//namespace
 
 

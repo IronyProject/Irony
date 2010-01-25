@@ -1,4 +1,0 @@
-  a = new XmlDocument();
-  a.Load('http://www.codeplex.com/scriptdotnet/Project/ProjectRss.aspx');
-  foreach (n in a.SelectNodes('/rss/channel/item'))
-     MessageBox.Show(n['title'].InnerText + ' ' + n['link'].InnerText);

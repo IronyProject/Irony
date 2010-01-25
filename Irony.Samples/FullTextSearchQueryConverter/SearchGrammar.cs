@@ -20,51 +20,42 @@ namespace Irony.Samples.FullTextSearch
           
           // Terminals
           var Term = CreateTerm("Term");
-          var Phrase = new StringLiteral("Phrase");
+          var Phrase = new StringLiteral("Phrase", "\"");
+          var ImpliedAnd = new ImpliedSymbolTerminal("ImpliedAnd"); 
 
           // NonTerminals
-          var OrExpression = new NonTerminal("OrExpression");
-          var OrOperator = new NonTerminal("OrOperator");
-          var AndExpression = new NonTerminal("AndExpression");
-          var AndOperator = new NonTerminal("AndOperator");
-          var ExcludeOperator = new NonTerminal("ExcludeOperator");
+          var BinaryExpression = new NonTerminal("BinaryExpression"); 
+          var BinaryOp = new NonTerminal("BinaryOp"); 
+          var Expression = new NonTerminal("Expression"); 
           var PrimaryExpression = new NonTerminal("PrimaryExpression");
           var ThesaurusExpression = new NonTerminal("ThesaurusExpression");
           var ThesaurusOperator = new NonTerminal("ThesaurusOperator");
-          var ExactOperator = new NonTerminal("ExactOperator");
           var ExactExpression = new NonTerminal("ExactExpression");
           var ParenthesizedExpression = new NonTerminal("ParenthesizedExpression");
           var ProximityExpression = new NonTerminal("ProximityExpression");
           var ProximityList = new NonTerminal("ProximityList");
 
-          this.Root = OrExpression;
-          OrExpression.Rule = AndExpression
-                            | OrExpression + OrOperator + AndExpression;
-          OrOperator.Rule = ToTerm("or") | "|";
-          AndExpression.Rule = PrimaryExpression
-                             | AndExpression + AndOperator + PrimaryExpression;
-          AndOperator.Rule = Empty
-                           | "and"
-                           | "&"
-                           | ExcludeOperator;
-          ExcludeOperator.Rule = "-";
+          this.Root = Expression; 
+          Expression.Rule = PrimaryExpression | BinaryExpression;
+          BinaryExpression.Rule = Expression + BinaryOp + Expression; 
+          BinaryOp.Rule = ImpliedAnd | "and" | "&" | "-" | "or" | "|";
           PrimaryExpression.Rule = Term
                                  | ThesaurusExpression
                                  | ExactExpression
                                  | ParenthesizedExpression
                                  | Phrase
                                  | ProximityExpression;
-          ThesaurusExpression.Rule = ThesaurusOperator + Term;
-          ThesaurusOperator.Rule = "~";
-          ExactExpression.Rule = ExactOperator + Term
-                               | ExactOperator + Phrase;
-          ExactOperator.Rule = "+";
-          ParenthesizedExpression.Rule = "(" + OrExpression + ")";
+          ThesaurusExpression.Rule = "~" + Term;
+          ExactExpression.Rule = "+" + Term | "+" + Phrase;
+          ParenthesizedExpression.Rule = "(" + Expression + ")";
           ProximityExpression.Rule = "<" + ProximityList + ">";
           MakePlusRule(ProximityList, Term);
 
-          MarkTransient(PrimaryExpression, ParenthesizedExpression, AndExpression, OrExpression, ProximityExpression);
+          MarkTransient(PrimaryExpression, Expression, ProximityExpression, ParenthesizedExpression, BinaryOp);
           RegisterPunctuation("<", ">", "(", ")");
+          RegisterOperators(10, "or", "|"); 
+          RegisterOperators(20, "and", "&", "-"); 
+          RegisterOperators(20, ImpliedAnd);
           LanguageFlags |= LanguageFlags.CanRunSample;
         }
 
@@ -114,26 +105,24 @@ namespace Irony.Samples.FullTextSearch
           // symbols get stripped off as punctuation, and child expression node 
           // (parenthesized content) replaces the parent ParenthesizedExpression node
           switch (node.Term.Name) {
-            case "OrExpression":
-              result = "(" + ConvertQuery(node.ChildNodes[0], type) + " OR " +
-                  ConvertQuery(node.ChildNodes[2], type) + ")";
-              break;
-
-            case "AndExpression":
+            case "BinaryExpression":
               string opSym = string.Empty;
-              var opNode = node.ChildNodes[1];
-              string opName = opNode.FindTokenAndGetText();
-              string andop = "";
+              string op = node.ChildNodes[1].FindTokenAndGetText().ToLower(); 
+              string sqlOp = "";
+              switch(op) {
+                case "":  case "&":  case "and":
+                  sqlOp = " AND ";
+                  type = TermType.Inflectional;
+                  break;
+                case "-":
+                  sqlOp = " AND NOT ";
+                  break;
+                case "|":   case "or":
+                  sqlOp = " OR ";
+                  break;
+              }//switch
 
-              if (opName == "-") {
-                andop += " AND NOT ";
-              } else {
-                andop = " AND ";
-                type = TermType.Inflectional;
-              }
-              result = "(" + ConvertQuery(node.ChildNodes[0], type) + andop +
-                  ConvertQuery(node.ChildNodes[2], type) + ")";
-              type = TermType.Inflectional;
+              result = "(" + ConvertQuery(node.ChildNodes[0], type) + sqlOp +  ConvertQuery(node.ChildNodes[2], type) + ")";
               break;
 
             case "PrimaryExpression":

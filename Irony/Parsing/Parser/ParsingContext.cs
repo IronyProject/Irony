@@ -47,6 +47,7 @@ namespace Irony.Parsing {
   public class ParsingContext {
     public readonly Parser Parser;
     public readonly LanguageData Language;
+    public SymbolTable Symbols = new SymbolTable(); 
 
     //Parser settings
     public ParseOptions Options;
@@ -81,14 +82,8 @@ namespace Irony.Parsing {
 
     public VsScannerStateMap VsLineScanState; //State variable used in line scanning mode for VS integration
 
-    public ParserStatus Status {
-      get { return _parserStatus; }
-      set {
-        var oldValue = _parserStatus;
-        _parserStatus = value;
-        OnStatusChanged(oldValue);
-      }
-    } ParserStatus _parserStatus = ParserStatus.Init;
+    public ParserStatus Status {get; internal set;}
+    public bool HasErrors; //error flag, once set remains set
 
     //values dictionary to use by custom language implementations to save some temporary values in parse process
     public readonly Dictionary<string, object> Values = new Dictionary<string, object>();
@@ -100,6 +95,7 @@ namespace Irony.Parsing {
       this.Parser = parser;
       Language = Parser.Language;
       Culture = Language.Grammar.DefaultCulture;
+      Symbols.CopyFrom(Language.GrammarData.Symbols); 
       //This might be a problem for multi-threading - if we have several contexts on parallel threads with different culture.
       //Resources.Culture is static property (this is not Irony's fault, this is auto-generated file).
       Resources.Culture = Culture; 
@@ -135,7 +131,9 @@ namespace Irony.Parsing {
 
     #region Error handling and tracing
     public void AddParserError(string message, params object[] args) {
-      AddParserMessage(ParserErrorLevel.Error, CurrentParserInput.Span.Location, message, args);
+      var location = CurrentParserInput == null? Source.Location : CurrentParserInput.Span.Location;
+      HasErrors = true; 
+      AddParserMessage(ParserErrorLevel.Error, location, message, args);
     }
     public void AddParserMessage(ParserErrorLevel level, SourceLocation location, string message, params object[] args) {
       if (CurrentParseTree == null) return; 
@@ -154,30 +152,35 @@ namespace Irony.Parsing {
       ParserTrace.Add(new ParserTraceEntry(CurrentParserState, ParserStack.Top, CurrentParserInput, message, false));
     }
 
+    internal string FormatUnexpectedInputErrorMessage() {
+      string msg;
+      var expectedSet = GetExpectedTermSet();
+      msg = Language.Grammar.ConstructParserErrorMessage(this, expectedSet);
+      if (string.IsNullOrEmpty(msg))
+        msg = Resources.ErrSyntaxErrorNoInfo;
+      return msg; 
+    }
+
     #endregion
 
-    private void OnStatusChanged(ParserStatus oldStatus) {
-      switch (Status) {
-        case ParserStatus.Init:
-          CurrentParserState = Language.ParserData.InitialState; //set the current state to InitialState
-          CurrentParserInput = null;
-          ParserStack.Clear();
-          ParserStack.Push(new ParseTreeNode(CurrentParserState));
-          ParserInputStack.Clear();
-          CurrentParseTree = null;
-          OpenBraces.Clear();
-          ParserTrace.Clear();
-          CurrentTerminals.Clear(); 
-          CurrentToken = null;
-          PreviousToken = null; 
-          BufferedTokens.Clear();
-          PreviewTokens.Clear(); 
-          Values.Clear();          
-          break;
-      }
-      Parser.OnStatusChanged(oldStatus);
+    internal void Reset() {
+      CurrentParserState = Parser.InitialState; 
+      CurrentParserInput = null;
+      ParserStack.Clear();
+      HasErrors = false; 
+      ParserStack.Push(new ParseTreeNode(CurrentParserState));
+      ParserInputStack.Clear();
+      CurrentParseTree = null;
+      OpenBraces.Clear();
+      ParserTrace.Clear();
+      CurrentTerminals.Clear(); 
+      CurrentToken = null;
+      PreviousToken = null; 
+      BufferedTokens.Clear();
+      PreviewTokens.Clear(); 
+      Values.Clear();          
       foreach (var filter in TokenFilters)
-        filter.OnStatusChanged(oldStatus);
+        filter.Reset();
     }
 
     public void SetSourceLocation(SourceLocation location) {
@@ -185,6 +188,44 @@ namespace Irony.Parsing {
         filter.OnSetSourceLocation(location); 
       SourceStream.Location = location;
     }
+
+    #region Expected term set computations
+    public StringSet GetExpectedTermSet() {
+      if (CurrentParserState == null)
+        return new StringSet(); 
+      //See note about multi-threading issues in ComputeReportedExpectedSet comments.
+      if (CurrentParserState.ReportedExpectedSet == null)
+        CurrentParserState.ReportedExpectedSet = CoreParser.ComputeGroupedExpectedSetForState(Language.Grammar, CurrentParserState);
+      //Filter out closing braces which are not expected based on previous input.
+      // While the closing parenthesis ")" might be expected term in a state in general, 
+      // if there was no opening parenthesis in preceding input then we would not
+      //  expect a closing one. 
+      var expectedSet = FilterBracesInExpectedSet(CurrentParserState.ReportedExpectedSet);
+      return expectedSet;
+    }
+    
+    private StringSet FilterBracesInExpectedSet(StringSet stateExpectedSet) {
+      var result = new StringSet();
+      result.UnionWith(stateExpectedSet);
+      //Find what brace we expect
+      var nextClosingBrace = string.Empty;
+      if (OpenBraces.Count > 0) {
+        var lastOpenBraceTerm = OpenBraces.Peek().KeyTerm;
+        var nextClosingBraceTerm = lastOpenBraceTerm.IsPairFor as KeyTerm;
+        if (nextClosingBraceTerm != null) 
+          nextClosingBrace = nextClosingBraceTerm.Text; 
+      }
+      //Now check all closing braces in result set, and leave only nextClosingBrace
+      foreach(var closingBrace in Language.GrammarData.ClosingBraces) {
+        if (result.Contains(closingBrace) && closingBrace != nextClosingBrace)
+          result.Remove(closingBrace); 
+        
+      }
+      return result; 
+    }
+
+    #endregion
+
 
   }//class
 

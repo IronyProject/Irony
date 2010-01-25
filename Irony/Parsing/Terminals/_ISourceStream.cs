@@ -25,7 +25,7 @@ namespace Irony.Parsing {
     /// <summary>
     /// Returns the source text
     /// </summary>
-    string Text { get; set; } 
+    string Text { get; } 
     /// <summary>
     /// Current start location (position, row, column) of the new token
     /// </summary>
@@ -75,7 +75,7 @@ namespace Irony.Parsing {
     /// <returns>True if there is a match; otherwise, false.</returns>
     bool MatchSymbol(string symbol, bool ignoreCase);
 
-    int TabWidth { get; }
+    int TabWidth { get; set;}
     bool EOF();
   
     /*

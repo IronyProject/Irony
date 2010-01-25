@@ -18,7 +18,24 @@ using System.Diagnostics;
 namespace Irony.Parsing { 
 
   //BNF expressions are represented as OR-list of Plus-lists of BNF terms
-  internal class BnfExpressionData : List<BnfTermList> { }
+  internal class BnfExpressionData : List<BnfTermList> {
+    public override string ToString() {
+      try {
+        string[] pipeArr = new string[this.Count];
+        for (int i = 0; i < this.Count; i++) {
+          BnfTermList seq = this[i];
+          string[] seqArr = new string[seq.Count];
+          for (int j = 0; j < seq.Count; j++)
+            seqArr[j] = seq[j].ToString();
+          pipeArr[i] = String.Join("+", seqArr);
+        }
+        return String.Join("|", pipeArr);
+      } catch(Exception e) {
+        return "(error: " + e.Message + ")";
+      }
+      
+    }
+  }
 
   public class BnfExpression : BnfTerm {
 
@@ -30,30 +47,10 @@ namespace Irony.Parsing {
       Data.Add(new BnfTermList());
     }
 
-    #region properties: Data
     internal BnfExpressionData Data;
-    #endregion
-
-    #region overrides: ToString()
-    private string _toString;
     public override string ToString() {
-      if (_toString != null) return _toString;
-      try {
-        string[] pipeArr = new string[Data.Count];
-        for (int i = 0; i < Data.Count; i++) {
-          BnfTermList seq = Data[i];
-          string[] seqArr = new string[seq.Count];
-          for (int j = 0; j < seq.Count; j++)
-            seqArr[j] = seq[j].ToString();
-          pipeArr[i] = String.Join("+", seqArr);
-        }
-        _toString = String.Join("|", pipeArr);
-        return _toString; 
-      } catch(Exception e) {
-        return "(error: " + e.Message + ")";
-      }
+      return Data.ToString(); 
     } 
-    #endregion
 
     #region Implicit cast operators
     public static implicit operator BnfExpression(string symbol) {

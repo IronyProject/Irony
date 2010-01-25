@@ -12,7 +12,7 @@ namespace Irony.Tests {
     public IntegrationTestGrammar() {
       var comment = new CommentTerminal("comment", "/*", "*/");
       base.NonGrammarTerminals.Add(comment);
-      var str = new StringLiteral("str", "'", StringFlags.AllowsLineBreak);
+      var str = new StringLiteral("str", "'", StringOptions.AllowsLineBreak);
       var stmt = new NonTerminal("stmt");
       stmt.Rule = str | Empty;
       this.Root = stmt; 

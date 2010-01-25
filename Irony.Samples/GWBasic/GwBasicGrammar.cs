@@ -35,10 +35,10 @@ namespace Irony.Samples {
            */
 
             //Terminals
-            var lineNumber = new NumberLiteral("LINE_NUMBER", NumberFlags.IntOnly);
-            var fileNumber = new NumberLiteral("FILE_NUMBER", NumberFlags.IntOnly);
+            var lineNumber = new NumberLiteral("LINE_NUMBER", NumberOptions.IntOnly);
+            var fileNumber = new NumberLiteral("FILE_NUMBER", NumberOptions.IntOnly);
             
-            var number = new NumberLiteral("NUMBER", NumberFlags.AllowStartEndDot);
+            var number = new NumberLiteral("NUMBER", NumberOptions.AllowStartEndDot);
             //ints that are too long for int32 are converted to int64
             number.DefaultIntTypes = new TypeCode[] {TypeCode.Int32, TypeCode.Int64};
             number.AddExponentSymbols("eE", TypeCode.Single); 
@@ -52,7 +52,7 @@ namespace Irony.Samples {
             variable.AddSuffix("!", TypeCode.Single);
             variable.AddSuffix("#", TypeCode.Double); 
           
-            var stringLiteral = new StringLiteral("STRING", "\"", StringFlags.None);
+            var stringLiteral = new StringLiteral("STRING", "\"", StringOptions.None);
             //Important: do not add comment term to base.NonGrammarTerminals list - we do use this terminal in grammar rules
             var userFunctionName = variable;
             var comment = new CommentTerminal("Comment", "REM", "\n");
@@ -125,6 +125,7 @@ namespace Irony.Samples {
 
             // A line can be an empty line, or it's a number followed by a statement list ended by a new-line.
             LINE.Rule = NewLine | lineNumber + LINE_CONTENT_OPT + COMMENT_OPT + NewLine | SyntaxError + NewLine;
+            LINE.NodeCaptionTemplate = "Line #{0}";
 
             // A statement list is 1 or more statements separated by the ':' character
             LINE_CONTENT_OPT.Rule = Empty | IF_STMT | STATEMENT_LIST;
@@ -196,7 +197,7 @@ namespace Irony.Samples {
             RegisterOperators(30, "=", "<=", ">=", "<", ">", "<>");
             RegisterOperators(20, "and", "or");
 
-            EXPR_LIST.Rule = MakeStarRule(EXPR_LIST, null, EXPR);
+            EXPR_LIST.Rule = MakeStarRule(EXPR_LIST, EXPR);
 
             FOR_STMT.Rule = "for" + ASSIGN_STMT + "to" + EXPR + STEP_OPT;
             STEP_OPT.Rule = Empty | "step" + EXPR;
@@ -210,7 +211,7 @@ namespace Irony.Samples {
 
             //Punctuation and Transient elements
             RegisterPunctuation("(", ")", ",");
-            MarkTransient(EXPR, PRINT_ARG, STATEMENT, LINE_CONTENT_OPT, VARIABLE_OR_FUNCTION_EXPR, COMMENT_OPT); 
+            MarkTransient(EXPR, STATEMENT, LINE_CONTENT_OPT, VARIABLE_OR_FUNCTION_EXPR, COMMENT_OPT); 
 
             this.LanguageFlags = LanguageFlags.NewLineBeforeEOF;
 

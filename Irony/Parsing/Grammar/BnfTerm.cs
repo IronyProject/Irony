@@ -18,7 +18,7 @@ using System.Reflection;
 
 namespace Irony.Parsing { 
   [Flags]
-  public enum TermOptions {
+  public enum TermFlags {
     None = 0,
     IsOperator =         0x01,
     IsOpenBrace =        0x02,
@@ -33,7 +33,7 @@ namespace Irony.Parsing {
     
     IsMemberSelect =    0x100,    
     IsNonGrammar =     0x0200,  // if set, parser would eliminate the token from the input stream; terms in Grammar.NonGrammarTerminals have this flag set
-    IsTransient =      0x0400,  // Transient non-terminal - should be removed from the AST tree.
+    IsTransient =      0x0400,  // Transient non-terminal - should be replaced by it's child in the AST tree.
     IsNotReported =    0x0800,  // Exclude from expected terminals list on syntax error
     
     //calculated flags
@@ -42,7 +42,11 @@ namespace Irony.Parsing {
     IsKeyword =      0x040000,
     IsMultiline =    0x100000,
     //internal flags
-    IsList         = 0x200000,
+    IsList              = 0x200000,
+    IsListContainer     = 0x400000,
+    //Indicates not to create AST node; mainly to suppress warning message on some special nodes that AST node type is not specified
+    //Automatically set by MarkTransient method
+    NoAstNode           = 0x800000,  
   }
 
   public delegate void AstNodeCreator(ParsingContext context, ParseTreeNode parseNode);
@@ -83,7 +87,7 @@ namespace Irony.Parsing {
   
     //ErrorAlias is used in error reporting, e.g. "Syntax error, expected <list-of-display-names>". 
     public string ErrorAlias;
-    public TermOptions Options;
+    public TermFlags Flags;
     protected GrammarData GrammarData;
     public int Precedence = NoPrecedence;
     public Associativity Associativity = Associativity.Neutral;
@@ -91,26 +95,49 @@ namespace Irony.Parsing {
     public Grammar Grammar { 
       get { return GrammarData.Grammar; } 
     }
-    public bool OptionIsSet(TermOptions option) {
-      bool result = (Options & option) != 0;
-      return result; 
+    public bool FlagIsSet(TermFlags flag) {
+      return (Flags & flag) != 0;
     }
-    public void SetOption(TermOptions option) {
-      SetOption(option, true);
+    public void SetFlag(TermFlags flag) {
+      SetFlag(flag, true);
     }
-    public void SetOption(TermOptions option, bool value) {
+    public void SetFlag(TermFlags flag, bool value) {
       if (value)
-        Options |= option;
+        Flags |= flag;
       else
-        Options &= ~option;
+        Flags &= ~flag;
     }
 
     #endregion
 
     #region AST node creations: AstNodeType, AstNodeCreator, AstNodeCreated
     public Type AstNodeType;
+    public Ast.AstNodeConfig AstNodeConfig; //config data passed to AstNode
     public AstNodeCreator AstNodeCreator;
     public event EventHandler<AstNodeEventArgs> AstNodeCreated;
+
+    public virtual void CreateAstNode(ParsingContext context, ParseTreeNode nodeInfo) {
+      if (AstNodeCreator != null) {
+        AstNodeCreator(context, nodeInfo);
+        //We assume that Node creator method creates node and initializes it, so parser does not need to call 
+        // IAstNodeInit.InitNode() method on node object.
+        return;
+      }
+      Type nodeType = GetAstNodeType(context, nodeInfo);
+      if (nodeType == null) 
+        return; //we give a warning on grammar validation about this situation
+      nodeInfo.AstNode =  Activator.CreateInstance(nodeType);
+      //Initialize node
+      var iInit = nodeInfo.AstNode as Ast.IAstNodeInit;
+      if (iInit != null)
+        iInit.Init(context, nodeInfo); 
+    }
+
+    //method may be overriden to provide node type different from this.AstNodeType. StringLiteral is overriding this method
+    // to use different node type for template strings
+    protected virtual Type GetAstNodeType(ParsingContext context, ParseTreeNode nodeInfo) {
+      return AstNodeType ?? Grammar.DefaultNodeType;
+    }
 
     protected internal void OnAstNodeCreated(ParseTreeNode parseNode) {
       if (this.AstNodeCreated == null || parseNode.AstNode == null) return;
@@ -121,25 +148,27 @@ namespace Irony.Parsing {
 
 
     #region Kleene operators: Q(), Plus(), Star()
-    NonTerminal _plus, _star;
+    NonTerminal _q, _plus, _star; //cash them
     public BnfExpression Q() {
-      BnfExpression q = Grammar.CurrentGrammar.Empty | this;
-      q.Name = this.Name + "?";
-      return q; 
+      if (_q != null)
+        return _q; 
+      _q = new NonTerminal(this.Name + "?");
+      _q.Rule = this | Grammar.CurrentGrammar.Empty;
+      return _q; 
     }
+    
     public NonTerminal Plus() {
-      if (_plus != null) return _plus;
-      string name = this.Name + "+";
-      _plus = new NonTerminal(name);
-      _plus.SetOption(TermOptions.IsList);
-      _plus.Rule = this | _plus + this;
+      if (_plus != null) 
+        return _plus;
+      _plus = new NonTerminal(this.Name + "+");
+      _plus.Rule = Grammar.MakePlusRule(_plus, this); 
       return _plus;
     }
+
     public NonTerminal Star() {
       if (_star != null) return _star;
       _star = new NonTerminal(this.Name + "*");
-      _star.SetOption(TermOptions.IsList);
-      _star.Rule = Grammar.CurrentGrammar.Empty | _star + this;
+      _star.Rule = Grammar.MakeStarRule(_star, this);  
       return _star;
     }
     #endregion
@@ -178,30 +207,25 @@ namespace Irony.Parsing {
     }
 
     //Pipe/Alternative
+    //New version proposed by the codeplex user bdaugherty
     internal static BnfExpression Op_Pipe(BnfTerm term1, BnfTerm term2) {
-      //Check term1 and see if we can use it as result, simply adding term2 as operand
       BnfExpression expr1 = term1 as BnfExpression;
-      if (expr1 == null) //either not expression at all, or Pipe-type expression (count > 1)
+      if (expr1 == null)
         expr1 = new BnfExpression(term1);
-      //Check term2; if it is an expression and is simple sequence (Data.Count == 1) then add this sequence directly to expr1
       BnfExpression expr2 = term2 as BnfExpression;
-      //1. term2 is a simple expression
-      if (expr2 != null && expr2.Data.Count == 1) { // if it is simple sequence (plus operation), add it directly
-        expr1.Data.Add(expr2.Data[0]);
-        return expr1;
-      }
-      //2. term2 is not a simple expression
-      expr1.Data.Add(new BnfTermList()); //add a list for a new OR element (new "plus" sequence)
-      expr1.Data[expr1.Data.Count - 1].Add(term2); // and put  term2 there if it is not Empty pseudo-element
+      if (expr2 == null)
+        expr2 = new BnfExpression(term2);
+      expr1.Data.AddRange(expr2.Data);
       return expr1;
     }
+
 
     #endregion
 
   }//class
 
   public class BnfTermList : List<BnfTerm> { }
-  public class BnfTermSet : HashSet<BnfTerm> {}
+  public class BnfTermSet : HashSet<BnfTerm> {  }
 
   public class AstNodeEventArgs : EventArgs {
     public AstNodeEventArgs(ParseTreeNode parseTreeNode) {

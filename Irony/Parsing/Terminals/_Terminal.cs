@@ -22,7 +22,7 @@ namespace Irony.Parsing {
     public Terminal(string name, TokenCategory category)  : base(name) {
       Category = category;
       if (Category == TokenCategory.Outline)
-        this.SetOption(TermOptions.IsPunctuation);
+        this.SetFlag(TermFlags.IsPunctuation);
       OutputTerminal = this; 
     }
     public Terminal(string name, string errorAlias, TokenCategory category) : this(name, category) {
@@ -53,7 +53,7 @@ namespace Irony.Parsing {
       base.Init(grammarData);
       //By default for Literal terminals assign node type in Grammar.DefaultLiteralNodeType
       bool assignLiteralType = (AstNodeType == null && AstNodeCreator == null &&
-          OptionIsSet(TermOptions.IsLiteral) &&  Grammar.FlagIsSet(LanguageFlags.CreateAst));
+          FlagIsSet(TermFlags.IsLiteral) &&  Grammar.FlagIsSet(LanguageFlags.CreateAst));
       if (assignLiteralType)
         AstNodeType = this.Grammar.DefaultLiteralNodeType;
     }

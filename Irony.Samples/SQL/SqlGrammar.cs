@@ -16,7 +16,7 @@ namespace Irony.Samples.SQL {
       NonGrammarTerminals.Add(comment);
       NonGrammarTerminals.Add(lineComment);
       var number = new NumberLiteral("number");
-      var string_literal = new StringLiteral("string", "'", StringFlags.AllowsDoubledQuote);
+      var string_literal = new StringLiteral("string", "'", StringOptions.AllowsDoubledQuote);
       var Id_simple = TerminalFactory.CreateSqlExtIdentifier(this, "id_simple"); //covers normal identifiers (abc) and quoted id's ([abc d], "abc d")
       var comma = ToTerm(",");
       var dot = ToTerm(".");
@@ -234,8 +234,10 @@ namespace Irony.Samples.SQL {
       RegisterOperators(4, "OR", "LIKE", "IN");
 
       RegisterPunctuation(",", "(", ")");
-      RegisterPunctuation(semiOpt);
-      base.MarkTransient(stmt, term, asOpt, aliasOpt, stmtLine, binOp, expression);
+      RegisterPunctuation(asOpt, semiOpt);
+      //Note: we cannot declare binOp as transient because it includes operators "NOT LIKE", "NOT IN" consisting of two tokens. 
+      // Transient non-terminals cannot have more than one non-punctuation child nodes.
+      base.MarkTransient(stmt, term, asOpt, aliasOpt, stmtLine, expression);
 
     }//constructor
 

@@ -100,7 +100,7 @@ namespace Irony.Parsing {
     }
 
     private ParserAction GetReduceActionInCurrentState() {
-      if (Context.CurrentParserState.DefaultReduceAction != null) return Context.CurrentParserState.DefaultReduceAction;
+      if (Context.CurrentParserState.DefaultAction != null) return Context.CurrentParserState.DefaultAction;
       foreach (var action in Context.CurrentParserState.Actions.Values)
         if (action.ActionType == ParserActionType.Reduce)
           return action;
@@ -120,7 +120,6 @@ namespace Irony.Parsing {
     #region Error reporting
 
     private void ReportParseError() {
-      string msg;
       if (Context.CurrentParserInput.Term == _grammar.SyntaxError) {
         Context.AddParserError(Context.CurrentParserInput.Token.Value as string);
         return; 
@@ -134,20 +133,11 @@ namespace Irony.Parsing {
         return;
       }
       //General type of error - unexpected input
-      //See note about multi-threading issues in ComputeReportedExpectedSet comments.
-      if (Context.CurrentParserState.ReportedExpectedSet == null)
-        Context.CurrentParserState.ReportedExpectedSet = ComputeReportedExpectedSet(Context.CurrentParserState);
-      //Filter out closing braces which are not expected based on previous input.
-      // While the closing parenthesis ")" might be expected term in a state in general, 
-      // if there was no opening parenthesis in preceding input then we would not
-      //  expect a closing one. 
-      var expectedSet = FilterBracesInExpectedSet(Context.CurrentParserState.ReportedExpectedSet);
-      msg = _grammar.ConstructParserErrorMessage(Context, Context.CurrentParserState, expectedSet, Context.CurrentParserInput);
-      if (string.IsNullOrEmpty(msg))
-        msg = Resources.ErrSyntaxErrorNoInfo;
+      string msg = Context.FormatUnexpectedInputErrorMessage();
       Context.AddParserError(msg);
     }
 
+    #region comments
     // Computes set of expected terms in a parser state. While there may be extended list of symbols expected at some point,
     // we want to reorganize and reduce it. For example, if the current state expects all arithmetic operators as an input,
     // it would be better to not list all operators (+, -, *, /, etc) but simply put "operator" covering them all. 
@@ -163,16 +153,17 @@ namespace Irony.Parsing {
     // We assume that this field assignment is an atomic, concurrency-safe operation. The worst thing that might happen
     // is "double-effort" when two threads start computing the same set around the same time, and the last one to finish would 
     // leave its result in the state field. 
-    private StringSet ComputeReportedExpectedSet(ParserState state) {
+    #endregion
+    internal static StringSet ComputeGroupedExpectedSetForState(Grammar grammar, ParserState state) {
       var terms = new TerminalSet(); 
       terms.UnionWith(state.ExpectedTerminals);
       var result = new StringSet(); 
       //Eliminate no-report terminals
-      foreach(var group in _grammar.TermReportGroups)
+      foreach(var group in grammar.TermReportGroups)
         if (group.GroupType == TermReportGroupType.Exclude) 
             terms.ExceptWith(group.Terminals); 
       //Add normal and operator groups
-      foreach(var group in _grammar.TermReportGroups)
+      foreach(var group in grammar.TermReportGroups)
         if(group.GroupType == TermReportGroupType.Normal || group.GroupType == TermReportGroupType.Operator && terms.Overlaps(group.Terminals)) {
           result.Add(group.Alias); 
           terms.ExceptWith(group.Terminals);
@@ -183,26 +174,6 @@ namespace Irony.Parsing {
       return result;     
     }
 
-    private StringSet FilterBracesInExpectedSet(StringSet stateExpectedSet) {
-      var result = new StringSet();
-      result.UnionWith(stateExpectedSet);
-      //Find what brace we expect
-      var nextClosingBrace = string.Empty;
-      if (Context.OpenBraces.Count > 0) {
-        var lastOpenBraceTerm = Context.OpenBraces.Peek().KeyTerm;
-        var nextClosingBraceTerm = lastOpenBraceTerm.IsPairFor as KeyTerm;
-        if (nextClosingBraceTerm != null) 
-          nextClosingBrace = nextClosingBraceTerm.Text; 
-      }
-
-      //Now check all closing braces in result set, and leave only nextClosingBrace
-      foreach(var closingBrace in Data.Language.GrammarData.ClosingBraces) {
-        if (result.Contains(closingBrace) && closingBrace != nextClosingBrace)
-          result.Remove(closingBrace); 
-        
-      }
-      return result; 
-    }
     #endregion
 
 

@@ -263,7 +263,7 @@ namespace Irony.Interpreter {
         var result = converter.Invoke(value);
         return result; 
       }
-      throw new RuntimeException(string.Format("Failed to convert value '%1' to type %2.", value, toType));
+      throw new Exception(string.Format("Failed to convert value '%1' to type %2.", value, toType));
     }
 
   }//class

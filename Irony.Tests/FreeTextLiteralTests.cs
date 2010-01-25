@@ -28,6 +28,14 @@ namespace Irony.Tests {
       Assert.IsNotNull(_token, "Failed to produce a token on valid string.");
       Assert.AreEqual(term, _token.Terminal, "Failed to scan a string - invalid Terminal in the returned token.");
       Assert.AreEqual(_token.Value.ToString(), @"abc\de,)fg", "Failed to scan a string");
+
+      term = new FreeTextLiteral("FreeText", FreeTextOptions.AllowEof, ";");
+      SetTerminal(term);
+      TryMatch(@"abcdefg");
+      Assert.IsNotNull(_token, "Failed to produce a token for free text ending at EOF.");
+      Assert.AreEqual(term, _token.Terminal, "Failed to scan a free text ending at EOF - invalid Terminal in the returned token.");
+      Assert.AreEqual(_token.Value.ToString(), @"abcdefg", "Failed to scan a free text ending at EOF");
+
     }
 
   }//class

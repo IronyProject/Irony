@@ -23,11 +23,13 @@ namespace Irony.Parsing {
     public readonly LanguageData Language; 
     public readonly Grammar Grammar;
     public NonTerminal AugmentedRoot;
+    public NonTerminalSet AugmentedSnippetRoots = new NonTerminalSet(); 
     public readonly BnfTermSet AllTerms = new BnfTermSet();
     public readonly TerminalList Terminals = new TerminalList();
     public readonly NonTerminalList NonTerminals = new NonTerminalList();
     public readonly StringSet ClosingBraces = new StringSet(); 
     public string WhitespaceAndDelimiters { get; internal set; }
+    public readonly SymbolTable Symbols = new SymbolTable(); 
 
     public GrammarData(LanguageData language) {
       Language = language;
@@ -35,6 +37,7 @@ namespace Irony.Parsing {
     }
 
   }//class
+
 
   [Flags]
   public enum LanguageFlags {
@@ -62,6 +65,12 @@ namespace Irony.Parsing {
     Left,
     Right,
     Neutral  //don't know what that means 
+  }
+
+  [Flags]
+  public enum TermListOptions {
+    None = 0,
+    AllowTrailingDelimiter = 0x01,
   }
 
 }//namespace

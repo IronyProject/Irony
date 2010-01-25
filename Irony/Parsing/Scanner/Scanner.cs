@@ -48,7 +48,7 @@ namespace Irony.Parsing {
       Context.FilteredTokens = tokenStream.GetEnumerator();
     }
 
-    internal void OnStatusChanged(ParserStatus oldStatus) {
+    internal void Reset() {
     }
 
     public Token GetToken() {
@@ -67,7 +67,6 @@ namespace Irony.Parsing {
     private IEnumerable<Token> GetUnfilteredTokens() {
       //We don't do "while(!_source.EOF())... because on EOF() we need to continue and produce EOF token 
       while (true) {  
-        Context.CurrentTerminals.Clear(); 
         Context.PreviousToken = Context.CurrentToken;
         Context.CurrentToken = null; 
         NextToken();
@@ -91,8 +90,7 @@ namespace Irony.Parsing {
       Context.SourceStream.MoveLocationToPreviewPosition();
       //4. Check for EOF
       if (Context.SourceStream.EOF()) {
-        CreateFinalTokensInBuffer(); //puts Eof and optionally final NewLine tokens into buffer
-        Context.CurrentToken = Context.BufferedTokens.Pop();
+        Context.CurrentToken = new Token(_grammar.Eof, Context.SourceStream.Location, string.Empty, _grammar.Eof.Name);;
         return; 
       }
       //5. Actually scan the source text and construct a new token
@@ -123,8 +121,8 @@ namespace Irony.Parsing {
         return;
       }
       //we have an error: either error token or no token at all
-      if (token == null)  //if no token then create error token
-        Context.CurrentToken = Context.SourceStream.CreateErrorToken(Resources.ErrInvalidChar, Context.SourceStream.PreviewChar);
+      if (token == null)   //if no token then create error token
+        Context.CurrentToken = Context.SourceStream.CreateErrorToken(Context.FormatUnexpectedInputErrorMessage());
       Recover();
       
     }
@@ -138,26 +136,16 @@ namespace Irony.Parsing {
       Context.CurrentToken = Context.BufferedTokens.Pop();
     }
     
-    //creates final NewLine token (if necessary) and EOF token and puts them into _bufferedTokens
-    private void CreateFinalTokensInBuffer() {
-      //check if we need extra newline before EOF
-      bool previousIsNewLine = Context.PreviousToken != null && Context.PreviousToken.Terminal == _grammar.NewLine;
-      var eofToken = new Token(_grammar.Eof, Context.SourceStream.Location, string.Empty, _grammar.Eof.Name);
-      Context.BufferedTokens.Push(eofToken); //put it into buffer
-      if (_grammar.FlagIsSet(LanguageFlags.NewLineBeforeEOF) && !previousIsNewLine) {
-        var newLineToken = new Token(_grammar.NewLine, Context.SourceStream.Location, Environment.NewLine, null);
-        Context.BufferedTokens.Push(newLineToken); 
-      }//if
-    }
-
     private void ComputeCurrentTerminals() {
+      Context.CurrentTerminals.Clear(); 
       TerminalList termsForCurrentChar = Data.TerminalsLookup[Context.SourceStream.PreviewChar]; 
       //if we are recovering, previewing or there's no parser state, then return list as is
       // Also return list as is if there are token filters
       // Token filters inject/remove tokens from the stream, so the tokens parser is expecting might be different from
       // scanner can scan
       if(Context.Status == ParserStatus.Recovering || Context.Status == ParserStatus.Previewing 
-          || Context.CurrentParserState == null || _grammar.FlagIsSet(LanguageFlags.DisableScannerParserLink)) {
+          || Context.CurrentParserState == null || _grammar.FlagIsSet(LanguageFlags.DisableScannerParserLink)
+          || Context.Mode == ParseMode.VsLineScan) {
         Context.CurrentTerminals.AddRange(termsForCurrentChar);
         return; 
       }
@@ -187,8 +175,8 @@ namespace Irony.Parsing {
           continue; 
         Context.CurrentToken = token; //now it becomes current token
         term.InvokeValidateToken(Context); //validate it
-        if (Context.CurrentToken == null) continue; //if it was rejected
-        priorToken = Context.CurrentToken;
+        if (Context.CurrentToken != null) 
+          priorToken = Context.CurrentToken;
       }
     }//method
 

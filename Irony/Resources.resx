@@ -159,9 +159,6 @@
   <data name="ErrOpNotImplemented" xml:space="preserve">
     <value>Operator '{0} not imlemented.</value>
   </data>
-  <data name="ErrOpSymbolNotRegistered" xml:space="preserve">
-    <value>Invalid unary operator node: {0}; operator symbol not registered in Invalid unary operator node: {0}; operator symbol not registered in Grammar.Post/PrefixUnaryOperators sets.</value>
-  </data>
   <data name="ErrOutErrorPrintFormat" xml:space="preserve">
     <value>{0}: {1}</value>
     <comment>Location: ErrorMessage</comment>
@@ -393,5 +390,44 @@
   </data>
   <data name="ErrDsvNoClosingQuote" xml:space="preserve">
     <value>Could not find a closing quote for quoted value.</value>
+  </data>
+  <data name="ErrInvalidArgsForIncDec" xml:space="preserve">
+    <value>Invalid arguments for IncDecNode AST node: either first or second argument should be '--' or '++'.</value>
+  </data>
+  <data name="ErrAssignLiteralValue" xml:space="preserve">
+    <value>Invalide operation, attempt to assign constant or literal value.</value>
+  </data>
+  <data name="ErrTemplNoSettings" xml:space="preserve">
+    <value>Error in string literal [{0}]: IsTemplate flag is set, but TemplateSettings is not provided in AstNodeConfig property.</value>
+  </data>
+  <data name="ErrDupStartSymbolStr" xml:space="preserve">
+    <value>Duplicate start symbol {0} in string literal [{1}].</value>
+  </data>
+  <data name="ErrInvalidEmbeddedPrefix" xml:space="preserve">
+    <value>Invalid embedded expression. </value>
+  </data>
+  <data name="ErrNoEndTagInEmbExpr" xml:space="preserve">
+    <value>No ending tag '{0}' found in embedded expression.</value>
+  </data>
+  <data name="ErrTemplExprNotRoot" xml:space="preserve">
+    <value>Expression root non-terminal in template settings (AstNodeConfig property) in templated string literal [{0}] is not added to Roots set. Add it to SnippetRoots in grammar constructor.</value>
+  </data>
+  <data name="ErrTemplMissingExprRoot" xml:space="preserve">
+    <value>Expression root is not specified in template settings (AstNodeConfig property) in templated string literal [{0}]. </value>
+  </data>
+  <data name="ErrRootNotRegistered" xml:space="preserve">
+    <value>({0}) term passed as 'root' paramater to parserr is not Root or snippet root of the grammar. Add it to SnippetRoots set in grammar constructor.</value>
+  </data>
+  <data name="ErrImpliedOpUseParserLink" xml:space="preserve">
+    <value>ImpliedSymbolTerminal cannot be used in grammar with DisableScannerParserLink flag set</value>
+  </data>
+  <data name="ErrListCannotBeTransient" xml:space="preserve">
+    <value>List non-terminals cannot be marked transient; list: ({0})</value>
+  </data>
+  <data name="ErrTransientNtMustHaveOneTerm" xml:space="preserve">
+    <value>Transient non-terminal must have zero or one non-punctuation child nodes; non-terminals: {0}.</value>
+  </data>
+  <data name="ErrLastTermOfErrorProd" xml:space="preserve">
+    <value>The last term of production containing SyntaxError must be a terminal. NonTerminal: {0}</value>
   </data>
 </root>

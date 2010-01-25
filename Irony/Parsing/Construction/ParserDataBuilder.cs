@@ -48,23 +48,41 @@ namespace Irony.Parsing.Construction {
 
     #region Creating parser states
     private void CreateParserStates() {
-      //1. Create Initial State
-      //there is always just one initial production "Root' -> .Root", and we're interested in LR item at 0 index
-      var iniItemSet = new LR0ItemSet();
-      iniItemSet.Add(_language.GrammarData.AugmentedRoot.Productions[0].LR0Items[0]);
-      Data.InitialState = FindOrCreateState(iniItemSet);
-      //2. Expand parser state list
-      ExpandParserStateList();
-      //3. Set final state and create accept action
-      //Find final state: find final shift from initial state over grammar root; create accept action in final state on EOF
-      var lastShiftAction = Data.InitialState.Actions[_grammar.Root];
-      Data.FinalState = lastShiftAction.NewState;
-      Data.FinalState.Actions[_grammar.Eof] = new ParserAction(ParserActionType.Accept, null, null);
+      var grammarData = _language.GrammarData;
+
+      //1. Base automaton: create states for main augmented root for the grammar
+      Data.InitialState = CreateInitialState(grammarData.AugmentedRoot);
+      ExpandParserStateList(0);
+      CreateAcceptAction(Data.InitialState, grammarData.AugmentedRoot); 
+
+      //2. Expand automaton: add parser states from additional roots
+      foreach(var augmRoot in grammarData.AugmentedSnippetRoots) {
+        var initialState = CreateInitialState(augmRoot);
+        ExpandParserStateList(Data.States.Count - 1); //start with just added state - it is the last state in the list
+        CreateAcceptAction(initialState, augmRoot); 
+      }
     }
 
-    private void ExpandParserStateList() {
+    private void CreateAcceptAction(ParserState initialState, NonTerminal augmentedRoot) {
+      var root = augmentedRoot.Productions[0].RValues[0];
+      var shiftOverRootState = initialState.Actions[root].NewState;
+      shiftOverRootState.Actions[_grammar.Eof] = new ParserAction(ParserActionType.Accept, null, null); 
+    }
+
+
+    private ParserState CreateInitialState(NonTerminal augmentedRoot) {
+      //for an augmented root there is an initial production "Root' -> .Root"; so we need the LR0 item at 0 index
+      var iniItemSet = new LR0ItemSet();
+      iniItemSet.Add(augmentedRoot.Productions[0].LR0Items[0]);
+      var initialState = FindOrCreateState(iniItemSet);
+      var rootNt = augmentedRoot.Productions[0].RValues[0] as NonTerminal; 
+      Data.InitialStates[rootNt] = initialState; 
+      return initialState;
+    }
+
+    private void ExpandParserStateList(int initialIndex) {
       // Iterate through states (while new ones are created) and create shift transitions and new states 
-      for (int index = 0; index < Data.States.Count; index++) {
+      for (int index = initialIndex; index < Data.States.Count; index++) {
         var state = Data.States[index];
         //Get all possible shifts
         foreach (var term in state.BuilderData.ShiftTerms) {
@@ -271,7 +289,7 @@ namespace Irony.Parsing.Construction {
     }
 
     private void ResolveConflictByPrecedence(ParserState state, Terminal conflict) {
-      if (!conflict.OptionIsSet(TermOptions.IsOperator)) return; 
+      if (!conflict.FlagIsSet(TermFlags.IsOperator)) return; 
       var stateData = state.BuilderData;
       if (!stateData.ShiftTerminals.Contains(conflict)) return; //it is not shift-reduce
       var shiftAction = state.Actions[conflict];
@@ -316,7 +334,7 @@ namespace Irony.Parsing.Construction {
       foreach (var state in Data.States) {
         var stateData = state.BuilderData;
         if (stateData.ShiftItems.Count == 0 && stateData.ReduceItems.Count == 1) {
-          state.DefaultReduceAction = new ParserAction(ParserActionType.Reduce, null, stateData.ReduceItems.First().Core.Production);
+          state.DefaultAction = new ParserAction(ParserActionType.Reduce, null, stateData.ReduceItems.First().Core.Production);
           continue; 
         } 
         //now create actions
@@ -336,8 +354,14 @@ namespace Irony.Parsing.Construction {
         state.ExpectedTerminals.UnionWith(state.BuilderData.ShiftTerminals);
         //Add lookaheads from reduce items
         foreach (var reduceItem in state.BuilderData.ReduceItems) 
-          state.ExpectedTerminals.UnionWith(reduceItem.Lookaheads); 
+          state.ExpectedTerminals.UnionWith(reduceItem.Lookaheads);
+        RemoveTerminals(state.ExpectedTerminals, _grammar.SyntaxError, _grammar.Eof);
       }//foreach state
+    }
+
+    private void RemoveTerminals(TerminalSet terms, params Terminal[] termsToRemove) {
+      foreach(var termToRemove in termsToRemove)
+        if (terms.Contains(termToRemove)) terms.Remove(termToRemove); 
     }
 
     public void CleanupStateData() {

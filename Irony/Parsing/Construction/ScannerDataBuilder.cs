@@ -38,7 +38,7 @@ namespace Irony.Parsing.Construction {
 
     private void InitMultilineTerminalsList() {
       foreach (var terminal in _grammarData.Terminals) {
-        if (terminal.OptionIsSet(TermOptions.IsMultiline)) {
+        if (terminal.FlagIsSet(TermFlags.IsMultiline)) {
           _data.MultilineTerminals.Add(terminal);
           terminal.MultilineIndex = (byte)(_data.MultilineTerminals.Count);
         }

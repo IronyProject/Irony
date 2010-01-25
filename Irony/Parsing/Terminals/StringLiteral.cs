@@ -18,12 +18,12 @@ using System.Diagnostics;
 namespace Irony.Parsing {
 
   [Flags]
-  public enum StringFlags : short {
+  public enum StringOptions : short {
     None = 0,
     IsChar = 0x01,
     AllowsDoubledQuote = 0x02, //Convert doubled start/end symbol to a single symbol; for ex. in SQL, '' -> '
     AllowsLineBreak    = 0x04,
-    //unused           = 0x08
+    IsTemplate         = 0x08, //Can include embedded expressions that should be evaluated on the fly; ex in Ruby: "hello #{name}"
     NoEscapes          = 0x10, 
     AllowsUEscapes     = 0x20, 
     AllowsXEscapes     = 0x40,
@@ -31,6 +31,18 @@ namespace Irony.Parsing {
     AllowsAllEscapes = AllowsUEscapes | AllowsXEscapes | AllowsOctalEscapes,
 
   }
+
+  //Container for settings of tempate string parser, to interpet strings having embedded values or expressions
+  // like in Ruby:
+  // "Hello, #{name}"
+  // Default values match settings for Ruby strings
+  public class StringTemplateSettings : Ast.AstNodeConfig {
+    public string StartTag = "#{";
+    public string EndTag = "}";
+    public Type AstNodeType = typeof(Ast.StringTemplateNode);
+    public NonTerminal ExpressionRoot;
+  }
+
   public class StringLiteral : CompoundTerminalBase {
 
     public enum StringFlagsInternal : short {
@@ -40,9 +52,9 @@ namespace Irony.Parsing {
     #region StringSubType
     class StringSubType {
       internal readonly string Start, End;
-      internal readonly StringFlags Flags;
+      internal readonly StringOptions Flags;
       internal readonly byte Index;
-      internal StringSubType(string start, string end, StringFlags flags, byte index) {
+      internal StringSubType(string start, string end, StringOptions flags, byte index) {
         Start = start;
         End = end;
         Flags = flags;
@@ -57,38 +69,40 @@ namespace Irony.Parsing {
       }
     }
     class StringSubTypeList : List<StringSubType> {
-      internal void Add(string start, string end, StringFlags flags) {
+      internal void Add(string start, string end, StringOptions flags) {
         base.Add(new StringSubType(start, end, flags, (byte) this.Count)); 
       }
     } 
     #endregion
 
     #region constructors and initialization
-    public StringLiteral(string name, string startEndSymbol, StringFlags stringFlags) : base(name) {
-      base.SetOption(TermOptions.IsLiteral);
-      this._subtypes.Add(startEndSymbol, startEndSymbol, stringFlags);
+    public StringLiteral(string name): base(name) {
+      base.SetFlag(TermFlags.IsLiteral);
       base.AstNodeType = typeof(Irony.Ast.LiteralValueNode);
     }
-    public StringLiteral(string name): this(name, "\"") {
+
+    public StringLiteral(string name, string startEndSymbol, StringOptions stringOptions) : this(name) {
+        _subtypes.Add(startEndSymbol, startEndSymbol, stringOptions);
     }
-    public StringLiteral(string name, string startEndSymbol)  : this(name, startEndSymbol, StringFlags.None) {
-    }
-    public StringLiteral(string name, string startEndSymbol, StringFlags flags, Type astNodeType) 
-          : this(name, startEndSymbol, flags) {
+    
+    public StringLiteral(string name, string startEndSymbol) : this(name, startEndSymbol, StringOptions.None) { }
+
+    public StringLiteral(string name, string startEndSymbol, StringOptions options, Type astNodeType) 
+          : this(name, startEndSymbol, options) {
       base.AstNodeType = astNodeType;
     }
-    public StringLiteral(string name, string startEndSymbol, StringFlags flags, AstNodeCreator astNodeCreator) 
-         : this(name, startEndSymbol, flags) {
+    public StringLiteral(string name, string startEndSymbol, StringOptions options, AstNodeCreator astNodeCreator) 
+         : this(name, startEndSymbol, options) {
       base.AstNodeCreator = astNodeCreator;
     }
 
-    public void AddStartEnd(string startEndSymbol, StringFlags stringFlags) {
-      AddStartEnd(startEndSymbol, startEndSymbol, stringFlags);
+    public void AddStartEnd(string startEndSymbol, StringOptions stringOptions) {
+      AddStartEnd(startEndSymbol, startEndSymbol, stringOptions);
     }
-    public void AddStartEnd(string startSymbol, string endSymbol, StringFlags stringFlags) {
-      _subtypes.Add(startSymbol, endSymbol, stringFlags);
+    public void AddStartEnd(string startSymbol, string endSymbol, StringOptions stringOptions) {
+      _subtypes.Add(startSymbol, endSymbol, stringOptions);
     }
-    public void AddPrefix(string prefix, StringFlags flags) {
+    public void AddPrefix(string prefix, StringOptions flags) {
       base.AddPrefixFlag(prefix, (short)flags); 
     }
 
@@ -102,26 +116,43 @@ namespace Irony.Parsing {
     #region overrides: Init, GetFirsts, ReadBody, etc...
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
+      _startSymbolsFirsts = string.Empty;
       if (_subtypes.Count == 0) {
         grammarData.Language.Errors.Add(GrammarErrorLevel.Error, null, Resources.ErrInvStrDef, this.Name); //"Error in string literal [{0}]: No start/end symbols specified."
         return; 
       }
       //collect all start-end symbols in lists and create strings of first chars
+      var allStartSymbols = new StringSet(); //to detect duplicate start symbols
       _subtypes.Sort(StringSubType.LongerStartFirst); 
-      _startSymbolsFirsts = string.Empty;
-      foreach (StringSubType info in _subtypes) {
-        _startSymbolsFirsts += info.Start[0].ToString();
+      bool isTemplate = false; 
+      foreach (StringSubType subType in _subtypes) {
+        if (allStartSymbols.Contains(subType.Start))
+          grammarData.Language.Errors.Add(GrammarErrorLevel.Error, null, 
+            Resources.ErrDupStartSymbolStr, subType.Start, this.Name); //"Duplicate start symbol {0} in string literal [{1}]."
+        allStartSymbols.Add(subType.Start); 
+        _startSymbolsFirsts += subType.Start[0].ToString();
+        if ((subType.Flags & StringOptions.IsTemplate) != 0) isTemplate = true; 
       }
- 
       if (!CaseSensitive) 
         _startSymbolsFirsts = _startSymbolsFirsts.ToLower() + _startSymbolsFirsts.ToUpper();
       //Set multiline flag
       foreach (StringSubType info in _subtypes) {
-        if ((info.Flags & StringFlags.AllowsLineBreak) != 0) {
-          SetOption(TermOptions.IsMultiline);
+        if ((info.Flags & StringOptions.AllowsLineBreak) != 0) {
+          SetFlag(TermFlags.IsMultiline);
           break; 
         }
       }      
+      //For templates only
+      if(isTemplate) {
+        //Check that template settings object is provided
+        var templateSettings = this.AstNodeConfig as StringTemplateSettings;
+        if(templateSettings == null)
+          grammarData.Language.Errors.Add(GrammarErrorLevel.Error, null, Resources.ErrTemplNoSettings, this.Name); //"Error in string literal [{0}]: IsTemplate flag is set, but TemplateSettings is not provided."
+        else if (templateSettings.ExpressionRoot == null)
+            grammarData.Language.Errors.Add(GrammarErrorLevel.Error, null, Resources.ErrTemplMissingExprRoot, this.Name); //""
+        else if(!Grammar.SnippetRoots.Contains(templateSettings.ExpressionRoot))
+            grammarData.Language.Errors.Add(GrammarErrorLevel.Error, null, Resources.ErrTemplExprNotRoot, this.Name); //""
+      }//if
       //Create editor info
       if (this.EditorInfo == null)
         this.EditorInfo = new TokenEditorInfo(TokenType.String, TokenColor.String, TokenTriggers.None);
@@ -144,11 +175,11 @@ namespace Irony.Parsing {
     }
 
     private bool CompleteReadBody(ISourceStream source, CompoundTokenDetails details) {
-      bool escapeEnabled = !details.IsSet((short) StringFlags.NoEscapes);
+      bool escapeEnabled = !details.IsSet((short) StringOptions.NoEscapes);
       int start = source.PreviewPosition;
       string endQuoteSymbol = details.EndSymbol;
       string endQuoteDoubled = endQuoteSymbol + endQuoteSymbol; //doubled quote symbol
-      bool lineBreakAllowed = details.IsSet((short) StringFlags.AllowsLineBreak);
+      bool lineBreakAllowed = details.IsSet((short) StringOptions.AllowsLineBreak);
       //1. Find the string end
       // first get the position of the next line break; we are interested in it to detect malformed string, 
       //  therefore do it only if linebreak is NOT allowed; if linebreak is allowed, set it to -1 (we don't care).  
@@ -182,7 +213,7 @@ namespace Irony.Parsing {
         
         //Check if it is doubled end symbol
         source.PreviewPosition = endPos;
-        if (details.IsSet((short)StringFlags.AllowsDoubledQuote) && source.MatchSymbol(endQuoteDoubled, !CaseSensitive)) {
+        if (details.IsSet((short)StringOptions.AllowsDoubledQuote) && source.MatchSymbol(endQuoteDoubled, !CaseSensitive)) {
           source.PreviewPosition = endPos + endQuoteDoubled.Length;
           continue;
         }//checking for doubled end symbol
@@ -218,11 +249,11 @@ namespace Irony.Parsing {
       //"char" type can be identified by suffix (like VB where c suffix identifies char)
       // in this case we have details.TypeCodes[0] == char  and we need to set the IsChar flag
       if (details.TypeCodes != null && details.TypeCodes[0] == TypeCode.Char)
-        details.Flags |= (int)StringFlags.IsChar;
+        details.Flags |= (int)StringOptions.IsChar;
       else
         //we may have IsChar flag set (from startEndSymbol, like in c# single quote identifies char)
         // in this case set type code
-        if (details.IsSet((short) StringFlags.IsChar))
+        if (details.IsSet((short) StringOptions.IsChar))
           details.TypeCodes = new TypeCode[] { TypeCode.Char }; 
     }
 
@@ -257,7 +288,7 @@ namespace Irony.Parsing {
     //Extract the string content from lexeme, adjusts the escaped and double-end symbols
     protected override bool ConvertValue(CompoundTokenDetails details) {
       string value = details.Body;
-      bool escapeEnabled = !details.IsSet((short)StringFlags.NoEscapes);
+      bool escapeEnabled = !details.IsSet((short)StringOptions.NoEscapes);
       //Fix all escapes
       if (escapeEnabled && value.IndexOf(EscapeChar) >= 0) {
         details.Flags |= (int) StringFlagsInternal.HasEscapes;
@@ -290,10 +321,10 @@ namespace Irony.Parsing {
 
       //Check for doubled end symbol
       string endSymbol = details.EndSymbol;
-      if (details.IsSet((short)StringFlags.AllowsDoubledQuote) && value.IndexOf(endSymbol) >= 0)
+      if (details.IsSet((short)StringOptions.AllowsDoubledQuote) && value.IndexOf(endSymbol) >= 0)
         value = value.Replace(endSymbol + endSymbol, endSymbol);
 
-      if (details.IsSet((short)StringFlags.IsChar)) {
+      if (details.IsSet((short)StringOptions.IsChar)) {
         if (value.Length != 1) {
           details.Error = Resources.ErrBadChar;  //"Invalid length of char literal - should be a single character.";
           return false;
@@ -314,7 +345,7 @@ namespace Irony.Parsing {
       switch (first) {
         case 'u':
         case 'U':
-          if (details.IsSet((short)StringFlags.AllowsUEscapes)) {
+          if (details.IsSet((short)StringOptions.AllowsUEscapes)) {
             len = (first == 'u' ? 4 : 8);
             if (segment.Length < len + 1) {
               details.Error = string.Format(Resources.ErrBadUnEscape, segment.Substring(len + 1), len);// "Invalid unicode escape ({0}), expected {1} hex digits."
@@ -327,7 +358,7 @@ namespace Irony.Parsing {
           }//if
           break;
         case 'x':
-          if (details.IsSet((short)StringFlags.AllowsXEscapes)) {
+          if (details.IsSet((short)StringOptions.AllowsXEscapes)) {
             //x-escape allows variable number of digits, from one to 4; let's count them
             p = 1; //current position
             while (p < 5 && p < segment.Length) {
@@ -346,7 +377,7 @@ namespace Irony.Parsing {
           }//if
           break;
         case '0':  case '1':  case '2':  case '3':  case '4':  case '5':   case '6': case '7':
-          if (details.IsSet((short)StringFlags.AllowsOctalEscapes)) {
+          if (details.IsSet((short)StringOptions.AllowsOctalEscapes)) {
             //octal escape allows variable number of digits, from one to 3; let's count them
             p = 0; //current position
             while (p < 3 && p < segment.Length) {
@@ -365,6 +396,21 @@ namespace Irony.Parsing {
       return segment; 
     }//method
     #endregion
+
+    //Override method to provide different node type for string templates
+    protected override Type GetAstNodeType(ParsingContext context, ParseTreeNode nodeInfo) {
+      var details = nodeInfo.Token.Details as CompoundTokenDetails;
+      //check that IsTemplate flag is set and that the string actually contains embedded expression(s) by checking the start tag
+      var isTemplate = details != null && details.IsSet((short) StringOptions.IsTemplate);
+      if (isTemplate) {
+        var templateSettings = this.AstNodeConfig as StringTemplateSettings;
+        isTemplate &= nodeInfo.Token.ValueString.Contains(templateSettings.StartTag); 
+        if (isTemplate)
+          return templateSettings.AstNodeType;
+      }
+      //otherwise return default type from base method
+      return base.GetAstNodeType(context, nodeInfo); 
+    }//method
 
   }//class
 

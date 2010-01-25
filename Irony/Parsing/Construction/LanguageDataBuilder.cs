@@ -28,7 +28,7 @@ namespace Irony.Parsing.Construction {
     }
 
     public bool Build() {
-      var sw = new StopwatchCustom(); 
+      var sw = new Stopwatch(); 
       try {
         if (_grammar.Root == null)
           Language.Errors.AddAndThrow(GrammarErrorLevel.Error, null, Resources.ErrRootNotSet);

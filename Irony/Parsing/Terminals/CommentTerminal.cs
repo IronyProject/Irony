@@ -40,7 +40,7 @@ namespace Irony.Parsing {
         _endSymbolsFirsts[i] = sym[0];
         _isLineComment |= sym.Contains("\n");
         if (!_isLineComment)
-          SetOption(TermOptions.IsMultiline); 
+          SetFlag(TermFlags.IsMultiline); 
       }
       if (this.EditorInfo == null) {
         TokenType ttype = _isLineComment ? TokenType.LineComment : TokenType.Comment;

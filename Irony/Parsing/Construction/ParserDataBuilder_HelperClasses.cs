@@ -82,7 +82,7 @@ namespace Irony.Parsing.Construction {
         if(_readStateSet == null) {
           _readStateSet = new ParserStateSet(); 
           foreach(var shiftTerm in State.BuilderData.ShiftTerms)
-            if (shiftTerm.OptionIsSet(TermOptions.IsNullable)) {
+            if (shiftTerm.FlagIsSet(TermFlags.IsNullable)) {
               var targetState = State.Actions[shiftTerm].NewState;
               _readStateSet.Add(targetState);
               _readStateSet.UnionWith(targetState.BuilderData.ReadStateSet); //we shouldn't get into loop here, the chain of reads is finite

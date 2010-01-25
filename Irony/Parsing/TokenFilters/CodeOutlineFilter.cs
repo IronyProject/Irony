@@ -46,19 +46,18 @@ namespace Irony.Parsing {
     }
     #endregion
 
-
-    public bool OptionIsSet(OutlineOptions option) {
-      return (Options & option) != 0;
-    }
-
-    private void Reset() {
+    public override void Reset() {
+      base.Reset();
       Indents.Clear();
       Indents.Push(0);
       OutputTokens.Clear();
       PreviousToken = null;
       CurrentToken = null;
       PreviousTokenLocation = new SourceLocation();
+    }
 
+    public bool OptionIsSet(OutlineOptions option) {
+      return (Options & option) != 0;
     }
 
     public override IEnumerable<Token> BeginFiltering(ParsingContext context, IEnumerable<Token> tokens) {
@@ -187,17 +186,6 @@ namespace Irony.Parsing {
     private void PushOutlineToken(Terminal term, SourceLocation location) {
       OutputTokens.Push(new Token(term, location, string.Empty, null));
     }
-
-    protected internal override void OnStatusChanged(ParserStatus oldStatus) {
-      base.OnStatusChanged(oldStatus);
-      if (_context == null) return; 
-      switch (_context.Status) {
-        case ParserStatus.Init:
-          Reset();
-          break; 
-      }
-
-    } 
 
   }//class
 }//namespace

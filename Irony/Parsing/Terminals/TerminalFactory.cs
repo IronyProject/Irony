@@ -19,18 +19,18 @@ namespace Irony.Parsing {
   public static class TerminalFactory {
 
     public static StringLiteral CreateCSharpString(string name) {
-      StringLiteral term = new StringLiteral(name, "\"", StringFlags.AllowsAllEscapes);
-      term.AddPrefix("@", StringFlags.NoEscapes | StringFlags.AllowsLineBreak | StringFlags.AllowsDoubledQuote);
+      StringLiteral term = new StringLiteral(name, "\"", StringOptions.AllowsAllEscapes);
+      term.AddPrefix("@", StringOptions.NoEscapes | StringOptions.AllowsLineBreak | StringOptions.AllowsDoubledQuote);
       return term;
     }
     public static StringLiteral CreateCSharpChar(string name) {
-      StringLiteral term = new StringLiteral(name, "'", StringFlags.IsChar);
+      StringLiteral term = new StringLiteral(name, "'", StringOptions.IsChar);
       return term;
     }
 
     public static StringLiteral CreateVbString(string name) {
       StringLiteral term = new StringLiteral(name);
-      term.AddStartEnd("\"", StringFlags.NoEscapes | StringFlags.AllowsDoubledQuote);
+      term.AddStartEnd("\"", StringOptions.NoEscapes | StringOptions.AllowsDoubledQuote);
       term.AddSuffix("$", TypeCode.String);
       term.AddSuffix("c", TypeCode.Char);
       return term;
@@ -38,14 +38,14 @@ namespace Irony.Parsing {
 
     public static StringLiteral CreatePythonString(string name) {
       StringLiteral term = new StringLiteral(name);
-      term.AddStartEnd("'", StringFlags.AllowsAllEscapes);
-      term.AddStartEnd("'''", StringFlags.AllowsAllEscapes | StringFlags.AllowsLineBreak);
-      term.AddStartEnd("\"", StringFlags.AllowsAllEscapes);
-      term.AddStartEnd("\"\"\"", StringFlags.AllowsAllEscapes | StringFlags.AllowsLineBreak);
+      term.AddStartEnd("'", StringOptions.AllowsAllEscapes);
+      term.AddStartEnd("'''", StringOptions.AllowsAllEscapes | StringOptions.AllowsLineBreak);
+      term.AddStartEnd("\"", StringOptions.AllowsAllEscapes);
+      term.AddStartEnd("\"\"\"", StringOptions.AllowsAllEscapes | StringOptions.AllowsLineBreak);
 
-      term.AddPrefix("u", StringFlags.AllowsAllEscapes);
-      term.AddPrefix("r", StringFlags.NoEscapes );
-      term.AddPrefix("ur", StringFlags.NoEscapes);
+      term.AddPrefix("u", StringOptions.AllowsAllEscapes);
+      term.AddPrefix("r", StringOptions.NoEscapes );
+      term.AddPrefix("ur", StringOptions.NoEscapes);
  
       return term;
     }
@@ -55,7 +55,7 @@ namespace Irony.Parsing {
       NumberLiteral term = new NumberLiteral(name);
       term.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.UInt32, TypeCode.Int64, TypeCode.UInt64 };
       term.DefaultFloatType = TypeCode.Double;
-      term.AddPrefix("0x", NumberFlags.Hex);
+      term.AddPrefix("0x", NumberOptions.Hex);
       term.AddSuffix("u", TypeCode.UInt32, TypeCode.UInt64);
       term.AddSuffix("l", TypeCode.Int64, TypeCode.UInt64);
       term.AddSuffix("ul", TypeCode.UInt64);
@@ -69,8 +69,8 @@ namespace Irony.Parsing {
       NumberLiteral term = new NumberLiteral(name);
       term.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.Int64 };
       //term.DefaultFloatType = TypeCode.Double; it is default
-      term.AddPrefix("&H", NumberFlags.Hex);
-      term.AddPrefix("&O", NumberFlags.Octal);
+      term.AddPrefix("&H", NumberOptions.Hex);
+      term.AddPrefix("&O", NumberOptions.Octal);
       term.AddSuffix("S", TypeCode.Int16);
       term.AddSuffix("I", TypeCode.Int32);
       term.AddSuffix("%", TypeCode.Int32);
@@ -89,14 +89,14 @@ namespace Irony.Parsing {
     }
     //http://docs.python.org/ref/numbers.html
     public static NumberLiteral CreatePythonNumber(string name) {
-      NumberLiteral term = new NumberLiteral(name, NumberFlags.AllowStartEndDot);
+      NumberLiteral term = new NumberLiteral(name, NumberOptions.AllowStartEndDot);
       //default int types are Integer (32bit) -> LongInteger (BigInt); Try Int64 before BigInt: Better performance?
       term.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.Int64, NumberLiteral.TypeCodeBigInt };
       // term.DefaultFloatType = TypeCode.Double; -- it is default
       //float type is implementation specific, thus try decimal first (higher precision)
       //term.DefaultFloatTypes = new TypeCode[] { TypeCode.Decimal, TypeCode.Double };
-      term.AddPrefix("0x", NumberFlags.Hex);
-      term.AddPrefix("0", NumberFlags.Octal);
+      term.AddPrefix("0x", NumberOptions.Hex);
+      term.AddPrefix("0", NumberOptions.Octal);
       term.AddSuffix("L", TypeCode.Int64, NumberLiteral.TypeCodeBigInt);
       term.AddSuffix("J", NumberLiteral.TypeCodeImaginary);
       return term;
@@ -115,20 +115,20 @@ namespace Irony.Parsing {
       term.AddExponentSymbols("eE", TypeCode.Double); //default precision for platform, double 
       term.AddExponentSymbols("sSfF", TypeCode.Single); 
       term.AddExponentSymbols("dDlL", TypeCode.Double); 
-      term.AddPrefix("#b", NumberFlags.Binary);
-      term.AddPrefix("#o", NumberFlags.Octal);
-      term.AddPrefix("#x", NumberFlags.Hex);
-      term.AddPrefix("#d", NumberFlags.None);
-      term.AddPrefix("#i", NumberFlags.None); // inexact prefix, has no effect
-      term.AddPrefix("#e", NumberFlags.None); // exact prefix, has no effect
+      term.AddPrefix("#b", NumberOptions.Binary);
+      term.AddPrefix("#o", NumberOptions.Octal);
+      term.AddPrefix("#x", NumberOptions.Hex);
+      term.AddPrefix("#d", NumberOptions.None);
+      term.AddPrefix("#i", NumberOptions.None); // inexact prefix, has no effect
+      term.AddPrefix("#e", NumberOptions.None); // exact prefix, has no effect
       term.AddSuffix("J", NumberLiteral.TypeCodeImaginary);
       return term;
     }
 
 
     public static IdentifierTerminal CreateCSharpIdentifier(string name) {
-      IdentifierTerminal id = new IdentifierTerminal(name, IdFlags.AllowsEscapes | IdFlags.CanStartWithEscape);
-      id.AddPrefix("@", IdFlags.IsNotKeyword);
+      IdentifierTerminal id = new IdentifierTerminal(name, IdOptions.AllowsEscapes | IdOptions.CanStartWithEscape);
+      id.AddPrefix("@", IdOptions.IsNotKeyword);
       //From spec:
       //Start char is "_" or letter-character, which is a Unicode character of classes Lu, Ll, Lt, Lm, Lo, or Nl 
       id.StartCharCategories.AddRange(new UnicodeCategory[] {
@@ -166,8 +166,8 @@ namespace Irony.Parsing {
     public static IdentifierTerminal CreateSqlExtIdentifier(Grammar grammar, string name) {
       var id = new IdentifierTerminal(name);
       StringLiteral term = new StringLiteral(name + "_qouted");
-      term.AddStartEnd("[", "]", StringFlags.NoEscapes);
-      term.AddStartEnd("\"", StringFlags.NoEscapes);
+      term.AddStartEnd("[", "]", StringOptions.NoEscapes);
+      term.AddStartEnd("\"", StringOptions.NoEscapes);
       term.SetOutputTerminal(grammar, id); //term will be added to NonGrammarTerminals automatically 
       return id;
     }

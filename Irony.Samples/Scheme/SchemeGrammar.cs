@@ -44,13 +44,13 @@ namespace Irony.Samples.Scheme {
 
       // TODO: build SchemeCharLiteral
       // the following is nonsense, just to put something there
-      var charLiteral = new StringLiteral("Char", "'", StringFlags.None); 
-      var stringLiteral = new StringLiteral("String", "\"", StringFlags.AllowsAllEscapes);
+      var charLiteral = new StringLiteral("Char", "'", StringOptions.None); 
+      var stringLiteral = new StringLiteral("String", "\"", StringOptions.AllowsAllEscapes);
       //Identifiers. Note: added "-", just to allow IDs starting with "->" 
       var SimpleIdentifier = new IdentifierTerminal("SimpleIdentifier", "_+-*/.@?!<>=", "_+-*/.@?!<>=$%&:^~");
       //                                                           name                extraChars      extraFirstChars  
       var Number = TerminalFactory.CreateSchemeNumber("Number");
-      var Byte = new NumberLiteral("Byte", NumberFlags.IntOnly); 
+      var Byte = new NumberLiteral("Byte", NumberOptions.IntOnly); 
 
       //Comments
       Terminal Comment = new CommentTerminal("Comment", "#|", "|#");

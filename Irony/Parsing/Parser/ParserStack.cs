@@ -33,6 +33,10 @@ namespace Irony.Parsing {
     public void Pop(int count) {
       base.RemoveRange(Count - count, count); 
     }
+    public void PopUntil(int finalCount) {
+      if (finalCount < Count) 
+        Pop(Count - finalCount); 
+    }
     public ParseTreeNode Top {
       get {
         if (Count == 0) return null;

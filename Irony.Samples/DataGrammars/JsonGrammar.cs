@@ -14,25 +14,25 @@ namespace Irony.Samples.Json {
       var comma = ToTerm(","); 
       
       //Nonterminals
-      var jobject = new NonTerminal("Object");
-      var jarray = new NonTerminal("Array");
+      var jobject = new NonTerminal("Object"); 
+      var jobjectBr = new NonTerminal("ObjectBr");
+      var jarray = new NonTerminal("Array"); 
+      var jarrayBr = new NonTerminal("ArrayBr");
       var jvalue = new NonTerminal("Value");
       var jprop = new NonTerminal("Property"); 
-      var jproplist = new NonTerminal("PropertyList"); 
-      var jlist = new NonTerminal("List"); 
 
       //Rules
-      jvalue.Rule = jstring | jnumber | jobject | jarray | "true" | "false" | "null";
-      jobject.Rule = "{" + jproplist + "}";
-      jproplist.Rule = MakeStarRule(jproplist, comma, jprop);
+      jvalue.Rule = jstring | jnumber | jobjectBr | jarrayBr | "true" | "false" | "null";
+      jobjectBr.Rule = "{" + jobject + "}";
+      jobject.Rule = MakeStarRule(jobject, comma, jprop);
       jprop.Rule = jstring + ":" + jvalue;
-      jarray.Rule = "[" + jlist + "]";
-      jlist.Rule = MakeStarRule(jlist, comma, jvalue);
+      jarrayBr.Rule = "[" + jarray + "]";
+      jarray.Rule = MakeStarRule(jarray, comma, jvalue);
 
       //Set grammar root
       this.Root = jvalue;
       RegisterPunctuation("{", "}", "[", "]", ":", ",");
-      this.MarkTransient(jvalue, jlist, jproplist);
+      this.MarkTransient(jvalue, jarrayBr, jobjectBr);
 
     }//constructor
   }//class

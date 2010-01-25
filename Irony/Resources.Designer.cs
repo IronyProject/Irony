@@ -106,6 +106,15 @@ namespace Irony {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalide operation, attempt to assign constant or literal value..
+        /// </summary>
+        internal static string ErrAssignLiteralValue {
+            get {
+                return ResourceManager.GetString("ErrAssignLiteralValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid length of char literal - should be a single character..
         /// </summary>
         internal static string ErrBadChar {
@@ -205,11 +214,29 @@ namespace Irony {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Duplicate start symbol {0} in string literal [{1}]..
+        /// </summary>
+        internal static string ErrDupStartSymbolStr {
+            get {
+                return ResourceManager.GetString("ErrDupStartSymbolStr", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to create AST node for non-terminal [{0}], error: {1}.
         /// </summary>
         internal static string ErrFailedCreateNode {
             get {
                 return ResourceManager.GetString("ErrFailedCreateNode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ImpliedSymbolTerminal cannot be used in grammar with DisableScannerParserLink flag set.
+        /// </summary>
+        internal static string ErrImpliedOpUseParserLink {
+            get {
+                return ResourceManager.GetString("ErrImpliedOpUseParserLink", resourceCulture);
             }
         }
         
@@ -232,6 +259,15 @@ namespace Irony {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid arguments for IncDecNode AST node: either first or second argument should be &apos;--&apos; or &apos;++&apos;..
+        /// </summary>
+        internal static string ErrInvalidArgsForIncDec {
+            get {
+                return ResourceManager.GetString("ErrInvalidArgsForIncDec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid AstMode value in call to Evaluate method. Node: {0}, mode: {1}..
         /// </summary>
         internal static string ErrInvalidAstMode {
@@ -246,6 +282,15 @@ namespace Irony {
         internal static string ErrInvalidChar {
             get {
                 return ResourceManager.GetString("ErrInvalidChar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid embedded expression. .
+        /// </summary>
+        internal static string ErrInvalidEmbeddedPrefix {
+            get {
+                return ResourceManager.GetString("ErrInvalidEmbeddedPrefix", resourceCulture);
             }
         }
         
@@ -313,6 +358,24 @@ namespace Irony {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The last term of production containing SyntaxError must be a terminal. NonTerminal: {0}.
+        /// </summary>
+        internal static string ErrLastTermOfErrorProd {
+            get {
+                return ResourceManager.GetString("ErrLastTermOfErrorProd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to List non-terminals cannot be marked transient; list: ({0}).
+        /// </summary>
+        internal static string ErrListCannotBeTransient {
+            get {
+                return ResourceManager.GetString("ErrListCannotBeTransient", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NLALR process is in indefinite loop, number of states exceeded 3000..
         /// </summary>
         internal static string ErrNLALRhang {
@@ -336,6 +399,15 @@ namespace Irony {
         internal static string ErrNoEndForRegex {
             get {
                 return ResourceManager.GetString("ErrNoEndForRegex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No ending tag &apos;{0}&apos; found in embedded expression..
+        /// </summary>
+        internal static string ErrNoEndTagInEmbExpr {
+            get {
+                return ResourceManager.GetString("ErrNoEndTagInEmbExpr", resourceCulture);
             }
         }
         
@@ -403,15 +475,6 @@ namespace Irony {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid unary operator node: {0}; operator symbol not registered in Invalid unary operator node: {0}; operator symbol not registered in Grammar.Post/PrefixUnaryOperators sets..
-        /// </summary>
-        internal static string ErrOpSymbolNotRegistered {
-            get {
-                return ResourceManager.GetString("ErrOpSymbolNotRegistered", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to {0}: {1}.
         /// </summary>
         internal static string ErrOutErrorPrintFormat {
@@ -475,6 +538,15 @@ namespace Irony {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ({0}) term passed as &apos;root&apos; paramater to parserr is not Root or snippet root of the grammar. Add it to SnippetRoots set in grammar constructor..
+        /// </summary>
+        internal static string ErrRootNotRegistered {
+            get {
+                return ResourceManager.GetString("ErrRootNotRegistered", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Root property of the grammar is not set..
         /// </summary>
         internal static string ErrRootNotSet {
@@ -516,6 +588,42 @@ namespace Irony {
         internal static string ErrSyntaxErrorNoInfo {
             get {
                 return ResourceManager.GetString("ErrSyntaxErrorNoInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Expression root non-terminal in template settings (AstNodeConfig property) in templated string literal [{0}] is not added to Roots set. Add it to SnippetRoots in grammar constructor..
+        /// </summary>
+        internal static string ErrTemplExprNotRoot {
+            get {
+                return ResourceManager.GetString("ErrTemplExprNotRoot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Expression root is not specified in template settings (AstNodeConfig property) in templated string literal [{0}]. .
+        /// </summary>
+        internal static string ErrTemplMissingExprRoot {
+            get {
+                return ResourceManager.GetString("ErrTemplMissingExprRoot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error in string literal [{0}]: IsTemplate flag is set, but TemplateSettings is not provided in AstNodeConfig property..
+        /// </summary>
+        internal static string ErrTemplNoSettings {
+            get {
+                return ResourceManager.GetString("ErrTemplNoSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Transient non-terminal must have zero or one non-punctuation child nodes; non-terminals: {0}..
+        /// </summary>
+        internal static string ErrTransientNtMustHaveOneTerm {
+            get {
+                return ResourceManager.GetString("ErrTransientNtMustHaveOneTerm", resourceCulture);
             }
         }
         

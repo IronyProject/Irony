@@ -41,12 +41,12 @@ namespace Irony.Samples.MiniPython {
       // 2. Non-terminals
       var Expr = new NonTerminal("Expr");
       var Term = new NonTerminal("Term");
-      var BinExpr = new NonTerminal("BinExpr", typeof(BinExprNode));
+      var BinExpr = new NonTerminal("BinExpr", typeof(BinaryOperationNode));
       var ParExpr = new NonTerminal("ParExpr");
-      var UnExpr = new NonTerminal("UnExpr", typeof(UnExprNode));
+      var UnExpr = new NonTerminal("UnExpr", typeof(UnaryOperationNode));
       var UnOp = new NonTerminal("UnOp", "operator");
       var BinOp = new NonTerminal("BinOp", "operator");
-      var AssignmentStmt = new NonTerminal("AssignmentStmt", typeof(AssigmentNode));
+      var AssignmentStmt = new NonTerminal("AssignmentStmt", typeof(AssignmentNode));
       var Stmt = new NonTerminal("Stmt");
       var ExtStmt = new NonTerminal("ExtStmt");
       //Just as a test for NotSupportedNode
@@ -79,7 +79,9 @@ namespace Irony.Samples.MiniPython {
       ParamList.Rule = MakeStarRule(ParamList, comma, identifier);
       ArgList.Rule = MakeStarRule(ArgList, comma, Expr);
       FunctionDef.Rule = "def" + identifier + "(" + ParamList + ")" + colon + Eos + Block;
+      FunctionDef.NodeCaptionTemplate = "def #{1}(...)"; 
       FunctionCall.Rule = identifier + "(" + ArgList + ")";
+      FunctionCall.NodeCaptionTemplate = "call #{0}(...)";
 
       this.Root = StmtList;       // Set grammar root
 
@@ -102,8 +104,8 @@ namespace Irony.Samples.MiniPython {
       FunctionDef.ErrorRule = SyntaxError + Dedent; 
 
       // 8. Syntax error reporting
-      AddNoReportGroup("(");
-      AddNoReportGroup(Eos); 
+      AddToNoReportGroup("(");
+      AddToNoReportGroup(Eos); 
       AddOperatorReportGroup("operator"); 
 
       // 9. Initialize console attributes

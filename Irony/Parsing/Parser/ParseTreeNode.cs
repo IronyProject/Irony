@@ -37,20 +37,13 @@ namespace Irony.Parsing {
     public SourceSpan Span;
     public Production ReduceProduction;
     public ParseTreeNodeList ChildNodes = new ParseTreeNodeList();
-    /* Used by NLALR parser to search for action based on "expanded" version of the lookahead
-      when actual lookahead is non-canonical (reduced non-terminal) and action for it does not exist.
-     This might happen in non-canonical parser. Not necessarily the same as ChildNodes[0], because 
-     it can be punctuation symbol, so it might be removed from ChildNodes, so we need to keep it in a separate field.*/
-    public ParseTreeNode FirstChild; 
     public bool IsError;
     internal ParserState State;      //used by parser to store current state when node is pushed into the parser stack
 
-    public ParseTreeNode(object node) {
-      AstNode = node;
-    }
     public ParseTreeNode(BnfTerm term) {
       Term = term;
     }
+    
     public ParseTreeNode(Token token) {
       Token = token;
       Term = token.Terminal;
@@ -59,34 +52,34 @@ namespace Irony.Parsing {
       Span = new SourceSpan(token.Location, token.Length);
       IsError = token.IsError(); 
     }
+    
     public ParseTreeNode(ParserState initialState) {
       State = initialState;
     }
-    public ParseTreeNode(Production reduceProduction) {
+    
+    public ParseTreeNode(Production reduceProduction, SourceSpan span) {
       ReduceProduction = reduceProduction;
+      Span = span; 
       Term = ReduceProduction.LValue;
       Precedence = Term.Precedence;
     }
+    
     public ParseTreeNode(object node, BnfTerm term, int precedence, Associativity associativity, SourceSpan span) {
       AstNode = node;
       Term = term;
       Precedence = precedence;
       Associativity = associativity;
     }
+
     public override string ToString() {
-      if(Term == null) //special case for initial node pushed into the stack at parser start
-        return string.Empty; //  Resources.LabelInitialState;
-      if (Token == null)
-        return Term.Name;
-      else 
-        return Token.ToString();
+      return Term.Grammar.GetParseNodeCaption(this); 
     }//method
 
     public string FindTokenAndGetText() {
-      var tkn = FindFirstChildToken();
+      var tkn = FindToken();
       return tkn == null ? null : tkn.Text;       
     }
-    public Token FindFirstChildToken() {
+    public Token FindToken() {
       return FindFirstChildTokenRec(this); 
     }
     private static Token FindFirstChildTokenRec(ParseTreeNode node) {

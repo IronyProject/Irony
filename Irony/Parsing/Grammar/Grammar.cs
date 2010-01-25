@@ -65,15 +65,19 @@ namespace Irony.Parsing {
     public Type DefaultLiteralNodeType = typeof(LiteralValueNode); //default node type for literals
 
 
+    /// <summary>
+    /// The main root entry for the grammar. 
+    /// </summary>
     public NonTerminal Root;
+    
+    /// <summary>
+    /// Alternative roots for parsing code snippets.
+    /// </summary>
+    public NonTerminalSet SnippetRoots = new NonTerminalSet();
     
     public string GrammarComments; //shown in Grammar info tab
 
     public CultureInfo DefaultCulture = CultureInfo.InvariantCulture;
-
-    //TODO: refactor UnaryOpNode, remove this nonsense
-    public StringSet PrefixUnaryOperators;
-    public StringSet PostfixUnaryOperators;
 
     //Console-related properties, initialized in grammar constructor
     public string ConsoleTitle;
@@ -93,11 +97,6 @@ namespace Irony.Parsing {
       bool ignoreCase =  !this.CaseSensitive;
       LanguageStringComparer = StringComparer.Create(System.Globalization.CultureInfo.InvariantCulture, ignoreCase);
       KeyTerms = new KeyTermTable(LanguageStringComparer);
-      //Initialize unary operators sets
-      PrefixUnaryOperators = new StringSet(LanguageStringComparer);
-      PostfixUnaryOperators = new StringSet(LanguageStringComparer);
-      PrefixUnaryOperators.AddRange ("+", "-", "!", "++", "--");
-      PostfixUnaryOperators.AddRange("++", "--");
       //Initialize console attributes
       ConsoleTitle = Resources.MsgDefaultConsoleTitle;
       ConsoleGreeting = string.Format(Resources.MsgDefaultConsoleGreeting, this.GetType().Name);
@@ -111,7 +110,7 @@ namespace Irony.Parsing {
     public void MarkReservedWords(params string[] reservedWords) {
       foreach (var word in reservedWords) {
         var wdTerm = ToTerm(word);
-        wdTerm.SetOption(TermOptions.IsReservedWord);
+        wdTerm.SetFlag(TermFlags.IsReservedWord);
       }
     }
     #endregion 
@@ -120,13 +119,13 @@ namespace Irony.Parsing {
     public void RegisterPunctuation(params string[] symbols) {
       foreach (string symbol in symbols) {
         KeyTerm term = ToTerm(symbol);
-        term.SetOption(TermOptions.IsPunctuation);
+        term.SetFlag(TermFlags.IsPunctuation);
       }
     }
     
     public void RegisterPunctuation(params BnfTerm[] elements) {
       foreach (BnfTerm term in elements) 
-        term.SetOption(TermOptions.IsPunctuation);
+        term.SetFlag(TermFlags.IsPunctuation);
     }
 
     public void RegisterOperators(int precedence, params string[] opSymbols) {
@@ -136,7 +135,7 @@ namespace Irony.Parsing {
     public void RegisterOperators(int precedence, Associativity associativity, params string[] opSymbols) {
       foreach (string op in opSymbols) {
         KeyTerm opSymbol = ToTerm(op);
-        opSymbol.SetOption(TermOptions.IsOperator);
+        opSymbol.SetFlag(TermFlags.IsOperator);
         opSymbol.Precedence = precedence;
         opSymbol.Associativity = associativity;
       }
@@ -147,7 +146,7 @@ namespace Irony.Parsing {
     }
     public void RegisterOperators(int precedence, Associativity associativity, params BnfTerm[] opTerms) {
       foreach (var term in opTerms) {
-        term.SetOption(TermOptions.IsOperator);
+        term.SetFlag(TermFlags.IsOperator);
         term.Precedence = precedence;
         term.Associativity = associativity;
       }
@@ -156,29 +155,29 @@ namespace Irony.Parsing {
     public void RegisterBracePair(string openBrace, string closeBrace) {
       KeyTerm openS = ToTerm(openBrace);
       KeyTerm closeS = ToTerm(closeBrace);
-      openS.SetOption(TermOptions.IsOpenBrace);
+      openS.SetFlag(TermFlags.IsOpenBrace);
       openS.IsPairFor = closeS;
-      closeS.SetOption(TermOptions.IsCloseBrace);
+      closeS.SetFlag(TermFlags.IsCloseBrace);
       closeS.IsPairFor = openS;
     }
     public void MarkTransient(params NonTerminal[] nonTerminals) {
       foreach (NonTerminal nt in nonTerminals)
-        nt.Options |= TermOptions.IsTransient;
+        nt.Flags |= TermFlags.IsTransient | TermFlags.NoAstNode;
     }
     //MemberSelect are symbols invoking member list dropdowns in editor; for ex: . (dot), ::
     public void MarkMemberSelect(params string[] symbols) {
       foreach (var symbol in symbols)
-        ToTerm(symbol).SetOption(TermOptions.IsMemberSelect);
+        ToTerm(symbol).SetFlag(TermFlags.IsMemberSelect);
     }
     //Sets IsNotReported flag on terminals. As a result the terminal wouldn't appear in expected terminal list
     // in syntax error messages
     public void MarkNotReported(params BnfTerm[] terms) {
       foreach (var term in terms)
-        term.SetOption(TermOptions.IsNotReported);
+        term.SetFlag(TermFlags.IsNotReported);
     }
     public void MarkNotReported(params string[] symbols) {
       foreach (var symbol in symbols)
-        ToTerm(symbol).SetOption(TermOptions.IsNotReported);
+        ToTerm(symbol).SetFlag(TermFlags.IsNotReported);
     }
 
     #endregion
@@ -192,22 +191,24 @@ namespace Irony.Parsing {
       return null;
     }
 
+    //Gives a way to customize parse tree nodes captions in the tree view. 
+    public virtual string GetParseNodeCaption(ParseTreeNode node) {
+      if (node.IsError)
+        return node.Term.Name + " (Syntax error)";
+      if (node.Token != null)
+        return node.Token.ToString();
+      if(node.Term == null) //special case for initial node pushed into the stack at parser start
+        return (node.State != null ? string.Empty : "(State " + node.State.Name + ")"); //  Resources.LabelInitialState;
+      var ntTerm = node.Term as NonTerminal;
+      if(ntTerm != null && !string.IsNullOrEmpty(ntTerm.NodeCaptionTemplate))
+        return ntTerm.GetNodeCaption(node); 
+      return node.Term.Name; 
+    }
+
+    //Gives a chance of custom AST node creation at Grammar level
+    // by default calls Term's method
     public virtual void CreateAstNode(ParsingContext context, ParseTreeNode nodeInfo) {
-      var term = nodeInfo.Term;
-      if (term.AstNodeCreator != null) {
-        term.AstNodeCreator(context, nodeInfo);
-        //We assume that Node creator method creates node and initializes it, so parser does not need to call 
-        // IAstNodeInit.InitNode() method on node object.
-        return;
-      }
-      Type nodeType = term.AstNodeType ?? this.DefaultNodeType;
-      if (nodeType == null) 
-        return; //we give a warning on grammar validation about this situation
-      nodeInfo.AstNode =  Activator.CreateInstance(nodeType);
-      //Initialize node
-      var iInit = nodeInfo.AstNode as IAstNodeInit;
-      if (iInit != null)
-        iInit.Init(context, nodeInfo); 
+      nodeInfo.Term.CreateAstNode(context, nodeInfo);
     }
 
     /// <summary>
@@ -233,7 +234,7 @@ namespace Irony.Parsing {
     }
     //Constructs the error message in situation when parser has no available action for current input.
     // override this method if you want to change this message
-    public virtual string ConstructParserErrorMessage(ParsingContext context, ParserState state, StringSet expectedTerms, ParseTreeNode currentInput) {
+    public virtual string ConstructParserErrorMessage(ParsingContext context, StringSet expectedTerms) {
       return string.Format(Resources.ErrParserUnexpInput, expectedTerms.ToString(" "));
        
     }
@@ -257,21 +258,41 @@ namespace Irony.Parsing {
     public static BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm listMember) {
       return MakePlusRule(listNonTerminal, null, listMember);
     }
+    
+    public static BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember, TermListOptions options) {
+       bool allowTrailingDelimiter = (options & TermListOptions.AllowTrailingDelimiter) != 0;
+      if (delimiter == null || !allowTrailingDelimiter)
+        return MakePlusRule(listNonTerminal, delimiter, listMember); 
+      //create plus list
+      var plusList = new NonTerminal(listMember.Name + "+"); 
+      plusList.Rule = MakePlusRule(listNonTerminal, delimiter, listMember);
+      listNonTerminal.Rule = plusList | plusList + delimiter; 
+      listNonTerminal.SetFlag(TermFlags.IsListContainer); 
+      return listNonTerminal.Rule; 
+    }
+    
     public static BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember) {
-      listNonTerminal.SetOption(TermOptions.IsList);
       if (delimiter == null)
         listNonTerminal.Rule = listMember | listNonTerminal + listMember;
-      else
+      else 
         listNonTerminal.Rule = listMember | listNonTerminal + delimiter + listMember;
+      listNonTerminal.SetFlag(TermFlags.IsList);
       return listNonTerminal.Rule;
     }
+
     public static BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm listMember) {
-      return MakeStarRule(listNonTerminal, null, listMember);
+      return MakeStarRule(listNonTerminal, null, listMember, TermListOptions.None);
     }
+    
     public static BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember) {
-      listNonTerminal.SetOption(TermOptions.IsList);
+      return MakeStarRule(listNonTerminal, delimiter, listMember, TermListOptions.None); 
+    }
+
+    public static BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember, TermListOptions options) {
+       bool allowTrailingDelimiter = (options & TermListOptions.AllowTrailingDelimiter) != 0;
       if (delimiter == null) {
         //it is much simpler case
+        listNonTerminal.SetFlag(TermFlags.IsList);
         listNonTerminal.Rule = _currentGrammar.Empty | listNonTerminal + listMember;
         return listNonTerminal.Rule;
       }
@@ -281,9 +302,13 @@ namespace Irony.Parsing {
       // which is wrong. The correct formula is to first define "Elem+"-list, and then define "Elem*" list 
       // as "Elem* -> Empty|Elem+" 
       NonTerminal plusList = new NonTerminal(listMember.Name + "+");
-      MakePlusRule(plusList, delimiter, listMember);
-      plusList.SetOption(TermOptions.IsTransient); //important - mark it as Transient so it will be eliminated from AST tree
-      listNonTerminal.Rule = _currentGrammar.Empty | plusList;
+      plusList.Rule = MakePlusRule(plusList, delimiter, listMember);
+      plusList.SetFlag(TermFlags.NoAstNode); //to allow it to have AstNodeType not assigned
+      if (allowTrailingDelimiter)
+        listNonTerminal.Rule = _currentGrammar.Empty | plusList | plusList + delimiter;
+      else 
+        listNonTerminal.Rule = _currentGrammar.Empty | plusList;
+      listNonTerminal.SetFlag(TermFlags.IsListContainer); 
       return listNonTerminal.Rule;
     }
     #endregion
@@ -317,7 +342,7 @@ namespace Irony.Parsing {
     /// </summary>
     /// <param name="alias">An alias for all terminals in the group.</param>
     /// <param name="symbols">Symbols to be included into the group.</param>
-    protected void AddTermReportGroup(string alias, params string[] symbols) {
+    protected void AddTermsReportGroup(string alias, params string[] symbols) {
       TermReportGroups.Add(new TermReportGroup(alias, TermReportGroupType.Normal, SymbolsToTerms(symbols)));
     }
     /// <summary>
@@ -326,21 +351,21 @@ namespace Irony.Parsing {
     /// </summary>
     /// <param name="alias">An alias for all terminals in the group.</param>
     /// <param name="terminals">Terminals to be included into the group.</param>
-    protected void AddTermReportGroup(string alias, params Terminal[] terminals) {
+    protected void AddTermsReportGroup(string alias, params Terminal[] terminals) {
       TermReportGroups.Add(new TermReportGroup(alias, TermReportGroupType.Normal, terminals));
     }
     /// <summary>
     /// Adds symbols to a group with no-report type, so symbols will not be shown in expected lists in syntax error messages. 
     /// </summary>
     /// <param name="symbols">Symbols to exclude.</param>
-    protected void AddNoReportGroup(params string[] symbols) {
+    protected void AddToNoReportGroup(params string[] symbols) {
       TermReportGroups.Add(new TermReportGroup(string.Empty, TermReportGroupType.Normal, SymbolsToTerms(symbols)));
     }
     /// <summary>
     /// Adds symbols to a group with no-report type, so symbols will not be shown in expected lists in syntax error messages. 
     /// </summary>
     /// <param name="symbols">Symbols to exclude.</param>
-    protected void AddNoReportGroup(params Terminal[] terminals) {
+    protected void AddToNoReportGroup(params Terminal[] terminals) {
       TermReportGroups.Add(new TermReportGroup(string.Empty, TermReportGroupType.Normal, terminals));
     }
     /// <summary>
@@ -385,7 +410,7 @@ namespace Irony.Parsing {
       get {
         if(_newLinePlus == null) {
           _newLinePlus = new NonTerminal("LF+");
-          _newLinePlus.Options |= TermOptions.IsPunctuation; //will be later renamed to DeleteAfterParse
+          _newLinePlus.Flags |= TermFlags.IsPunctuation; //will be later renamed to DeleteAfterParse
           _newLinePlus.Rule = MakePlusRule(_newLinePlus, NewLine);
         }
         return _newLinePlus;
@@ -396,7 +421,7 @@ namespace Irony.Parsing {
       get {
         if(_newLineStar == null) {
           _newLineStar = new NonTerminal("LF*");
-          _newLineStar.Options |= TermOptions.IsPunctuation; //will be later renamed to DeleteAfterParse
+          _newLineStar.Flags |= TermFlags.IsPunctuation; //will be later renamed to DeleteAfterParse
           _newLineStar.Rule = MakeStarRule(_newLineStar, NewLine);
         }
         return _newLineStar;

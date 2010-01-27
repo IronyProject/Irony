@@ -203,6 +203,9 @@ namespace Irony.Parsing.Construction {
         //Now merge all shift terminals from all source states
         foreach(var state in sourceStates) 
           reduceItem.Lookaheads.UnionWith(state.BuilderData.ShiftTerminals);
+        //Remove SyntaxError - it is pseudo terminal
+        if (reduceItem.Lookaheads.Contains(_grammar.SyntaxError))
+          reduceItem.Lookaheads.Remove(_grammar.SyntaxError);
         //Sanity check
         if (reduceItem.Lookaheads.Count == 0)
           _language.Errors.Add(GrammarErrorLevel.InternalError, reduceItem.State, "Reduce item '{0}' in state {1} has no lookaheads.", reduceItem.Core, reduceItem.State);

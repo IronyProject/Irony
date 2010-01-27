@@ -95,7 +95,7 @@ namespace Irony.Samples.MiniPython {
       RegisterOperators(3, Associativity.Right, "**");
 
       // 6. Miscellaneous: punctuation, braces, transient nodes
-      RegisterPunctuation("(", ")", ":");
+      MarkPunctuation("(", ")", ":");
       RegisterBracePair("(", ")");
       MarkTransient(Term, Expr, Stmt, ExtStmt, UnOp, BinOp, ExtStmt, ParExpr);
 

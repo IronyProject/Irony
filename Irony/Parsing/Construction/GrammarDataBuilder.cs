@@ -276,7 +276,7 @@ namespace Irony.Parsing.Construction {
       var invalidTransSet = new NonTerminalSet();
       foreach(var nt in _grammarData.NonTerminals) {
         //Check that if CreateAst flag is set then AstNodeType or AstNodeCreator is assigned on all non-transient nodes.
-        if(createAst && nt.AstNodeCreator == null && nt.AstNodeType == null && !nt.FlagIsSet(TermFlags.IsTransient | TermFlags.NoAstNode))
+        if(createAst && nt.AstNodeCreator == null && nt.AstNodeType == null && !nt.FlagIsSet(TermFlags.NoAstNode))
           missingAstTypeSet.Add(nt);
         if(nt.FlagIsSet(TermFlags.IsTransient)) {
           //List non-terminals cannot be marked transient - otherwise there may be some ambiguities and inconsistencies

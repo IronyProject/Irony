@@ -210,7 +210,7 @@ namespace Irony.Samples {
 
 
             //Punctuation and Transient elements
-            RegisterPunctuation("(", ")", ",");
+            MarkPunctuation("(", ")", ",");
             MarkTransient(EXPR, STATEMENT, LINE_CONTENT_OPT, VARIABLE_OR_FUNCTION_EXPR, COMMENT_OPT); 
 
             this.LanguageFlags = LanguageFlags.NewLineBeforeEOF;

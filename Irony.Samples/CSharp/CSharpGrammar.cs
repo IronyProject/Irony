@@ -344,7 +344,7 @@ namespace Irony.Samples.CSharp {
       RegisterOperators(-1, "??");
 
       this.Delimiters = "{}[](),:;+-*/%&|^!~<>=";
-      this.RegisterPunctuation(";", ",", "(", ")", "{", "}", "[", "]", ":");
+      this.MarkPunctuation(";", ",", "(", ")", "{", "}", "[", "]", ":");
       this.MarkTransient(namespace_member_declaration, member_declaration, type_declaration, statement, embedded_statement, expression);
       //Whitespace and NewLine characters
       //TODO: 

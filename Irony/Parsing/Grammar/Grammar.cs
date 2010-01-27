@@ -116,18 +116,6 @@ namespace Irony.Parsing {
     #endregion 
 
     #region Register/Mark methods
-    public void RegisterPunctuation(params string[] symbols) {
-      foreach (string symbol in symbols) {
-        KeyTerm term = ToTerm(symbol);
-        term.SetFlag(TermFlags.IsPunctuation);
-      }
-    }
-    
-    public void RegisterPunctuation(params BnfTerm[] elements) {
-      foreach (BnfTerm term in elements) 
-        term.SetFlag(TermFlags.IsPunctuation);
-    }
-
     public void RegisterOperators(int precedence, params string[] opSymbols) {
       RegisterOperators(precedence, Associativity.Left, opSymbols);
     }
@@ -160,6 +148,29 @@ namespace Irony.Parsing {
       closeS.SetFlag(TermFlags.IsCloseBrace);
       closeS.IsPairFor = openS;
     }
+
+    [Obsolete("RegisterPunctuation is renamed to MarkPunctuation.")]
+    public void RegisterPunctuation(params string[] symbols) {
+      MarkPunctuation(symbols);
+    }
+    [Obsolete("RegisterPunctuation is renamed to MarkPunctuation.")]
+    public void RegisterPunctuation(params BnfTerm[] terms) {
+      MarkPunctuation(terms);
+    }
+
+    public void MarkPunctuation(params string[] symbols) {
+      foreach (string symbol in symbols) {
+        KeyTerm term = ToTerm(symbol);
+        term.SetFlag(TermFlags.IsPunctuation|TermFlags.NoAstNode);
+      }
+    }
+    
+    public void MarkPunctuation(params BnfTerm[] terms) {
+      foreach (BnfTerm term in terms) 
+        term.SetFlag(TermFlags.IsPunctuation|TermFlags.NoAstNode);
+    }
+
+    
     public void MarkTransient(params NonTerminal[] nonTerminals) {
       foreach (NonTerminal nt in nonTerminals)
         nt.Flags |= TermFlags.IsTransient | TermFlags.NoAstNode;
@@ -410,7 +421,7 @@ namespace Irony.Parsing {
       get {
         if(_newLinePlus == null) {
           _newLinePlus = new NonTerminal("LF+");
-          _newLinePlus.Flags |= TermFlags.IsPunctuation; //will be later renamed to DeleteAfterParse
+          MarkPunctuation(_newLinePlus);
           _newLinePlus.Rule = MakePlusRule(_newLinePlus, NewLine);
         }
         return _newLinePlus;
@@ -421,7 +432,7 @@ namespace Irony.Parsing {
       get {
         if(_newLineStar == null) {
           _newLineStar = new NonTerminal("LF*");
-          _newLineStar.Flags |= TermFlags.IsPunctuation; //will be later renamed to DeleteAfterParse
+          MarkPunctuation(_newLineStar);
           _newLineStar.Rule = MakeStarRule(_newLineStar, NewLine);
         }
         return _newLineStar;

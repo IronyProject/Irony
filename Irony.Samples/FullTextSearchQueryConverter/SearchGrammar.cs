@@ -52,7 +52,7 @@ namespace Irony.Samples.FullTextSearch
           MakePlusRule(ProximityList, Term);
 
           MarkTransient(PrimaryExpression, Expression, ProximityExpression, ParenthesizedExpression, BinaryOp);
-          RegisterPunctuation("<", ">", "(", ")");
+          MarkPunctuation("<", ">", "(", ")");
           RegisterOperators(10, "or", "|"); 
           RegisterOperators(20, "and", "&", "-"); 
           RegisterOperators(20, ImpliedAnd);

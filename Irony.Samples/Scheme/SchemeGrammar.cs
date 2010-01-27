@@ -191,7 +191,7 @@ namespace Irony.Samples.Scheme {
       RegisterBracePair("(", ")"); 
       RegisterBracePair("[", "]");
 
-      RegisterPunctuation(LP, RP);
+      MarkPunctuation(LP, RP);
       MarkTransient(Datum, CompoundDatum, Statement, SpecialForm, Atom); 
 
       //Scheme is tail-recursive language

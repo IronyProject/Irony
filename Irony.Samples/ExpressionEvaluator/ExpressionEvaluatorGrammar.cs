@@ -93,7 +93,7 @@ Strings with embedded expressions - temporarily added to test this functionality
       RegisterOperators(4, Associativity.Right, "**");
 
       // 5. Punctuation and transient terms
-      RegisterPunctuation("(", ")");
+      MarkPunctuation("(", ")");
       RegisterBracePair("(", ")");
       MarkTransient(Term, Expr, Statement, BinOp, UnOp, IncDecOp, AssignmentOp, ParExpr);
       // The following makes error messages a little cleaner (try evaluating expr 'x y' with and without this line to see the difference)

@@ -31,7 +31,7 @@ namespace Irony.Samples.Json {
 
       //Set grammar root
       this.Root = jvalue;
-      RegisterPunctuation("{", "}", "[", "]", ":", ",");
+      MarkPunctuation("{", "}", "[", "]", ":", ",");
       this.MarkTransient(jvalue, jarrayBr, jobjectBr);
 
     }//constructor

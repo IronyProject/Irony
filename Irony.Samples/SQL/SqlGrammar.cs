@@ -233,8 +233,8 @@ namespace Irony.Samples.SQL {
       RegisterOperators(5, "AND");
       RegisterOperators(4, "OR", "LIKE", "IN");
 
-      RegisterPunctuation(",", "(", ")");
-      RegisterPunctuation(asOpt, semiOpt);
+      MarkPunctuation(",", "(", ")");
+      MarkPunctuation(asOpt, semiOpt);
       //Note: we cannot declare binOp as transient because it includes operators "NOT LIKE", "NOT IN" consisting of two tokens. 
       // Transient non-terminals cannot have more than one non-punctuation child nodes.
       base.MarkTransient(stmt, term, asOpt, aliasOpt, stmtLine, expression);

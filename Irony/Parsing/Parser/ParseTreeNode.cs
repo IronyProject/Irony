@@ -72,7 +72,10 @@ namespace Irony.Parsing {
     }
 
     public override string ToString() {
-      return Term.Grammar.GetParseNodeCaption(this); 
+      if (Term == null) 
+        return "(S0)"; //initial state node
+      else 
+        return Term.GetParseNodeCaption(this); 
     }//method
 
     public string FindTokenAndGetText() {
@@ -89,6 +92,12 @@ namespace Irony.Parsing {
         if (tkn != null) return tkn; 
       }
       return null; 
+    }
+    public ParseTreeNode FirstChild {
+      get { return ChildNodes[0]; }
+    }
+    public ParseTreeNode LastChild {
+      get { return ChildNodes[ChildNodes.Count -1]; }
     }
 
   }//class

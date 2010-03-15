@@ -67,8 +67,6 @@ namespace Irony.Ast {
 
     private void ParseSegments(ParsingContext context) {
       var exprParser = new Parser(context.Language, _templateSettings.ExpressionRoot);
-      //TODO: come up with better solution for sharing symbol tables
-      exprParser.Context.Symbols = context.Symbols; //set the same symbol table; temporary solution
       //As go along the "value text" (that has all escapes done), we track the position in raw token text (that is original text from source code, 
       // includes original escaping sequences and open/close quotes) in the variable exprPosInTokenText. 
       // It will be passed to segment constructor, and maybe used later to compute the exact position of runtime error when it occurs. 

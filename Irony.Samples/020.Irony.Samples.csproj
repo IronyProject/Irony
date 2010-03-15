@@ -85,7 +85,6 @@
     <Content Include="CSharp\Notes.txt" />
     <None Include="SourceSamples\99 bottles.bas" />
     <None Include="SourceSamples\ExpressionEvaluator\OpSample.txt" />
-    <None Include="SourceSamples\NonCanonTestSamples\NonCanonTest1.txt" />
     <None Include="SourceSamples\SearchGrammar\Search1.txt" />
     <None Include="SourceSamples\SQL\sql_op_test.txt" />
     <None Include="SourceSamples\SQL\sql_sample1.txt" />

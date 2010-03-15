@@ -619,6 +619,15 @@ namespace Irony {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A terminal {0} has empty prefix..
+        /// </summary>
+        internal static string ErrTerminalHasEmptyPrefix {
+            get {
+                return ResourceManager.GetString("ErrTerminalHasEmptyPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Transient non-terminal must have zero or one non-punctuation child nodes; non-terminals: {0}..
         /// </summary>
         internal static string ErrTransientNtMustHaveOneTerm {

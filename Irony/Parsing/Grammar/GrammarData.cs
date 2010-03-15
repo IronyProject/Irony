@@ -29,7 +29,6 @@ namespace Irony.Parsing {
     public readonly NonTerminalList NonTerminals = new NonTerminalList();
     public readonly StringSet ClosingBraces = new StringSet(); 
     public string WhitespaceAndDelimiters { get; internal set; }
-    public readonly SymbolTable Symbols = new SymbolTable(); 
 
     public GrammarData(LanguageData language) {
       Language = language;
@@ -47,7 +46,8 @@ namespace Irony.Parsing {
     //Be careful - use this flag ONLY if you use NewLine terminal in grammar explicitly!
     // - it happens only in line-based languages like Basic.
     NewLineBeforeEOF = 0x01,
-    // NOT_USED = 0x02,
+    //Emit LineStart token
+    EmitLineStartToken = 0x02,
     DisableScannerParserLink = 0x04, //in grammars that define TokenFilters (like Python) this flag should be set
     CreateAst = 0x08, //create AST nodes 
 

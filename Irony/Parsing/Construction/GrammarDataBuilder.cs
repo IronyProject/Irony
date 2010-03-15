@@ -67,13 +67,11 @@ namespace Irony.Parsing.Construction {
       CollectTermsRecursive(_grammarData.AugmentedRoot);
       foreach(var augmRoot in _grammarData.AugmentedSnippetRoots)
         CollectTermsRecursive(augmRoot); 
+      //Add syntax error explicitly
+      _grammarData.AllTerms.Add(_grammar.SyntaxError); 
     }
 
     private void CollectTermsRecursive(BnfTerm term) {
-      // Do not add pseudo terminals defined as static singletons in Grammar class (Empty, Eof, etc)
-      //  We will never see these terminals in the input stream.
-      //   Filter them by type - their type is exactly "Terminal", not derived class. 
-      if (term.GetType() == typeof(Terminal)) return;
       if (_grammarData.AllTerms.Contains(term)) return;
       _grammarData.AllTerms.Add(term);
       NonTerminal nt = term as NonTerminal;
@@ -149,7 +147,7 @@ namespace Irony.Parsing.Construction {
       foreach (var term in _grammarData.Terminals) {
         var symTerm = term as KeyTerm;
         if (symTerm == null) continue;
-        if (symTerm.Text.Length > 0 && char.IsLetter(symTerm.Text[0]))
+        if (!string.IsNullOrEmpty(symTerm.Text) && char.IsLetter(symTerm.Text[0]))
           symTerm.SetFlag(TermFlags.IsKeyword); 
       }//foreach term
       //Init all terms
@@ -203,6 +201,7 @@ namespace Irony.Parsing.Construction {
       prod.LR0Items.Add(new LR0Item(_lastItemId++, prod, prod.RValues.Count, hints));
       return prod;
     }
+
     private void ComputeProductionFlags(Production production) {
       production.Flags = ProductionFlags.None;
       foreach (var rv in production.RValues) {

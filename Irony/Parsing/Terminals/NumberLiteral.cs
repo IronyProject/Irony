@@ -411,6 +411,8 @@ namespace Irony.Parsing {
     private bool ConvertToBigInteger(CompoundTokenDetails details) {
       //ignore leading zeros and sign
       details.Body = details.Body.TrimStart('+').TrimStart('-').TrimStart('0');
+      if (string.IsNullOrEmpty(details.Body))
+        details.Body = "0"; 
       int bodyLength = details.Body.Length;
       int radix = GetRadix(details);
       int wordLength = GetSafeWordLength(details);
@@ -476,7 +478,7 @@ namespace Irony.Parsing {
     }
     private int GetSectionCount(int stringLength, int safeWordLength) {
       int quotient = stringLength / safeWordLength;
-      int remainder = stringLength - quotient;
+      int remainder = stringLength - quotient * safeWordLength;
       return remainder == 0 ? quotient : quotient + 1;
     }
 

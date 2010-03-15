@@ -31,12 +31,13 @@ namespace Irony.Ast {
   public enum AstNodeFlags {
     None = 0x0,
     IsTail          = 0x01,     //the node is in tail position
+    IsScope         = 0x10,     //node defines scope for local variables
   }
 
   public class AstNodeList : List<AstNode> { }
 
   //Base AST node class
-  public class AstNode : IAstNodeInit, IBrowsableAstNode, IInterpretedAstNode {
+  public partial class AstNode : IAstNodeInit, IBrowsableAstNode, IInterpretedAstNode {
     protected NodeEvaluate EvaluateRef; 
 
     public AstNode() {

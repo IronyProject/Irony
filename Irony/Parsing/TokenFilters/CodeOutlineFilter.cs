@@ -21,19 +21,22 @@ namespace Irony.Parsing {
     Grammar _grammar;
     ParsingContext _context;
     bool _produceIndents;
-    bool _checkBraces;
+    bool _checkBraces, _checkOperator;
 
     public Stack<int> Indents = new Stack<int>();
     public Token CurrentToken;
     public Token PreviousToken;
     public SourceLocation PreviousTokenLocation;
     public TokenStack OutputTokens = new TokenStack();
-    private bool _isContinuation, _prevIsContinuation, _doubleEof;
+    bool _isContinuation, _prevIsContinuation;
+    bool _isOperator, _prevIsOperator;
+    bool _doubleEof;
 
     #region constructor
     public CodeOutlineFilter(GrammarData grammarData, OutlineOptions options, KeyTerm continuationTerminal) {
       _grammarData = grammarData;
       _grammar = grammarData.Grammar;
+      _grammar.LanguageFlags |= LanguageFlags.EmitLineStartToken;
       Options = options;
       ContinuationTerminal = continuationTerminal;
       if (ContinuationTerminal != null)
@@ -42,6 +45,7 @@ namespace Irony.Parsing {
             //"CodeOutlineFilter: line continuation symbol '{0}' should be added to Grammar.NonGrammarTerminals list.",
       _produceIndents = OptionIsSet(OutlineOptions.ProduceIndents);
       _checkBraces = OptionIsSet(OutlineOptions.CheckBraces);
+      _checkOperator = OptionIsSet(OutlineOptions.CheckOperator);
       Reset(); 
     }
     #endregion
@@ -75,22 +79,25 @@ namespace Irony.Parsing {
       if (_isContinuation)
         return;
       var tokenTerm = token.Terminal;
-      // if it is content token on the same line, then return, nothing to do 
-      if (token.Category == TokenCategory.Content && (PreviousToken == null || token.Location.Line == PreviousTokenLocation.Line))
-        return;
+
       //check EOF
       if (tokenTerm == _grammar.Eof) {
         ProcessEofToken();
         return;
       }
-      // otherwise, if it is not Content (for ex. comment) then return
-      if (token.Category != TokenCategory.Content)
-        return;
+      
+      if (tokenTerm != _grammar.LineStartTerminal)   return;
+      //if we are here, we have LineStart token on new line; first remove it from stream, it should not go to parser
+      OutputTokens.Pop(); 
+      
+      if (PreviousToken == null) return; 
 
-      //if we are here, we have content token on new line; 
+
       // first check if there was continuation symbol before
       // or - if checkBraces flag is set - check if there were open braces
       if (_prevIsContinuation || _checkBraces && _context.OpenBraces.Count > 0)
+        return; //no Eos token in this case
+      if (_prevIsOperator && _checkOperator)
         return; //no Eos token in this case
 
       //We need to produce Eos token and indents (if _produceIndents is set). 
@@ -127,11 +134,13 @@ namespace Irony.Parsing {
       if (CurrentToken != null && CurrentToken.Category == TokenCategory.Content) { //remember only content tokens
         PreviousToken = CurrentToken;
         _prevIsContinuation = _isContinuation;
+        _prevIsOperator = _isOperator;
         if (PreviousToken != null)
           PreviousTokenLocation = PreviousToken.Location;
       }
       CurrentToken = token;
       _isContinuation = (token.Terminal == ContinuationTerminal && ContinuationTerminal != null);
+      _isOperator = token.Terminal.FlagIsSet(TermFlags.IsOperator);
       if (!_isContinuation)
         OutputTokens.Push(token); //by default input token goes to output, except continuation symbol
     }

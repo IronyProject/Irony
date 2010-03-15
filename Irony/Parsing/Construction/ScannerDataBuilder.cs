@@ -13,7 +13,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 
 namespace Irony.Parsing.Construction { 
@@ -33,11 +32,13 @@ namespace Irony.Parsing.Construction {
       _data = _language.ScannerData;
       _data.LineTerminatorsArray = _grammar.LineTerminators.ToCharArray();
       InitMultilineTerminalsList();
+      ProcessNonGrammarTerminals(); 
       BuildTerminalsLookupTable();
     }
 
     private void InitMultilineTerminalsList() {
       foreach (var terminal in _grammarData.Terminals) {
+        if (terminal.FlagIsSet(TermFlags.IsNonScanner)) continue; 
         if (terminal.FlagIsSet(TermFlags.IsMultiline)) {
           _data.MultilineTerminals.Add(terminal);
           terminal.MultilineIndex = (byte)(_data.MultilineTerminals.Count);
@@ -45,29 +46,38 @@ namespace Irony.Parsing.Construction {
       }
     }
 
+    private void ProcessNonGrammarTerminals() {
+      foreach(var term in _grammar.NonGrammarTerminals) {
+        var firsts = term.GetFirsts();
+        if(firsts == null || firsts.Count == 0) {
+          _language.Errors.Add(GrammarErrorLevel.Error, null, Resources.ErrTerminalHasEmptyPrefix, term.Name);
+          continue;
+        }
+        AddTerminalToLookup(_data.NonGrammarTerminalsLookup, term, firsts); 
+      }//foreach term
+
+      //sort each list
+      foreach(var list in _data.NonGrammarTerminalsLookup.Values) {
+        if(list.Count > 1)
+          list.Sort(Terminal.ByPriorityReverse);
+      }//foreach list
+    }
+
     private void BuildTerminalsLookupTable() {
       foreach (Terminal term in _grammarData.Terminals) {
-        IList<string> firsts = term.GetFirsts();
+        //Non-grammar terminals are scanned in a separate step, before regular terminals; so we don't include them here
+        if (term.FlagIsSet(TermFlags.IsNonScanner | TermFlags.IsNonGrammar)) continue; 
+        var firsts = term.GetFirsts();
         if (firsts == null || firsts.Count == 0) {
           _grammar.FallbackTerminals.Add(term);
           continue; //foreach term
         }
-        //Go through prefixes one-by-one
-        foreach (string prefix in firsts) {
-          if (string.IsNullOrEmpty(prefix)) continue;
-          //Calculate hash key for the prefix
-          char hashKey = prefix[0];
-          if(_grammar.CaseSensitive)
-            AddTerminalToLookup(hashKey, term);
-          else {
-            AddTerminalToLookup(char.ToLower(hashKey), term);
-            AddTerminalToLookup(char.ToUpper(hashKey), term);
-          }//if
-        }//foreach prefix in firsts
+        AddTerminalToLookup(_data.TerminalsLookup, term, firsts); 
       }//foreach term
 
-      //Add Fallback terminals to TerminalsLookup special field that contains list to return as default, when there is no key char in the table
-      _data.TerminalsLookup.FallbackTerminals.AddRange(_grammar.FallbackTerminals); 
+      _data.FallbackTerminals.AddRange(_grammar.FallbackTerminals); 
+      // Sort the FallbackTerminals in reverse priority order
+      _data.FallbackTerminals.Sort(Terminal.ByPriorityReverse);      
       //Now add Fallback terminals to every list, then sort lists by reverse priority
       // so that terminal with higher priority comes first in the list
       foreach(TerminalList list in _data.TerminalsLookup.Values) {
@@ -78,12 +88,30 @@ namespace Irony.Parsing.Construction {
  
     }//method
 
-    private void AddTerminalToLookup(char hashKey, Terminal term) {
+    private void AddTerminalToLookup(TerminalLookupTable _lookup, Terminal term, IList<string> firsts) {
+      foreach (string prefix in firsts) {
+        if(string.IsNullOrEmpty(prefix)) {
+          _language.Errors.Add(GrammarErrorLevel.Error, null, Resources.ErrTerminalHasEmptyPrefix, term.Name);
+          continue;
+        }
+        //Calculate hash key for the prefix
+        char firstChar = prefix[0];
+        if(_grammar.CaseSensitive)
+          AddTerminalToLookupByFirstChar(_lookup, term, firstChar);
+        else {
+          AddTerminalToLookupByFirstChar(_lookup, term, char.ToLower(firstChar));
+          AddTerminalToLookupByFirstChar(_lookup, term, char.ToUpper(firstChar));
+        }//if
+      }//foreach prefix
+
+    }
+
+    private void AddTerminalToLookupByFirstChar(TerminalLookupTable _lookup, Terminal term, char firstChar) {
       TerminalList currentList;
-      if (!_data.TerminalsLookup.TryGetValue(hashKey, out currentList)) {
+      if (!_lookup.TryGetValue(firstChar, out currentList)) {
         //if list does not exist yet, create it
         currentList = new TerminalList();
-        _data.TerminalsLookup[hashKey] = currentList;
+        _lookup[firstChar] = currentList;
       }
       //add terminal to the list
       if (!currentList.Contains(term))

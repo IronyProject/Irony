@@ -151,7 +151,7 @@ namespace Irony.Parsing {
     //Override to assign IsKeyword flag to keyword tokens
     protected override Token CreateToken(ParsingContext context, ISourceStream source, CompoundTokenDetails details) {
       Token token = base.CreateToken(context, source, details);
-      token.Symbol = context.Symbols.TextToSymbol(token.ValueString); 
+      token.Symbol = SymbolTable.Symbols.TextToSymbol(token.ValueString); 
       if (details.IsSet((short)IdOptions.IsNotKeyword))
         return token;
       //check if it is keyword
@@ -184,7 +184,7 @@ namespace Irony.Parsing {
       // if (!this.GrammarData.Grammar.CaseSensitive)
       //    token.Value = token.Text.ToLower(CultureInfo.InvariantCulture);
       CheckReservedWord(token);
-      token.Symbol = context.Symbols.TextToSymbol(token.ValueString); 
+      token.Symbol = SymbolTable.Symbols.TextToSymbol(token.ValueString); 
       return token; 
     }
 

@@ -123,14 +123,14 @@ Press Ctrl-C to exit the program at any time.
       ConsolePrompt = ">>>"; 
       ConsolePromptMoreInput = "..."; 
       
-      //We have to disable scanner-parser link. With TokenFilter sitting between scanner and parser, scanner can no longer 
-      // use the expected terminals in current parser state to filter current current candidate terminals
-      this.LanguageFlags = LanguageFlags.DisableScannerParserLink | LanguageFlags.CreateAst | LanguageFlags.CanRunSample;
+      //Note: changed in Mar 2010, we no longer have to disable scanner/parser link
+      this.LanguageFlags = LanguageFlags.CreateAst | LanguageFlags.CanRunSample;
 
     }//constructor
 
     public override void CreateTokenFilters(LanguageData language, TokenFilterList filters) {
-      var outlineFilter = new CodeOutlineFilter(language.GrammarData, OutlineOptions.ProduceIndents | OutlineOptions.CheckBraces, ToTerm(@"\"));
+      var outlineFilter = new CodeOutlineFilter(language.GrammarData, 
+        OutlineOptions.ProduceIndents | OutlineOptions.CheckBraces, ToTerm(@"\")); // "\" is continuation symbol
       filters.Add(outlineFilter);
       
     }

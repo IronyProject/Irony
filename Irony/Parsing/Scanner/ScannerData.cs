@@ -17,20 +17,7 @@ using System.Text;
 
 namespace Irony.Parsing {
 
-  public class TerminalLookupTable : Dictionary<char, TerminalList> { 
-    public TerminalList FallbackTerminals = new TerminalList(); //to return when there is no key in the dictionary
-
-    public new TerminalList this[char key] {
-      get {
-      TerminalList value; 
-      if (base.TryGetValue(key, out value))
-        return value; 
-      //otherwise return FallbackTerminals
-      return FallbackTerminals;
-      }
-      set { base[key] = value; }
-    }//this
-  }
+  public class TerminalLookupTable : Dictionary<char, TerminalList> { }
 
   // ScannerData is a container for all detailed info needed by scanner to read input. 
   public class ScannerData {
@@ -38,6 +25,9 @@ namespace Irony.Parsing {
     public readonly TerminalLookupTable TerminalsLookup = new TerminalLookupTable(); //hash table for fast terminal lookup by input char
     public readonly TerminalList MultilineTerminals = new TerminalList();
     public char[] LineTerminatorsArray; //used for line counting
+    public TerminalList FallbackTerminals = new TerminalList(); 
+    //hash table for fast lookup of non-grammar terminals by input char
+    public readonly TerminalLookupTable NonGrammarTerminalsLookup = new TerminalLookupTable(); 
 
     public ScannerData(LanguageData language) {
       Language  = language;

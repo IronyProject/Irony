@@ -35,11 +35,10 @@ namespace Irony.Interpreter {
     Exception,
   }
 
-  public partial class EvaluationContext  {
+  public partial class EvaluationContext  { 
     public readonly int ThreadId; 
     public LanguageRuntime Runtime;
     public readonly bool LanguageCaseSensitive;
-    public readonly SymbolTable Symbols = new SymbolTable();
     public readonly ValuesTable Globals;
     public DataStack Data;
     public DynamicCallDispatcher CallDispatcher;
@@ -53,7 +52,6 @@ namespace Irony.Interpreter {
     public EvaluationContext(LanguageRuntime runtime) {
       Runtime = runtime;
       LanguageCaseSensitive = Runtime.Language.Grammar.CaseSensitive;
-      Symbols = Runtime.Language.GrammarData.Symbols;
       //Globals = new GlobalValuesTable(100, Symbols, LanguageCaseSensitive);
       Globals = new ValuesTable(100);
       CallDispatcher = new DynamicCallDispatcher(this);

@@ -47,7 +47,6 @@ namespace Irony.Parsing {
   public class ParsingContext {
     public readonly Parser Parser;
     public readonly LanguageData Language;
-    public SymbolTable Symbols = new SymbolTable(); 
 
     //Parser settings
     public ParseOptions Options;
@@ -69,8 +68,9 @@ namespace Irony.Parsing {
     public ISourceStream Source { get { return SourceStream; } }
     //list for terminals - for current parser state and current input char
     public TerminalList CurrentTerminals = new TerminalList();
-    public Token CurrentToken; //The terminal just scanned by Scanner
+    public Token CurrentToken; //The token just scanned by Scanner
     public Token PreviousToken; 
+    public SourceLocation PreviousLineStart; //Location of last line start
 
     //Internal fields
     internal SourceStream SourceStream;
@@ -95,7 +95,6 @@ namespace Irony.Parsing {
       this.Parser = parser;
       Language = Parser.Language;
       Culture = Language.Grammar.DefaultCulture;
-      Symbols.CopyFrom(Language.GrammarData.Symbols); 
       //This might be a problem for multi-threading - if we have several contexts on parallel threads with different culture.
       //Resources.Culture is static property (this is not Irony's fault, this is auto-generated file).
       Resources.Culture = Culture; 
@@ -176,6 +175,7 @@ namespace Irony.Parsing {
       CurrentTerminals.Clear(); 
       CurrentToken = null;
       PreviousToken = null; 
+      PreviousLineStart = new SourceLocation(0, -1, 0); 
       BufferedTokens.Clear();
       PreviewTokens.Clear(); 
       Values.Clear();          

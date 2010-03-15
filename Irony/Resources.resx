@@ -430,4 +430,7 @@
   <data name="ErrLastTermOfErrorProd" xml:space="preserve">
     <value>The last term of production containing SyntaxError must be a terminal. NonTerminal: {0}</value>
   </data>
+  <data name="ErrTerminalHasEmptyPrefix" xml:space="preserve">
+    <value>A terminal {0} has empty prefix.</value>
+  </data>
 </root>

@@ -99,6 +99,41 @@ namespace Irony.Parsing {
 
     //Scans the source text and constructs a new token
     private void ScanToken() {
+      if (!MatchNonGrammarTerminals())
+        MatchRegularToken();      
+      var token = Context.CurrentToken;
+      //If we have normal token then return it
+      if (token != null && !token.IsError()) {
+        //set position to point after the result token
+        Context.SourceStream.PreviewPosition = Context.SourceStream.Location.Position + token.Length;
+        Context.SourceStream.MoveLocationToPreviewPosition();
+        return;
+      }
+      //we have an error: either error token or no token at all
+      if (token == null)   //if no token then create error token
+        Context.CurrentToken = Context.SourceStream.CreateErrorToken(Context.FormatUnexpectedInputErrorMessage());
+      Recover();
+    }
+
+    private bool MatchNonGrammarTerminals() {
+      TerminalList terms; 
+      if (!Data.NonGrammarTerminalsLookup.TryGetValue(Context.Source.PreviewChar, out terms))
+        return false;
+      foreach(var term in terms) {
+        Context.CurrentToken = term.TryMatch(Context, Context.Source);
+        if (Context.CurrentToken != null) return true; 
+      }
+      return false; 
+    }
+
+    private void MatchRegularToken() {
+      if (_grammar.FlagIsSet(LanguageFlags.EmitLineStartToken)) {
+        if(Context.Source.Location.Line > Context.PreviousLineStart.Line) {
+          Context.CurrentToken = Context.Source.CreateToken(_grammar.LineStartTerminal);
+          Context.PreviousLineStart = Context.Source.Location;
+          return;
+        }
+      }
       //Find matching terminal
       // First, try terminals with explicit "first-char" prefixes, selected by current char in source
       ComputeCurrentTerminals();
@@ -112,20 +147,7 @@ namespace Irony.Parsing {
         Context.CurrentToken = _grammar.TryMatch(Context, Context.SourceStream);
       if (Context.CurrentToken is MultiToken)
         UnpackMultiToken();
-      var token = Context.CurrentToken;
-      //If we have normal token then return it
-      if (token != null && !token.IsError()) {
-        //set position to point after the result token
-        Context.SourceStream.PreviewPosition = Context.SourceStream.Location.Position + token.Length;
-        Context.SourceStream.MoveLocationToPreviewPosition();
-        return;
       }
-      //we have an error: either error token or no token at all
-      if (token == null)   //if no token then create error token
-        Context.CurrentToken = Context.SourceStream.CreateErrorToken(Context.FormatUnexpectedInputErrorMessage());
-      Recover();
-      
-    }
 
     //If token is MultiToken then push all its child tokens into _bufferdTokens and return the first token in buffer
     private void UnpackMultiToken() {
@@ -138,7 +160,9 @@ namespace Irony.Parsing {
     
     private void ComputeCurrentTerminals() {
       Context.CurrentTerminals.Clear(); 
-      TerminalList termsForCurrentChar = Data.TerminalsLookup[Context.SourceStream.PreviewChar]; 
+      TerminalList termsForCurrentChar;
+      if(!Data.TerminalsLookup.TryGetValue(Context.SourceStream.PreviewChar, out termsForCurrentChar))
+        termsForCurrentChar = Data.FallbackTerminals; 
       //if we are recovering, previewing or there's no parser state, then return list as is
       // Also return list as is if there are token filters
       // Token filters inject/remove tokens from the stream, so the tokens parser is expecting might be different from

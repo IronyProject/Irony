@@ -402,20 +402,22 @@ namespace Irony.Parsing {
     // The following terminals are used in indent-sensitive languages like Python;
     // they are not produced by scanner but are produced by CodeOutlineFilter after scanning
     public readonly NewLineTerminal NewLine = new NewLineTerminal("LF");
-    public readonly Terminal Indent = new Terminal("INDENT", TokenCategory.Outline);
-    public readonly Terminal Dedent = new Terminal("DEDENT", TokenCategory.Outline);
+    public readonly Terminal Indent = new Terminal("INDENT", TokenCategory.Outline, TermFlags.IsNonScanner);
+    public readonly Terminal Dedent = new Terminal("DEDENT", TokenCategory.Outline, TermFlags.IsNonScanner);
+    //End-of-Statement terminal - used in indentation-sensitive language to signal end-of-statement;
+    // it is not always synced with CRLF chars, and CodeOutlineFilter carefully produces Eos tokens
+    // (as well as Indent and Dedent) based on line/col information in incoming content tokens.
+    public readonly Terminal Eos = new Terminal("EOS", Resources.LabelEosLabel, TokenCategory.Outline, TermFlags.IsNonScanner);
     // Identifies end of file
     // Note: using Eof in grammar rules is optional. Parser automatically adds this symbol 
     // as a lookahead to Root non-terminal
     public readonly Terminal Eof = new Terminal("EOF", TokenCategory.Outline);
 
-    //End-of-Statement terminal - used in indentation-sensitive language to signal end-of-statement;
-    // it is not always synced with CRLF chars, and CodeOutlineFilter carefully produces Eos tokens
-    // (as well as Indent and Dedent) based on line/col information in incoming content tokens.
-    public readonly Terminal Eos = new Terminal("EOS", Resources.LabelEosLabel, TokenCategory.Outline);
-    
     //Used for error tokens
-    public readonly Terminal SyntaxError = new Terminal("SYNTAX_ERROR", TokenCategory.Error);
+    public readonly Terminal LineStartTerminal = new Terminal("LINE_START", TokenCategory.Outline);
+
+    //Used for error tokens
+    public readonly Terminal SyntaxError = new Terminal("SYNTAX_ERROR", TokenCategory.Error, TermFlags.IsNonScanner);
 
     public NonTerminal NewLinePlus {
       get {

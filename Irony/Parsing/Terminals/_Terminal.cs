@@ -18,15 +18,17 @@ namespace Irony.Parsing {
 
   public class Terminal : BnfTerm {
     #region Constructors
-    public Terminal(string name)  : this(name, TokenCategory.Content) {  }
-    public Terminal(string name, TokenCategory category)  : base(name) {
+    public Terminal(string name)  : this(name, TokenCategory.Content, TermFlags.None) {  }
+    public Terminal(string name, TokenCategory category)  : this(name, category, TermFlags.None) {  }
+    public Terminal(string name, string errorAlias, TokenCategory category, TermFlags flags) : this(name, category, flags) {
+      this.ErrorAlias = errorAlias;
+    }
+    public Terminal(string name, TokenCategory category, TermFlags flags)  : base(name) {
       Category = category;
+      this.Flags |= flags; 
       if (Category == TokenCategory.Outline)
         this.SetFlag(TermFlags.IsPunctuation);
       OutputTerminal = this; 
-    }
-    public Terminal(string name, string errorAlias, TokenCategory category) : this(name, category) {
-      this.ErrorAlias = errorAlias;
     }
     #endregion
 

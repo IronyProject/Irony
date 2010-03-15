@@ -39,7 +39,7 @@ namespace Irony.Parsing {
     #region overrides: TryMatch, Init, GetPrefixes(), ToString() 
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
-      this.Symbol = grammarData.Symbols.TextToSymbol(Text); 
+      this.Symbol = SymbolTable.Symbols.TextToSymbol(Text); 
 
       #region comments about keyterms priority
       // Priority - determines the order in which multiple terminals try to match input for a given current char in the input.

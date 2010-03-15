@@ -119,6 +119,14 @@ Press Ctrl-C to exit the program at any time.
       ConsolePrompt = "?";
       ConsolePromptMoreInput = "?"; 
     }
+
+
+    public override string RunSample(ParseTree parsedSample) {
+      var interpreter = new Irony.Interpreter.ScriptInterpreter(this);
+      interpreter.Globals["pi"] = Math.PI;
+      interpreter.Evaluate(parsedSample);
+      return interpreter.GetOutput(); 
+    }
   }//class
 
 }//namespace

@@ -30,11 +30,12 @@ namespace Irony.Parsing {
     IsPunctuation =      0x20,
     IsDelimiter =        0x40,
     IsReservedWord =    0x080,
-    
     IsMemberSelect =    0x100,    
-    IsNonGrammar =     0x0200,  // if set, parser would eliminate the token from the input stream; terms in Grammar.NonGrammarTerminals have this flag set
-    IsTransient =      0x0400,  // Transient non-terminal - should be replaced by it's child in the AST tree.
-    IsNotReported =    0x0800,  // Exclude from expected terminals list on syntax error
+
+    IsNonScanner =    0x01000,  // indicates that tokens for this terminal are NOT produced by scanner 
+    IsNonGrammar =    0x02000,  // if set, parser would eliminate the token from the input stream; terms in Grammar.NonGrammarTerminals have this flag set
+    IsTransient =     0x04000,  // Transient non-terminal - should be replaced by it's child in the AST tree.
+    IsNotReported =   0x08000,  // Exclude from expected terminals list on syntax error
     
     //calculated flags
     IsNullable =     0x010000,
@@ -68,17 +69,27 @@ namespace Irony.Parsing {
     #endregion
 
 
+    #region virtuals and overrides
     public virtual void Init(GrammarData grammarData) {
       GrammarData = grammarData;
+    }
+
+    public virtual string GetParseNodeCaption(ParseTreeNode node) {
+      if (GrammarData != null)
+        return GrammarData.Grammar.GetParseNodeCaption(node);
+      else 
+        return Name; 
     }
 
     public override string ToString() {
       return Name;
     }
+
     public override int GetHashCode() {
       if (Name == null) return 0;
       return Name.GetHashCode();
     }
+    #endregion 
 
     public const int NoPrecedence = 0;
 

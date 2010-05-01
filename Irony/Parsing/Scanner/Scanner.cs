@@ -116,13 +116,18 @@ namespace Irony.Parsing {
     }
 
     private bool MatchNonGrammarTerminals() {
-      TerminalList terms; 
-      if (!Data.NonGrammarTerminalsLookup.TryGetValue(Context.Source.PreviewChar, out terms))
+      TerminalList terms;
+      if(!Data.NonGrammarTerminalsLookup.TryGetValue(Context.Source.PreviewChar, out terms)) 
         return false;
       foreach(var term in terms) {
+        Context.SourceStream.ResetPreviewPosition();
         Context.CurrentToken = term.TryMatch(Context, Context.Source);
-        if (Context.CurrentToken != null) return true; 
+        if (Context.CurrentToken != null) 
+          term.InvokeValidateToken(Context);      
+        if(Context.CurrentToken != null)
+          return true;
       }
+      Context.SourceStream.ResetPreviewPosition();
       return false; 
     }
 
@@ -191,7 +196,7 @@ namespace Irony.Parsing {
         if (priorToken  != null && priorToken.Terminal.Priority > term.Priority)
           return;
         //Reset source position and try to match
-        Context.SourceStream.PreviewPosition = Context.SourceStream.Location.Position;
+        Context.SourceStream.ResetPreviewPosition();
         var token = term.TryMatch(Context, Context.SourceStream);
         if (token == null) continue; 
         //skip it if it is shorter than previous token

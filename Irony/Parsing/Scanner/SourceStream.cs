@@ -88,6 +88,10 @@ namespace Irony.Parsing {
     }
 #endif
 
+    public void ResetPreviewPosition() {
+      PreviewPosition = Location.Position;
+    }
+
     public bool MatchSymbol(string symbol, bool ignoreCase) {
       try {
         var compType =  ignoreCase ? StringComparison.InvariantCultureIgnoreCase : StringComparison.InvariantCulture;

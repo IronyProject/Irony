@@ -35,6 +35,8 @@ namespace Irony.Parsing {
     public readonly Parser Parser;
     public readonly ParserData Data;
     Grammar _grammar;
+    bool _traceEnabled; 
+
     private ParsingContext Context {
       get { return Parser.Context; }
     }
@@ -80,6 +82,7 @@ namespace Irony.Parsing {
 
     #region execute actions
     private void ExecuteAction() {
+      _traceEnabled = Context.OptionIsSet(ParseOptions.TraceParser);
       //Read input only if DefaultReduceAction is null - in this case the state does not contain ExpectedSet,
       // so parser cannot assist scanner when it needs to select terminal and therefore can fail
       if (Context.CurrentParserInput == null && Context.CurrentParserState.DefaultAction == null)
@@ -98,7 +101,7 @@ namespace Irony.Parsing {
         return;
       }    
       //We have action. First, write trace
-      Context.AddTrace("{0}", action);
+      if (_traceEnabled) Context.AddTrace("{0}", action);
       //Execute it
       switch (action.ActionType) {
         case ParserActionType.Shift: ExecuteShift(action); break;
@@ -194,7 +197,7 @@ namespace Irony.Parsing {
       //Push new node into stack and move to new state
       //First read the state from top of the stack 
       Context.CurrentParserState = Context.ParserStack.Top.State;
-      Context.AddTrace(Resources.MsgTracePoppedState, reduceProduction.LValue.Name);
+      if (_traceEnabled) Context.AddTrace(Resources.MsgTracePoppedState, reduceProduction.LValue.Name);
       // Shift to new state (LALR) - execute shift over non-terminal
       var shift = Context.CurrentParserState.Actions[reduceProduction.LValue];
       Context.ParserStack.Push(newNode, shift.NewState);
@@ -207,14 +210,14 @@ namespace Irony.Parsing {
       var listNode = Context.ParserStack[firstChildIndex]; //get the list already created - it is the first child node
       listNode.Span = ComputeNewNodeSpan(childCount);
       var listMember = Context.ParserStack.Top; //next list member is the last child - at the top of the stack
-      if (SkipChildNode(listMember))
+      if (ShouldSkipChildNode(listMember))
         return listNode; 
       CheckCreateAstNode(listMember);  
       listNode.ChildNodes.Add(listMember);
       return listNode; 
     }
 
-    private bool SkipChildNode(ParseTreeNode childNode) {
+    private bool ShouldSkipChildNode(ParseTreeNode childNode) {
       if (childNode.Term.FlagIsSet(TermFlags.IsPunctuation))
         return true; 
       if (childNode.Term.FlagIsSet(TermFlags.IsTransient) && childNode.ChildNodes.Count == 0)
@@ -224,7 +227,7 @@ namespace Irony.Parsing {
 
     //List container is created by MakePlusRule, MakeStarRule with allowTrailingDelimiter = true 
     // it is a special case for parser. The "real" list in grammar is the "container", but list members had been accumulated under 
-    //  the transient "plus-list" which is a child of this container. So we need to copy all "grandchildrent" from child to parent.
+    //  the transient "plus-list" which is a child of this container. So we need to copy all "grandchildren" from child to parent.
     private ParseTreeNode ReduceListContainer(ParserAction action) {
       int childCount = action.ReduceProduction.RValues.Count;
       int firstChildIndex = Context.ParserStack.Count - childCount;
@@ -242,7 +245,7 @@ namespace Irony.Parsing {
       var childCount = action.ReduceProduction.RValues.Count;
       for(int i = 0; i < childCount; i++) {
         var child = Context.ParserStack[topIndex - i];
-        if (SkipChildNode(child)) continue; 
+        if (ShouldSkipChildNode(child)) continue; 
         CheckCreateAstNode(child);
         return child; 
       }
@@ -258,11 +261,12 @@ namespace Irony.Parsing {
       var newNode = new ParseTreeNode(action.ReduceProduction, span);
       for(int i = 0; i < childCount; i++) {
         var childNode = Context.ParserStack[firstChildIndex + i];
-        if(SkipChildNode(childNode))
+        if(ShouldSkipChildNode(childNode))
           continue; //skip punctuation or empty transient nodes
         CheckCreateAstNode(childNode); //AST nodes for lists and for terminals are created here 
-        //Inherit precedence and associativity
-        if(childNode.Precedence != BnfTerm.NoPrecedence) {
+        //For single-child reduces inherit precedence and associativity, to cover a standard case: BinOp->+|-|*|/; 
+        // BinOp node should inherit precedence from underlying operator symbol
+        if(childCount == 1 && childNode.Precedence != BnfTerm.NoPrecedence) {
           newNode.Precedence = childNode.Precedence;
           newNode.Associativity = childNode.Associativity;
         }
@@ -310,7 +314,7 @@ namespace Irony.Parsing {
           ExecuteShift(action); 
           break; 
       }
-      Context.AddTrace(Resources.MsgTraceConflictResolved);
+      if (_traceEnabled) Context.AddTrace(Resources.MsgTraceConflictResolved);
     }
 
     private void ExecuteAccept(ParserAction action) {
@@ -322,11 +326,11 @@ namespace Irony.Parsing {
 
     private void ExecuteOperatorAction(ParserAction action) {
       var realActionType = GetActionTypeForOperation(action);
+      if (_traceEnabled) Context.AddTrace(Resources.MsgTraceOpResolved, realActionType);
       switch (realActionType) {
         case ParserActionType.Shift: ExecuteShift(action); break;
         case ParserActionType.Reduce: ExecuteReduce(action); break; 
       }//switch
-      Context.AddTrace(Resources.MsgTraceOpResolved, realActionType);
     }
 
     private ParserActionType GetActionTypeForOperation(ParserAction action) {

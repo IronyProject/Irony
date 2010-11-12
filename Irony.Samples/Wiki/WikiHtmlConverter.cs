@@ -29,8 +29,33 @@ namespace Irony.Samples {
       get { return _openLists.Count == 0 ? 0 : _openLists.Peek().OpenTag.Length; }
     }
 
-    private string EncodeHtml(string text) {
-      return System.Web.HttpUtility.HtmlEncode(text);
+
+    //HtmlEncode method - we don't use System.Web.HttpUtility.HtmlEncode method, because System.Web assembly is not part of 
+    // .NET Client profile; so we just embed implementation here
+    // This is reformatted version of Rick Strahl's original code: http://www.west-wind.com/Weblog/posts/617930.aspx
+    public static string HtmlEncode(string text)  {
+        if (text == null)  return null;
+        StringBuilder sb = new StringBuilder(text.Length);
+        int len = text.Length;
+        for (int i = 0; i < len; i++)
+        {
+            switch (text[i]) {
+                case '<':   sb.Append("&lt;"); break;
+                case '>':   sb.Append("&gt;"); break;
+                case '"':   sb.Append("&quot;");    break;
+                case '&':   sb.Append("&amp;");  break;
+                default:
+                    if (text[i] > 159)    {
+                        // decimal numeric entity
+                        sb.Append("&#");
+                        sb.Append(((int)text[i]).ToString());
+                        sb.Append(";");
+                    } else
+                        sb.Append(text[i]);
+                    break;
+            }
+        }
+        return sb.ToString();
     }
 
     public string Convert(Grammar grammar, TokenList tokens) {
@@ -49,7 +74,7 @@ namespace Irony.Samples {
         else if(term == grammar.NewLine) {
           ProcessNewLine(token);
         } else //non-wike element and not new line 
-          _output.Append(EncodeHtml(token.ValueString)); 
+          _output.Append(HtmlEncode(token.ValueString)); 
         _atLineStart = term == grammar.NewLine; //set for the next token
       }//foreach token
 
@@ -91,7 +116,7 @@ namespace Irony.Samples {
           ProcessWikiBlockTag(token); 
           break; 
         case WikiTermType.Text:
-          _output.Append(EncodeHtml(token.ValueString));     
+          _output.Append(HtmlEncode(token.ValueString));     
           break; 
         case WikiTermType.Table:
           if (_insideCell)
@@ -124,14 +149,14 @@ namespace Irony.Samples {
         case WikiBlockType.EscapedText:
         case WikiBlockType.CodeBlock:
           _output.Append(term.OpenHtmlTag);
-          _output.Append(EncodeHtml(token.ValueString));
+          _output.Append(HtmlEncode(token.ValueString));
           _output.AppendLine(term.CloseHtmlTag);
           break;
         case WikiBlockType.Anchor:
           _output.Append("<a name=\"" + token.ValueString +"\"/>");
           break;
         case WikiBlockType.LinkToAnchor:
-          _output.Append("<a href=\"#" + token.ValueString +"\">" + EncodeHtml(token.ValueString) + "</a>");
+          _output.Append("<a href=\"#" + token.ValueString +"\">" + HtmlEncode(token.ValueString) + "</a>");
           break; 
         case WikiBlockType.Url:
         case WikiBlockType.FileLink:

@@ -3,9 +3,17 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using Irony.Parsing;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Irony.Tests {
+#if USE_NUNIT
+    using NUnit.Framework;
+    using TestClass = NUnit.Framework.TestFixtureAttribute;
+    using TestMethod = NUnit.Framework.TestAttribute;
+    using TestInitialize = NUnit.Framework.SetUpAttribute;
+#else
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+#endif
+    
   [TestClass]
   public class RegExLiteralTests: TerminalTestsBase  {
 

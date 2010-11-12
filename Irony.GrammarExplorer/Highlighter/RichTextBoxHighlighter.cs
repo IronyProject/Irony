@@ -30,7 +30,7 @@ namespace Irony.GrammarExplorer {
 
   public class TokenColorTable : Dictionary<TokenColor, Color> { }
 
-  public class RichTextBoxHighligter : NativeWindow, IDisposable, IUIThreadInvoker {
+  public class RichTextBoxHighlighter : NativeWindow, IDisposable, IUIThreadInvoker {
     public RichTextBox TextBox;
     public readonly TokenColorTable TokenColors = new TokenColorTable();
     public readonly EditorAdapter Adapter; 
@@ -41,7 +41,7 @@ namespace Irony.GrammarExplorer {
     bool _disposed;
 
     #region constructor, initialization and disposing
-    public RichTextBoxHighligter(RichTextBox textBox, LanguageData language) {
+    public RichTextBoxHighlighter(RichTextBox textBox, LanguageData language) {
       TextBox = textBox;
       Adapter = new EditorAdapter(language); 
       ViewAdapter = new EditorViewAdapter(Adapter, this);

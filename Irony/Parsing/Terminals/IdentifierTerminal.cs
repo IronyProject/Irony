@@ -57,16 +57,16 @@ namespace Irony.Parsing {
     #region constructors and initialization
     public IdentifierTerminal(string name) : this(name, IdOptions.None) {
     }
-    public IdentifierTerminal(string name, IdOptions flags) : this(name, "_", "_") {
-      Options = flags; 
+    public IdentifierTerminal(string name, IdOptions options) : this(name, "_", "_") {
+      Options = options; 
     }
     public IdentifierTerminal(string name, string extraChars, string extraFirstChars): base(name) {
       AllFirstChars = Strings.AllLatinLetters + extraFirstChars;
       AllChars = Strings.AllLatinLetters + Strings.DecimalDigits + extraChars;
     }
 
-    public void AddPrefix(string prefix, IdOptions flags) {
-      base.AddPrefixFlag(prefix, (short)flags);
+    public void AddPrefix(string prefix, IdOptions options) {
+      base.AddPrefixFlag(prefix, (short)options);
     }
     #endregion
 

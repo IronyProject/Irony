@@ -22,7 +22,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("GrammarExplorer")]
-[assembly: AssemblyCopyright("Copyright © 2007 Roman Ivantsov")]
+[assembly: AssemblyCopyright("Copyright © 2010 Roman Ivantsov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

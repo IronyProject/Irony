@@ -81,8 +81,8 @@ namespace Irony.Parsing {
       base.AstNodeType = typeof(Irony.Ast.LiteralValueNode);
     }
 
-    public StringLiteral(string name, string startEndSymbol, StringOptions stringOptions) : this(name) {
-        _subtypes.Add(startEndSymbol, startEndSymbol, stringOptions);
+    public StringLiteral(string name, string startEndSymbol, StringOptions options) : this(name) {
+        _subtypes.Add(startEndSymbol, startEndSymbol, options);
     }
     
     public StringLiteral(string name, string startEndSymbol) : this(name, startEndSymbol, StringOptions.None) { }

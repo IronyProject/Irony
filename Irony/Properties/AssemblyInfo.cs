@@ -31,9 +31,9 @@ using System.Security;
 [assembly: AssemblyDescription("Irony for Silverlight")]
 [assembly: AssemblyConfiguration("")]
 #endif
-[assembly: AssemblyCompany("Irony Team")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Irony")]
-[assembly: AssemblyCopyright("Copyright © 2009 Roman Ivantsov")]
+[assembly: AssemblyCopyright("Copyright © 2010 Roman Ivantsov")]
 [assembly: AssemblyTrademark("Irony")]
 [assembly: AssemblyCulture("")]
 [assembly: CLSCompliant(true)]

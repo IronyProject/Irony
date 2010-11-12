@@ -37,15 +37,20 @@ namespace Irony.Parsing {
     public Associativity Associativity;
     public SourceSpan Span;
     public Production ReduceProduction;
-    public ParseTreeNodeList ChildNodes = new ParseTreeNodeList();
+    //Making ChildNodes property (not field) following request by Matt K, Bill H
+    public ParseTreeNodeList ChildNodes {get; private set;}
     public bool IsError;
     internal ParserState State;      //used by parser to store current state when node is pushed into the parser stack
+    public object Tag; //for use by custom parsers, Irony does not use it
 
-    public ParseTreeNode(BnfTerm term) {
+    private ParseTreeNode(){
+      ChildNodes = new ParseTreeNodeList();
+    }
+    public ParseTreeNode(BnfTerm term) : this() {
       Term = term;
     }
-    
-    public ParseTreeNode(Token token) {
+
+    public ParseTreeNode(Token token) : this()  {
       Token = token;
       Term = token.Terminal;
       Precedence = Term.Precedence;
@@ -53,19 +58,20 @@ namespace Irony.Parsing {
       Span = new SourceSpan(token.Location, token.Length);
       IsError = token.IsError(); 
     }
-    
-    public ParseTreeNode(ParserState initialState) {
+
+    public ParseTreeNode(ParserState initialState) : this() {
       State = initialState;
     }
-    
-    public ParseTreeNode(Production reduceProduction, SourceSpan span) {
+
+    public ParseTreeNode(Production reduceProduction, SourceSpan span)  : this(){
       ReduceProduction = reduceProduction;
       Span = span; 
       Term = ReduceProduction.LValue;
       Precedence = Term.Precedence;
     }
     
-    public ParseTreeNode(object node, BnfTerm term, int precedence, Associativity associativity, SourceSpan span) {
+    public ParseTreeNode(object node, BnfTerm term, int precedence, Associativity associativity, SourceSpan span)
+        : this()  {
       AstNode = node;
       Term = term;
       Precedence = precedence;

@@ -18,11 +18,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Irony.Samples")]
-[assembly: AssemblyDescription("Samples for Irony Framework")]
+[assembly: AssemblyDescription("Sample grammars for Irony Framework")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Irony Samples")]
-[assembly: AssemblyCopyright("Copyright © 2007 Roman Ivantsov")]
+[assembly: AssemblyCopyright("Copyright © 2010 Roman Ivantsov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

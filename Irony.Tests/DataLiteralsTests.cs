@@ -3,9 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Irony.Parsing;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Irony.Tests {
+#if USE_NUNIT
+    using NUnit.Framework;
+    using TestClass = NUnit.Framework.TestFixtureAttribute;
+    using TestMethod = NUnit.Framework.TestAttribute;
+    using TestInitialize = NUnit.Framework.SetUpAttribute;
+#else
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+#endif
 
   [TestClass]
   public class DataLiteralsTests : TerminalTestsBase {

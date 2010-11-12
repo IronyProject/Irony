@@ -160,7 +160,8 @@ namespace Irony.Parsing {
 
     #region Kleene operators: Q(), Plus(), Star()
     NonTerminal _q, _plus, _star; //cash them
-    public BnfExpression Q() {
+    public BnfExpression Q()
+    {
       if (_q != null)
         return _q; 
       _q = new NonTerminal(this.Name + "?");
@@ -168,6 +169,7 @@ namespace Irony.Parsing {
       return _q; 
     }
     
+    [Obsolete("This method is obsolete, use Grammar.MakePlusRule or MakeStarRule instead.")]
     public NonTerminal Plus() {
       if (_plus != null) 
         return _plus;
@@ -176,7 +178,9 @@ namespace Irony.Parsing {
       return _plus;
     }
 
-    public NonTerminal Star() {
+    [Obsolete("This method is obsolete, use Grammar.MakePlusRule or MakeStarRule instead.")]
+    public NonTerminal Star()
+    {
       if (_star != null) return _star;
       _star = new NonTerminal(this.Name + "*");
       _star.Rule = Grammar.MakeStarRule(_star, this);  

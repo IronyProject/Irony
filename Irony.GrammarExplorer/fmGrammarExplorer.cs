@@ -308,7 +308,7 @@ namespace Irony.GrammarExplorer {
       _language = new LanguageData(_grammar); 
       _parser = new Parser (_language);
       ShowParserConstructionResults();
-      StartHighligter();
+      StartHighlighter();
     }
 
     private void ParseSample() {
@@ -383,13 +383,13 @@ namespace Irony.GrammarExplorer {
     }
 
     //Source highlighting 
-    RichTextBoxHighligter _highlighter;
-    private void StartHighligter() {
+    RichTextBoxHighlighter _highlighter;
+    private void StartHighlighter() {
       if (_highlighter != null)
         StopHighlighter();
       if (chkDisableHili.Checked) return; 
       if (!_parser.Language.CanParse()) return; 
-      _highlighter = new RichTextBoxHighligter(txtSource, _language);
+      _highlighter = new RichTextBoxHighlighter(txtSource, _language);
       _highlighter.Adapter.Activate();
     }
     private void StopHighlighter() {
@@ -403,11 +403,11 @@ namespace Irony.GrammarExplorer {
       txtSource.Clear(); 
       txtSource.Text = txt; //remove all old highlighting
     }
-    private void EnableHighligter(bool enable) {
+    private void EnableHighlighter(bool enable) {
       if (_highlighter != null)
         StopHighlighter();
       if (enable)
-        StartHighligter(); 
+        StartHighlighter(); 
     }
 
     //The following methods are contributed by Andrew Bradnan; pasted here with minor changes
@@ -601,7 +601,7 @@ namespace Irony.GrammarExplorer {
 
     private void chkDisableHili_CheckedChanged(object sender, EventArgs e) {
       if (!_loaded) return; 
-      EnableHighligter(!chkDisableHili.Checked); 
+      EnableHighlighter(!chkDisableHili.Checked); 
     }
 
 

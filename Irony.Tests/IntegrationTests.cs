@@ -2,11 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Irony.Parsing;
 using Irony.Ast;
 
+//Tests of Visual Studio integration functionality
+
 namespace Irony.Tests {
+#if USE_NUNIT
+    using NUnit.Framework;
+    using TestClass = NUnit.Framework.TestFixtureAttribute;
+    using TestMethod = NUnit.Framework.TestAttribute;
+    using TestInitialize = NUnit.Framework.SetUpAttribute;
+#else
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+#endif
 
   public class IntegrationTestGrammar : Grammar {
     public IntegrationTestGrammar() {

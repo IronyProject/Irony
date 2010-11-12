@@ -334,10 +334,10 @@ namespace Irony.Interpreter {
 
     }//method
 
-    private void AddImplementation(string op, Type baseType, BinaryOperatorMethod baseMethod) {
+    protected void AddImplementation(string op, Type baseType, BinaryOperatorMethod baseMethod) {
       AddImplementation(op, baseType, baseMethod, null);
     }
-    private void AddImplementation(string op, Type baseType, BinaryOperatorMethod baseMethod, TypeConverter resultConverter) {
+    protected void AddImplementation(string op, Type baseType, BinaryOperatorMethod baseMethod, TypeConverter resultConverter) {
       var key = OperatorDispatchKey.CreateFromTypes(op, baseType, baseType);
       var imp = new OperatorImplementation(key, baseType, baseMethod,  null, null, resultConverter);
       _baseOperatorImplementations.Add(key, imp);

@@ -63,18 +63,18 @@ namespace Irony.Parsing {
     #region constructors and initialization
     public NumberLiteral(string name) : this(name, NumberOptions.Default) {
     }
-    public NumberLiteral(string name, NumberOptions flags, Type astNodeType)  : this(name, flags) {
+    public NumberLiteral(string name, NumberOptions options, Type astNodeType)  : this(name, options) {
       base.AstNodeType = astNodeType;
     }
-    public NumberLiteral(string name, NumberOptions flags, AstNodeCreator astNodeCreator)  : this(name, flags) {
+    public NumberLiteral(string name, NumberOptions options, AstNodeCreator astNodeCreator)  : this(name, options) {
       base.AstNodeCreator = astNodeCreator;
     }
-    public NumberLiteral(string name, NumberOptions flags) : base(name) {
-      Options = flags;
+    public NumberLiteral(string name, NumberOptions options) : base(name) {
+      Options = options;
       base.SetFlag(TermFlags.IsLiteral);
     }
-    public void AddPrefix(string prefix, NumberOptions flags) {
-      PrefixFlags.Add(prefix, (short) flags);
+    public void AddPrefix(string prefix, NumberOptions options) {
+      PrefixFlags.Add(prefix, (short) options);
       Prefixes.Add(prefix);
     }
     public void AddExponentSymbols(string symbols, TypeCode floatType) {

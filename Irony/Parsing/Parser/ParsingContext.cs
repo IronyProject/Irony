@@ -52,7 +52,6 @@ namespace Irony.Parsing {
     public ParseOptions Options;
     public ParseMode Mode = ParseMode.File;
     public int MaxErrors = 20; //maximum error count to report
-    public int TabWidth = 8;
     public CultureInfo Culture; //defaults to Grammar.DefaultCulture, might be changed by app code
 
     #region properties and fields
@@ -87,6 +86,16 @@ namespace Irony.Parsing {
 
     //values dictionary to use by custom language implementations to save some temporary values in parse process
     public readonly Dictionary<string, object> Values = new Dictionary<string, object>();
+
+    public int TabWidth {
+      get { return _tabWidth; }
+      set {
+         _tabWidth = value;
+         if (SourceStream != null) 
+                SourceStream.TabWidth = value;
+        }
+    } int _tabWidth = 8;    
+    
     #endregion 
 
 
@@ -149,15 +158,6 @@ namespace Irony.Parsing {
       if (args != null && args.Length > 0)
         message = string.Format(message, args); 
       ParserTrace.Add(new ParserTraceEntry(CurrentParserState, ParserStack.Top, CurrentParserInput, message, false));
-    }
-
-    internal string FormatUnexpectedInputErrorMessage() {
-      string msg;
-      var expectedSet = GetExpectedTermSet();
-      msg = Language.Grammar.ConstructParserErrorMessage(this, expectedSet);
-      if (string.IsNullOrEmpty(msg))
-        msg = Resources.ErrSyntaxErrorNoInfo;
-      return msg; 
     }
 
     #endregion

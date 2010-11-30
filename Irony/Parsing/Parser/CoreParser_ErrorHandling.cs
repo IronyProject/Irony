@@ -21,7 +21,7 @@ namespace Irony.Parsing {
 
     private void ProcessParserError() {
       Context.Status = ParserStatus.Error;
-      ReportParseError();
+      _grammar.ReportParseError(this.Context);
       if (Context.Mode != ParseMode.CommandLine)
         TryRecoverFromError(); 
     }
@@ -117,26 +117,6 @@ namespace Irony.Parsing {
       return null;
     }
 
-    #region Error reporting
-
-    private void ReportParseError() {
-      if (Context.CurrentParserInput.Term == _grammar.SyntaxError) {
-        Context.AddParserError(Context.CurrentParserInput.Token.Value as string);
-        return; 
-      }
-      if (Context.CurrentParserInput.Term == _grammar.Eof) {
-        Context.AddParserError(Resources.ErrUnexpEof);
-        return; 
-      }
-      if (Context.CurrentParserInput.Term == _grammar.Indent) {
-        Context.AddParserError(Resources.ErrUnexpIndent);
-        return;
-      }
-      //General type of error - unexpected input
-      string msg = Context.FormatUnexpectedInputErrorMessage();
-      Context.AddParserError(msg);
-    }
-
     #region comments
     // Computes set of expected terms in a parser state. While there may be extended list of symbols expected at some point,
     // we want to reorganize and reduce it. For example, if the current state expects all arithmetic operators as an input,
@@ -173,8 +153,6 @@ namespace Irony.Parsing {
         result.Add(terminal.ErrorAlias); 
       return result;     
     }
-
-    #endregion
 
 
   }//class

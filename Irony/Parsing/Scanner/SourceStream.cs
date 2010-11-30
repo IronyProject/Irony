@@ -50,8 +50,6 @@ namespace Irony.Parsing {
 
     public int TabWidth { get; set; }
 
-#if DEBUG
-    //Slower versions with boundary checking
     public char PreviewChar {
       [System.Diagnostics.DebuggerStepThrough]
       get {
@@ -67,26 +65,6 @@ namespace Irony.Parsing {
         return Text[PreviewPosition + 1];
       }
     }
-#else
-    //Fast versions without explicit bounds check - remember, try/catch costs nothing at runtime if there's no exception
-    public char PreviewChar {
-      [System.Diagnostics.DebuggerStepThrough]
-      get {
-        try {
-          return Text[PreviewPosition];
-        } catch { return '\0'; }
-      }
-    }
-
-    public char NextPreviewChar {
-      [System.Diagnostics.DebuggerStepThrough]
-      get {
-        try {
-          return Text[PreviewPosition + 1];
-        } catch { return '\0'; }
-      }
-    }
-#endif
 
     public void ResetPreviewPosition() {
       PreviewPosition = Location.Position;

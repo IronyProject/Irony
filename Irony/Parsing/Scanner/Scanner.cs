@@ -99,8 +99,10 @@ namespace Irony.Parsing {
 
     //Scans the source text and constructs a new token
     private void ScanToken() {
-      if (!MatchNonGrammarTerminals())
-        MatchRegularToken();      
+      if (!MatchNonGrammarTerminals() && !MatchRegularTerminals()) {
+        //we are in error already; try to match ANY terminal and let the parser report an error
+        MatchAllTerminals(); //try to match any terminal out there
+      }
       var token = Context.CurrentToken;
       //If we have normal token then return it
       if (token != null && !token.IsError()) {
@@ -111,7 +113,7 @@ namespace Irony.Parsing {
       }
       //we have an error: either error token or no token at all
       if (token == null)   //if no token then create error token
-        Context.CurrentToken = Context.SourceStream.CreateErrorToken(Context.FormatUnexpectedInputErrorMessage());
+        Context.CurrentToken = Context.SourceStream.CreateErrorToken(Resources.ErrInvalidChar, Context.Source.PreviewChar);
       Recover();
     }
 
@@ -123,21 +125,36 @@ namespace Irony.Parsing {
         Context.SourceStream.ResetPreviewPosition();
         Context.CurrentToken = term.TryMatch(Context, Context.Source);
         if (Context.CurrentToken != null) 
-          term.InvokeValidateToken(Context);      
-        if(Context.CurrentToken != null)
+          term.InvokeValidateToken(Context);
+        if (Context.CurrentToken != null) {
+          //check if we need to fire LineStart token before this token; 
+          // we do it only if the token is not a comment; comments should be ignored by the outline logic
+          var token = Context.CurrentToken;
+          if (token.Category == TokenCategory.Content && NeedLineStartToken(token.Location)) {
+            Context.BufferedTokens.Push(token); //buffer current token; we'll eject LineStart instead
+            Context.Source.Location = token.Location; //set it back to the start of the token
+            Context.CurrentToken = Context.Source.CreateToken(_grammar.LineStartTerminal); //generate LineStart
+            Context.PreviousLineStart = Context.Source.Location; //update LineStart
+          }
           return true;
-      }
+        }//if
+      }//foreach term
       Context.SourceStream.ResetPreviewPosition();
       return false; 
     }
 
-    private void MatchRegularToken() {
-      if (_grammar.FlagIsSet(LanguageFlags.EmitLineStartToken)) {
-        if(Context.Source.Location.Line > Context.PreviousLineStart.Line) {
-          Context.CurrentToken = Context.Source.CreateToken(_grammar.LineStartTerminal);
-          Context.PreviousLineStart = Context.Source.Location;
-          return;
-        }
+    private bool NeedLineStartToken(SourceLocation forLocation) {
+      return _grammar.FlagIsSet(LanguageFlags.EmitLineStartToken) && forLocation.Line > Context.PreviousLineStart.Line;
+    }
+
+    private bool MatchRegularTerminals() {
+      //We need to eject LineStart BEFORE we try to produce a real token; this LineStart token should reach 
+      // the parser, make it change the state and with it to change the set of expected tokens. So when we 
+      // finally move to scan the real token, the expected terminal set is correct.
+        if (NeedLineStartToken(Context.Source.Location)) {
+        Context.CurrentToken = Context.Source.CreateToken(_grammar.LineStartTerminal);
+        Context.PreviousLineStart = Context.Source.Location;
+        return true;
       }
       //Find matching terminal
       // First, try terminals with explicit "first-char" prefixes, selected by current char in source
@@ -152,7 +169,21 @@ namespace Irony.Parsing {
         Context.CurrentToken = _grammar.TryMatch(Context, Context.SourceStream);
       if (Context.CurrentToken is MultiToken)
         UnpackMultiToken();
-      }
+      return Context.CurrentToken != null;
+    }//method
+
+    // This method is a last attempt by scanner to match ANY terminal, after regular matching (by input char) had failed.
+    // Likely this will produce some token which is invalid for current parser state (for ex, identifier where a number 
+    // is expected); in this case the parser will report an error as "Error: expected number".
+    // if this matching fails, the scanner will produce an error as "unexpected character."
+    private bool MatchAllTerminals() {
+      Context.CurrentTerminals.Clear(); 
+      Context.CurrentTerminals.AddRange(Data.Language.GrammarData.Terminals); 
+      MatchTerminals();
+      if (Context.CurrentToken is MultiToken)
+        UnpackMultiToken();
+      return Context.CurrentToken != null;         
+    }
 
     //If token is MultiToken then push all its child tokens into _bufferdTokens and return the first token in buffer
     private void UnpackMultiToken() {
@@ -169,9 +200,6 @@ namespace Irony.Parsing {
       if(!Data.TerminalsLookup.TryGetValue(Context.SourceStream.PreviewChar, out termsForCurrentChar))
         termsForCurrentChar = Data.FallbackTerminals; 
       //if we are recovering, previewing or there's no parser state, then return list as is
-      // Also return list as is if there are token filters
-      // Token filters inject/remove tokens from the stream, so the tokens parser is expecting might be different from
-      // scanner can scan
       if(Context.Status == ParserStatus.Recovering || Context.Status == ParserStatus.Previewing 
           || Context.CurrentParserState == null || _grammar.FlagIsSet(LanguageFlags.DisableScannerParserLink)
           || Context.Mode == ParseMode.VsLineScan) {
@@ -181,7 +209,9 @@ namespace Irony.Parsing {
       // Try filtering terms by checking with parser which terms it expects; 
       var parserState = Context.CurrentParserState;
       foreach(var term in termsForCurrentChar) {
-        if(parserState.ExpectedTerminals.Contains(term) || _grammar.NonGrammarTerminals.Contains(term))
+        //Note that we check the OutputTerminal with parser, not the term itself;
+        //in most cases it is the same as term, but not always
+        if (parserState.ExpectedTerminals.Contains(term.OutputTerminal) || _grammar.NonGrammarTerminals.Contains(term))
           Context.CurrentTerminals.Add(term);
       }
 

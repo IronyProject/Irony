@@ -76,7 +76,7 @@ namespace Irony.Tests {
 
       TryMatch(UInt64.MaxValue.ToString());
       CheckType(typeof(ulong));
-      Assert.IsTrue((ulong)_token.Value == UInt64.MaxValue, "Failed to read int value");
+      Assert.IsTrue((ulong)_token.Value == UInt64.MaxValue, "Failed to read uint64.MaxValue value");
 
       TryMatch("123U ");
       CheckType(typeof(UInt32));
@@ -349,7 +349,27 @@ namespace Irony.Tests {
       //Simple integers and suffixes
       TryMatch("1_234_567");
       CheckType(typeof(int));
-      Assert.IsTrue((int)_token.Value == 1234567, "Failed to read int value with underscores in it");
+      Assert.IsTrue((int)_token.Value == 1234567, "Failed to read int value with underscores.");
+    }//method
+
+
+    //There was a bug discovered in NumberLiteral - it cannot parse appropriately the int.MinValue value.
+    // This test ensures that the issue is fixed.
+    [TestMethod]
+    public void TestMinMaxValues() {
+        var number = new NumberLiteral("number", NumberOptions.AllowSign);
+        number.DefaultIntTypes = new TypeCode[] { TypeCode.Int32 };
+        SetTerminal(number);
+        var s = int.MinValue.ToString();
+        TryMatch(s);
+        Assert.IsFalse(_token.IsError(), "Failed to scan int.MinValue, scanner returned an error."); 
+        CheckType(typeof(int));
+        Assert.IsTrue((int)_token.Value == int.MinValue, "Failed to scan int.MinValue, scanned value does not match.");
+        s = int.MaxValue.ToString();
+        TryMatch(s);
+        Assert.IsFalse(_token.IsError(), "Failed to scan int.MaxValue, scanner returned an error.");
+        CheckType(typeof(int));
+        Assert.IsTrue((int)_token.Value == int.MaxValue, "Failed to read int.MaxValue");
     }//method
 
   }//class

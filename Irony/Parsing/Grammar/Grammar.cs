@@ -193,7 +193,7 @@ namespace Irony.Parsing {
 
     #endregion
 
-    #region virtual methods: TryMatch, CreateNode, GetSyntaxErrorMessage, CreateRuntime, RunSample
+    #region virtual methods: TryMatch, CreateNode, CreateRuntime, RunSample
     public virtual void CreateTokenFilters(LanguageData language, TokenFilterList filters) {
     }
 
@@ -243,12 +243,36 @@ namespace Irony.Parsing {
 
     public virtual void OnLanguageDataConstructed(LanguageData language) {
     }
+
+  
     //Constructs the error message in situation when parser has no available action for current input.
     // override this method if you want to change this message
+    [Obsolete("Method is deprecated. Override Grammar.ReportParserError method instead.")]
     public virtual string ConstructParserErrorMessage(ParsingContext context, StringSet expectedTerms) {
       return string.Format(Resources.ErrParserUnexpInput, expectedTerms.ToString(" "));
-       
     }
+
+    // Override this method to perform custom error processing
+    public virtual void ReportParseError(ParsingContext context) {
+        string error = null;
+        if (context.CurrentParserInput.Term == this.SyntaxError)
+            error = context.CurrentParserInput.Token.Value as string; //scanner error
+        else if (context.CurrentParserInput.Term == this.Indent)
+            error = Resources.ErrUnexpIndent;
+        else if (context.CurrentParserInput.Term == this.Eof && context.OpenBraces.Count > 0) {
+            //report unclosed braces/parenthesis
+            var openBrace = context.OpenBraces.Peek();
+            error = string.Format(Resources.ErrNoClosingBrace, openBrace.Text);
+        } else {
+            var expectedTerms = context.GetExpectedTermSet(); 
+            if (expectedTerms.Count > 0) 
+              error = ConstructParserErrorMessage(context, expectedTerms); //deprecated, use next line in the future
+              //error = string.Format(Resources.ErrParserUnexpInput, expectedTerms.ToString(" ")
+            else 
+              error = Resources.ErrUnexpEof;
+        }
+        context.AddParserError(error);
+    }//method
     
     public virtual LanguageRuntime CreateRuntime(LanguageData data) {
       return new LanguageRuntime(data);

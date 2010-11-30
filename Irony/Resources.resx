@@ -112,10 +112,10 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConsoleNoChars" xml:space="preserve">
     <value>Nn</value>
@@ -432,5 +432,8 @@
   </data>
   <data name="ErrTerminalHasEmptyPrefix" xml:space="preserve">
     <value>A terminal {0} has empty prefix.</value>
+  </data>
+  <data name="ErrNoClosingBrace" xml:space="preserve">
+    <value>No closing pair for opening symbol {0}</value>
   </data>
 </root>

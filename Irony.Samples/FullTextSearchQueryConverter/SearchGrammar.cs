@@ -56,6 +56,14 @@ namespace Irony.Samples.FullTextSearch
           RegisterOperators(10, "or", "|"); 
           RegisterOperators(20, "and", "&", "-"); 
           RegisterOperators(20, ImpliedAnd);
+          //Register brace pairs to improve error reporting
+          RegisterBracePair("(", ")");
+          RegisterBracePair("<", ">");
+          //Do not report ImpliedAnd as expected symbol - it is not really a symbol
+          this.AddToNoReportGroup(ImpliedAnd);
+          //also do not report braces as expected
+          this.AddToNoReportGroup("(", ")", "<", ">"); 
+
           LanguageFlags |= LanguageFlags.CanRunSample;
         }
 

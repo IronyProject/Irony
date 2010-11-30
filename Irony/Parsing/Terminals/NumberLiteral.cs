@@ -236,6 +236,7 @@ namespace Irony.Parsing {
       details.Body = source.Text.Substring(start, end - start);
       return true;
     }
+
     protected internal override void InvokeValidateToken(ParsingContext context) {
       if (!IsSet(NumberOptions.AllowLetterAfter)) {
         var current = context.Source.PreviewChar;
@@ -275,7 +276,7 @@ namespace Irony.Parsing {
           case TypeCode.SByte:    case TypeCode.Byte:    case TypeCode.Int16:    case TypeCode.UInt16:
           case TypeCode.Int32:    case TypeCode.UInt32:  case TypeCode.Int64:    case TypeCode.UInt64:
             if (details.Value == null) //if it is not done yet
-              TryConvertToUlong(details); //try to convert to ULong and place the result into details.Value field;
+              TryConvertToLong(details, typeCode == TypeCode.UInt64); //try to convert to Long/Ulong and place the result into details.Value field;
             if(TryCastToIntegerType(typeCode, details)) //now try to cast the ULong value to the target type 
               return true;
             break;
@@ -392,21 +393,26 @@ namespace Irony.Parsing {
       }
     }//method
 
-    private bool TryConvertToUlong(CompoundTokenDetails details) {
+    private bool TryConvertToLong(CompoundTokenDetails details, bool useULong) {
       try {
         int radix = GetRadix(details);
         //workaround for .Net FX bug: http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=278448
         if (radix == 10)
-          details.Value = Convert.ToUInt64(details.Body, CultureInfo.InvariantCulture);
+            if (useULong)
+              details.Value = Convert.ToUInt64(details.Body, CultureInfo.InvariantCulture);
+            else
+              details.Value = Convert.ToInt64(details.Body, CultureInfo.InvariantCulture);
         else
-          details.Value = Convert.ToUInt64(details.Body, radix);
+            if (useULong)
+              details.Value = Convert.ToUInt64(details.Body, radix);
+            else
+              details.Value = Convert.ToInt64(details.Body, radix);
         return true; 
       } catch(OverflowException) {
-        details.Error = string.Format(Resources.ErrCannotConvertValueToType, details.Value, TypeCode.UInt64.ToString());
+        details.Error = string.Format(Resources.ErrCannotConvertValueToType, details.Value, TypeCode.Int64.ToString());
         return false;
       }
     }
-
 
     private bool ConvertToBigInteger(CompoundTokenDetails details) {
       //ignore leading zeros and sign

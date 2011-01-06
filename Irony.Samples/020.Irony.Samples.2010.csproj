@@ -72,6 +72,9 @@
     <Compile Include="DataGrammars\SampleCsvGrammar.cs" />
     <Compile Include="FullTextSearchQueryConverter\SearchGrammar.cs" />
     <Compile Include="DataGrammars\JsonGrammar.cs" />
+    <Compile Include="Java\JavaGrammar.cs" />
+    <Compile Include="Java\JavaGrammar.Static.cs" />
+    <Compile Include="Java\JavaGrammar.Syntax.cs" />
     <Compile Include="MiniPython\MiniPython.cs" />
     <Compile Include="GWBasic\GwBasicGrammar.cs" />
     <Compile Include="ExpressionEvaluator\ExpressionEvaluatorGrammar.cs" />
@@ -112,6 +115,7 @@
     <None Include="SourceSamples\SQL\sql_sample3.txt" />
     <None Include="SourceSamples\Wiki\Sample1_codeplex.txt" />
     <None Include="SourceSamples\_about.txt" />
+    <Content Include="Java\about_java_grammar.txt" />
     <Content Include="SourceSamples\ExpressionEvaluator\StringSample.txt" />
     <Content Include="SourceSamples\Wiki\Sample1_creole.txt" />
     <Content Include="SQL\Sql89-GoldParser.txt" />

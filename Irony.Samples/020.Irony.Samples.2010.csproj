@@ -117,6 +117,13 @@
     <None Include="SourceSamples\_about.txt" />
     <Content Include="Java\about_java_grammar.txt" />
     <Content Include="SourceSamples\ExpressionEvaluator\StringSample.txt" />
+    <Content Include="SourceSamples\Java\about_samples.txt" />
+    <Content Include="SourceSamples\Java\Sample 1.java" />
+    <Content Include="SourceSamples\Java\Sample 2.java" />
+    <Content Include="SourceSamples\Java\Sample 3.java" />
+    <Content Include="SourceSamples\Java\Sample 4.java" />
+    <Content Include="SourceSamples\Java\Sample 5.java" />
+    <Content Include="SourceSamples\Java\Sample 6.java" />
     <Content Include="SourceSamples\Wiki\Sample1_creole.txt" />
     <Content Include="SQL\Sql89-GoldParser.txt" />
   </ItemGroup>

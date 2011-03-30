@@ -1,0 +1,7 @@
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Tests\bin\Debug\Irony.Tests.VSTest.dll
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Tests\bin\Debug\Irony.Tests.VSTest.pdb
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Tests\bin\Debug\Irony.dll
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Tests\bin\Debug\Irony.pdb
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Tests\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Tests\obj\Debug\Irony.Tests.VSTest.dll
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Tests\obj\Debug\Irony.Tests.VSTest.pdb

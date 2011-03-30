@@ -247,7 +247,6 @@ namespace Irony.Parsing {
   
     //Constructs the error message in situation when parser has no available action for current input.
     // override this method if you want to change this message
-    [Obsolete("Method is deprecated. Override Grammar.ReportParserError method instead.")]
     public virtual string ConstructParserErrorMessage(ParsingContext context, StringSet expectedTerms) {
       return string.Format(Resources.ErrParserUnexpInput, expectedTerms.ToString(" "));
     }
@@ -266,7 +265,7 @@ namespace Irony.Parsing {
         } else {
             var expectedTerms = context.GetExpectedTermSet(); 
             if (expectedTerms.Count > 0) 
-              error = ConstructParserErrorMessage(context, expectedTerms); //deprecated, use next line in the future
+              error = ConstructParserErrorMessage(context, expectedTerms); 
               //error = string.Format(Resources.ErrParserUnexpInput, expectedTerms.ToString(" ")
             else 
               error = Resources.ErrUnexpEof;

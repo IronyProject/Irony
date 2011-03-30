@@ -22,37 +22,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "100.IronySilverlight.2010", "Irony\100.IronySilverlight.2010.csproj", "{B945A137-E4C4-4DD5-9598-261F466549FE}"
 EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 8
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs05
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = Irony\\010.Irony.2010.csproj
-		SccProjectName1 = Irony
-		SccAuxPath1 = https://tfs.codeplex.com/tfs/TFS05
-		SccLocalPath1 = Irony
-		SccProjectUniqueName2 = Irony.Samples\\020.Irony.Samples.2010.csproj
-		SccProjectName2 = Irony.Samples
-		SccAuxPath2 = https://tfs.codeplex.com/tfs/TFS05
-		SccLocalPath2 = Irony.Samples
-		SccProjectUniqueName3 = Irony.Samples.Console\\025.Irony.Samples.Console.2010.csproj
-		SccProjectName3 = Irony.Samples.Console
-		SccLocalPath3 = Irony.Samples.Console
-		SccProjectUniqueName4 = Irony.GrammarExplorer\\030.Irony.GrammarExplorer.2010.csproj
-		SccProjectName4 = Irony.GrammarExplorer
-		SccAuxPath4 = https://tfs.codeplex.com/tfs/TFS05
-		SccLocalPath4 = Irony.GrammarExplorer
-		SccProjectUniqueName5 = Irony.Tests\\040.Irony.Tests.VsTest.2010.csproj
-		SccProjectName5 = Irony.Tests
-		SccAuxPath5 = https://tfs.codeplex.com/tfs/TFS05
-		SccLocalPath5 = Irony.Tests
-		SccProjectUniqueName6 = Irony.Tests\\050.Irony.Tests.NUnit.2010.csproj
-		SccProjectName6 = Irony.Tests
-		SccLocalPath6 = Irony.Tests
-		SccProjectUniqueName7 = Irony\\100.IronySilverlight.2010.csproj
-		SccProjectName7 = Irony
-		SccLocalPath7 = Irony
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		FxCop|Any CPU = FxCop|Any CPU

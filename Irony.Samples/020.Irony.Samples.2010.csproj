@@ -16,10 +16,14 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <SccProjectName>%24/irony/Irony.Samples</SccProjectName>
-    <SccLocalPath>.</SccLocalPath>
-    <SccAuxPath>https://tfs.codeplex.com/tfs/TFS05</SccAuxPath>
-    <SccProvider>{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}</SccProvider>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -85,7 +89,6 @@
     <None Include="SourceSamples\c#\bottles-v20.cs" />
     <None Include="SourceSamples\c#\bottles-v30.cs" />
     <None Include="SourceSamples\c#\escapes_in_IDs.cs" />
-    <None Include="SourceSamples\c#\ParserControlDataBuilder.cs" />
     <None Include="SourceSamples\c#\TestLessThanOp.cs" />
     <Compile Include="SQL\SqlGrammar.cs" />
     <Compile Include="Wiki\WikiCodeplexGrammar.cs" />

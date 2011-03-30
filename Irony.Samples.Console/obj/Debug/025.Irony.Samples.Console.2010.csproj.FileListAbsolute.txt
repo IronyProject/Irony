@@ -1,0 +1,10 @@
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Samples.Console\bin\Debug\Irony.Samples.Console.exe.config
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Samples.Console\bin\Debug\Irony.Samples.Console.exe
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Samples.Console\bin\Debug\Irony.Samples.Console.pdb
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Samples.Console\bin\Debug\Irony.dll
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Samples.Console\bin\Debug\Irony.Samples.dll
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Samples.Console\bin\Debug\Irony.Samples.pdb
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Samples.Console\bin\Debug\Irony.pdb
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Samples.Console\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Samples.Console\obj\Debug\Irony.Samples.Console.exe
+C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony.Samples.Console\obj\Debug\Irony.Samples.Console.pdb

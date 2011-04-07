@@ -1,9 +1,0 @@
-C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony\Bin\Debug\IronySL.dll
-C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony\Bin\Debug\IronySL.pdb
-C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony\obj\Debug\ResolveAssemblyReference.cache
-C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony\obj\Debug\Irony.Microsoft.MathResources.resources
-C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony\obj\Debug\Irony.Resources.resources
-C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony\obj\Debug\GenerateResource.read.1.tlog
-C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony\obj\Debug\GenerateResource.write.1.tlog
-C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony\obj\Debug\IronySL.dll
-C:\Users\a-roivan\Documents\Personal\_Irony\sources\Irony\obj\Debug\IronySL.pdb

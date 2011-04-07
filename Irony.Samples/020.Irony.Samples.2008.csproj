@@ -15,10 +15,14 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <SccProjectName>%24/irony/Irony.Samples</SccProjectName>
-    <SccLocalPath>.</SccLocalPath>
-    <SccAuxPath>https://tfs.codeplex.com/tfs/TFS05</SccAuxPath>
-    <SccProvider>{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}</SccProvider>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
     <TargetFrameworkSubset>Client</TargetFrameworkSubset>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -53,6 +57,9 @@
     <Compile Include="DataGrammars\SampleCsvGrammar.cs" />
     <Compile Include="FullTextSearchQueryConverter\SearchGrammar.cs" />
     <Compile Include="DataGrammars\JsonGrammar.cs" />
+    <Compile Include="Java\JavaGrammar.cs" />
+    <Compile Include="Java\JavaGrammar.Static.cs" />
+    <Compile Include="Java\JavaGrammar.Syntax.cs" />
     <Compile Include="MiniPython\MiniPython.cs" />
     <Compile Include="GWBasic\GwBasicGrammar.cs" />
     <Compile Include="ExpressionEvaluator\ExpressionEvaluatorGrammar.cs" />
@@ -93,6 +100,7 @@
     <None Include="SourceSamples\SQL\sql_sample3.txt" />
     <None Include="SourceSamples\Wiki\Sample1_codeplex.txt" />
     <None Include="SourceSamples\_about.txt" />
+    <Content Include="Java\about_java_grammar.txt" />
     <Content Include="SourceSamples\ExpressionEvaluator\StringSample.txt" />
     <Content Include="SourceSamples\Wiki\Sample1_creole.txt" />
     <Content Include="SQL\Sql89-GoldParser.txt" />

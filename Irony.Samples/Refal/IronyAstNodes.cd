@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Irony.Ast.AstNode" Collapsed="true">
+    <Position X="0.5" Y="1" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Irony.Ast.BinaryOperationNode">
+    <Position X="1.5" Y="9.75" Width="1.5" />
+    <InheritanceLine Type="Irony.Ast.AstNode" FixedToPoint="true">
+      <Path>
+        <Point X="1.25" Y="1.509" />
+        <Point X="1.25" Y="9.45" />
+        <Point X="2.188" Y="9.45" />
+        <Point X="2.188" Y="9.75" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Irony.Ast.ExpressionListNode">
+    <Position X="5" Y="4" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Irony.Ast.IncDecNode">
+    <Position X="5" Y="6.25" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Irony.Ast.UnaryOperationNode">
+    <Position X="3.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Irony.Ast.FunctionCallNode">
+    <Position X="1.5" Y="2" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Irony.Ast.FunctionDefNode">
+    <Position X="6.75" Y="4" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Irony.Ast.ParamListNode">
+    <Position X="3.25" Y="4" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Irony.Ast.IdentifierNode">
+    <Position X="6.75" Y="9.75" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Irony.Ast.LiteralValueNode">
+    <Position X="5" Y="9.75" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Irony.Ast.StringTemplateNode">
+    <Position X="3.25" Y="2" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Irony.Ast.EmptyStatementNode">
+    <Position X="1.5" Y="4" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Irony.Ast.NotSupportedNode">
+    <Position X="5" Y="2" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Irony.Ast.NullNode">
+    <Position X="6.75" Y="2" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Irony.Ast.AssignmentNode">
+    <Position X="3.25" Y="9.75" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Irony.Ast.BlockNode">
+    <Position X="6.75" Y="8" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Irony.Ast.IfNode">
+    <Position X="1.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Irony.Ast.StatementListNode">
+    <Position X="6.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Font Name="Tahoma" Size="8.25" />
+</ClassDiagram>

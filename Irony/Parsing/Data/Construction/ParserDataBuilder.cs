@@ -27,8 +27,6 @@ namespace Irony.Parsing.Construction {
     internal ParserData Data;
     Grammar _grammar;
     ParserStateHash _stateHash = new ParserStateHash();
-    LRItemSet _itemsNeedLookaheads = new LRItemSet(); 
-
 
     internal ParserDataBuilder(LanguageData language) {
       _language = language;
@@ -38,9 +36,10 @@ namespace Irony.Parsing.Construction {
     public void Build() {
       _stateHash.Clear();
       Data = _language.ParserData;
-      CreateParserStates(); 
-      ComputeTransitions();
-      ComputeLookaheads();
+      CreateParserStates();
+      var itemsNeedLookaheads = GetReduceItemsInInadequateState();
+      ComputeTransitions(itemsNeedLookaheads);
+      ComputeLookaheads(itemsNeedLookaheads);
       ComputeAndResolveConflicts();
       CreateRemainingReduceActions(); 
       ComputeStatesExpectedTerminals();
@@ -116,14 +115,14 @@ namespace Irony.Parsing.Construction {
 
     #endregion
 
-    #region computing lookaheads
+    #region Compute transitions, lookbacks, lookaheads
     //We compute only transitions that are really needed to compute lookaheads in inadequate states.
     // We start with reduce items in inadequate state and find their lookbacks - this is initial list of transitions.
     // Then for each transition in the list we check if it has items with nullable tails; for those items we compute
     // lookbacks - these are new or already existing transitons - and so on, we repeat the operation until no new transitions
     // are created. 
-    private void ComputeTransitions() {
-      var newItemsNeedLookbacks = _itemsNeedLookaheads = GetReduceItemsInInadequateState();
+    private void ComputeTransitions(LRItemSet forItems) {
+      var newItemsNeedLookbacks = forItems;
       while(newItemsNeedLookbacks.Count > 0) {
         var newTransitions = CreateLookbackTransitions(newItemsNeedLookbacks);
         newItemsNeedLookbacks = SelectNewItemsThatNeedLookback(newTransitions);
@@ -133,11 +132,10 @@ namespace Irony.Parsing.Construction {
     private LRItemSet SelectNewItemsThatNeedLookback(TransitionList transitions) {
       //Select items with nullable tails that don't have lookbacks yet
       var items = new LRItemSet();
-      foreach(var trans in transitions) {
-        foreach(var item in trans.Items.SelectItemsWithNullableTails()) 
-          if(item.Lookbacks.Count == 0) //only if it does not have lookbacks yet
+      foreach(var trans in transitions)
+        foreach(var item in trans.Items)
+          if (item.Core.TailIsNullable && item.Lookbacks.Count == 0) //only if it does not have lookbacks yet
             items.Add(item);
-      }
       return items; 
     }
 
@@ -161,25 +159,30 @@ namespace Irony.Parsing.Construction {
       //find 
       foreach(var state in Data.States) {
         foreach(var iniItem in state.BuilderData.InitialItems) {
-          if (!iniCores.Contains(iniItem.Core)) continue; 
-          var currItem = iniItem;
-          while(currItem != null) {
+          if (!iniCores.Contains(iniItem.Core)) continue;
+          var iniItemNt = iniItem.Core.Production.LValue; // iniItem's non-terminal (left side of production)
+          Transition lookback = null; // local var for lookback - transition over iniItemNt
+          var currItem = iniItem; // iniItem is initial item for all currItem's in the shift chain.
+          while (currItem != null) {
             if(sourceItems.Contains(currItem)) {
-              //iniItem is initial item for currItem (one of source items) 
-              // check if transition for iniItem's non-terminal exists
-              var ntLeft = iniItem.Core.Production.LValue;
-              Transition trans; 
-              if(!state.BuilderData.Transitions.TryGetValue(ntLeft, out trans)) {
-                trans = new Transition(iniItem.State, iniItem.Core.Production.LValue);
-                newTransitions.Add(trans);
+              // We create transitions lazily, only when we actually need them. Check if we have iniItem's transition
+              // in local variable; if not, get it from state's transitions table; if not found, create it.
+              if(lookback == null && !state.BuilderData.Transitions.TryGetValue(iniItemNt, out lookback)) {
+                lookback = new Transition(state, iniItemNt);
+                newTransitions.Add(lookback);
               }
-              //Now for currItem, either add trans to Lookbackbacks, or "include" it into currItem.Transition
-              if(currItem.Core.IsFinal)
-                currItem.Lookbacks.Add(trans);
-              else if(currItem.Transition != null)
-                currItem.Transition.Include(trans);
+              //Now for currItem, either add trans to Lookbacks, or "include" it into currItem.Transition
+              // We need lookbacks ONLY for final items; for non-Final items we need proper Include lists on transitions
+              if (currItem.Core.IsFinal)
+                currItem.Lookbacks.Add(lookback);
+              else // if (currItem.Transition != null)
+                // Note: looks like checking for currItem.Transition is redundant - currItem is either:
+                //    - Final - always the case for the first run of this method;
+                //    - it has a transition after the first run, due to the way we select sourceItems list 
+                //       in SelectNewItemsThatNeedLookback (by transitions)
+                currItem.Transition.Include(lookback);
             }//if 
-            //move to next items
+            //move to next item
             currItem = currItem.ShiftedItem;
           }//while
         }//foreach iniItem
@@ -187,11 +190,10 @@ namespace Irony.Parsing.Construction {
       return newTransitions;
     }
 
-    private void ComputeLookaheads() {
-      var sourceStates = new ParserStateSet(); 
-      foreach(var reduceItem in _itemsNeedLookaheads) {
-        //First collect all states that contribute lookaheads
-        sourceStates.Clear(); 
+    private void ComputeLookaheads(LRItemSet forItems) {
+      foreach(var reduceItem in forItems) {
+        // Find all source states - those that contribute lookaheads
+        var sourceStates = new ParserStateSet();
         foreach(var lookbackTrans in reduceItem.Lookbacks) {
           sourceStates.Add(lookbackTrans.ToState); 
           sourceStates.UnionWith(lookbackTrans.ToState.BuilderData.ReadStateSet);

@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Irony.Parsing;
-using Irony.Ast;
+using Irony.Interpreter.Ast;
 
 namespace Irony.Samples {
   // This grammar describes programs that consist of simple expressions and assignments
@@ -45,7 +45,8 @@ Strings with embedded expressions - temporarily added to test this functionality
       base.NonGrammarTerminals.Add(comment);
 
       //String literal with embedded expressions  ------------------------------------------------------------------
-      var stringLit = new StringLiteral("string", "\"", StringOptions.AllowsAllEscapes | StringOptions.IsTemplate); 
+      var stringLit = new StringLiteral("string", "\"", StringOptions.AllowsAllEscapes | StringOptions.IsTemplate);
+      stringLit.AstNodeType = typeof(StringTemplateNode);
       var Expr = new NonTerminal("Expr"); //declare it here to use in template definition 
       var templateSettings = new StringTemplateSettings(); //by default set to Ruby-style settings 
       templateSettings.ExpressionRoot = Expr; //this defines how to evaluate expressions inside template

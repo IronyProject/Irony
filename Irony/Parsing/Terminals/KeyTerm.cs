@@ -31,7 +31,6 @@ namespace Irony.Parsing {
     }
 
     public string Text {get; private set;}
-    public Symbol Symbol { get; private set; }
 
     //Normally false, meaning keywords (symbols in grammar consisting of letters) cannot be followed by a letter or digit
     public bool AllowAlphaAfterKeyword = false; 
@@ -39,7 +38,6 @@ namespace Irony.Parsing {
     #region overrides: TryMatch, Init, GetPrefixes(), ToString() 
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
-      this.Symbol = SymbolTable.Symbols.TextToSymbol(Text); 
 
       #region comments about keyterms priority
       // Priority - determines the order in which multiple terminals try to match input for a given current char in the input.
@@ -83,7 +81,6 @@ namespace Irony.Parsing {
         if (char.IsLetterOrDigit(previewChar) || previewChar == '_') return null; //reject
       }
       var token = source.CreateToken(this.OutputTerminal, Text);
-      token.Symbol = this.Symbol;
       return token; 
     }
 

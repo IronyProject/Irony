@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Irony.Ast; 
+using Irony.Interpreter.Ast; 
 using Irony.Parsing;
 
 namespace Irony.Interpreter {

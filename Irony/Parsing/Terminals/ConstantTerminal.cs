@@ -21,9 +21,9 @@ namespace Irony.Parsing {
   public class ConstantsTable : Dictionary<string, object> { }
   public class ConstantTerminal : Terminal {
     public readonly ConstantsTable Constants = new ConstantsTable();
-    public ConstantTerminal(string name) : base(name) {
+    public ConstantTerminal(string name, Type nodeType) : base(name) {
       base.SetFlag(TermFlags.IsConstant);
-      AstNodeType = typeof(Ast.LiteralValueNode);
+      AstNodeType = nodeType;
     }
 
     public void Add(string lexeme, object value) {

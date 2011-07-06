@@ -1,0 +1,230 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Refal.Block" Collapsed="true">
+    <Position X="3.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QgAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAACAIAQAAA=</HashCode>
+      <FileName>Refal\Ast\Block.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Refal.Conditions" Collapsed="true">
+    <Position X="5" Y="3.25" Width="1.5" />
+    <InheritanceLine Type="Irony.Interpreter.Ast.AstNode" ManuallyRouted="true" FixedToPoint="true">
+      <Path>
+        <Point X="1.25" Y="1.259" />
+        <Point X="1.25" Y="2.95" />
+        <Point X="5.812" Y="2.95" />
+        <Point X="5.812" Y="3.25" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>QAAEAAAAAAAAAAAEAAAAAAAQAAABAAAQAAACAIAAAIA=</HashCode>
+      <FileName>Refal\Ast\Conditions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Refal.DefinedFunction" Collapsed="true">
+    <Position X="1.5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEQAAAAAAAAAAEAAAAAAAAACAAAAAAAAACAIAAAAA=</HashCode>
+      <FileName>Refal\Ast\DefinedFunction.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Refal.Expression" Collapsed="true">
+    <Position X="3.25" Y="3.25" Width="1.5" />
+    <InheritanceLine Type="Irony.Interpreter.Ast.AstNode" FixedToPoint="true">
+      <Path>
+        <Point X="1.25" Y="1.259" />
+        <Point X="1.25" Y="2.95" />
+        <Point X="4" Y="2.95" />
+        <Point X="4" Y="3.25" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>QABACAAAAAAAAAAEAAAAAAAAAAAAAAAAAAACAIAAAAA=</HashCode>
+      <FileName>Refal\Ast\Expression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Refal.ExpressionVariable" Collapsed="true">
+    <Position X="8.5" Y="6.5" Width="1.75" />
+    <InheritanceLine Type="Refal.Variable" ManuallyRouted="true" FixedToPoint="true">
+      <Path>
+        <Point X="7.5" Y="5.819" />
+        <Point X="7.5" Y="6.125" />
+        <Point X="9.375" Y="6.125" />
+        <Point X="9.375" Y="6.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>Refal\Ast\ExpressionVariable.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Refal.ExternalFunction" Collapsed="true">
+    <Position X="3.25" Y="6.5" Width="1.5" />
+    <InheritanceLine Type="Refal.Function" ManuallyRouted="true">
+      <Path>
+        <Point X="3.25" Y="5.819" />
+        <Point X="3.25" Y="6.162" />
+        <Point X="4" Y="6.162" />
+        <Point X="4" Y="6.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>Refal\Ast\ExternalFunction.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Refal.Function">
+    <Position X="2.5" Y="4.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <InheritanceLine Type="Irony.Interpreter.Ast.AstNode" ManuallyRouted="true">
+      <Path>
+        <Point X="1.25" Y="1.259" />
+        <Point X="1.25" Y="4.113" />
+        <Point X="3.25" Y="4.113" />
+        <Point X="3.25" Y="4.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>QAAAQAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Refal\Ast\Function.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Refal.FunctionCall">
+    <Position X="0.5" Y="4.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <InheritanceLine Type="Irony.Interpreter.Ast.AstNode" ManuallyRouted="true" FixedToPoint="true">
+      <Path>
+        <Point X="1.25" Y="1.259" />
+        <Point X="1.25" Y="4.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAAAEAAAEAAACAAAAAAAAAAAQAAACAIAQAAA=</HashCode>
+      <FileName>Refal\Ast\FunctionCall.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Refal.Pattern" Collapsed="true">
+    <Position X="1.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QABACAAAAAAAAAAkAAQAAAAAAAAAAAAAAAACAIAAAAA=</HashCode>
+      <FileName>Refal\Ast\Pattern.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Refal.Program" Collapsed="true">
+    <Position X="1.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAEAAAQAAAAAAAEAAAAIAIAAAAAAAAAAAADAIAAAAA=</HashCode>
+      <FileName>Refal\Ast\Program.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Refal.Sentence" Collapsed="true">
+    <Position X="5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAAAAAAAEABAAAAAQAAAAAAAQAAACAIAQAAA=</HashCode>
+      <FileName>Refal\Ast\Sentence.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Refal.SymbolVariable" Collapsed="true">
+    <Position X="6.75" Y="6.5" Width="1.5" />
+    <InheritanceLine Type="Refal.Variable" ManuallyRouted="true" FixedToPoint="true">
+      <Path>
+        <Point X="7.5" Y="5.819" />
+        <Point X="7.5" Y="6.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>Refal\Ast\SymbolVariable.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Refal.TermVariable" Collapsed="true">
+    <Position X="5" Y="6.5" Width="1.5" />
+    <InheritanceLine Type="Refal.Variable" ManuallyRouted="true" FixedToPoint="true">
+      <Path>
+        <Point X="7.5" Y="5.819" />
+        <Point X="7.5" Y="6.125" />
+        <Point X="5.688" Y="6.125" />
+        <Point X="5.688" Y="6.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>Refal\Ast\TermVariable.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Refal.Variable">
+    <Position X="6.75" Y="4.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <InheritanceLine Type="Irony.Interpreter.Ast.AstNode" ManuallyRouted="true" FixedToPoint="true">
+      <Path>
+        <Point X="1.25" Y="1.259" />
+        <Point X="1.25" Y="4.113" />
+        <Point X="7.446" Y="4.113" />
+        <Point X="7.446" Y="4.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAIAAEAAAAAAAA=</HashCode>
+      <FileName>Refal\Ast\Variable.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Refal.AuxiliaryNode" Collapsed="true">
+    <Position X="5" Y="0.75" Width="1.5" />
+    <InheritanceLine Type="Irony.Interpreter.Ast.AstNode" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="2" Y="1.062" />
+        <Point X="5" Y="1.062" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAACAIAAAAA=</HashCode>
+      <FileName>Refal\Ast\AuxiliaryNode.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Irony.Interpreter.Ast.AstNode" Collapsed="true">
+    <Position X="0.5" Y="0.75" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Refal.EvaluationContextExtensions">
+    <Position X="7.25" Y="0.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAACAAABAAAAAAAAAAAAAgAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Refal\Ast\EvaluationContextExtensions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Refal.LiteralValueNodeHelper">
+    <Position X="7.25" Y="2.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Refal\Ast\LiteralValueNodeHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Refal.ExpressionInBraces">
+    <Position X="4.5" Y="4.5" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <InheritanceLine Type="Irony.Interpreter.Ast.AstNode" ManuallyRouted="true" FixedToPoint="true">
+      <Path>
+        <Point X="1.25" Y="1.259" />
+        <Point X="1.25" Y="4.113" />
+        <Point X="5.312" Y="4.113" />
+        <Point X="5.312" Y="4.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAAAAAAAEAAAAAAAAAABAAAAAAAACAIAAAAA=</HashCode>
+      <FileName>Refal\Ast\ExpressionInBraces.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Tahoma" Size="8.25" />
+</ClassDiagram>

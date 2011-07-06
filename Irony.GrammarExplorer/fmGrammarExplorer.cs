@@ -22,7 +22,7 @@ using System.Configuration;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Irony.Parsing;
-using Irony.Ast; 
+using Irony.Interpreter.Ast; 
 using Irony.Interpreter;
 using Irony.GrammarExplorer.Properties;
 

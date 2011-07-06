@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Irony.Parsing;
-using Irony.Ast;
+using Irony.Interpreter.Ast;
 
 namespace Irony.Samples.MiniPython {
   // The grammar for a very small subset of Python. This is work in progress, 

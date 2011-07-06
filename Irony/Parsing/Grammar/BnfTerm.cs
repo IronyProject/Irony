@@ -123,7 +123,7 @@ namespace Irony.Parsing {
 
     #region AST node creations: AstNodeType, AstNodeCreator, AstNodeCreated
     public Type AstNodeType;
-    public Ast.AstNodeConfig AstNodeConfig; //config data passed to AstNode
+    public object AstNodeConfig; //config data passed to AstNode
     public AstNodeCreator AstNodeCreator;
     public event EventHandler<AstNodeEventArgs> AstNodeCreated;
 
@@ -139,7 +139,7 @@ namespace Irony.Parsing {
         return; //we give a warning on grammar validation about this situation
       nodeInfo.AstNode =  Activator.CreateInstance(nodeType);
       //Initialize node
-      var iInit = nodeInfo.AstNode as Ast.IAstNodeInit;
+      var iInit = nodeInfo.AstNode as IAstNodeInit;
       if (iInit != null)
         iInit.Init(context, nodeInfo); 
     }

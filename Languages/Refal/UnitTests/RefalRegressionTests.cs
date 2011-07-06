@@ -7,9 +7,18 @@ using Irony.Parsing;
 
 namespace Refal.UnitTests
 {
+	#region Unit testing platform abstraction layer
+#if NUNIT
+	using NUnit.Framework;
+	using TestClass = NUnit.Framework.TestFixtureAttribute;
+	using TestMethod = NUnit.Framework.TestAttribute;
+	using TestContext = System.Object;
+#else
 	using Microsoft.VisualStudio.TestTools.UnitTesting;
+#endif
+	#endregion
 
-  /// <summary>
+	/// <summary>
 	/// Refal regression tests
 	/// </summary>
 	[TestClass]

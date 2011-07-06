@@ -29,6 +29,27 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.UnitTests.VsTest.2008
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.UnitTests.NUnit.2008", "Languages\Refal\UnitTests\Refal.UnitTests.NUnit.2008.csproj", "{A34F4AE5-A6E5-43F9-9F16-A43F34599053}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{F04E1B7A-78F5-4AB9-96A4-A30B94482D34}"
+	ProjectSection(SolutionItems) = preProject
+		Languages\Refal\UnitTests\Sources\99-bottles-v1.ref = Languages\Refal\UnitTests\Sources\99-bottles-v1.ref
+		Languages\Refal\UnitTests\Sources\99-bottles-v2.ref = Languages\Refal\UnitTests\Sources\99-bottles-v2.ref
+		Languages\Refal\UnitTests\Sources\arith.ref = Languages\Refal\UnitTests\Sources\arith.ref
+		Languages\Refal\UnitTests\Sources\binary.ref = Languages\Refal\UnitTests\Sources\binary.ref
+		Languages\Refal\UnitTests\Sources\change-v1.ref = Languages\Refal\UnitTests\Sources\change-v1.ref
+		Languages\Refal\UnitTests\Sources\change-v2.ref = Languages\Refal\UnitTests\Sources\change-v2.ref
+		Languages\Refal\UnitTests\Sources\factorial.ref = Languages\Refal\UnitTests\Sources\factorial.ref
+		Languages\Refal\UnitTests\Sources\hello.ref = Languages\Refal\UnitTests\Sources\hello.ref
+		Languages\Refal\UnitTests\Sources\italian.ref = Languages\Refal\UnitTests\Sources\italian.ref
+		Languages\Refal\UnitTests\Sources\order-v1.ref = Languages\Refal\UnitTests\Sources\order-v1.ref
+		Languages\Refal\UnitTests\Sources\order-v2.ref = Languages\Refal\UnitTests\Sources\order-v2.ref
+		Languages\Refal\UnitTests\Sources\palyndrome.ref = Languages\Refal\UnitTests\Sources\palyndrome.ref
+		Languages\Refal\UnitTests\Sources\quine-plain.ref = Languages\Refal\UnitTests\Sources\quine-plain.ref
+		Languages\Refal\UnitTests\Sources\quine-simple.ref = Languages\Refal\UnitTests\Sources\quine-simple.ref
+		Languages\Refal\UnitTests\Sources\quine-xplained.ref = Languages\Refal\UnitTests\Sources\quine-xplained.ref
+		Languages\Refal\UnitTests\Sources\xtras-bigint.ref = Languages\Refal\UnitTests\Sources\xtras-bigint.ref
+		Languages\Refal\UnitTests\Sources\xtras-factorial.ref = Languages\Refal\UnitTests\Sources\xtras-factorial.ref
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -154,6 +175,7 @@ Global
 		{19A86418-BA99-41F4-80A5-A7F3A6383123} = {3DCE1946-3E56-4F71-889D-7B1980599988}
 		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E} = {3DCE1946-3E56-4F71-889D-7B1980599988}
 		{A34F4AE5-A6E5-43F9-9F16-A43F34599053} = {3DCE1946-3E56-4F71-889D-7B1980599988}
+		{F04E1B7A-78F5-4AB9-96A4-A30B94482D34} = {3DCE1946-3E56-4F71-889D-7B1980599988}
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 7

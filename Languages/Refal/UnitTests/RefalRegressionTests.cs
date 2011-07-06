@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Irony.Parsing;
 
 namespace Refal.UnitTests
@@ -165,6 +163,8 @@ namespace Refal.UnitTests
 				{
 					var s = sr.ReadToEnd();
 					Assert.IsFalse(string.IsNullOrEmpty(s));
+
+					s = Regex.Replace(s, @"\r\n?", Environment.NewLine);
 					return s;
 				}
 			}

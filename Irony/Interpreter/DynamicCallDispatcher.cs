@@ -182,39 +182,7 @@ namespace Irony.Interpreter {
       _runtime = _context.Runtime;
       OperatorImplementations = _runtime.CreateOperatorImplementationsTable();
     }
-/*
-    public MetaObjectBase FindMetaObject(object target) {
-      //built-in objects - lookup in MetaObjects table
-      MetaObjectBase meta;
-      if (_runtime.MetaObjects.TryGetValue(target.GetType(), out meta))
-        return meta;
-      //Check scriptObject
-      var scriptObj = target as ScriptObjectBase;
-      if (scriptObj != null)
-        return scriptObj.MetaObject;
-      return null;
-    }
 
-    public MethodImp FindMethod(object target, string methodName, int argCount) {
-      var metaObj = FindMetaObject(target);
-      if (metaObj == null)
-        throw new RuntimeException(String.Format("MetaObject not found for object {0}, method {1}", target, methodName)); 
-      return metaObj.FindMethod(_context, target, methodName, argCount);
-    }
-
-    public void ExecuteMethod(object target, string methodName, int argCount) {
-      var method = FindMethod(target, methodName, argCount);
-      if (method == null)
-        throw new Exception("Method not found: " + methodName);
-      _context.CurrentFrame = new StackFrame(method, _context.CurrentFrame, method.OwnerFrame, _context.Data, argCount);
-      method.Execute(_context, target, argCount);
-      //return back new frame
-      _context.PopFrame();
-      object result = _context.LastResult;
-      _context.Data.Replace(argCount + 1, result);
-    }//method
-*/
-    //node parameter is used for error reporting
     public void ExecuteBinaryOperator(string op) {
       var arg1 = _context.Data[1];
       var arg2 = _context.Data[0];

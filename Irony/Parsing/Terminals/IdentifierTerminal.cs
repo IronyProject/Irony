@@ -106,7 +106,7 @@ namespace Irony.Parsing {
       if (this.EditorInfo == null) 
         this.EditorInfo = new TokenEditorInfo(TokenType.Identifier, TokenColor.Identifier, TokenTriggers.None);
       if (this.AstNodeType == null && this.AstNodeCreator == null && grammarData.Grammar.FlagIsSet(LanguageFlags.CreateAst))
-        this.AstNodeType = typeof(Irony.Ast.IdentifierNode);
+        this.AstNodeType = typeof(Irony.Interpreter.Ast.IdentifierNode);
     }
 
     //TODO: put into account non-Ascii aplhabets specified by means of Unicode categories!
@@ -151,7 +151,6 @@ namespace Irony.Parsing {
     //Override to assign IsKeyword flag to keyword tokens
     protected override Token CreateToken(ParsingContext context, ISourceStream source, CompoundTokenDetails details) {
       Token token = base.CreateToken(context, source, details);
-      token.Symbol = SymbolTable.Symbols.TextToSymbol(token.ValueString); 
       if (details.IsSet((short)IdOptions.IsNotKeyword))
         return token;
       //check if it is keyword
@@ -184,7 +183,6 @@ namespace Irony.Parsing {
       // if (!this.GrammarData.Grammar.CaseSensitive)
       //    token.Value = token.Text.ToLower(CultureInfo.InvariantCulture);
       CheckReservedWord(token);
-      token.Symbol = SymbolTable.Symbols.TextToSymbol(token.ValueString); 
       return token; 
     }
 

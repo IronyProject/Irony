@@ -36,7 +36,6 @@ namespace Irony.Parsing {
   public class Token  {
     public Terminal Terminal {get; private set;} 
     public KeyTerm KeyTerm;
-    public Symbol Symbol { get; protected internal set; }
     public readonly SourceLocation Location; 
     public readonly string Text;
     

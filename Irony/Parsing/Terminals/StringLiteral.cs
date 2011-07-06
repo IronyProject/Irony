@@ -36,10 +36,9 @@ namespace Irony.Parsing {
   // like in Ruby:
   // "Hello, #{name}"
   // Default values match settings for Ruby strings
-  public class StringTemplateSettings : Ast.AstNodeConfig {
+  public class StringTemplateSettings {
     public string StartTag = "#{";
     public string EndTag = "}";
-    public Type AstNodeType = typeof(Ast.StringTemplateNode);
     public NonTerminal ExpressionRoot;
   }
 
@@ -78,7 +77,7 @@ namespace Irony.Parsing {
     #region constructors and initialization
     public StringLiteral(string name): base(name) {
       base.SetFlag(TermFlags.IsLiteral);
-      base.AstNodeType = typeof(Irony.Ast.LiteralValueNode);
+      base.AstNodeType = typeof(Irony.Interpreter.Ast.LiteralValueNode);
     }
 
     public StringLiteral(string name, string startEndSymbol, StringOptions options) : this(name) {
@@ -396,21 +395,6 @@ namespace Irony.Parsing {
       return segment; 
     }//method
     #endregion
-
-    //Override method to provide different node type for string templates
-    protected override Type GetAstNodeType(ParsingContext context, ParseTreeNode nodeInfo) {
-      var details = nodeInfo.Token.Details as CompoundTokenDetails;
-      //check that IsTemplate flag is set and that the string actually contains embedded expression(s) by checking the start tag
-      var isTemplate = details != null && details.IsSet((short) StringOptions.IsTemplate);
-      if (isTemplate) {
-        var templateSettings = this.AstNodeConfig as StringTemplateSettings;
-        isTemplate &= nodeInfo.Token.ValueString.Contains(templateSettings.StartTag); 
-        if (isTemplate)
-          return templateSettings.AstNodeType;
-      }
-      //otherwise return default type from base method
-      return base.GetAstNodeType(context, nodeInfo); 
-    }//method
 
   }//class
 

@@ -121,10 +121,10 @@ namespace Irony.Parsing.Construction {
     public Transition(ParserState fromState, NonTerminal overNonTerminal) {
       FromState = fromState;
       OverNonTerminal = overNonTerminal;
-      ToState = fromState.Actions[overNonTerminal].NewState; 
-      _hashCode = unchecked(fromState.GetHashCode() - overNonTerminal.GetHashCode());
-      fromState.BuilderData.Transitions.Add(overNonTerminal, this);   
-      Items = fromState.BuilderData.ShiftItems.SelectByCurrent(overNonTerminal);
+      ToState = FromState.Actions[overNonTerminal].NewState; 
+      _hashCode = unchecked(FromState.GetHashCode() - overNonTerminal.GetHashCode());
+      FromState.BuilderData.Transitions.Add(overNonTerminal, this);   
+      Items = FromState.BuilderData.ShiftItems.SelectByCurrent(overNonTerminal);
       foreach(var item in Items) {
         item.Transition = this;
       }
@@ -132,6 +132,7 @@ namespace Irony.Parsing.Construction {
     }//constructor
 
     public void Include(Transition other) {
+      if (other == this)  return;
       if (!IncludeTransition(other)) return; 
       //include children
       foreach(var child in other.Includes) {
@@ -147,25 +148,6 @@ namespace Irony.Parsing.Construction {
       return true; 
     }
 
-
-/*
-    public void Include(Transition other) {
-      IncludeWithoutChildren(other); 
-      //propagate children
-      foreach(var child in other.Includes)
-        IncludeWithoutChildren(child); 
-    }
-
-
-    private void IncludeWithoutChildren(Transition other) {
-      if (!Includes.Add(other)) 
-        return; 
-      other.IncludedBy.Add(this);
-      //propagate "up"
-      foreach(var incBy in IncludedBy)
-        incBy.IncludeWithoutChildren(other);
-    }
-*/
     public override string ToString() {
       return FromState.Name + " -> (over " + OverNonTerminal.Name + ") -> " + ToState.Name;
     }
@@ -221,14 +203,6 @@ namespace Irony.Parsing.Construction {
       return result;
     }
 
-    public LRItemSet SelectItemsWithNullableTails() {
-      var result = new LRItemSet();
-      foreach (var item in this)
-        if (item.Core.TailIsNullable)
-          result.Add(item);
-      return result;
-    }
-
     public LR0ItemSet GetShiftedCores() {
       var result = new LR0ItemSet();
       foreach (var item in this)
@@ -244,13 +218,6 @@ namespace Irony.Parsing.Construction {
       return result;
     }
 
-    public GrammarHint FindHint(HintType hintType) {
-      foreach(var item in this) 
-        if (item.Core.Hints.Count > 0)
-          foreach(var hint in item.Core.Hints)
-            if (hint.HintType == hintType) return hint; 
-      return null; 
-    }
   }//class
 
   public partial class LR0Item {

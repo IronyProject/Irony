@@ -51,8 +51,6 @@
   <ItemGroup>
     <Compile Include="CommentTerminalTests.cs" />
     <Compile Include="DataLiteralsTests.cs" />
-    <Compile Include="RefalLibraryTests.cs" />
-    <Compile Include="RefalRegressionTests.cs" />
     <Compile Include="RegExLiteralTests.cs" />
     <Compile Include="FreeTextLiteralTests.cs" />
     <Compile Include="IdentifierTerminalTests.cs" />

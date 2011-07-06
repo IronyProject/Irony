@@ -3,8 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{05F0AC0D-AD43-45B4-8A98-00C54CF5280D}"
 	ProjectSection(SolutionItems) = preProject
+		Irony_All.2010.vsmdi = Irony_All.2010.vsmdi
 		License.txt = License.txt
+		Local.testsettings = Local.testsettings
 		ReadMe.txt = ReadMe.txt
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "010.Irony.2010", "Irony\010.Irony.2010.csproj", "{D81F5C91-D7DB-46E5-BC99-49488FB6814C}"
@@ -21,7 +24,51 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "050.Irony.Tests.NUnit.2010"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "100.IronySilverlight.2010", "Irony\100.IronySilverlight.2010.csproj", "{B945A137-E4C4-4DD5-9598-261F466549FE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Languages", "Languages", "{0850FA53-413E-4AF9-B918-8FF524FFA5D7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Refal", "Refal", "{FEE137AB-6C8B-4576-81BE-119DA16DCF78}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal", "Languages\Refal\Refal.csproj", "{19A86418-BA99-41F4-80A5-A7F3A6383123}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.UnitTests", "Languages\Refal\UnitTests\Refal.UnitTests.csproj", "{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{AEA36F73-5FD0-48B5-BCD8-2B1F95CB7635}"
+	ProjectSection(SolutionItems) = preProject
+		Languages\Refal\Samples\99-bottles-v1.ref = Languages\Refal\Samples\99-bottles-v1.ref
+		Languages\Refal\Samples\99-bottles-v1.txt = Languages\Refal\Samples\99-bottles-v1.txt
+		Languages\Refal\Samples\99-bottles-v2.ref = Languages\Refal\Samples\99-bottles-v2.ref
+		Languages\Refal\Samples\99-bottles-v2.txt = Languages\Refal\Samples\99-bottles-v2.txt
+		Languages\Refal\Samples\arith.ref = Languages\Refal\Samples\arith.ref
+		Languages\Refal\Samples\arith.txt = Languages\Refal\Samples\arith.txt
+		Languages\Refal\Samples\binary.ref = Languages\Refal\Samples\binary.ref
+		Languages\Refal\Samples\binary.txt = Languages\Refal\Samples\binary.txt
+		Languages\Refal\Samples\change-v1.ref = Languages\Refal\Samples\change-v1.ref
+		Languages\Refal\Samples\change-v2.ref = Languages\Refal\Samples\change-v2.ref
+		Languages\Refal\Samples\change.txt = Languages\Refal\Samples\change.txt
+		Languages\Refal\Samples\factorial.ref = Languages\Refal\Samples\factorial.ref
+		Languages\Refal\Samples\factorial.txt = Languages\Refal\Samples\factorial.txt
+		Languages\Refal\Samples\hello.ref = Languages\Refal\Samples\hello.ref
+		Languages\Refal\Samples\hello.txt = Languages\Refal\Samples\hello.txt
+		Languages\Refal\Samples\italian.ref = Languages\Refal\Samples\italian.ref
+		Languages\Refal\Samples\italian.txt = Languages\Refal\Samples\italian.txt
+		Languages\Refal\Samples\order-v1.ref = Languages\Refal\Samples\order-v1.ref
+		Languages\Refal\Samples\order-v2.ref = Languages\Refal\Samples\order-v2.ref
+		Languages\Refal\Samples\order.txt = Languages\Refal\Samples\order.txt
+		Languages\Refal\Samples\palyndrome.ref = Languages\Refal\Samples\palyndrome.ref
+		Languages\Refal\Samples\palyndrome.txt = Languages\Refal\Samples\palyndrome.txt
+		Languages\Refal\Samples\quine-plain.ref = Languages\Refal\Samples\quine-plain.ref
+		Languages\Refal\Samples\quine-simple.ref = Languages\Refal\Samples\quine-simple.ref
+		Languages\Refal\Samples\quine-xplained.ref = Languages\Refal\Samples\quine-xplained.ref
+		Languages\Refal\Samples\xtras-bigint.ref = Languages\Refal\Samples\xtras-bigint.ref
+		Languages\Refal\Samples\xtras-bigint.txt = Languages\Refal\Samples\xtras-bigint.txt
+		Languages\Refal\Samples\xtras-factorial.ref = Languages\Refal\Samples\xtras-factorial.ref
+		Languages\Refal\Samples\xtras-factorial.txt = Languages\Refal\Samples\xtras-factorial.txt
+	EndProjectSection
+EndProject
 Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = Irony_All.2010.vsmdi
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		FxCop|Any CPU = FxCop|Any CPU
@@ -112,8 +159,38 @@ Global
 		{B945A137-E4C4-4DD5-9598-261F466549FE}.Silverlight Release|Any CPU.Build.0 = Release|Any CPU
 		{B945A137-E4C4-4DD5-9598-261F466549FE}.SpecSharp|Any CPU.ActiveCfg = Release|Any CPU
 		{B945A137-E4C4-4DD5-9598-261F466549FE}.SpecSharp|Any CPU.Build.0 = Release|Any CPU
+		{19A86418-BA99-41F4-80A5-A7F3A6383123}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19A86418-BA99-41F4-80A5-A7F3A6383123}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19A86418-BA99-41F4-80A5-A7F3A6383123}.FxCop|Any CPU.ActiveCfg = Release|Any CPU
+		{19A86418-BA99-41F4-80A5-A7F3A6383123}.FxCop|Any CPU.Build.0 = Release|Any CPU
+		{19A86418-BA99-41F4-80A5-A7F3A6383123}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19A86418-BA99-41F4-80A5-A7F3A6383123}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19A86418-BA99-41F4-80A5-A7F3A6383123}.Silverlight Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19A86418-BA99-41F4-80A5-A7F3A6383123}.Silverlight Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19A86418-BA99-41F4-80A5-A7F3A6383123}.Silverlight Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19A86418-BA99-41F4-80A5-A7F3A6383123}.Silverlight Release|Any CPU.Build.0 = Release|Any CPU
+		{19A86418-BA99-41F4-80A5-A7F3A6383123}.SpecSharp|Any CPU.ActiveCfg = Release|Any CPU
+		{19A86418-BA99-41F4-80A5-A7F3A6383123}.SpecSharp|Any CPU.Build.0 = Release|Any CPU
+		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.FxCop|Any CPU.ActiveCfg = Release|Any CPU
+		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.FxCop|Any CPU.Build.0 = Release|Any CPU
+		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.Silverlight Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.Silverlight Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.Silverlight Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.Silverlight Release|Any CPU.Build.0 = Release|Any CPU
+		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.SpecSharp|Any CPU.ActiveCfg = Release|Any CPU
+		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.SpecSharp|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FEE137AB-6C8B-4576-81BE-119DA16DCF78} = {0850FA53-413E-4AF9-B918-8FF524FFA5D7}
+		{19A86418-BA99-41F4-80A5-A7F3A6383123} = {FEE137AB-6C8B-4576-81BE-119DA16DCF78}
+		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E} = {FEE137AB-6C8B-4576-81BE-119DA16DCF78}
+		{AEA36F73-5FD0-48B5-BCD8-2B1F95CB7635} = {FEE137AB-6C8B-4576-81BE-119DA16DCF78}
 	EndGlobalSection
 EndGlobal

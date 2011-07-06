@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Irony.Parsing;
-using Irony.Ast;
+using Irony.Interpreter.Ast;
 
 //Tests of Visual Studio integration functionality
 

@@ -55,32 +55,38 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Ast\Base\AstException.cs" />
-    <Compile Include="Ast\Functions\FunctionCallNode.cs" />
-    <Compile Include="Ast\Functions\FunctionDefNode.cs" />
-    <Compile Include="Ast\Functions\ParamListNode.cs" />
-    <Compile Include="Ast\SpecialNodes\EmptyStatementNode.cs" />
-    <Compile Include="Ast\Statements\AssignmentNode.cs" />
-    <Compile Include="Ast\Statements\BlockNode.cs" />
-    <Compile Include="Ast\Statements\IfNode.cs" />
-    <Compile Include="Ast\Statements\StatementListNode.cs" />
-    <Compile Include="Ast\PrimitiveNodes\StringTemplateNode.cs" />
-    <Compile Include="Ast\Expressions\IncDecNode.cs" />
-    <Compile Include="Ast\SpecialNodes\NullNode.cs" />
-    <Compile Include="Ast\Expressions\ExpressionListNode.cs" />
-    <Compile Include="Ast\SpecialNodes\NotSupportedNode.cs" />
+    <Compile Include="Common\StringUtils.cs" />
+    <Compile Include="Interpreter\Ast\Base\AstException.cs" />
+    <Compile Include="Interpreter\Ast\Base\AstInterfaces.cs" />
+    <Compile Include="Interpreter\Ast\Base\AstNode.cs" />
+    <Compile Include="Interpreter\Ast\Expressions\BinaryOperationNode.cs" />
+    <Compile Include="Interpreter\Ast\Expressions\ExpressionListNode.cs" />
+    <Compile Include="Interpreter\Ast\Expressions\IncDecNode.cs" />
+    <Compile Include="Interpreter\Ast\Expressions\UnaryOperationNode.cs" />
+    <Compile Include="Interpreter\Ast\Functions\FunctionCallNode.cs" />
+    <Compile Include="Interpreter\Ast\Functions\FunctionDefNode.cs" />
+    <Compile Include="Interpreter\Ast\Functions\ParamListNode.cs" />
+    <Compile Include="Interpreter\Ast\PrimitiveNodes\IdentifierNode.cs" />
+    <Compile Include="Interpreter\Ast\PrimitiveNodes\LiteralValueNode.cs" />
+    <Compile Include="Interpreter\Ast\PrimitiveNodes\StringTemplateNode.cs" />
+    <Compile Include="Interpreter\Ast\SpecialNodes\EmptyStatementNode.cs" />
+    <Compile Include="Interpreter\Ast\SpecialNodes\NotSupportedNode.cs" />
+    <Compile Include="Interpreter\Ast\SpecialNodes\NullNode.cs" />
+    <Compile Include="Interpreter\Ast\Statements\AssignmentNode.cs" />
+    <Compile Include="Interpreter\Ast\Statements\BlockNode.cs" />
+    <Compile Include="Interpreter\Ast\Statements\IfNode.cs" />
+    <Compile Include="Interpreter\Ast\Statements\StatementListNode.cs" />
     <Compile Include="Interpreter\CommandLine.cs" />
     <Compile Include="Interpreter\DataStack.cs" />
     <Compile Include="Interpreter\DynamicCallDispatcher.cs" />
     <Compile Include="Interpreter\RuntimeException.cs" />
     <Compile Include="Interpreter\ScriptInterpreter.cs" />
-    <Compile Include="Ast\PrimitiveNodes\LiteralValueNode.cs" />
     <Compile Include="Interpreter\ValuesTable.cs" />
+    <Compile Include="Parsing\AstInterfaces.cs" />
     <Compile Include="Parsing\Grammar\GrammarError.cs" />
     <Compile Include="Parsing\Grammar\TermReportGroups.cs" />
     <Compile Include="Parsing\Diagnostics\ParseTreeExtensions.cs" />
     <Compile Include="Parsing\Parser\ParsingEventArgs.cs" />
-    <Compile Include="Parsing\StringUtils.cs" />
     <Compile Include="Parsing\Parser\CoreParser_ErrorHandling.cs" />
     <Compile Include="Parsing\Diagnostics\ParserTrace.cs" />
     <Compile Include="Parsing\SymbolTable.cs" />
@@ -104,7 +110,6 @@
     <Compile Include="Parsing\Data\Construction\ParserDataBuilder_HelperClasses.cs" />
     <Compile Include="Parsing\Data\Construction\ParserDataBuilder.cs" />
     <Compile Include="Parsing\Data\Construction\ScannerDataBuilder.cs" />
-    <Compile Include="Ast\Base\AstInterfaces.cs" />
     <Compile Include="Parsing\Parser\Parser.cs" />
     <Compile Include="Parsing\Data\ParserData.cs" />
     <Compile Include="Parsing\Parser\ParserStack.cs" />
@@ -137,10 +142,6 @@
     <Compile Include="Parsing\Grammar\Grammar.cs" />
     <Compile Include="Parsing\Terminals\TerminalFactory.cs" />
     <Compile Include="Interpreter\LanguageRuntime_Init.cs" />
-    <Compile Include="Ast\Expressions\BinaryOperationNode.cs" />
-    <Compile Include="Ast\Expressions\UnaryOperationNode.cs" />
-    <Compile Include="Ast\PrimitiveNodes\IdentifierNode.cs" />
-    <Compile Include="Ast\Base\AstNode.cs" />
     <Compile Include="Parsing\TokenFilters\CodeOutlineFilter.cs" />
     <Compile Include="Parsing\TokenFilters\TokenFilter.cs" />
     <Compile Include="Microsoft\Complex64.cs" />
@@ -177,9 +178,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Parsing\Data\Construction\_about_parser_construction.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="SilverlightOnly\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

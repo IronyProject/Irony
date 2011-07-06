@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Irony.Parsing;
-using Irony.Ast;
+using Irony.Interpreter.Ast;
 
 namespace Irony.Samples.Scheme {
   [Language("Scheme", "1.0", "Sample Scheme grammar")]
@@ -24,7 +24,7 @@ namespace Irony.Samples.Scheme {
     public SchemeGrammar() {
 
       #region Terminals
-      ConstantTerminal Constant = new ConstantTerminal("Constant");
+      ConstantTerminal Constant = new ConstantTerminal("Constant", typeof(LiteralValueNode));
       Constant.Add("#T", 1);
       Constant.Add("#t", 1);
       Constant.Add("#F", null);

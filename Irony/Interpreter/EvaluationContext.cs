@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using Irony.Parsing;
-using Irony.Ast;
+using Irony.Interpreter.Ast;
 
 namespace Irony.Interpreter {
 
@@ -79,21 +79,19 @@ namespace Irony.Interpreter {
       CurrentFrame = CurrentFrame.Caller;
     }
 
-    public bool TryGetValue(Symbol symbol, out object value) {
-      var keySymbol = LanguageCaseSensitive ? symbol : symbol.LowerSymbol;
-      if (CurrentFrame.Values.TryGetValue(keySymbol, out value)) return true; 
+    public bool TryGetValue(string name, out object value) {
+      if (CurrentFrame.Values.TryGetValue(name, out value)) return true; 
       var frame = CurrentFrame.Parent;
       while (frame != null) {
-        if (frame.Values.TryGetValue(keySymbol, out value)) return true;
+        if (frame.Values.TryGetValue(name, out value)) return true;
         frame = frame.Parent;
       }
       value = null; 
       return false; 
     }
 
-    public void SetValue(Symbol symbol, object value) {
-      var keySymbol = LanguageCaseSensitive ? symbol : symbol.LowerSymbol;
-      CurrentFrame.Values[keySymbol] = value; 
+    public void SetValue(string name, object value) {
+      CurrentFrame.Values[name] = value; 
     }
 
     public void Write(string text) {

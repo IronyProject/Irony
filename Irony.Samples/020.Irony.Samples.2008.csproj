@@ -1,0 +1,122 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Irony.Samples</RootNamespace>
+    <AssemblyName>Irony.Samples</AssemblyName>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+    <TargetFrameworkSubset>Client</TargetFrameworkSubset>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <RegisterForComInterop>false</RegisterForComInterop>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CSharp\CSharpGrammar.cs" />
+    <Compile Include="DataGrammars\SampleCsvGrammar.cs" />
+    <Compile Include="FullTextSearchQueryConverter\SearchGrammar.cs" />
+    <Compile Include="DataGrammars\JsonGrammar.cs" />
+    <Compile Include="Java\JavaGrammar.cs" />
+    <Compile Include="Java\JavaGrammar.Static.cs" />
+    <Compile Include="Java\JavaGrammar.Syntax.cs" />
+    <Compile Include="MiniPython\MiniPython.cs" />
+    <Compile Include="GWBasic\GwBasicGrammar.cs" />
+    <Compile Include="ExpressionEvaluator\ExpressionEvaluatorGrammar.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scheme\SchemeGrammar.cs" />
+    <None Include="SourceSamples\c#\bottles-v11-long.cs" />
+    <None Include="SourceSamples\c#\bottles-v11-short.cs" />
+    <None Include="SourceSamples\c#\bottles-v20.cs" />
+    <None Include="SourceSamples\c#\bottles-v30.cs" />
+    <None Include="SourceSamples\c#\escapes_in_IDs.cs" />
+    <None Include="SourceSamples\c#\ParserControlDataBuilder.cs" />
+    <None Include="SourceSamples\c#\TestLessThanOp.cs" />
+    <Compile Include="SQL\SqlGrammar.cs" />
+    <Compile Include="Wiki\WikiCodeplexGrammar.cs" />
+    <Compile Include="Wiki\WikiCreoleGrammar.cs" />
+    <Compile Include="Wiki\WikiHtmlConverter.cs" />
+    <None Include="TestGrammars\GrammarEx434.cs" />
+    <None Include="TestGrammars\GrammarEx446.cs" />
+    <None Include="TestGrammars\GrammarExL514.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="SourceSamples\DataFiles\CarModels.csv" />
+    <None Include="SourceSamples\DataFiles\Sample1.json" />
+    <None Include="SourceSamples\DataFiles\Sample2.json" />
+    <None Include="SourceSamples\DataFiles\Sample3.json" />
+    <None Include="SourceSamples\MiniPython\TestFunCall.py" />
+    <None Include="SourceSamples\Scheme\99 bottles simple.scm" />
+    <None Include="SourceSamples\Scheme\99 bottles.scm" />
+    <None Include="SourceSamples\Scheme\cadr.scm" />
+    <None Include="SourceSamples\Scheme\Fib.scm" />
+    <Content Include="CSharp\Notes.txt" />
+    <None Include="SourceSamples\99 bottles.bas" />
+    <None Include="SourceSamples\ExpressionEvaluator\OpSample.txt" />
+    <None Include="SourceSamples\SearchGrammar\Search1.txt" />
+    <None Include="SourceSamples\SQL\sql_op_test.txt" />
+    <None Include="SourceSamples\SQL\sql_sample1.txt" />
+    <None Include="SourceSamples\SQL\sql_sample2.txt" />
+    <None Include="SourceSamples\SQL\sql_sample3.txt" />
+    <None Include="SourceSamples\Wiki\Sample1_codeplex.txt" />
+    <None Include="SourceSamples\_about.txt" />
+    <Content Include="Java\about_java_grammar.txt" />
+    <Content Include="SourceSamples\ExpressionEvaluator\StringSample.txt" />
+    <Content Include="SourceSamples\Wiki\Sample1_creole.txt" />
+    <Content Include="SQL\Sql89-GoldParser.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Irony\010.Irony.2008.csproj">
+      <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
+      <Name>010.Irony.2008</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

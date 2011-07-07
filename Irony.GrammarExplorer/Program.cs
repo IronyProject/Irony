@@ -16,12 +16,26 @@ using System.Windows.Forms;
 using System.Diagnostics;
 
 namespace Irony.GrammarExplorer {
-  static class Program {
+  class Program : MarshalByRefObject {
     /// <summary>
     /// The main entry point for the application.
     /// </summary>
     [STAThread]
     static void Main() {
+      var program = CreateInstanceInSeparateDomain();
+      program.RunApplication();
+    }
+
+    static Program CreateInstanceInSeparateDomain() {
+      var setup = new AppDomainSetup {
+        ShadowCopyFiles = true.ToString()
+      };
+
+      var domain = AppDomain.CreateDomain("HostedDomain", null, setup);
+      return (Program)domain.CreateInstanceAndUnwrap(typeof(Program).Assembly.FullName, typeof(Program).FullName);
+    }
+
+    void RunApplication() {
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);
       Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(Application_ThreadException);

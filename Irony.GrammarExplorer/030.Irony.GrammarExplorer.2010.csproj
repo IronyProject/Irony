@@ -85,6 +85,7 @@
       <DependentUpon>fmSelectGrammars.cs</DependentUpon>
     </Compile>
     <Compile Include="GrammarItemList.cs" />
+    <Compile Include="GrammarLoader.cs" />
     <Compile Include="Highlighter\EditorAdapter.cs" />
     <Compile Include="Highlighter\EditorViewAdapter.cs" />
     <Compile Include="Program.cs" />

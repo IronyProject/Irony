@@ -30,6 +30,7 @@ namespace Irony.GrammarExplorer {
   public partial class fmGrammarExplorer : Form {
     public fmGrammarExplorer() {
       InitializeComponent();
+      _grammarLoader.AssemblyUpdated += GrammarAssemblyUpdated;
     }
 
     //fields
@@ -38,7 +39,7 @@ namespace Irony.GrammarExplorer {
     Parser _parser;
     ParseTree _parseTree;
     RuntimeException _runtimeError;
-    GrammarItem _lastGrammarItem;
+    GrammarLoader _grammarLoader = new GrammarLoader();
     bool _loaded;
 
     #region Form load/unload events
@@ -51,6 +52,7 @@ namespace Irony.GrammarExplorer {
         grammars.ShowIn(cboGrammars);
         chkParserTrace.Checked = Settings.Default.EnableTrace;
         chkDisableHili.Checked = Settings.Default.DisableHili;
+        chkAutoRefresh.Checked = Settings.Default.AutoRefresh;
         cboGrammars.SelectedIndex = Settings.Default.LanguageIndex; //this will build parser and start colorizer
       } catch { }
       _loaded = true;
@@ -62,6 +64,7 @@ namespace Irony.GrammarExplorer {
       Settings.Default.SearchPattern = txtSearch.Text;
       Settings.Default.EnableTrace = chkParserTrace.Checked;
       Settings.Default.DisableHili = chkDisableHili.Checked;
+      Settings.Default.AutoRefresh = chkAutoRefresh.Checked;
       var grammars = GrammarItemList.FromCombo(cboGrammars);
       Settings.Default.Grammars = grammars.ToXml(); 
       Settings.Default.Save();
@@ -272,6 +275,8 @@ namespace Irony.GrammarExplorer {
       if (grammars == null) return;
       foreach (GrammarItem item in grammars)
         cboGrammars.Items.Add(item);
+      if (cboGrammars.SelectedIndex < 0 && grammars.Count > 0)
+        cboGrammars.SelectedIndex = 0;
     }
 
     private void miRemove_Click(object sender, EventArgs e) {
@@ -295,8 +300,7 @@ namespace Irony.GrammarExplorer {
 
     #region Parsing and running
     private void CreateGrammar() {
-      GrammarItem selItem = cboGrammars.SelectedItem as GrammarItem;
-      _grammar = selItem.CreateGrammar();
+      _grammar = _grammarLoader.CreateGrammar();
     }
 
     private void CreateParser() {
@@ -465,6 +469,7 @@ namespace Irony.GrammarExplorer {
     private void btnParse_Click(object sender, EventArgs e) {
       ParseSample();
     }
+
     private void btnRun_Click(object sender, EventArgs e) {
       RunSample();
     }
@@ -476,13 +481,13 @@ namespace Irony.GrammarExplorer {
       if (parseNode == null) return;
       ShowSourceLocation(parseNode.Span.Location, 1);
     }
+
     private void tvAst_AfterSelect(object sender, TreeViewEventArgs e) {
       var treeNode = tvAst.SelectedNode;
       if (treeNode == null) return;
       var iBrowsable = treeNode.Tag as IBrowsableAstNode;
       if (iBrowsable == null) return;
       ShowSourceLocation(iBrowsable.Location, 1);
-
     }
 
     bool _changingGrammar;
@@ -502,35 +507,26 @@ namespace Irony.GrammarExplorer {
     }
 
     private void cboGrammars_SelectedIndexChanged(object sender, EventArgs e) {
-      CancelLastGrammarUpdateSubscription();
+      _grammarLoader.SelectedGrammar = cboGrammars.SelectedItem as GrammarItem;
       LoadSelectedGrammar();
-      SubscribeToGrammarUpdates();
     }
 
-    private void SubscribeToGrammarUpdates() {
-      _lastGrammarItem = cboGrammars.SelectedItem as GrammarItem;
-      if (_lastGrammarItem != null)
-          _lastGrammarItem.AssemblyUpdated += GrammarAssemblyUpdated;
-    }
-    private void CancelLastGrammarUpdateSubscription() {
-      if (_lastGrammarItem != null)
-        _lastGrammarItem.AssemblyUpdated -= GrammarAssemblyUpdated;
-      _lastGrammarItem = null;
-    }
     private void GrammarAssemblyUpdated(object sender, EventArgs args) {
       if (InvokeRequired) {
         Invoke(new EventHandler(GrammarAssemblyUpdated), sender, args);
         return;
       }
-      LoadSelectedGrammar();
-      txtGrammarComments.Text += String.Format("{0}Grammar assembly reloaded: {1:HH:mm:ss}", Environment.NewLine, DateTime.Now);
+      if (chkAutoRefresh.Checked) {
+        LoadSelectedGrammar();
+        txtGrammarComments.Text += String.Format("{0}Grammar assembly reloaded: {1:HH:mm:ss}", Environment.NewLine, DateTime.Now);
+      }
     }
 
     private void btnFileOpen_Click(object sender, EventArgs e) {
       if (dlgOpenFile.ShowDialog() != DialogResult.OK) return;
       LoadSourceFile(dlgOpenFile.FileName);
-
     }
+
     private void txtSource_TextChanged(object sender, EventArgs e) {
       _parseTree = null; //force it to recompile on run
     }
@@ -538,6 +534,7 @@ namespace Irony.GrammarExplorer {
     private void btnManageGrammars_Click(object sender, EventArgs e) {
       menuGrammars.Show(btnManageGrammars, 0, btnManageGrammars.Height);
     }
+
     private void btnToXml_Click(object sender, EventArgs e) {
       txtOutput.Text = string.Empty;
       if (_parseTree == null)
@@ -616,6 +613,7 @@ namespace Irony.GrammarExplorer {
       if (_runtimeError != null)
         ShowSourceLocation(_runtimeError.Location, 1); 
     }
+
     private void lnkShowErrStack_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
       if (_runtimeError == null) return;
       if (_runtimeError.InnerException != null)
@@ -630,7 +628,6 @@ namespace Irony.GrammarExplorer {
       if (!_loaded) return; 
       EnableHighlighter(!chkDisableHili.Checked); 
     }
-
 
   }//class
 }

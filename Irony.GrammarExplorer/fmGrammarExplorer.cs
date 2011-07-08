@@ -275,6 +275,7 @@ namespace Irony.GrammarExplorer {
       if (grammars == null) return;
       foreach (GrammarItem item in grammars)
         cboGrammars.Items.Add(item);
+      // auto-select the first grammar if no grammar currently selected
       if (cboGrammars.SelectedIndex < 0 && grammars.Count > 0)
         cboGrammars.SelectedIndex = 0;
     }

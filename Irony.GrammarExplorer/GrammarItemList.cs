@@ -30,15 +30,10 @@ namespace Irony.GrammarExplorer {
     public readonly string Location; //location of assembly containing the grammar
     public readonly string TypeName; //full type name
     internal bool _loading;
-    private object _lockObject = new object();
-    private Assembly _loadedAssembly;
-    private TimeSpan _autoUpdateDelay = TimeSpan.FromMilliseconds(500);
-    public event EventHandler AssemblyUpdated;
     public GrammarItem(string caption, string location, string typeName) {
       Caption = caption;
       Location = location;
       TypeName = typeName;
-      SetupFileWatcher();
     }
     public GrammarItem(Type grammarClass, string assemblyLocation) {
       _loading = true; 
@@ -56,51 +51,16 @@ namespace Irony.GrammarExplorer {
         if (!string.IsNullOrEmpty(langAttr.Description))
           LongCaption += ": " + langAttr.Description;
       }
-      SetupFileWatcher();
     }
     public GrammarItem(XmlElement element) {
       Caption = element.GetAttribute("Caption");
       Location = element.GetAttribute("Location");
       TypeName = element.GetAttribute("TypeName");
-      SetupFileWatcher();
     }
     public void Save(XmlElement toElement) {
       toElement.SetAttribute("Caption", Caption);
       toElement.SetAttribute("Location", Location);
       toElement.SetAttribute("TypeName", TypeName);
-    }
-    public Grammar CreateGrammar() {
-      Type type = Assembly.GetType(TypeName, true, true);
-      var grammar = (Grammar) Activator.CreateInstance(type);
-      return grammar; 
-    }
-    private void SetupFileWatcher() {
-      var folder = Path.GetDirectoryName(Location);
-      var watcher = new FileSystemWatcher(folder);
-      watcher.Filter = Path.GetFileName(Location);
-      watcher.Changed += (s, e) => {
-        _loadedAssembly = null; // clear cached assembly
-        ThreadPool.QueueUserWorkItem(_ => {
-          Thread.Sleep(_autoUpdateDelay);
-          OnAssemblyUpdated();
-        });
-      };
-      watcher.EnableRaisingEvents = true;
-    }
-    private void OnAssemblyUpdated() {
-      if (AssemblyUpdated != null)
-        AssemblyUpdated(this, EventArgs.Empty);
-    }
-    public Assembly Assembly {
-      get {
-        if (_loadedAssembly == null) {
-          lock (_lockObject) { 
-            if (_loadedAssembly == null)
-              _loadedAssembly = Assembly.Load(File.ReadAllBytes(Location));
-          }
-        }
-        return _loadedAssembly;
-      }
     }
     public override string  ToString() {
         return _loading ? LongCaption : Caption; 

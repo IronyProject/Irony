@@ -12,18 +12,19 @@ namespace Irony.GrammarExplorer {
   /// Maintains grammar assemblies, reloads updated files automatically.
   /// </summary>
   class GrammarLoader {
-    private object _lockObject = new object();
-    private TimeSpan _autoUpdateDelay = TimeSpan.FromMilliseconds(500);
-    private GrammarItem _selectedGrammar;
-    private Dictionary<string, Assembly> _loadedAssemblies = new Dictionary<string, Assembly>();
-    private Dictionary<string, FileSystemWatcher> _watchers = new Dictionary<string, FileSystemWatcher>();
+    private TimeSpan _autoRefreshDelay = TimeSpan.FromMilliseconds(500);
+    private Dictionary<string, CachedAssembly> _cachedAssemblies = new Dictionary<string, CachedAssembly>();
+
+    class CachedAssembly {
+      public long FileSize;
+      public DateTime LastWriteTime;
+      public FileSystemWatcher Watcher;
+      public Assembly Assembly;
+    }
 
     public event EventHandler AssemblyUpdated;
 
-    public GrammarItem SelectedGrammar {
-      get { return _selectedGrammar; }
-      set { _selectedGrammar = value; }
-    }
+    public GrammarItem SelectedGrammar { get; set; }
 
     public Grammar CreateGrammar() {
       if (SelectedGrammar == null)
@@ -38,12 +39,29 @@ namespace Irony.GrammarExplorer {
         if (SelectedGrammar == null)
           return null;
 
+        // create assembly cache entry as needed
         var location = SelectedGrammar.Location;
-        if (!_loadedAssemblies.ContainsKey(location) || _loadedAssemblies[location] == null) {
-          _loadedAssemblies[location] = LoadAssembly(location);
-          _watchers[location] = CreateFileWatcher(location);
+        if (!_cachedAssemblies.ContainsKey(location)) {
+          var fileInfo = new FileInfo(location);
+          _cachedAssemblies[location] =
+            new CachedAssembly {
+              LastWriteTime = fileInfo.LastWriteTime,
+              FileSize = fileInfo.Length,
+              Assembly = null
+            };
+
+          // set up file system watcher
+          _cachedAssemblies[location].Watcher = CreateFileWatcher(location);
         }
-        return _loadedAssemblies[location];
+
+        // get loaded assembly from cache if possible
+        var assembly = _cachedAssemblies[location].Assembly;
+        if (assembly == null) {
+          assembly = LoadAssembly(location);
+          _cachedAssemblies[location].Assembly = assembly;
+        }
+
+        return assembly;
       }
     }
 
@@ -51,13 +69,29 @@ namespace Irony.GrammarExplorer {
       var folder = Path.GetDirectoryName(location);
       var watcher = new FileSystemWatcher(folder);
       watcher.Filter = Path.GetFileName(location);
-      watcher.Changed += (s, e) => {
-        _loadedAssemblies[location] = null; // clear cached assembly
+
+      watcher.Changed += (s, args) => {
+        if (args.ChangeType != WatcherChangeTypes.Changed)
+          return;
+
+        // check if assembly was changed indeed to work around multiple FileSystemWatcher event firing
+        var cacheEntry = _cachedAssemblies[location];
+        var fileInfo = new FileInfo(location);
+        if (cacheEntry.LastWriteTime == fileInfo.LastWriteTime && cacheEntry.FileSize == fileInfo.Length)
+          return;
+
+        // clear cached assembly and save last file update time
+        cacheEntry.LastWriteTime = fileInfo.LastWriteTime;
+        cacheEntry.FileSize = fileInfo.Length;
+        cacheEntry.Assembly = null;
+
+        // delay auto-refresh for safety reasons
         ThreadPool.QueueUserWorkItem(_ => {
-          Thread.Sleep(_autoUpdateDelay);
+          Thread.Sleep(_autoRefreshDelay);
           OnAssemblyUpdated(location);
         });
       };
+
       watcher.EnableRaisingEvents = true;
       return watcher;
     }

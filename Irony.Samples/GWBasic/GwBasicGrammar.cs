@@ -6,15 +6,15 @@ using Irony.Parsing;
 
 namespace Irony.Samples {
   /// <summary>
-    /// This class defines the Grammar for the GwBASIC language.
-    /// (Not complete.)
-    /// </summary>
-    /// <remarks>
-    /// http://www.xs4all.nl/~hwiegman/gw-man/index.html
-    /// or
-    /// http://www.geocities.com/KindlyRat/GWBASIC_Help.zip
-    /// </remarks>
-  [Language("GwBasic", "1.0", "Sample GW Basic grammar")]
+  /// This class defines the Grammar for the GwBASIC language.
+  /// (Not complete.)
+  /// </summary>
+  /// <remarks>
+  /// http://www.xs4all.nl/~hwiegman/gw-man/index.html
+  /// or
+  /// http://www.geocities.com/KindlyRat/GWBASIC_Help.zip
+  /// </remarks>
+  [Language("GwBasic", "1.01", "Sample GW Basic grammar")]
   public class GWBasicGrammar : Grammar  { 
 
         public GWBasicGrammar() : base(false)  // BASIC is not case sensitive...
@@ -57,6 +57,7 @@ namespace Irony.Samples {
             var userFunctionName = variable;
             var comment = new CommentTerminal("Comment", "REM", "\n");
             var short_comment = new CommentTerminal("ShortComment", "'", "\n");
+            var line_cont = new LineContinuationTerminal("LineContinuation", "_");
             var comma = ToTerm(",", "comma");
             var colon = ToTerm(":", "colon");
 
@@ -211,7 +212,8 @@ namespace Irony.Samples {
 
             //Punctuation and Transient elements
             MarkPunctuation("(", ")", ",");
-            MarkTransient(EXPR, STATEMENT, LINE_CONTENT_OPT, VARIABLE_OR_FUNCTION_EXPR, COMMENT_OPT); 
+            MarkTransient(EXPR, STATEMENT, LINE_CONTENT_OPT, VARIABLE_OR_FUNCTION_EXPR, COMMENT_OPT);
+            NonGrammarTerminals.Add(line_cont);
 
             this.LanguageFlags = LanguageFlags.NewLineBeforeEOF;
 

@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="CommentTerminalTests.cs" />
     <Compile Include="DataLiteralsTests.cs" />
+    <Compile Include="LineContinuationTests.cs" />
     <Compile Include="RegExLiteralTests.cs" />
     <Compile Include="FreeTextLiteralTests.cs" />
     <Compile Include="IdentifierTerminalTests.cs" />

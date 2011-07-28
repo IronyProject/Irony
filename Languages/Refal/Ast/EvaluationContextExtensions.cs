@@ -24,7 +24,7 @@ namespace Refal
 		{
 			object pattern;
 
-      if (context.TryGetValue(LastPatternSymbolName, out pattern))
+			if (context.TryGetValue(LastPatternSymbolName, out pattern))
 				return pattern as Refal.Runtime.Pattern;
 
 			return null;
@@ -35,7 +35,7 @@ namespace Refal
 		/// </summary>
 		public static void SetLastPattern(this EvaluationContext context, Refal.Runtime.Pattern pattern)
 		{
-      context.SetValue(LastPatternSymbolName, pattern);
+			context.SetValue(LastPatternSymbolName, pattern);
 		}
 	}
 }

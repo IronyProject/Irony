@@ -107,7 +107,7 @@ namespace Irony.Parsing {
         case ParserActionType.Shift: ExecuteShift(action); break;
         case ParserActionType.Operator: ExecuteOperatorAction(action); break;
         case ParserActionType.Reduce: ExecuteReduce(action); break;
-        case ParserActionType.Code: ExecuteConflictAction (action); break;
+        case ParserActionType.Code: ExecuteConflictAction(action); break;
         case ParserActionType.Accept: ExecuteAccept(action); break; 
       }
     }
@@ -300,8 +300,7 @@ namespace Irony.Parsing {
     #endregion
 
     private void ExecuteConflictAction(ParserAction action) {
-      var args = new ConflictResolutionArgs(Context, action);
-      _grammar.OnResolvingConflict(args);
+      var args = action.ResolveConflict(_grammar, Context);
       switch(args.Result) {
         case ParserActionType.Reduce:
           ExecuteReduce(new ParserAction(ParserActionType.Reduce, null, args.ReduceProduction));

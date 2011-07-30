@@ -67,6 +67,27 @@ namespace Irony.Parsing {
       HintType = hintType;
       Data = data; 
     }
-  }//class
+  } //class
 
+  // Base class for custom grammar hints
+  public abstract class CustomGrammarHint : GrammarHint {
+    public abstract void ResolveConflict(ConflictResolutionArgs args);
+    public CustomGrammarHint(object data) : base(HintType.Custom, data) {}
+  }
+
+  // Semi-automatic conflict resolution hint
+  public class TokenPreviewHint : CustomGrammarHint {
+    public readonly BnfTerm ComesFirst;
+    public readonly BnfTermSet BeforeSymbols = new BnfTermSet();
+ 
+    public TokenPreviewHint(object data, BnfTerm comesFirst, params BnfTerm[] beforeSymbols) : base(data) {
+      ComesFirst = comesFirst;
+      Array.ForEach(beforeSymbols, term => BeforeSymbols.Add(term));
+    }
+
+    public override void ResolveConflict(ConflictResolutionArgs args) {
+      // TODO
+      throw new NotImplementedException();
+    }
+  }
 }

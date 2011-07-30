@@ -77,17 +77,43 @@ namespace Irony.Parsing {
 
   // Semi-automatic conflict resolution hint
   public class TokenPreviewHint : CustomGrammarHint {
-    public readonly BnfTerm ComesFirst;
-    public readonly BnfTermSet BeforeSymbols = new BnfTermSet();
+    public readonly ParserActionType Action;
+    public readonly Terminal ComesFirst;
+    public readonly TerminalSet BeforeSymbols = new TerminalSet();
+    public int MaxPreviewTokens = 0; // no preview limit
  
-    public TokenPreviewHint(object data, BnfTerm comesFirst, params BnfTerm[] beforeSymbols) : base(data) {
+    public TokenPreviewHint(ParserActionType action, Terminal comesFirst, params Terminal[] beforeSymbols) : base(null) {
+      Action = action;
       ComesFirst = comesFirst;
       Array.ForEach(beforeSymbols, term => BeforeSymbols.Add(term));
     }
 
+    private ParserActionType ReverseAction {
+      get { return Action == ParserActionType.Reduce ? ParserActionType.Shift : ParserActionType.Reduce; }
+    }
+
     public override void ResolveConflict(ConflictResolutionArgs args) {
-      // TODO
-      throw new NotImplementedException();
+      args.Result = ReverseAction;
+      try
+      {
+        args.Scanner.BeginPreview();
+        var count = 0;
+        var token = args.Scanner.GetToken();
+        while (token != null && token.Terminal != args.Context.Language.Grammar.Eof) {
+          if (token.Terminal == ComesFirst) {
+            args.Result = Action;
+            return;
+          }
+          if (BeforeSymbols.Contains(token.Terminal))
+            return;
+          if (++count > MaxPreviewTokens && MaxPreviewTokens > 0)
+            return;
+          token = args.Scanner.GetToken();
+        }
+      }
+      finally {
+        args.Scanner.EndPreview(true);
+      }
     }
   }
 }

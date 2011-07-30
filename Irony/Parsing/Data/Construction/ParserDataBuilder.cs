@@ -285,12 +285,20 @@ namespace Irony.Parsing.Construction {
       allItems.AddRange(state.BuilderData.ShiftItems.SelectByCurrent(conflict)); 
       allItems.AddRange(state.BuilderData.ReduceItems.SelectByLookahead(conflict)); 
       // Scan all items and try to find hint with resolution type Code
-      foreach (var item in allItems)
-        if(item.Core.Hints.Find(h => h.HintType == HintType.ResolveInCode) != null) {
+      foreach (var item in allItems) {
+        if (item.Core.Hints.Find(h => h.HintType == HintType.ResolveInCode) != null) {
           state.Actions[conflict] = new ParserAction(ParserActionType.Code, newState, reduceProduction);
           state.BuilderData.ResolvedConflicts.Add(conflict);
           return; 
         }
+        //custom hints allow to define inline conflict resolution logic
+        var customHint = item.Core.Hints.Find(h => h.HintType == HintType.Custom) as CustomGrammarHint;
+        if (customHint != null) {
+          state.Actions[conflict] = new ParserAction(newState, reduceProduction, args => customHint.ResolveConflict(args));
+          state.BuilderData.ResolvedConflicts.Add(conflict);
+          return;
+        }
+      }
     }
 
     private void ResolveConflictByPrecedence(ParserState state, Terminal conflict) {

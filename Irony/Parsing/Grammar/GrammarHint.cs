@@ -80,21 +80,35 @@ namespace Irony.Parsing {
 
   // Semi-automatic conflict resolution hint
   public class TokenPreviewHint : CustomGrammarHint {
-    public string First { get; private set; }
-    public ISet<string> Others { get; private set; }
     public int MaxPreviewTokens { get; set; } // preview limit
-    private Grammar Grammar { get; set; }
+    private string FirstString { get; set; }
+    private ISet<string> OtherStrings { get; set; }
     private Terminal FirstTerminal { get; set; }
     private ISet<Terminal> OtherTerminals { get; set; }
- 
-    public TokenPreviewHint(ParserActionType action, string first) : base(action) {
-      First = first;
-      Others = new HashSet<string>();
+
+    private TokenPreviewHint(ParserActionType action) : base(action) {
+      FirstString = String.Empty;
+      OtherStrings = new HashSet<string>();
+      FirstTerminal = null;
+      OtherTerminals = new HashSet<Terminal>();
       MaxPreviewTokens = 0;
     }
 
+    public TokenPreviewHint(ParserActionType action, string first) : this(action) {
+      FirstString = first;
+    }
+
+    public TokenPreviewHint(ParserActionType action, Terminal first) : this(action) {
+      FirstTerminal = first;
+    }
+
     public TokenPreviewHint ComesBefore(params string[] others) {
-      Array.ForEach(others, term => Others.Add(term));
+      Array.ForEach(others, term => OtherStrings.Add(term));
+      return this;
+    }
+
+    public TokenPreviewHint ComesBefore(params Terminal[] others) {
+      Array.ForEach(others, term => OtherTerminals.Add(term));
       return this;
     }
 
@@ -105,9 +119,10 @@ namespace Irony.Parsing {
 
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
-      Grammar = grammarData.Grammar;
-      FirstTerminal = Grammar.ToTerm(First);
-      OtherTerminals = new HashSet<Terminal>(Others.Select(s => Grammar.ToTerm(s)));
+      // convert strings to terminals, if needed
+      FirstTerminal = FirstTerminal ?? Grammar.ToTerm(FirstString);
+      if (OtherTerminals.Count == 0 && OtherStrings.Count > 0)
+        Array.ForEach(OtherStrings.Select(s => Grammar.ToTerm(s)).ToArray(), term => OtherTerminals.Add(term));
     }
 
     public override bool Match(ConflictResolutionArgs args) {

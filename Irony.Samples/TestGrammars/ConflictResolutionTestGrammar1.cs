@@ -5,9 +5,9 @@ using Irony.Parsing;
 
 namespace Irony.Samples {
 
-  [Language("Grammar with conflicts", "1.1", "Sample grammar with semi-automatic shift-reduce conflicts resolution example")]
-  public class ConflictResolutionTestGrammar : Grammar {
-    public ConflictResolutionTestGrammar() : base(true) {
+  [Language("Grammar1 with conflicts", "1.1", "First sample grammar with conflicts resolution")]
+  public class ConflictResolutionTestGrammar1 : Grammar {
+    public ConflictResolutionTestGrammar1() : base(true) {
       var name = new IdentifierTerminal("id");
 
       var definition = new NonTerminal("definition");

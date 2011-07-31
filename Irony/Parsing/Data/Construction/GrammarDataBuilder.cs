@@ -170,7 +170,9 @@ namespace Irony.Parsing.Construction {
         foreach (BnfTermList prodOperands in allData) {
           Production prod = CreateProduction(nt, prodOperands);
           nt.Productions.Add(prod);
-        }//foreach prodOperands
+        } //foreach prodOperands
+        // insert pending custom hints in all productions
+        nt.InsertCustomHints();
       }
     }
 

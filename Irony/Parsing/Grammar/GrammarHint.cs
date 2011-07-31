@@ -82,9 +82,9 @@ namespace Irony.Parsing {
   public class TokenPreviewHint : CustomGrammarHint {
     public int MaxPreviewTokens { get; set; } // preview limit
     private string FirstString { get; set; }
-    private ISet<string> OtherStrings { get; set; }
+    private ICollection<string> OtherStrings { get; set; }
     private Terminal FirstTerminal { get; set; }
-    private ISet<Terminal> OtherTerminals { get; set; }
+    private ICollection<Terminal> OtherTerminals { get; set; }
 
     private TokenPreviewHint(ParserActionType action) : base(action) {
       FirstString = String.Empty;

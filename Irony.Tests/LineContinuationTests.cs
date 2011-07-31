@@ -24,8 +24,7 @@ namespace Irony.Tests {
     }
 
     [TestMethod]
-    public void TestDefaultContinuationTerminal()
-    {
+    public void TestDefaultContinuationTerminal() {
       SetTerminal(new LineContinuationTerminal("LineContinuation"));
       TryMatch("_\r\n\t");
       Assert.IsTrue(_token.Category == TokenCategory.Outline, "Failed to read default line continuation terminal");
@@ -35,8 +34,7 @@ namespace Irony.Tests {
     }
 
     [TestMethod]
-    public void TestComplexContinuationTerminal()
-    {
+    public void TestComplexContinuationTerminal() {
       SetTerminal(new LineContinuationTerminal("LineContinuation", @"\continue", @"\cont", "++CONTINUE++"));
       TryMatch("\\cont   \r\n    ");
       Assert.IsTrue(_token.Category == TokenCategory.Outline, "Failed to read complex line continuation terminal");
@@ -46,8 +44,7 @@ namespace Irony.Tests {
     }
 
     [TestMethod]
-    public void TestIncompleteContinuationTerminal()
-    {
+    public void TestIncompleteContinuationTerminal() {
       SetTerminal(new LineContinuationTerminal("LineContinuation"));
       TryMatch("\\   garbage");
       Assert.IsTrue(_token.Category == TokenCategory.Error, "Failed to read incomplete line continuation terminal");
@@ -55,6 +52,6 @@ namespace Irony.Tests {
       SetTerminal(new LineContinuationTerminal("LineContinuation"));
       TryMatch("_");
       Assert.IsTrue(_token.Category == TokenCategory.Error, "Failed to read incomplete line continuation terminal");
-    }  
+    }
   }
 }

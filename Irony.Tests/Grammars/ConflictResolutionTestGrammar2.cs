@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using Irony.Parsing;
 
-namespace Irony.Samples {
+namespace Irony.Tests.Grammars {
 
-  [Language("Grammar1 with conflicts", "1.1", "First sample grammar with conflicts resolution")]
-  public class ConflictResolutionTestGrammar1 : Grammar {
-    public ConflictResolutionTestGrammar1() : base(true) {
+  [Language("Grammar with conflicts #2", "1.1", "Sample grammar with conflicts resolution")]
+  public class ConflictResolutionTestGrammar2 : Grammar {
+    public ConflictResolutionTestGrammar2() : base(true) {
       var name = new IdentifierTerminal("id");
 
       var definition = new NonTerminal("definition");

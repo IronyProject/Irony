@@ -357,11 +357,11 @@ namespace Irony.Parsing {
     protected GrammarHint ResolveInCode() {
       return new GrammarHint(HintType.ResolveInCode, null); 
     }
-    protected GrammarHint ReduceIf(string comesFirst, params string[] beforeSymbols) {
-      return new TokenPreviewHint(ParserActionType.Reduce, ToTerm(comesFirst), Array.ConvertAll(beforeSymbols, s => ToTerm(s)));
+    protected TokenPreviewHint ReduceIf(string symbol) {
+      return new TokenPreviewHint(ParserActionType.Reduce, symbol);
     }
-    protected GrammarHint ShiftIf(string comesFirst, params string[] beforeSymbols) {
-      return new TokenPreviewHint(ParserActionType.Shift, ToTerm(comesFirst), Array.ConvertAll(beforeSymbols, s => ToTerm(s)));
+    protected TokenPreviewHint ShiftIf(string symbol) {
+      return new TokenPreviewHint(ParserActionType.Shift, symbol);
     }
     protected GrammarHint ImplyPrecedenceHere(int precedence) {
       return ImplyPrecedenceHere(precedence, Associativity.Left); 

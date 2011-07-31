@@ -103,11 +103,9 @@ namespace Irony.Parsing {
 
     public virtual ConflictResolutionArgs ResolveConflict(Grammar grammar, ParsingContext context) {
       var args = new ConflictResolutionArgs(context, this);
-      // custom conflict resolver has higher priority
-      if (ConflictResolver != null)
-        ConflictResolver(args);
-      else
-        grammar.OnResolvingConflict(args);
+      // custom conflict resolver such as custom grammar hint has a higher priority than OnResolvingConflict handler
+      var resolver = ConflictResolver ?? grammar.OnResolvingConflict;
+      resolver(args);
       return args;
     }
 

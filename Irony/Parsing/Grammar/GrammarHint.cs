@@ -71,45 +71,61 @@ namespace Irony.Parsing {
 
   // Base class for custom grammar hints
   public abstract class CustomGrammarHint : GrammarHint {
-    public abstract void ResolveConflict(ConflictResolutionArgs args);
-    public CustomGrammarHint(object data) : base(HintType.Custom, data) {}
+    public ParserActionType Action { get; private set; }
+    public CustomGrammarHint(ParserActionType action) : base(HintType.Custom, null) {
+      Action = action;
+    }
+    public abstract bool Match(ConflictResolutionArgs args);
   }
 
   // Semi-automatic conflict resolution hint
   public class TokenPreviewHint : CustomGrammarHint {
-    public readonly ParserActionType Action;
-    public readonly Terminal ComesFirst;
-    public readonly TerminalSet BeforeSymbols = new TerminalSet();
-    public int MaxPreviewTokens = 0; // no preview limit
+    public string First { get; private set; }
+    public ISet<string> Others { get; private set; }
+    public int MaxPreviewTokens { get; set; } // preview limit
+    private Grammar Grammar { get; set; }
+    private Terminal FirstTerminal { get; set; }
+    private ISet<Terminal> OtherTerminals { get; set; }
  
-    public TokenPreviewHint(ParserActionType action, Terminal comesFirst, params Terminal[] beforeSymbols) : base(null) {
-      Action = action;
-      ComesFirst = comesFirst;
-      Array.ForEach(beforeSymbols, term => BeforeSymbols.Add(term));
+    public TokenPreviewHint(ParserActionType action, string first) : base(action) {
+      First = first;
+      Others = new HashSet<string>();
+      MaxPreviewTokens = 0;
     }
 
-    private ParserActionType ReverseAction {
-      get { return Action == ParserActionType.Reduce ? ParserActionType.Shift : ParserActionType.Reduce; }
+    public TokenPreviewHint ComesBefore(params string[] others) {
+      Array.ForEach(others, term => Others.Add(term));
+      return this;
     }
 
-    public override void ResolveConflict(ConflictResolutionArgs args) {
-      args.Result = ReverseAction;
-      try
-      {
+    public TokenPreviewHint SetMaxPreview(int max) {
+      MaxPreviewTokens = max;
+      return this;
+    }
+
+    public override void Init(GrammarData grammarData) {
+      base.Init(grammarData);
+      Grammar = grammarData.Grammar;
+      FirstTerminal = Grammar.ToTerm(First);
+      OtherTerminals = new HashSet<Terminal>(Others.Select(s => Grammar.ToTerm(s)));
+    }
+
+    public override bool Match(ConflictResolutionArgs args) {
+      try {
         args.Scanner.BeginPreview();
+
         var count = 0;
         var token = args.Scanner.GetToken();
         while (token != null && token.Terminal != args.Context.Language.Grammar.Eof) {
-          if (token.Terminal == ComesFirst) {
-            args.Result = Action;
-            return;
-          }
-          if (BeforeSymbols.Contains(token.Terminal))
-            return;
+          if (token.Terminal == FirstTerminal)
+            return true;
+          if (OtherTerminals.Contains(token.Terminal))
+            return false;
           if (++count > MaxPreviewTokens && MaxPreviewTokens > 0)
-            return;
+            return false;
           token = args.Scanner.GetToken();
         }
+        return false;
       }
       finally {
         args.Scanner.EndPreview(true);

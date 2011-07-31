@@ -17,7 +17,9 @@ using System.Text;
 using System.Xml; 
 using System.Windows.Forms;
 using System.Reflection;
-using Irony.Parsing; 
+using Irony.Parsing;
+using System.IO;
+using System.Threading; 
 
 namespace Irony.GrammarExplorer {
 
@@ -27,7 +29,7 @@ namespace Irony.GrammarExplorer {
     public readonly string LongCaption;
     public readonly string Location; //location of assembly containing the grammar
     public readonly string TypeName; //full type name
-    internal bool _loading; 
+    internal bool _loading;
     public GrammarItem(string caption, string location, string typeName) {
       Caption = caption;
       Location = location;
@@ -50,7 +52,6 @@ namespace Irony.GrammarExplorer {
           LongCaption += ": " + langAttr.Description;
       }
     }
-
     public GrammarItem(XmlElement element) {
       Caption = element.GetAttribute("Caption");
       Location = element.GetAttribute("Location");
@@ -61,14 +62,8 @@ namespace Irony.GrammarExplorer {
       toElement.SetAttribute("Location", Location);
       toElement.SetAttribute("TypeName", TypeName);
     }
-    public Grammar CreateGrammar() {
-      Assembly asm = Assembly.LoadFrom(Location); 
-      Type type = asm.GetType(TypeName, true, true);
-      var grammar = (Grammar) Activator.CreateInstance(type);
-      return grammar; 
-    }
     public override string  ToString() {
- 	    return _loading ? LongCaption : Caption; 
+        return _loading ? LongCaption : Caption; 
     }
   
   }//class

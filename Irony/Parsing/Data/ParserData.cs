@@ -74,7 +74,7 @@ namespace Irony.Parsing {
     Shift,
     Reduce,
     Operator,  //shift or reduce depending on operator associativity and precedence
-    Code, //conflict resolution made in resolution method in grammar;  
+    Code, //conflict resolution made in resolution method in grammar or in custom grammar hint;
     Accept,
   }
 
@@ -82,16 +82,31 @@ namespace Irony.Parsing {
     public ParserActionType ActionType {get;private set;}
     public ParserState NewState {get;private set;}        // for Shift action
     public Production ReduceProduction {get;private set;} // for Reduce action
+    private Action<ConflictResolutionArgs> ConflictResolver {get;set;}
 
     internal ParserAction(ParserActionType actionType, ParserState newState, Production reduceProduction) {
       this.ActionType = actionType;
       this.NewState = newState;
       this.ReduceProduction = reduceProduction;
+      this.ConflictResolver = null;
     }
-    
+
+    internal ParserAction(ParserState newState, Production reduceProduction, Action<ConflictResolutionArgs> conflictResolver)
+      : this(ParserActionType.Code, newState, reduceProduction) {
+      ConflictResolver = conflictResolver;
+    }
+
     internal void ChangeToOperatorAction(Production reduceProduction) {
       ActionType = ParserActionType.Operator; 
       ReduceProduction = reduceProduction;
+    }
+
+    public virtual ConflictResolutionArgs ResolveConflict(Grammar grammar, ParsingContext context) {
+      var args = new ConflictResolutionArgs(context, this);
+      // custom conflict resolver such as custom grammar hint has a higher priority than OnResolvingConflict handler
+      var resolver = ConflictResolver ?? grammar.OnResolvingConflict;
+      resolver(args);
+      return args;
     }
 
     public override string ToString() {
@@ -103,7 +118,7 @@ namespace Irony.Parsing {
       }
       return Resources.LabelActionUnknown; //should never happen
     }
-  }//class ActionRecord
+  }//class ParserAction
 
   public class ParserActionTable : Dictionary<BnfTerm, ParserAction> { }
 

@@ -80,7 +80,6 @@
     <None Include="TestGrammars\GrammarExL514.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="SourceSamples\DataFiles\CarModels.csv" />
     <None Include="SourceSamples\DataFiles\Sample1.json" />
     <None Include="SourceSamples\DataFiles\Sample2.json" />

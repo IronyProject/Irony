@@ -25,41 +25,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Languages", "Languages", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Refal", "Refal", "{FEE137AB-6C8B-4576-81BE-119DA16DCF78}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal", "Languages\Refal\Refal.csproj", "{19A86418-BA99-41F4-80A5-A7F3A6383123}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.2010", "Languages\Refal\Refal.2010.csproj", "{19A86418-BA99-41F4-80A5-A7F3A6383123}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.UnitTests", "Languages\Refal\UnitTests\Refal.UnitTests.csproj", "{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.UnitTests.VsTest.2010", "Languages\Refal\UnitTests\Refal.UnitTests.VsTest.2010.csproj", "{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{AEA36F73-5FD0-48B5-BCD8-2B1F95CB7635}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.UnitTests.NUnit.2010", "Languages\Refal\UnitTests\Refal.UnitTests.NUnit.2010.csproj", "{A34F4AE5-A6E5-43F9-9F16-A43F34599053}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{44A73DB9-DD6C-4BFD-A169-F17A8C82A4A3}"
 	ProjectSection(SolutionItems) = preProject
-		Languages\Refal\Samples\99-bottles-v1.ref = Languages\Refal\Samples\99-bottles-v1.ref
-		Languages\Refal\Samples\99-bottles-v1.txt = Languages\Refal\Samples\99-bottles-v1.txt
-		Languages\Refal\Samples\99-bottles-v2.ref = Languages\Refal\Samples\99-bottles-v2.ref
-		Languages\Refal\Samples\99-bottles-v2.txt = Languages\Refal\Samples\99-bottles-v2.txt
-		Languages\Refal\Samples\arith.ref = Languages\Refal\Samples\arith.ref
-		Languages\Refal\Samples\arith.txt = Languages\Refal\Samples\arith.txt
-		Languages\Refal\Samples\binary.ref = Languages\Refal\Samples\binary.ref
-		Languages\Refal\Samples\binary.txt = Languages\Refal\Samples\binary.txt
-		Languages\Refal\Samples\change-v1.ref = Languages\Refal\Samples\change-v1.ref
-		Languages\Refal\Samples\change-v2.ref = Languages\Refal\Samples\change-v2.ref
-		Languages\Refal\Samples\change.txt = Languages\Refal\Samples\change.txt
-		Languages\Refal\Samples\factorial.ref = Languages\Refal\Samples\factorial.ref
-		Languages\Refal\Samples\factorial.txt = Languages\Refal\Samples\factorial.txt
-		Languages\Refal\Samples\hello.ref = Languages\Refal\Samples\hello.ref
-		Languages\Refal\Samples\hello.txt = Languages\Refal\Samples\hello.txt
-		Languages\Refal\Samples\italian.ref = Languages\Refal\Samples\italian.ref
-		Languages\Refal\Samples\italian.txt = Languages\Refal\Samples\italian.txt
-		Languages\Refal\Samples\order-v1.ref = Languages\Refal\Samples\order-v1.ref
-		Languages\Refal\Samples\order-v2.ref = Languages\Refal\Samples\order-v2.ref
-		Languages\Refal\Samples\order.txt = Languages\Refal\Samples\order.txt
-		Languages\Refal\Samples\palyndrome.ref = Languages\Refal\Samples\palyndrome.ref
-		Languages\Refal\Samples\palyndrome.txt = Languages\Refal\Samples\palyndrome.txt
-		Languages\Refal\Samples\quine-plain.ref = Languages\Refal\Samples\quine-plain.ref
-		Languages\Refal\Samples\quine-simple.ref = Languages\Refal\Samples\quine-simple.ref
-		Languages\Refal\Samples\quine-xplained.ref = Languages\Refal\Samples\quine-xplained.ref
-		Languages\Refal\Samples\xtras-bigint.ref = Languages\Refal\Samples\xtras-bigint.ref
-		Languages\Refal\Samples\xtras-bigint.txt = Languages\Refal\Samples\xtras-bigint.txt
-		Languages\Refal\Samples\xtras-factorial.ref = Languages\Refal\Samples\xtras-factorial.ref
-		Languages\Refal\Samples\xtras-factorial.txt = Languages\Refal\Samples\xtras-factorial.txt
+		Languages\Refal\UnitTests\Sources\99-bottles-v1.ref = Languages\Refal\UnitTests\Sources\99-bottles-v1.ref
+		Languages\Refal\UnitTests\Sources\99-bottles-v2.ref = Languages\Refal\UnitTests\Sources\99-bottles-v2.ref
+		Languages\Refal\UnitTests\Sources\arith.ref = Languages\Refal\UnitTests\Sources\arith.ref
+		Languages\Refal\UnitTests\Sources\binary.ref = Languages\Refal\UnitTests\Sources\binary.ref
+		Languages\Refal\UnitTests\Sources\change-v1.ref = Languages\Refal\UnitTests\Sources\change-v1.ref
+		Languages\Refal\UnitTests\Sources\change-v2.ref = Languages\Refal\UnitTests\Sources\change-v2.ref
+		Languages\Refal\UnitTests\Sources\factorial.ref = Languages\Refal\UnitTests\Sources\factorial.ref
+		Languages\Refal\UnitTests\Sources\hello.ref = Languages\Refal\UnitTests\Sources\hello.ref
+		Languages\Refal\UnitTests\Sources\italian.ref = Languages\Refal\UnitTests\Sources\italian.ref
+		Languages\Refal\UnitTests\Sources\order-v1.ref = Languages\Refal\UnitTests\Sources\order-v1.ref
+		Languages\Refal\UnitTests\Sources\order-v2.ref = Languages\Refal\UnitTests\Sources\order-v2.ref
+		Languages\Refal\UnitTests\Sources\palyndrome.ref = Languages\Refal\UnitTests\Sources\palyndrome.ref
+		Languages\Refal\UnitTests\Sources\quine-plain.ref = Languages\Refal\UnitTests\Sources\quine-plain.ref
+		Languages\Refal\UnitTests\Sources\quine-simple.ref = Languages\Refal\UnitTests\Sources\quine-simple.ref
+		Languages\Refal\UnitTests\Sources\quine-xplained.ref = Languages\Refal\UnitTests\Sources\quine-xplained.ref
+		Languages\Refal\UnitTests\Sources\xtras-bigint.ref = Languages\Refal\UnitTests\Sources\xtras-bigint.ref
+		Languages\Refal\UnitTests\Sources\xtras-factorial.ref = Languages\Refal\UnitTests\Sources\xtras-factorial.ref
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "101.IronySilverlight.2010", "Irony\101.IronySilverlight.2010.csproj", "{1CBAD18E-5805-428C-9E76-EFEDBFC7C8A9}"
@@ -187,6 +177,7 @@ Global
 		{FEE137AB-6C8B-4576-81BE-119DA16DCF78} = {0850FA53-413E-4AF9-B918-8FF524FFA5D7}
 		{19A86418-BA99-41F4-80A5-A7F3A6383123} = {FEE137AB-6C8B-4576-81BE-119DA16DCF78}
 		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E} = {FEE137AB-6C8B-4576-81BE-119DA16DCF78}
-		{AEA36F73-5FD0-48B5-BCD8-2B1F95CB7635} = {FEE137AB-6C8B-4576-81BE-119DA16DCF78}
+		{A34F4AE5-A6E5-43F9-9F16-A43F34599053} = {FEE137AB-6C8B-4576-81BE-119DA16DCF78}
+		{44A73DB9-DD6C-4BFD-A169-F17A8C82A4A3} = {FEE137AB-6C8B-4576-81BE-119DA16DCF78}
 	EndGlobalSection
 EndGlobal

@@ -311,8 +311,7 @@ namespace Irony.Parsing.Construction {
       }
       // if there are custom hints, build conflict resolver
       if (customHints.Count > 0) {
-        state.Actions[conflict] = new ParserAction(newState, reduceProduction, args =>
-        {
+        state.Actions[conflict] = new ParserAction(newState, reduceProduction, args => {
           // examine all custom hints and select the first production that matched
           foreach (var customHint in customHints) {
             if (customHint.Match(args)) {

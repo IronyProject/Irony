@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using Irony.Parsing;
 
-namespace Irony.Samples {
+namespace Irony.Tests.Grammars {
 
-  [Language("Grammar2 with conflicts", "1.1", "Second sample grammar with conflicts resolution")]
-  public class ConflictResolutionTestGrammar2 : Grammar {
-    public ConflictResolutionTestGrammar2() : base(true) {
+  [Language("Grammar with conflicts #3", "1.1", "Sample grammar with conflicts")]
+  public class ConflictResolutionTestGrammar3 : Grammar {
+    public ConflictResolutionTestGrammar3() : base(true) {
       var name = new IdentifierTerminal("id");
 
       var stmt = new NonTerminal("Statement");
@@ -32,10 +32,6 @@ namespace Irony.Samples {
       fieldModifierList.Rule = MakeStarRule(fieldModifierList, fieldModifier);
       propModifierList.Rule = MakeStarRule(propModifierList, propModifier);
       methodModifierList.Rule = MakeStarRule(methodModifierList, methodModifier);
-
-      // conflict resolution
-      fieldModifierList.ReduceIf(";").ComesBefore("(", "{");
-      propModifierList.ReduceIf("{").ComesBefore(";", "(");
 
       // That's the key of the problem: 3 modifiers have common members
       //   so parser automaton has hard time deciding which modifiers list to produce - 

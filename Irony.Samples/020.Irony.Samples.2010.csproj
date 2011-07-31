@@ -91,7 +91,8 @@
     <None Include="SourceSamples\c#\escapes_in_IDs.cs" />
     <None Include="SourceSamples\c#\TestLessThanOp.cs" />
     <Compile Include="SQL\SqlGrammar.cs" />
-    <Compile Include="TestGrammars\ConflictResolutionTestGrammar.cs" />
+    <Compile Include="TestGrammars\ConflictResolutionTestGrammar1.cs" />
+    <Compile Include="TestGrammars\ConflictResolutionTestGrammar2.cs" />
     <Compile Include="Wiki\WikiCodeplexGrammar.cs" />
     <Compile Include="Wiki\WikiCreoleGrammar.cs" />
     <Compile Include="Wiki\WikiHtmlConverter.cs" />

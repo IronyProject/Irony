@@ -328,7 +328,9 @@ namespace Irony.Parsing.Construction {
             args.Result = args.NewShiftState != null ? ParserActionType.Shift : ParserActionType.Reduce;
             return;
           }
-          // TODO: figure out what to do (leave args as is for now)
+          // prefer Reduce if Shift operation is not available
+          args.Result = args.NewShiftState != null ? ParserActionType.Shift : ParserActionType.Reduce;
+          // TODO: figure out what to do next
         });
         state.BuilderData.ResolvedConflicts.Add(conflict);
         return;

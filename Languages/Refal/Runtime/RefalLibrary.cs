@@ -21,7 +21,7 @@ namespace Refal.Runtime
 		/// <summary>
 		/// Irony interpreter evaluation context
 		/// </summary>
-		public EvaluationContext EvaluationContext { get; private set; }
+		public ScriptAppInfo EvaluationContext { get; private set; }
 
 		/// <summary>
 		/// File I/O support: handle (expression) -> StreamReader/StreamWriter
@@ -40,7 +40,7 @@ namespace Refal.Runtime
 		/// </summary>
 		protected string[] CommandLineArguments { get; set; }
 
-		public RefalLibrary(EvaluationContext ctx)
+		public RefalLibrary(ScriptAppInfo ctx)
 		{
 			EvaluationContext = ctx;
 			OpenFiles = new Dictionary<string, object>();

@@ -20,7 +20,7 @@ namespace Refal
 		/// <summary>
 		/// Retrieve last evaluated pattern
 		/// </summary>
-		public static Refal.Runtime.Pattern GetLastPattern(this EvaluationContext context)
+		public static Refal.Runtime.Pattern GetLastPattern(this ScriptAppInfo context)
 		{
 			object pattern;
 
@@ -33,7 +33,7 @@ namespace Refal
 		/// <summary>
 		/// Set last evaluated pattern
 		/// </summary>
-		public static void SetLastPattern(this EvaluationContext context, Refal.Runtime.Pattern pattern)
+		public static void SetLastPattern(this ScriptAppInfo context, Refal.Runtime.Pattern pattern)
 		{
       context.SetValue(LastPatternSymbolName, pattern);
 		}

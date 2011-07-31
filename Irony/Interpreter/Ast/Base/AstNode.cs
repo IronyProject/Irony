@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 using System.CodeDom;
 using System.Xml;
@@ -21,25 +22,42 @@ using Irony.Interpreter;
 
 namespace Irony.Interpreter.Ast {
 
-  public delegate void NodeEvaluate(EvaluationContext context, AstMode mode); 
-
-  [Flags]
-  public enum AstNodeFlags {
-    None = 0x0,
-    IsTail          = 0x01,     //the node is in tail position
-    IsScope         = 0x10,     //node defines scope for local variables
-  }
-
   public class AstNodeList : List<AstNode> { }
 
   //Base AST node class
-  public partial class AstNode : IAstNodeInit, IBrowsableAstNode, IVisitableNode, IInterpretedAstNode {
-    protected NodeEvaluate EvaluateRef; 
+  public partial class AstNode : IAstNodeInit, IBrowsableAstNode, IVisitableNode {
+    public AstNode Parent;
+    public BnfTerm Term;
+    public SourceSpan Span;
+    public AstNodeFlags Flags;
+    protected ExpressionType ExpressionType = CustomExpressionTypes.NotAnExpression;
+    // A scope defined by this node - like FunctionNode (AstNodeFlags.IsScope is set)
+    public ScopeInfo DependentScopeInfo;
+    protected object LockObject = new object();
 
-    public AstNode() {
-      EvaluateRef = this.EvaluateNode;
-    }
+    //Used for pointing to error location. For most nodes it would be the location of the node itself.
+    // One exception is BinExprNode: when we get "Division by zero" error evaluating 
+    //  x = (5 + 3) / (2 - 2)
+    // it is better to point to "/" as error location, rather than the first "(" - which is the start 
+    // location of binary expression. 
+    public SourceLocation ErrorAnchor;
+    //UseType is set by parent
+    public NodeUseType UseType = NodeUseType.Unknown;
+    // Role is a free-form string used as prefix in ToString() representation of the node. 
+    // Node's parent can set it to "property name" or role of the child node in parent's node currentFrame.Context. 
+    public string Role;
+    // Default AstNode.ToString() returns 'Role: AsString', which is used for showing node in AST tree. 
+    public string AsString { get; protected set; }
+    public readonly AstNodeList ChildNodes = new AstNodeList();  //List of child nodes
+    
+    //Reference to Evaluate method implementation. Initially set to DoEvaluate virtual method. 
+    // Intentionally made internal - to prevent calling it directly like childNode.Evaluate(context). 
+    // Instead, use EvaluationContext.Evaluate(node) method. 
+    // Use SetEvaluate public method to set the reference in custom nodes. 
+    internal EvaluateMethod Evaluate;
 
+    // Public default constructor
+    public AstNode() { }
 
     #region IAstNodeInit Members
     public virtual void Init(ParsingContext context, ParseTreeNode treeNode) {
@@ -48,31 +66,53 @@ namespace Irony.Interpreter.Ast {
       ErrorAnchor = this.Location;
       treeNode.AstNode = this;
       AsString = (Term == null ? this.GetType().Name : Term.Name);
+      SetEvaluate(DoEvaluate);
     }
     #endregion
 
-    #region IInterpretedAstNode Members
-    //Important: normally you don't need to override this method - you should override EvaluateNode instead
-    // You should have strong reasons to override it - for example, if you want to change 
-    // exception handling implementation in base method. Otherwise, put all derived functionality
-    // in EvaluateNode, or create other method(s) and set reference to it in EvaluateRef
-    public virtual void Evaluate(EvaluationContext context, AstMode mode) {
-      try {
-        EvaluateRef(context, mode); 
-      } catch (RuntimeException) {
-        throw;
-      } catch (Exception ex) {
-        throw new RuntimeException(ex.Message, ex, this.GetErrorAnchor()); 
+    //Module - computed on demand
+    public ModuleInfo Module {
+      get {
+        if (_module == null && Parent != null)
+          _module = Parent.Module;
+        return _module;
       }
+      set { _module = value; }
+    }  ModuleInfo _module;
+
+
+    #region virtual methods: DoEvaluate, SetValue, IsConstant
+    //By default the Evaluate field points to this method.
+    protected virtual object DoEvaluate(ScriptThread thread) {
+      //These 2 lines are standard prolog/epilog statements. Place them in every Evaluate and SetValue implementations.
+      thread.CurrentNode = this;  //standard prolog
+      thread.CurrentNode = Parent; //standard epilog
+      return null; 
     }
 
-    public virtual SourceLocation GetErrorAnchor() {
-      return ErrorAnchor;
+    protected internal virtual void SetValue(ScriptThread thread, object value) {
+      //Place the prolog/epilog lines in every implementation of SetValue method (see DoEvaluate above)
+    }
+
+    public virtual bool IsConstant() {
+      return false; 
+    }
+
+    /// <summary>
+    /// Sets a flag indicating that the node is in tail position. The value is propagated from parent to children. 
+    /// Should propagate this call to appropriate children.
+    /// </summary>
+    public virtual void SetIsTail() {
+      Flags |= AstNodeFlags.IsTail;
+    }
+
+    public virtual void Reset() {
+      _module = null; 
+      SetEvaluate(DoEvaluate);
+      foreach (var child in ChildNodes)
+        child.Reset(); 
     }
     #endregion
-
-    public virtual void EvaluateNode(EvaluationContext context, AstMode mode) {
-    }
 
     #region IBrowsableAstNode Members
     public virtual System.Collections.IEnumerable GetChildNodes() {
@@ -82,58 +122,6 @@ namespace Irony.Interpreter.Ast {
       get { return Span.Location; }
     }
     #endregion
-
-    #region properties: Parent, Term, Span, Caption, Role, Flags, ChildNodes, Attributes
-    public AstNode Parent;
-    public BnfTerm Term; 
-    public SourceSpan Span;
-    public AstNodeFlags Flags;
-    //Used for pointing to error location. For most nodes it would be the location of the node itself.
-    // One exception is BinExprNode: when we get "Division by zero" error evaluating 
-    //  x = (5 + 3) / (2 - 2)
-    // it is better to point to "/" as error location, rather than the first "(" - which is the start 
-    // location of binary expression. 
-    protected SourceLocation ErrorAnchor;
-    // Role is a free-form string used as prefix in ToString() representation of the node. 
-    // Node's parent can set it to "property name" or role of the child node in parent's node context. 
-    public string Role;
-    // node.ToString() returns 'Role: AsString', which is used for showing node in AST tree. 
-    public string AsString { get; protected set; }
-
-    //List of child nodes
-    public readonly AstNodeList  ChildNodes = new AstNodeList();
-
-    #endregion
-
-
-    #region Utility methods: AddChild, SetParent, FlagIsSet ...
-    protected AstNode AddChild(string role, ParseTreeNode childParseNode) {
-      var child = (AstNode)childParseNode.AstNode;
-      if (child == null)
-          child = new NullNode(childParseNode.Term); //put a stub to throw an exception with clear message on attempt to evaluate. 
-      child.Role = role;
-      child.SetParent(this);
-      ChildNodes.Add(child);
-      return child;
-    }
-
-    public void SetParent(AstNode parent) {
-      Parent = parent;
-    }
-    
-    public bool FlagIsSet(AstNodeFlags flag) {
-      return (Flags & flag) != 0;
-    }
-    #endregion
-
-    
-    public override string ToString() {
-      return string.IsNullOrEmpty(Role) ? AsString : Role + ": " + AsString; 
-    }
-
-    protected void InvalidAstMode(string mode) {
-        throw new Exception(string.Format(Resources.ErrInvalidAstMode, this.ToString(), mode));
-    }
 
     #region Visitors, Iterators
     //the first primitive Visitor facility
@@ -159,6 +147,58 @@ namespace Irony.Interpreter.Ast {
     }
     #endregion
 
-  }//class
+    #region overrides: ToString
+    public override string ToString() {
+      return string.IsNullOrEmpty(Role) ? AsString : Role + ": " + AsString;
+    }
+    #endregion
 
+    #region Parent Scope
+    //Parent scope - computed on demand
+    public ScopeInfo ParentScope {
+      get {
+        if (_parentScope == null)
+          _parentScope = GetParentScope();
+        return _parentScope; 
+      }
+    } ScopeInfo _parentScope; 
+
+    protected virtual ScopeInfo GetParentScope() {
+      var parentNode = Parent;
+      while (parentNode != null) {
+        var scope = parentNode.DependentScopeInfo;
+        if (scope != null)
+          return scope;
+        parentNode = parentNode.Parent;
+      }
+      //if not found, return Module (which is a scope)
+      return Module;
+    }
+    #endregion
+
+    #region Utility methods: AddChild, HandleError
+
+    protected void SetEvaluate(EvaluateMethod evaluate) {
+      lock (LockObject) {
+        this.Evaluate = evaluate;
+      }
+    }
+    
+    protected AstNode AddChild(string role, ParseTreeNode childParseNode) {
+      return AddChild(NodeUseType.Unknown, role, childParseNode);
+    }
+
+    protected AstNode AddChild(NodeUseType useType, string role, ParseTreeNode childParseNode) {
+      var child = (AstNode)childParseNode.AstNode;
+      if (child == null)
+        child = new NullNode(childParseNode.Term); //put a stub to throw an exception with clear message on attempt to evaluate. 
+      child.Role = role;
+      child.Parent = this;
+      ChildNodes.Add(child);
+      return child;
+    }
+
+    #endregion
+
+  }//class
 }//namespace

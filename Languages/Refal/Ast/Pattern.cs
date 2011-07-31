@@ -41,7 +41,7 @@ namespace Refal
 				yield return term;
 		}
 
-		public override void EvaluateNode(EvaluationContext context, AstMode mode)
+		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
 		{
 			foreach (var term in Terms)
 			{
@@ -51,7 +51,7 @@ namespace Refal
 			}
 		}
 
-		private object[] EvaluateTerms(EvaluationContext context, AstMode mode)
+		private object[] EvaluateTerms(ScriptAppInfo context, AstMode mode)
 		{
 			// save initial stack position
 			var initialCount = context.Data.Count;
@@ -67,7 +67,7 @@ namespace Refal
 			return args.ToArray();
 		}
 		
-		public Runtime.Pattern Instantiate(EvaluationContext context, AstMode mode)
+		public Runtime.Pattern Instantiate(ScriptAppInfo context, AstMode mode)
 		{
 			// evaluate pattern and instantiate Runtime.Pattern
 			return new Runtime.Pattern(EvaluateTerms(context, mode));

@@ -57,7 +57,7 @@ namespace Refal
 			throw new NotImplementedException("Auxiliary nodes should not appear in the final AST");
 		}
 
-		public override void EvaluateNode(EvaluationContext context, AstMode mode)
+		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
 		{
 			throw new NotImplementedException("Auxiliary node cannot be interpreted");
 		}

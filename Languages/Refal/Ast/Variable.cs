@@ -63,7 +63,7 @@ namespace Refal
 			parseNode.AstNode = varNode;
 		}
 
-		public override void EvaluateNode(EvaluationContext context, AstMode mode)
+		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
 		{
 			// read variable from last recognized pattern
 			if (mode == AstMode.Read)

@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq.Expressions;
 using System.Text;
 using Irony.Interpreter.Ast;
 using Irony.Interpreter;
@@ -41,13 +42,10 @@ namespace Irony.Parsing {
     #region Language Flags
     public LanguageFlags LanguageFlags = LanguageFlags.Default;
 
-    public bool FlagIsSet(LanguageFlags flag) {
-      return (LanguageFlags & flag) != 0;
-    }
-
-    public TermReportGroupList TermReportGroups = new TermReportGroupList(); 
     #endregion
 
+    public TermReportGroupList TermReportGroups = new TermReportGroupList();
+    
     //Terminals not present in grammar expressions and not reachable from the Root
     // (Comment terminal is usually one of them)
     // Tokens produced by these terminals will be ignored by parser input. 
@@ -85,6 +83,7 @@ namespace Irony.Parsing {
     public string ConsolePrompt; //default prompt
     public string ConsolePromptMoreInput; //prompt to show when more input is expected
 
+    public readonly OperatorInfoDictionary OperatorMappings;
     #endregion 
 
     #region constructors
@@ -101,7 +100,8 @@ namespace Irony.Parsing {
       ConsoleTitle = Resources.MsgDefaultConsoleTitle;
       ConsoleGreeting = string.Format(Resources.MsgDefaultConsoleGreeting, this.GetType().Name);
       ConsolePrompt = ">"; 
-      ConsolePromptMoreInput = "."; 
+      ConsolePromptMoreInput = ".";
+      OperatorMappings = OperatorUtility.GetDefaultOperatorMappings(caseSensitive); 
     }
     #endregion
     
@@ -224,7 +224,7 @@ namespace Irony.Parsing {
 
     /// <summary>
     /// Override this method to help scanner select a terminal to create token when there are more than one candidates
-    /// for an input char. Context.CurrentTerminals contains candidate terminals; leave a single terminal in this list
+    /// for an input char. context.CurrentTerminals contains candidate terminals; leave a single terminal in this list
     /// as the one to use.
     /// </summary>
     public virtual void OnScannerSelectTerminal(ParsingContext context) { }
@@ -248,7 +248,7 @@ namespace Irony.Parsing {
     //Constructs the error message in situation when parser has no available action for current input.
     // override this method if you want to change this message
     public virtual string ConstructParserErrorMessage(ParsingContext context, StringSet expectedTerms) {
-      return string.Format(Resources.ErrParserUnexpInput, expectedTerms.ToString(" "));
+      return string.Format(Resources.ErrParserUnexpInput, expectedTerms.ToString(", "));
     }
 
     // Override this method to perform custom error processing
@@ -272,21 +272,33 @@ namespace Irony.Parsing {
         }
         context.AddParserError(error);
     }//method
-    
-    public virtual LanguageRuntime CreateRuntime(LanguageData data) {
-      return new LanguageRuntime(data);
-    }
+    #endregion
 
+
+    #region Running in Grammar Explorer
     //This method allows custom implementation of running a sample in Grammar Explorer
     // By default it evaluates a parse tree using default interpreter 
-    public virtual string RunSample(ParseTree parsedSample) {
-      var interpreter = new ScriptInterpreter(this);
-      interpreter.Evaluate(parsedSample);
-      return interpreter.GetOutput(); 
+    public virtual string RunSample(LanguageData language, ParseTree parsedSample, ref object data) {
+      // Irony interpreter requires that once a script is executed in a ScriptApp, it is bound to ScriptAppInfo object, 
+      // and all later script executions should be performed only in the context of the same app.
+      // (because first execution sets up a lot of things, like slots, scopes, etc, which are bound to script app).
+      // We save the app instance in Tag property of the parsed tree and reuse it if we find it there on 
+      // consequitive re-runs. 
+      var appInfo = parsedSample.Tag as ScriptAppInfo;
+      if (appInfo == null) {
+        var runtime = new LanguageRuntime(language);
+        appInfo = new ScriptAppInfo(runtime, parsedSample);
+        parsedSample.Tag = appInfo;
+      }
+      var env = new ScriptApp(appInfo);
+      var ctx = new ScriptThread(env);
+      var root = parsedSample.Root.AstNode as AstNode;
+      //for (int i = 0; i < 1000; i++) //for perf measurements, to execute 1000 times
+      appInfo.Execute(ctx);
+      return env.OutputBuffer.ToString();
     }
-
-
     #endregion
+
 
     #region MakePlusRule, MakeStarRule methods
     public static BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm listMember) {
@@ -393,14 +405,14 @@ namespace Irony.Parsing {
     /// </summary>
     /// <param name="symbols">Symbols to exclude.</param>
     protected void AddToNoReportGroup(params string[] symbols) {
-      TermReportGroups.Add(new TermReportGroup(string.Empty, TermReportGroupType.Normal, SymbolsToTerms(symbols)));
+      TermReportGroups.Add(new TermReportGroup(string.Empty, TermReportGroupType.DoNotReport, SymbolsToTerms(symbols)));
     }
     /// <summary>
     /// Adds symbols to a group with no-report type, so symbols will not be shown in expected lists in syntax error messages. 
     /// </summary>
     /// <param name="symbols">Symbols to exclude.</param>
     protected void AddToNoReportGroup(params Terminal[] terminals) {
-      TermReportGroups.Add(new TermReportGroup(string.Empty, TermReportGroupType.Normal, terminals));
+      TermReportGroups.Add(new TermReportGroup(string.Empty, TermReportGroupType.DoNotReport, terminals));
     }
     /// <summary>
     /// Adds a group and an alias for all operator symbols used in the grammar.
@@ -468,17 +480,6 @@ namespace Irony.Parsing {
 
     #region KeyTerms (keywords + special symbols)
     public KeyTermTable KeyTerms;
-
-    [Obsolete("Method Symbol(...) is deprecated, use ToTerm(...) instead.")]
-    public KeyTerm Symbol(string symbol) {
-      return ToTerm(symbol); 
-    }
-
-    [Obsolete("Method Symbol(...) is deprecated, use ToTerm(...) instead.")]
-    public KeyTerm Symbol(string symbol, string name) {
-      return ToTerm(symbol, name); 
-    }
-
 
     public KeyTerm ToTerm(string text) {
       return ToTerm(text, text);

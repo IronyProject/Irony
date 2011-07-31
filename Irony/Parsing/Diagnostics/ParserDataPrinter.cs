@@ -79,7 +79,7 @@ namespace Irony.Parsing {
       StringBuilder sb = new StringBuilder();
       foreach (NonTerminal nt in language.GrammarData.NonTerminals) {
         sb.Append(nt.Name);
-        sb.Append(nt.FlagIsSet(TermFlags.IsNullable) ? "  (Nullable) " : string.Empty);
+        sb.Append(nt.Flags.HasFlag(TermFlags.IsNullable) ? "  (Nullable) " : string.Empty);
         sb.AppendLine();
         foreach (Production pr in nt.Productions) {
           sb.Append("   ");

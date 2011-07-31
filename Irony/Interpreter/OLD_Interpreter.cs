@@ -15,25 +15,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Diagnostics;
 using Irony.Interpreter.Ast; 
 using Irony.Parsing;
 
 namespace Irony.Interpreter {
 
-  public enum InterpreterStatus {
-    Ready,
-    Evaluating,
-    WaitingMoreInput, //command line only
-    SyntaxError,
-    RuntimeError,
-    Aborted
-  }
-
+  //No longer used, replaced by  ScriptApp class. 
   public class ScriptInterpreter {
     #region Fields and properties
     public readonly LanguageData Language;
     public readonly LanguageRuntime Runtime; 
-    public readonly EvaluationContext EvaluationContext;
+    public readonly ScriptApp Env;
     public readonly Parser Parser;
 
     public Thread WorkerThread { get; private set; }
@@ -43,26 +36,28 @@ namespace Irony.Interpreter {
     
     public bool RethrowExceptions = true;
     public bool PrintParseErrors = true; 
+
     public ParseMode ParseMode {
       get { return Parser.Context.Mode; }
       set { Parser.Context.Mode = value; }
     }
-    public ValuesTable Globals { 
-      get { return EvaluationContext.TopFrame.Values; } 
-    }
+
     //internal, real status of interpreter. The public Status field gets updated only on exit from public methods
     // We want to make sure external code sees interpeter as BUSY until we actually completed operation internally 
     private InterpreterStatus _internalStatus;     
+
     #endregion 
 
     #region constructors
-    public ScriptInterpreter(Grammar grammar) : this(new LanguageData(grammar)) { }
+    public ScriptInterpreter(Grammar grammar) 
+      : this(new LanguageData(grammar)) { }
 
     public ScriptInterpreter(LanguageData language) {
       Language = language;
-      Runtime = Language.Grammar.CreateRuntime(Language);
+      Runtime = new LanguageRuntime(Language);
       Parser = new Parser(Language);
-      EvaluationContext = new EvaluationContext(Runtime);
+      var appInfo = new ScriptAppInfo(Runtime);
+      Env = new ScriptApp(appInfo);
       Status = _internalStatus = InterpreterStatus.Ready;
     }
     #endregion 
@@ -124,10 +119,10 @@ namespace Irony.Interpreter {
     }
 
     public string GetOutput() {
-      return EvaluationContext.OutputBuffer.ToString(); 
+      return Env.OutputBuffer.ToString(); 
     }
     public void ClearOutputBuffer() {
-      EvaluationContext.OutputBuffer.Length = 0;
+      Env.OutputBuffer.Length = 0;
     }
 
     public ParserMessageList GetParserMessages() {
@@ -161,7 +156,7 @@ namespace Irony.Interpreter {
     }
 
     private void ParseAndEvaluate() {
-      EvaluationContext.EvaluationTime = 0;
+      Env.EvaluationTime = 0;
       try {
         LastException = null;
         if(ParsedScript == null) {
@@ -184,24 +179,22 @@ namespace Irony.Interpreter {
     }
 
     private void EvaluateParsedScript() {
-        var iRoot = GetAstInterface();
-        if (iRoot == null) return; 
-        EvaluationContext.ClearLastResult();
-        var start = Environment.TickCount;
-        iRoot.Evaluate(EvaluationContext, AstMode.Read);
-        EvaluationContext.EvaluationTime = Environment.TickCount - start;
-        if (EvaluationContext.HasLastResult)
-          EvaluationContext.Write(EvaluationContext.LastResult + Environment.NewLine);
+      var root = GetRootNode();
+      if (root == null) return;
+      var sw = Stopwatch.StartNew();
+      var ctx = new ScriptThread(this.Env);
+      var result = root.Evaluate(ctx);
+      sw.Stop();
+      Env.EvaluationTime = sw.ElapsedMilliseconds;
+      Env.Write(result + Environment.NewLine);
     }
 
-    private IInterpretedAstNode GetAstInterface()  {
+    private AstNode GetRootNode()  {
         Check(ParsedScript != null, Resources.ErrParseTreeNull);
         Check(ParsedScript.Root != null, Resources.ErrParseTreeRootNull);
-        var astNode = ParsedScript.Root.AstNode;
+        var astNode = ParsedScript.Root.AstNode as AstNode;
         Check(astNode != null, Resources.ErrRootAstNodeNull);
-        var iInterpNode = astNode as IInterpretedAstNode;
-        Check(iInterpNode != null, Resources.ErrRootAstNoInterface);
-        return iInterpNode;
+        return astNode;
     }
 
     private bool CheckParseStatus() {
@@ -211,7 +204,7 @@ namespace Irony.Interpreter {
         if (PrintParseErrors) {
           foreach(var err in ParsedScript.ParserMessages) {
             var msg = string.Format(Resources.ErrOutErrorPrintFormat, err.Location.ToUiString(),  err.Message);
-            this.EvaluationContext.OutputBuffer.AppendLine(msg);
+            this.Env.OutputBuffer.AppendLine(msg);
           }//foreach
         }//if
         return false;

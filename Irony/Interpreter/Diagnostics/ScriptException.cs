@@ -17,13 +17,23 @@ using System.Text;
 using Irony.Parsing;
 
 namespace Irony.Interpreter { 
-  public class RuntimeException : Exception {
-    public SourceLocation Location;
-    public RuntimeException(string message) : base(message) {   }
-    public RuntimeException(string message, Exception inner) : base(message, inner) {   }
-    public RuntimeException(string message, Exception inner, SourceLocation location) : base(message, inner) {
+  public class ScriptException : Exception {
+    public readonly SourceLocation Location;
+    public readonly ScriptStackTrace ScriptStackTrace; 
+    public ScriptException(string message) : base(message) {   }
+    public ScriptException(string message, Exception inner) : base(message, inner) {   }
+    public ScriptException(string message, Exception inner, SourceLocation location) 
+         : base(message, inner) {
       Location = location;
     }
+    public ScriptException(string message, Exception inner, SourceLocation location, ScriptStackTrace stack) 
+           : this(message, inner, location)  {
+      ScriptStackTrace = stack; 
+    }
 
-  }
+    public override string ToString() {
+      return Message + Environment.NewLine + ScriptStackTrace.ToString();
+    }
+  }//class
+
 }

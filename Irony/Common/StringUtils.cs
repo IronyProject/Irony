@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irony.Parsing {
+namespace Irony {
 
   public static class Strings {
     public const string AllLatinLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -36,6 +36,12 @@ namespace Irony.Parsing {
   public class StringDictionary : Dictionary<string, string> { }
   public class CharList : List<char> { }
   public class CharHashSet : HashSet<char> { } //adding Hash to the name to avoid confusion with System.Runtime.Interoperability.CharSet
+
+  public class TypeList : List<Type> {
+    public TypeList() { }
+    public TypeList(params Type[] types) : base(types) { }
+  }
+
 
   public class StringSet : HashSet<string> {
     public StringSet() { }

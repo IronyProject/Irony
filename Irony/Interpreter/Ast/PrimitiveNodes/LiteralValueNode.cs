@@ -14,19 +14,15 @@ namespace Irony.Interpreter.Ast {
       Value = treeNode.Token.Value;
       AsString = Value == null ? "null" : Value.ToString();
       if (Value is string)
-        AsString = "\"" + AsString + "\""; 
+        AsString = "\"" + AsString + "\"";
     }
 
-    public override void EvaluateNode(EvaluationContext context, AstMode mode) {
-      switch (mode) {
-        case AstMode.Read: 
-          context.Data.Push(Value); 
-          break;
-        case AstMode.Write: 
-          context.ThrowError(Resources.ErrAssignLiteralValue);  
-          break;  
-      }
+    protected override object DoEvaluate(ScriptThread thread) {
+      return Value; 
     }
-  
+
+    public override bool IsConstant() {
+      return true; 
+    }
   }//class
 }

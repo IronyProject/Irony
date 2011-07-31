@@ -13,9 +13,11 @@ namespace Irony.Interpreter.Ast {
     public NullNode(BnfTerm term) {
       this.Term = term; 
     }
-        
-    public override void Evaluate(EvaluationContext context, AstMode mode) {
-      context.ThrowError(Resources.ErrNullNodeEval, this.Term);  
+
+    protected override object DoEvaluate(ScriptThread thread) {
+      thread.CurrentNode = this;  //standard prolog
+      thread.ThrowScriptError(Resources.ErrNullNodeEval, this.Term);
+      return null; //never happens
     }
   }//class
 }

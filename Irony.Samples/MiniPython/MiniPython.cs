@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Irony.Parsing;
+using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 
 namespace Irony.Samples.MiniPython {
@@ -85,8 +86,8 @@ namespace Irony.Samples.MiniPython {
 
       this.Root = StmtList;       // Set grammar root
 
-      // 4. Token filter
-      //we need to add continuation symbol to NonGrammarTerminals because it is not used anywhere in grammar
+      // 4. Token filters - created in a separate method CreateTokenFilters
+      //    we need to add continuation symbol to NonGrammarTerminals because it is not used anywhere in grammar
       NonGrammarTerminals.Add(ToTerm(@"\"));
 
       // 5. Operators precedence
@@ -123,8 +124,8 @@ Press Ctrl-C to exit the program at any time.
       ConsolePrompt = ">>>"; 
       ConsolePromptMoreInput = "..."; 
       
-      //Note: changed in Mar 2010, we no longer have to disable scanner/parser link
-      this.LanguageFlags = LanguageFlags.CreateAst | LanguageFlags.CanRunSample;
+      // 10. Language flags
+      this.LanguageFlags = LanguageFlags.NewLineBeforeEOF | LanguageFlags.CreateAst | LanguageFlags.CanRunSample | LanguageFlags.SupportsBigInt;
 
     }//constructor
 
@@ -132,9 +133,9 @@ Press Ctrl-C to exit the program at any time.
       var outlineFilter = new CodeOutlineFilter(language.GrammarData, 
         OutlineOptions.ProduceIndents | OutlineOptions.CheckBraces, ToTerm(@"\")); // "\" is continuation symbol
       filters.Add(outlineFilter);
-      
     }
-  }
+
+  }//class
 }//namespace
 
 

@@ -106,9 +106,6 @@ namespace Irony.Parsing {
     public Grammar Grammar { 
       get { return GrammarData.Grammar; } 
     }
-    public bool FlagIsSet(TermFlags flag) {
-      return (Flags & flag) != 0;
-    }
     public void SetFlag(TermFlags flag) {
       SetFlag(flag, true);
     }

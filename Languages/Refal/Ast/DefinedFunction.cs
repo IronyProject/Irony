@@ -42,7 +42,7 @@ namespace Refal
 			return Block.GetChildNodes();
 		}
 
-		public override void Call(EvaluationContext context)
+		public override void Call(ScriptAppInfo context)
 		{
 			context.PushFrame(Name, null, context.CurrentFrame); // AstNode argument
 			Block.Evaluate(context, AstMode.None);

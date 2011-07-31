@@ -140,7 +140,7 @@ namespace Irony.Parsing {
       var result = new StringSet(); 
       //Eliminate no-report terminals
       foreach(var group in grammar.TermReportGroups)
-        if (group.GroupType == TermReportGroupType.Exclude) 
+        if (group.GroupType == TermReportGroupType.DoNotReport) 
             terms.ExceptWith(group.Terminals); 
       //Add normal and operator groups
       foreach(var group in grammar.TermReportGroups)

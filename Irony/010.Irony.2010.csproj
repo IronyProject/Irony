@@ -75,36 +75,57 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Parsing\AstInterfaces.cs" />
+    <None Include="Common\Extensions.cs" />
+    <Compile Include="Common\HotSwapDictionary.cs" />
+    <Compile Include="Interpreter\Ast\Base\AstHelperClasses.cs" />
+    <Compile Include="Interpreter\Ast\Functions\Closure.cs" />
+    <Compile Include="Interpreter\Ast\SpecialNodes\EmptyStatementNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Interpreter\Ast\Statements\BlockNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Interpreter\Execution\ScriptApp.cs" />
+    <Compile Include="Interpreter\LanguageRuntime\Binding.cs" />
+    <Compile Include="Interpreter\Scopes\Accessors\Base.cs" />
+    <Compile Include="Interpreter\Scopes\Accessors\SlotReader.cs" />
+    <Compile Include="Interpreter\Scopes\_ScopeBase.cs" />
+    <Compile Include="Interpreter\Scopes\ScopeValuesDictionary.cs" />
+    <Compile Include="Interpreter\Metadata\SlotInfo.cs" />
+    <Compile Include="Interpreter\Diagnostics\ScriptStackTrace.cs" />
+    <Compile Include="Interpreter\Execution\ScriptThread.cs" />
+    <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime_Binding.cs" />
+    <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime_OpDispatch.cs" />
+    <Compile Include="Interpreter\LanguageRuntime\NoneClass.cs" />
+    <Compile Include="Common\GenericAstInterfaces.cs" />
     <Compile Include="Interpreter\Ast\Base\AstException.cs" />
     <Compile Include="Interpreter\Ast\Functions\FunctionCallNode.cs" />
     <Compile Include="Interpreter\Ast\Functions\FunctionDefNode.cs" />
     <Compile Include="Interpreter\Ast\Functions\ParamListNode.cs" />
-    <Compile Include="Interpreter\Ast\SpecialNodes\EmptyStatementNode.cs" />
     <Compile Include="Interpreter\Ast\Statements\AssignmentNode.cs" />
-    <Compile Include="Interpreter\Ast\Statements\BlockNode.cs" />
-    <Compile Include="Interpreter\Ast\Statements\IfNode.cs" />
+    <Compile Include="Interpreter\Ast\Expressions\IfNode.cs" />
     <Compile Include="Interpreter\Ast\Statements\StatementListNode.cs" />
     <Compile Include="Interpreter\Ast\PrimitiveNodes\StringTemplateNode.cs" />
     <Compile Include="Interpreter\Ast\Expressions\IncDecNode.cs" />
     <Compile Include="Interpreter\Ast\SpecialNodes\NullNode.cs" />
     <Compile Include="Interpreter\Ast\Expressions\ExpressionListNode.cs" />
     <Compile Include="Interpreter\Ast\SpecialNodes\NotSupportedNode.cs" />
-    <Compile Include="Interpreter\CommandLine.cs" />
-    <Compile Include="Interpreter\DataStack.cs" />
-    <Compile Include="Interpreter\DynamicCallDispatcher.cs" />
-    <Compile Include="Interpreter\RuntimeException.cs" />
-    <Compile Include="Interpreter\ScriptInterpreter.cs" />
+    <Compile Include="Interpreter\Execution\CommandLine.cs" />
+    <Compile Include="Interpreter\LanguageRuntime\OperatorImplementation.cs" />
+    <Compile Include="Interpreter\Metadata\ScopeInfo.cs" />
+    <Compile Include="Interpreter\Diagnostics\ScriptException.cs" />
+    <None Include="Interpreter\OLD_Interpreter.cs" />
     <Compile Include="Interpreter\Ast\PrimitiveNodes\LiteralValueNode.cs" />
-    <Compile Include="Interpreter\ValuesTable.cs" />
+    <Compile Include="Interpreter\Scopes\Accessors\SlotWriter.cs" />
+    <Compile Include="Interpreter\Metadata\ModuleInfo.cs" />
     <Compile Include="Parsing\Grammar\GrammarError.cs" />
+    <Compile Include="Parsing\Grammar\OperatorInfo.cs" />
     <Compile Include="Parsing\Grammar\TermReportGroups.cs" />
     <Compile Include="Parsing\Diagnostics\ParseTreeExtensions.cs" />
     <Compile Include="Parsing\Parser\ParsingEventArgs.cs" />
     <Compile Include="Common\StringUtils.cs" />
     <Compile Include="Parsing\Parser\CoreParser_ErrorHandling.cs" />
     <Compile Include="Parsing\Diagnostics\ParserTrace.cs" />
-    <None Include="Parsing\SymbolTable.cs" />
     <Compile Include="Parsing\Terminals\DataLiteralBase.cs" />
     <Compile Include="Parsing\Terminals\DsvLiteral.cs" />
     <Compile Include="Parsing\Terminals\FixedLengthLiteral.cs" />
@@ -157,7 +178,7 @@
     <Compile Include="Parsing\Grammar\BnfTerm.cs" />
     <Compile Include="Parsing\Grammar\Grammar.cs" />
     <Compile Include="Parsing\Terminals\TerminalFactory.cs" />
-    <Compile Include="Interpreter\LanguageRuntime_Init.cs" />
+    <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime_OpDispatch_Init.cs" />
     <Compile Include="Interpreter\Ast\Expressions\BinaryOperationNode.cs" />
     <Compile Include="Interpreter\Ast\Expressions\UnaryOperationNode.cs" />
     <Compile Include="Interpreter\Ast\PrimitiveNodes\IdentifierNode.cs" />
@@ -172,9 +193,9 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Microsoft\BigInteger.cs" />
-    <Compile Include="Interpreter\EvaluationContext.cs" />
-    <Compile Include="Interpreter\StackFrame.cs" />
-    <Compile Include="Interpreter\LanguageRuntime.cs" />
+    <Compile Include="Interpreter\Metadata\ScriptAppInfo.cs" />
+    <Compile Include="Interpreter\Scopes\Scope.cs" />
+    <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -191,6 +212,7 @@
     <EmbeddedResource Include="Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

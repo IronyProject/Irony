@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using Irony.Parsing;
 using Irony.Interpreter;
@@ -20,43 +21,48 @@ using Irony.Interpreter;
 namespace Irony.Interpreter.Ast {
 
   public class IncDecNode : AstNode {
-    public string Op;
-    public string BinaryOp; //corresponding binary operation: + for ++, - for --
-    public AstNode Argument;
     public bool IsPostfix;
+    public string OpSymbol;
+    public string BinaryOpSymbol; //corresponding binary operation: + for ++, - for --
+    public ExpressionType BinaryOp; 
+    public AstNode Argument;
+    private OperatorImplementation _lastUsed;
 
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
       FindOpAndDetectPostfix(context, treeNode); 
       int argIndex = IsPostfix? 0 : 1;
-      Argument = AddChild("Arg", treeNode.ChildNodes[argIndex]);
-      BinaryOp = Op[0].ToString(); //take a single char out of ++ or --
-      base.AsString = Op + (IsPostfix ? "(postfix)" : "(prefix)");
+      Argument = AddChild(NodeUseType.ValueReadWrite, "Arg", treeNode.ChildNodes[argIndex]);
+      BinaryOpSymbol = OpSymbol[0].ToString(); //take a single char out of ++ or --
+      BinaryOp = context.GetOperatorExpressionType(BinaryOpSymbol); 
+      base.AsString = OpSymbol + (IsPostfix ? "(postfix)" : "(prefix)");
     }
 
     private void FindOpAndDetectPostfix(ParsingContext context, ParseTreeNode treeNode) {
       IsPostfix = false; //assume it 
-      Op = treeNode.ChildNodes[0].FindTokenAndGetText();
-      if (Op == "--" || Op == "++") return;
+      OpSymbol = treeNode.ChildNodes[0].FindTokenAndGetText();
+      if (OpSymbol == "--" || OpSymbol == "++") return;
       IsPostfix = true; 
-      Op = treeNode.ChildNodes[1].FindTokenAndGetText();
-      if (Op == "--" || Op == "++") return;
+      OpSymbol = treeNode.ChildNodes[1].FindTokenAndGetText();
+      if (OpSymbol == "--" || OpSymbol == "++") return;
       //report error
       throw new AstException(this, Resources.ErrInvalidArgsForIncDec);
     }
 
-    public override void EvaluateNode(EvaluationContext context, AstMode mode) {
-      Argument.Evaluate(context, AstMode.Read);
-      var result = context.LastResult;
-      context.Data.Push(1);
-      context.CallDispatcher.ExecuteBinaryOperator(BinaryOp);
-      //prefix op: result of operation is the value AFTER inc/dec; so overwrite the result value
-      if (!IsPostfix)
-        result = context.LastResult;
-      Argument.Evaluate(context, AstMode.Write); //write value into variable
-      context.Data.Push(result); 
-    } 
+    protected override object DoEvaluate(ScriptThread thread) {
+      thread.CurrentNode = this;  //standard prolog
+      var oldValue = Argument.Evaluate(thread);
+      var newValue = thread.Runtime.ExecuteBinaryOperator(BinaryOp, oldValue, 1, ref _lastUsed);
+      Argument.SetValue(thread, newValue);
+      var result = IsPostfix ? oldValue : newValue;
+      thread.CurrentNode = Parent; //standard epilog
+      return result; 
+    }
 
+    public override void SetIsTail() {
+      base.SetIsTail();
+      Argument.SetIsTail(); 
+    }
   }//class
 
 }

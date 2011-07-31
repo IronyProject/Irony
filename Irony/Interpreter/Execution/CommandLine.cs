@@ -21,6 +21,7 @@ namespace Irony.Interpreter {
 
   public class CommandLine {
     #region Fields and properties
+    public readonly LanguageRuntime Runtime; 
     public readonly Grammar Grammar;
     //Initialized from grammar
     public string Title;
@@ -28,21 +29,24 @@ namespace Irony.Interpreter {
     public string Prompt; //default prompt
     public string PromptMoreInput; //prompt to show when more input is expected
 
-    public readonly ScriptInterpreter Interpreter;
+    public readonly ScriptApp App;
     private bool _ctrlCPressed;
     #endregion 
 
-    public CommandLine(Grammar grammar) {
-      Grammar = grammar;
-      Title = grammar.ConsoleTitle;
-      Greeting = grammar.ConsoleGreeting;
-      Prompt = grammar.ConsolePrompt;
-      PromptMoreInput = grammar.ConsolePromptMoreInput;
+    public CommandLine(LanguageRuntime runtime) {
+      Runtime = runtime;
+      Grammar = runtime.Language.Grammar;
+      Title = Grammar.ConsoleTitle;
+      Greeting = Grammar.ConsoleGreeting;
+      Prompt = Grammar.ConsolePrompt;
+      PromptMoreInput = Grammar.ConsolePromptMoreInput;
 
-      Interpreter = new ScriptInterpreter(grammar);
-      Interpreter.RethrowExceptions = false;
-      Interpreter.ParseMode = ParseMode.CommandLine;
-      Interpreter.PrintParseErrors = false; 
+      App = new ScriptApp(Runtime);
+      App.Mode = AppMode.CommandLine;
+
+      // App.PrintParseErrors = false;
+      // App.RethrowExceptions = false;
+    
     }
 
     public void Run() {
@@ -69,7 +73,7 @@ namespace Irony.Interpreter {
       string input;
       while (true) {
         Console.ForegroundColor = ConsoleColor.White;
-        string prompt = (Interpreter.Status == InterpreterStatus.WaitingMoreInput ? PromptMoreInput : Prompt);
+        string prompt = (App.Status == AppStatus.WaitingMoreInput ? PromptMoreInput : Prompt);
         Console.Write(prompt);
         var result = ReadInput(out input);
         //Check the result type - it may be the response to "Abort?" question, not a script to execute. 
@@ -78,23 +82,23 @@ namespace Irony.Interpreter {
           case ReadResult.AbortNo: continue; //while loop
           case ReadResult.Script: break; //do nothing, continue to evaluate script
         }
-        Interpreter.ClearOutputBuffer(); 
-        Interpreter.EvaluateAsync(input);
-        while (Interpreter.IsBusy())
+        App.ClearOutputBuffer(); 
+        App.AsyncExecute(input);
+        while (App.AsyncExecuting())
           Thread.Sleep(50);
-        switch (Interpreter.Status) {
-          case InterpreterStatus.Ready: //success
-            Console.WriteLine(Interpreter.GetOutput());
+        switch (App.Status) {
+          case AppStatus.Ready: //success
+            Console.WriteLine(App.GetOutput());
             break;
-          case  InterpreterStatus.SyntaxError:
-            Console.WriteLine(Interpreter.GetOutput()); //write all output we have
+          case  AppStatus.SyntaxError:
+            Console.WriteLine(App.GetOutput()); //write all output we have
             Console.ForegroundColor = ConsoleColor.Red;
-            foreach (var err in Interpreter.ParsedScript.ParserMessages) {
+            foreach (var err in App.ParserMessages) {
               Console.WriteLine(string.Empty.PadRight(prompt.Length + err.Location.Column) + "^"); //show err location
               Console.WriteLine(err.Message); //print message
             }
             break;
-          case InterpreterStatus.RuntimeError:
+          case AppStatus.RuntimeError:
             ReportException(); 
             break;
           default: break;
@@ -105,10 +109,10 @@ namespace Irony.Interpreter {
 
     private void ReportException()  {
       Console.ForegroundColor = ConsoleColor.Red;
-      var ex = Interpreter.LastException;
-      var runtimeEx = ex as RuntimeException;
-      if (runtimeEx != null)
-          Console.WriteLine(runtimeEx.Message + " " + Resources.LabelLocation + " " + runtimeEx.Location.ToUiString());
+      var ex = App.LastException;
+      var scriptEx = ex as ScriptException;
+      if (scriptEx != null)
+          Console.WriteLine(scriptEx.Message + " " + Resources.LabelLocation + " " + scriptEx.Location.ToUiString());
       else
           Console.WriteLine(ex.Message);
       //Console.WriteLine(ex.ToString());   //Uncomment to see the full stack when debugging your language  
@@ -157,14 +161,14 @@ namespace Irony.Interpreter {
     public virtual void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e) {
       e.Cancel = true; //do not abort Console here.
       _ctrlCPressed = true;
-      if (Interpreter.IsBusy()) {
+      if (App.AsyncExecuting()) {
         //This is interpreter-busy situation, we do all here.
         Console.Write(Resources.MsgAbortScriptYN);
         string input;
         var result = ReadInput(out input);
         switch (result) {
           case ReadResult.AbortYes:
-            Interpreter.Abort();
+            App.AsyncAbort();
             return;
           default:
             return;

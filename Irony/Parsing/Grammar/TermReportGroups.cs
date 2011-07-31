@@ -28,7 +28,7 @@ namespace Irony.Parsing {
 
   public enum TermReportGroupType {
     Normal,
-    Exclude,
+    DoNotReport,
     Operator
   }
   public class TermReportGroup {

@@ -190,8 +190,8 @@
   <data name="LabelLocation" xml:space="preserve">
     <value>Location:</value>
   </data>
-  <data name="LabelUnassigned" xml:space="preserve">
-    <value>(unassigned)</value>
+  <data name="LabelNone" xml:space="preserve">
+    <value>None</value>
   </data>
   <data name="MsgAbortScriptYN" xml:space="preserve">
     <value>Abort script(y/n)?</value>
@@ -435,5 +435,8 @@
   </data>
   <data name="ErrNoClosingBrace" xml:space="preserve">
     <value>No closing pair for opening symbol {0}</value>
+  </data>
+  <data name="ErrOpNotDefinedForType" xml:space="preserve">
+    <value>Operator '{0}' is not defined for types {1}.</value>
   </data>
 </root>

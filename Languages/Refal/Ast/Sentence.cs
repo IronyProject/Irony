@@ -54,7 +54,7 @@ namespace Refal
 				yield return Expression;
 		}
 
-		public override void EvaluateNode(EvaluationContext context, AstMode mode)
+		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
 		{
 			// evaluate pattern and copy bound variables of the current block
 			var patt = Pattern.Instantiate(context, mode);

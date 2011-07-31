@@ -61,7 +61,7 @@ namespace Refal
 			return Expression.GetChildNodes();
 		}
 
-		public override void EvaluateNode(EvaluationContext context, AstMode mode)
+		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
 		{
 			Expression.Evaluate(context, mode);
 

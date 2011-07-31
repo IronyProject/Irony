@@ -12,7 +12,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using Irony.Parsing;
 using Irony.Interpreter;
@@ -20,46 +20,33 @@ using Irony.Interpreter;
 namespace Irony.Interpreter.Ast {
 
   public class UnaryOperationNode : AstNode {
-    public string Op;
-    public string UnaryOp; 
+    public string OpSymbol;
     public AstNode Argument;
+    private OperatorImplementation _lastUsed;
 
     public UnaryOperationNode() { }
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
-      base.Init(context, treeNode);
-      Op = treeNode.ChildNodes[0].FindTokenAndGetText();
+      base.Init(context, treeNode); 
+      OpSymbol = treeNode.ChildNodes[0].FindTokenAndGetText();
       Argument = AddChild("Arg", treeNode.ChildNodes[1]);
-      base.AsString = Op + "(unary op)";
-      // setup evaluation method;
-      switch (Op) {
-        case "+": EvaluateRef = EvaluatePlus; break;
-        case "-": EvaluateRef = EvaluateMinus; break;
-        case "!": EvaluateRef = EvaluateNot; break;
-        default:
-          string msg = string.Format(Resources.ErrNoImplForUnaryOp, Op);
-          throw new AstException(this, msg);
-      }//switch
+      base.AsString = OpSymbol + "(unary op)";
+      base.ExpressionType = context.GetUnaryOperatorExpressionType(OpSymbol);
+      if (ExpressionType == CustomExpressionTypes.NotAnExpression) 
+        throw new AstException(this, string.Format(Resources.ErrNoImplForUnaryOp, OpSymbol));
     }
 
-    #region Evaluation methods
+    protected override object DoEvaluate(ScriptThread thread) {
+      thread.CurrentNode = this;  //standard prolog
+      var arg = Argument.Evaluate(thread);
+      var result = thread.Runtime.ExecuteBinaryOperator(base.ExpressionType, arg, null, ref _lastUsed);
+      thread.CurrentNode = Parent; //standard epilog
+      return result; 
+    }
 
-    private void EvaluatePlus(EvaluationContext context, AstMode mode) {
-      Argument.Evaluate(context, AstMode.Read);
+    public override void SetIsTail() {
+      base.SetIsTail();
+      Argument.SetIsTail();
     }
-    
-    private void EvaluateMinus(EvaluationContext context, AstMode mode) {
-      context.Data.Push((byte)0);
-      Argument.Evaluate(context, AstMode.Read);
-      context.CallDispatcher.ExecuteBinaryOperator("-"); 
-    }
-    
-    private void EvaluateNot(EvaluationContext context, AstMode mode) {
-      Argument.Evaluate(context, AstMode.Read);
-      var value = context.Data.Pop();
-      var bValue = (bool) context.Runtime.BoolResultConverter(value);
-      context.Data.Push(!bValue); 
-    }
-    #endregion
 
   }//class
 }//namespace

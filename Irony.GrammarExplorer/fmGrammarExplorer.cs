@@ -37,8 +37,9 @@ namespace Irony.GrammarExplorer {
     LanguageData _language; 
     Parser _parser;
     ParseTree _parseTree;
-    RuntimeException _runtimeError;
-    bool _loaded; 
+    ScriptException _runtimeError;
+    bool _loaded;
+    object _dataForRunSample; //custom data object optionally used by RunSample method
 
     #region Form load/unload events
     private void fmExploreGrammar_Load(object sender, EventArgs e) {
@@ -132,7 +133,7 @@ namespace Irony.GrammarExplorer {
       if (_parseTree.Tokens.Count > 0)
         lblSrcLineCount.Text = (_parseTree.Tokens[_parseTree.Tokens.Count - 1].Location.Line + 1).ToString();
       lblSrcTokenCount.Text = _parseTree.Tokens.Count.ToString();
-      lblParseTime.Text = _parseTree.ParseTime.ToString();
+      lblParseTime.Text = _parseTree.ParseTimeMilliseconds.ToString();
       lblParseErrorCount.Text = _parseTree.ParserMessages.Count.ToString();
       Application.DoEvents();
       //Note: this time is "pure" parse time; actual delay after cliking "Compile" includes time to fill ParseTree, AstTree controls 
@@ -229,7 +230,7 @@ namespace Irony.GrammarExplorer {
       DoSearch(txtParserStates, "State " + state.Name, 0);
     }
 
-    private void ShowRuntimeError(RuntimeException error){
+    private void ShowRuntimeError(ScriptException error){
       _runtimeError = error;
       lnkShowErrLocation.Enabled = _runtimeError != null;
       lnkShowErrStack.Enabled = lnkShowErrLocation.Enabled; 
@@ -304,7 +305,7 @@ namespace Irony.GrammarExplorer {
       txtOutput.Text = string.Empty;
       _parseTree = null;
 
-      btnRun.Enabled = _grammar.FlagIsSet(LanguageFlags.CanRunSample); 
+      btnRun.Enabled = _grammar.LanguageFlags.HasFlag(LanguageFlags.CanRunSample); 
       _language = new LanguageData(_grammar); 
       _parser = new Parser (_language);
       ShowParserConstructionResults();
@@ -315,6 +316,7 @@ namespace Irony.GrammarExplorer {
       ClearParserOutput();
       if (_parser == null || !_parser.Language.CanParse()) return; 
       _parseTree = null;
+      _dataForRunSample = null;
       GC.Collect(); //to avoid disruption of perf times with occasional collections
       _parser.Context.SetOption(ParseOptions.TraceParser, chkParserTrace.Checked);
       try {
@@ -343,14 +345,17 @@ namespace Irony.GrammarExplorer {
         if (_parseTree == null)
           ParseSample();
         if (_parseTree.ParserMessages.Count > 0) return;
+
         GC.Collect(); //to avoid disruption of perf times with occasional collections
+        System.Threading.Thread.Sleep(100);
+        
         sw.Start();
-        string output = _grammar.RunSample(_parseTree); 
+        string output = _grammar.RunSample(_language, _parseTree, ref _dataForRunSample); 
         sw.Stop();
         lblRunTime.Text = sw.ElapsedMilliseconds.ToString();
         WriteOutput(output);
         tabBottom.SelectedTab = pageOutput;
-      } catch (RuntimeException ex) {
+      } catch (ScriptException ex) {
         ShowRuntimeError(ex); 
       } finally {
         sw.Stop();

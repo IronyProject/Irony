@@ -15,33 +15,23 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Irony.Parsing;
-using Irony.Interpreter;
+using Irony.Parsing; 
 
-namespace Irony.Interpreter.Ast { 
+namespace Irony.Interpreter.Ast{ 
 
-
-  [Flags]
-  public enum AstMode {
-    None = 0,
-    Read = 0x01,
-    Write = 0x02,
-  }
-
-  //This interface is expected by Irony's ScriptInterpreter when it evaluates AST nodes in the AST tree. 
-  public interface IInterpretedAstNode {
-    void Evaluate(EvaluationContext context, AstMode mode);
-    //Used for pointing to error location. For most nodes it would be the location of the node itself.
-    // One exception is BinExprNode: when we get "Division by zero" error evaluating 
-    //  x = (5 + 3) / (2 - 2)
-    // it is better to point to "/" as error location, rather than the first "(" - which is the start 
-    // location of binary expression. 
-    SourceLocation GetErrorAnchor();
-  }
-
+  //This interface is expected by Irony's Gramamr Explorer. 
   public interface ICallTarget {
-    void Call(EvaluationContext context); 
+    object Call(ScriptThread thread, Scope parent, object[] parameters); 
   }
 
+  //Simple visitor interface
+  public interface IAstVisitor {
+    void BeginVisit(IVisitableNode node);
+    void EndVisit(IVisitableNode node);
+  }
+
+  public interface IVisitableNode {
+    void AcceptVisitor(IAstVisitor visitor);
+  }
 
 }

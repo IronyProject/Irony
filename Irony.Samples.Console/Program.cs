@@ -14,6 +14,12 @@ namespace Irony.Samples.ConsoleCalculator {
       Console.Title = "Irony Console Sample";
       Console.WriteLine("Irony Console Sample.");
       Console.WriteLine("");
+      Console.WriteLine(" DOES NOT WORK IN CURRENT VERSION.");
+      Console.WriteLine(" Press any key to exit.");
+      Console.ReadKey();
+      return; 
+      
+/*      
       Console.WriteLine("Select a grammar to load:");
       Console.WriteLine("  1. Expression Evaluator");
       Console.WriteLine("  2. mini-Python");
@@ -32,9 +38,12 @@ namespace Irony.Samples.ConsoleCalculator {
         default:
           return;
       }
-      Console.Clear(); 
-      var commandLine = new CommandLine(grammar);
+      Console.Clear();
+      var language = new LanguageData(grammar);
+      var runtime = new LanguageRuntime(language);
+      var commandLine = new CommandLine(runtime);
       commandLine.Run();
+ */
     }
 
   }//class

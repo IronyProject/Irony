@@ -30,7 +30,7 @@ namespace Refal
 			return InnerExpression.GetChildNodes();
 		}
 
-		public override void EvaluateNode(EvaluationContext context, AstMode mode)
+		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
 		{
 			context.Data.Push(new OpeningBrace());
 			if (InnerExpression != null)

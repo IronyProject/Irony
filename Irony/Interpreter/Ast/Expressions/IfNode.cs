@@ -30,17 +30,32 @@ namespace Irony.Interpreter.Ast {
       IfTrue = AddChild("IfTrue", treeNode.ChildNodes[1]);
       if (treeNode.ChildNodes.Count > 2)
         IfFalse = AddChild("IfFalse", treeNode.ChildNodes[2]);
-    } 
-
-    public override void EvaluateNode(EvaluationContext context, AstMode mode) {
-      Test.Evaluate(context, AstMode.Write);
-      var result = context.Data.Pop();
-      if (context.Runtime.IsTrue(result)) {
-        if (IfTrue != null)    IfTrue.Evaluate(context, AstMode.Read);
-      } else {
-        if (IfFalse != null)   IfFalse.Evaluate(context, AstMode.Read);
-      }
     }
+
+    protected override object DoEvaluate(ScriptThread thread) {
+      thread.CurrentNode = this;  //standard prolog
+      object result = null; 
+      var test = Test.Evaluate(thread);
+      var isTrue = thread.Runtime.IsTrue(test);
+      if (isTrue) {
+        if (IfTrue != null)
+          result = IfTrue.Evaluate(thread);
+      } else {
+        if (IfFalse != null)
+          result = IfFalse.Evaluate(thread);
+      }
+      thread.CurrentNode = Parent; //standard epilog
+      return result; 
+    }
+
+    public override void SetIsTail() {
+      base.SetIsTail();
+      if (IfTrue != null)
+        IfTrue.SetIsTail();
+      if (IfFalse != null)
+        IfFalse.SetIsTail(); 
+    }
+
   }//class
 
 }//namespace

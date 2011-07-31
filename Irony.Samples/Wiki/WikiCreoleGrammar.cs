@@ -84,7 +84,7 @@ http://www.wikicreole.org/";
  
     }
 
-    public override string RunSample(ParseTree parsedSample) {
+    public override string RunSample(LanguageData language, ParseTree parsedSample, ref object data) {
       var converter = new WikiHtmlConverter();
       PreprocessTokens(parsedSample.Tokens); 
       var html = converter.Convert(this, parsedSample.Tokens);

@@ -18,7 +18,7 @@ using System.Diagnostics;
 
 
 namespace Irony.Parsing { 
-  // CoreParser class implements NLALR parser automaton. Its behavior is controlled by the state transition graph
+  // CoreParser class implements LALR parser automaton. Its behavior is controlled by the state transition graph
   // with root in Data.InitialState. Each state contains a dictionary of parser actions indexed by input 
   // element (terminal or non-terminal). 
   public partial class CoreParser {
@@ -72,8 +72,8 @@ namespace Irony.Parsing {
       //First skip all non-grammar tokens
       do {
         token = Parser.Scanner.GetToken();
-      } while (token.Terminal.FlagIsSet(TermFlags.IsNonGrammar) && token.Terminal != _grammar.Eof);
-      if (token.Terminal.FlagIsSet(TermFlags.IsBrace))
+      } while (token.Terminal.Flags.HasFlag(TermFlags.IsNonGrammar) && token.Terminal != _grammar.Eof);
+      if (token.Terminal.Flags.HasFlag(TermFlags.IsBrace))
         token = CheckBraceToken(token);
       Context.CurrentParserInput = new ParseTreeNode(token);
       Context.ParserInputStack.Push(Context.CurrentParserInput);
@@ -156,7 +156,7 @@ namespace Irony.Parsing {
       if (Context.CurrentParserState.Actions.TryGetValue(Context.CurrentParserInput.Term, out action))
         return action;
       //If input is EOF and NewLineBeforeEof flag is set, try injecting NewLine into input
-      if(Context.CurrentParserInput.Term == _grammar.Eof && _grammar.FlagIsSet(LanguageFlags.NewLineBeforeEOF) &&
+      if (Context.CurrentParserInput.Term == _grammar.Eof && _grammar.LanguageFlags.HasFlag(LanguageFlags.NewLineBeforeEOF) &&
           Context.CurrentParserState.Actions.TryGetValue(_grammar.NewLine, out action)) {
         InjectNewLineToken(); 
         return action; 
@@ -186,9 +186,9 @@ namespace Irony.Parsing {
       ParseTreeNode newNode; 
       if(reduceProduction.IsSet(ProductionFlags.IsListBuilder)) 
         newNode = ReduceExistingList(action);
-      else if(reduceProduction.LValue.FlagIsSet(TermFlags.IsListContainer)) 
+      else if(reduceProduction.LValue.Flags.HasFlag(TermFlags.IsListContainer)) 
         newNode = ReduceListContainer(action);
-      else if (reduceProduction.LValue.FlagIsSet(TermFlags.IsTransient))
+      else if (reduceProduction.LValue.Flags.HasFlag(TermFlags.IsTransient))
         newNode = ReduceTransientNonTerminal(action);
       else 
         newNode = ReduceRegularNode(action);
@@ -218,9 +218,9 @@ namespace Irony.Parsing {
     }
 
     private bool ShouldSkipChildNode(ParseTreeNode childNode) {
-      if (childNode.Term.FlagIsSet(TermFlags.IsPunctuation))
+      if (childNode.Term.Flags.HasFlag(TermFlags.IsPunctuation))
         return true; 
-      if (childNode.Term.FlagIsSet(TermFlags.IsTransient) && childNode.ChildNodes.Count == 0)
+      if (childNode.Term.Flags.HasFlag(TermFlags.IsTransient) && childNode.ChildNodes.Count == 0)
         return true; 
       return false; 
     }
@@ -286,8 +286,10 @@ namespace Irony.Parsing {
     private void CheckCreateAstNode(ParseTreeNode parseNode) {
       try {
         //Check preconditions
-        if ( !_grammar.FlagIsSet(LanguageFlags.CreateAst)) return; 
-        if (parseNode.AstNode != null || parseNode.Term.FlagIsSet(TermFlags.IsTransient | TermFlags.NoAstNode)) return;  
+        if (!_grammar.LanguageFlags.HasFlag(LanguageFlags.CreateAst))
+          return; 
+        if (parseNode.AstNode != null || parseNode.Term.Flags.HasFlag(TermFlags.IsTransient) 
+            || parseNode.Term.Flags.HasFlag(TermFlags.NoAstNode)) return;  
         if (Context.Status != ParserStatus.Parsing || Context.HasErrors) return; 
         //Actually create node
         _grammar.CreateAstNode(Context, parseNode);
@@ -354,7 +356,7 @@ namespace Irony.Parsing {
 
     #region Braces handling
     private Token CheckBraceToken(Token token) {
-      if (token.Terminal.FlagIsSet(TermFlags.IsOpenBrace)) {
+      if (token.Terminal.Flags.HasFlag(TermFlags.IsOpenBrace)) {
         Context.OpenBraces.Push(token);
         return token;
       }

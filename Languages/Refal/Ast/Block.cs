@@ -45,7 +45,7 @@ namespace Refal
 				yield return s;
 		}
 
-		public override void EvaluateNode(EvaluationContext context, AstMode mode)
+		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
 		{
 			foreach (Sentence sentence in Sentences)
 			{

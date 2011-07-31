@@ -41,7 +41,7 @@ namespace Refal
 			get { return Terms.Count == 0; }
 		}
 
-		public override void EvaluateNode(EvaluationContext context, AstMode mode)
+		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
 		{
 			// evaluate terms
 			var initialCount = context.Data.Count;

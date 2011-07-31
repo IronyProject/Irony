@@ -144,7 +144,8 @@ namespace Irony.Parsing {
     }
 
     private bool NeedLineStartToken(SourceLocation forLocation) {
-      return _grammar.FlagIsSet(LanguageFlags.EmitLineStartToken) && forLocation.Line > Context.PreviousLineStart.Line;
+      return _grammar.LanguageFlags.HasFlag(LanguageFlags.EmitLineStartToken) && 
+          forLocation.Line > Context.PreviousLineStart.Line;
     }
 
     private bool MatchRegularTerminals() {
@@ -200,8 +201,8 @@ namespace Irony.Parsing {
       if(!Data.TerminalsLookup.TryGetValue(Context.SourceStream.PreviewChar, out termsForCurrentChar))
         termsForCurrentChar = Data.FallbackTerminals; 
       //if we are recovering, previewing or there's no parser state, then return list as is
-      if(Context.Status == ParserStatus.Recovering || Context.Status == ParserStatus.Previewing 
-          || Context.CurrentParserState == null || _grammar.FlagIsSet(LanguageFlags.DisableScannerParserLink)
+      if(Context.Status == ParserStatus.Recovering || Context.Status == ParserStatus.Previewing
+          || Context.CurrentParserState == null || _grammar.LanguageFlags.HasFlag(LanguageFlags.DisableScannerParserLink)
           || Context.Mode == ParseMode.VsLineScan) {
         Context.CurrentTerminals.AddRange(termsForCurrentChar);
         return; 

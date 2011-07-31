@@ -68,7 +68,7 @@ namespace Refal
 			}
 		}
 
-		public override void EvaluateNode(EvaluationContext context, AstMode mode)
+		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
 		{
 			if (EntryPoint == null)
 				context.ThrowError("No entry point defined (entry point is a function named «Go»)");

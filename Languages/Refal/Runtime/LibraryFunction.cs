@@ -31,7 +31,7 @@ namespace Refal.Runtime
 			Function = fun;
 		}
 
-		public void Call(EvaluationContext context)
+		public void Call(ScriptAppInfo context)
 		{
 			context.PushFrame(Name, null, context.CurrentFrame);
 
@@ -42,7 +42,7 @@ namespace Refal.Runtime
 			context.PopFrame();
 		}
 
-		public static LibraryFunction[] ExtractLibraryFunctions(EvaluationContext context, object instance)
+		public static LibraryFunction[] ExtractLibraryFunctions(ScriptAppInfo context, object instance)
 		{
 			if (instance == null)
 				return new LibraryFunction[0];

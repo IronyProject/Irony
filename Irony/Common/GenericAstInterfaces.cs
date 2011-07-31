@@ -2,11 +2,14 @@
 using System.Collections;
 using System.Linq;
 using System.Text;
+using Irony.Parsing;
 
-namespace Irony.Parsing {
+namespace Irony {
   // These are generic interfaces for AST implementors. They define some basic interface that Parser needs to 
-  // construct AST tree. Note that we expect more than one interpreter/AST implementation: Irony.Interpreter.Ast 
-  // namespace provides just one of them. That's why these AST interfaces are here, and not in Interpreter.Ast namespace.
+  // construct AST tree and for GrammarExplorer to display/execute scripts. 
+  // Note that we expect more than one interpreter/AST implementation.
+  // Irony.Interpreter namespace provides just one of them. That's why the following AST interfaces 
+  // are here, in top Irony namespace and not in Irony.Interpreter.Ast.
   // In the future, I plan to introduce advanced interpreter, with its own set of AST classes - it will probably live
   // in a separate assembly Irony.Interpreter2.dll. 
 
@@ -26,15 +29,13 @@ namespace Irony.Parsing {
     IEnumerable GetChildNodes();
   }
 
-  //Simple visitor interface
-  public interface IAstVisitor {
-    void BeginVisit(IVisitableNode node);
-    void EndVisit(IVisitableNode node);
+  // A generic interface for interpreter to run code snippets in Grammar Explorer
+  public interface IScriptInterpreter {
+    object Execute(object rootNode);  
   }
 
-  public interface IVisitableNode {
-    void AcceptVisitor(IAstVisitor visitor);
+  //Represents surrounding environment, like Grammar Explorer itself
+  public interface IScriptEnvironment {
   }
-
 
 }

@@ -61,7 +61,7 @@ namespace Refal
 				yield return MoreConditions;
 		}
 
-		public override void EvaluateNode(EvaluationContext context, AstMode mode)
+		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
 		{
 			// evaluate expression
 			Expression.Evaluate(context, AstMode.Read);
@@ -90,7 +90,7 @@ namespace Refal
 			}
 		}
 
-		void EvaluateWhereClause(Runtime.Pattern lastPattern, EvaluationContext context, AstMode mode)
+		void EvaluateWhereClause(Runtime.Pattern lastPattern, ScriptAppInfo context, AstMode mode)
 		{
 			// instantiate where-clause pattern
 			var patt = Pattern.Instantiate(context, mode);

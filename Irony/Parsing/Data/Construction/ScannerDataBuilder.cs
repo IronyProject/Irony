@@ -38,8 +38,8 @@ namespace Irony.Parsing.Construction {
 
     private void InitMultilineTerminalsList() {
       foreach (var terminal in _grammarData.Terminals) {
-        if (terminal.FlagIsSet(TermFlags.IsNonScanner)) continue; 
-        if (terminal.FlagIsSet(TermFlags.IsMultiline)) {
+        if (terminal.Flags.HasFlag(TermFlags.IsNonScanner)) continue; 
+        if (terminal.Flags.HasFlag(TermFlags.IsMultiline)) {
           _data.MultilineTerminals.Add(terminal);
           terminal.MultilineIndex = (byte)(_data.MultilineTerminals.Count);
         }
@@ -66,7 +66,7 @@ namespace Irony.Parsing.Construction {
     private void BuildTerminalsLookupTable() {
       foreach (Terminal term in _grammarData.Terminals) {
         //Non-grammar terminals are scanned in a separate step, before regular terminals; so we don't include them here
-        if (term.FlagIsSet(TermFlags.IsNonScanner | TermFlags.IsNonGrammar)) continue; 
+        if (term.Flags.HasFlag(TermFlags.IsNonScanner | TermFlags.IsNonGrammar)) continue; 
         var firsts = term.GetFirsts();
         if (firsts == null || firsts.Count == 0) {
           _grammar.FallbackTerminals.Add(term);

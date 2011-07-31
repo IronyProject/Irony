@@ -89,7 +89,7 @@ namespace Irony.Samples.FullTextSearch
           return term;
         }
 
-        public override string RunSample(ParseTree parseTree) {
+        public override string RunSample(LanguageData language, ParseTree parseTree, ref object data) {
           var sql = ConvertQuery(parseTree.Root);
           return sql;
         }

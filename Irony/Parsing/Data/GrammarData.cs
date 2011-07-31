@@ -55,6 +55,11 @@ namespace Irony.Parsing {
     CanRunSample = 0x0100,
     SupportsCommandLine = 0x0200,
     TailRecursive = 0x0400, //Tail-recursive language - Scheme is one example
+    SupportsBigInt = 0x01000,
+    SupportsComplex = 0x02000,
+    SupportsRational = 0x04000,
+
+
 
     //Default value
     Default = None,

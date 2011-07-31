@@ -23,7 +23,7 @@ namespace Refal
 			yield break;
 		}
 
-		public override void Call(EvaluationContext context)
+		public override void Call(ScriptAppInfo context)
 		{
 			context.ThrowError("Calling external function is not supported");
 		}

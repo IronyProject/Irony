@@ -100,7 +100,7 @@ http://wikiplex.codeplex.com
  
     }
 
-    public override string RunSample(ParseTree parsedSample) {
+    public override string RunSample(LanguageData language, ParseTree parsedSample, ref object data) {
       var converter = new WikiHtmlConverter();
       var html = converter.Convert(this, parsedSample.Tokens);
       var path = Path.Combine(Path.GetTempPath(), "@wikiSample.html");

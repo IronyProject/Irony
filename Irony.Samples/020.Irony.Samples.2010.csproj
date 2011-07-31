@@ -119,6 +119,7 @@
     <None Include="SourceSamples\Wiki\Sample1_codeplex.txt" />
     <None Include="SourceSamples\_about.txt" />
     <Content Include="Java\about_java_grammar.txt" />
+    <None Include="SourceSamples\ExpressionEvaluator\PerfSample.txt" />
     <Content Include="SourceSamples\ExpressionEvaluator\StringSample.txt" />
     <Content Include="SourceSamples\Java\about_samples.txt" />
     <Content Include="SourceSamples\Java\Sample 1.java" />
@@ -127,6 +128,7 @@
     <Content Include="SourceSamples\Java\Sample 4.java" />
     <Content Include="SourceSamples\Java\Sample 5.java" />
     <Content Include="SourceSamples\Java\Sample 6.java" />
+    <None Include="SourceSamples\MiniPython\PerfSample.py" />
     <Content Include="SourceSamples\Wiki\Sample1_creole.txt" />
     <Content Include="SQL\Sql89-GoldParser.txt" />
   </ItemGroup>

@@ -14,12 +14,12 @@ namespace Refal
 	{
 		public string Name { get; set; } // TODO: value.Replace("-", "__")
 
-		public override void EvaluateNode(EvaluationContext context, AstMode mode)
+		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
 		{
 			// define function
 			context.SetValue(Name, this);
 		}
 
-		public abstract void Call(EvaluationContext context);
+		public abstract void Call(ScriptAppInfo context);
 	}
 }

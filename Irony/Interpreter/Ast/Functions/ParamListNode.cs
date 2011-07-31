@@ -23,24 +23,23 @@ namespace Irony.Interpreter.Ast {
      
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      foreach (var child in treeNode.ChildNodes) {
-          AddChild("parameter", child); 
-      }
-      AsString = "Param list";
+      foreach (var child in treeNode.ChildNodes)
+        AddChild(NodeUseType.Parameter, "param", child); 
+      AsString = "param_list[" + ChildNodes.Count + "]";
     }
 
-    public override void EvaluateNode(EvaluationContext context, AstMode mode) {
-      var argsObj = context.Data.Pop();
-      var args = argsObj as ValuesList;
-      if (args == null)
-        context.ThrowError(Resources.ErrArgListNotFound, argsObj);
-      if (args.Count != ChildNodes.Count)
-        context.ThrowError(Resources.ErrWrongArgCount, ChildNodes.Count, args.Count);
-
-      for(int i = 0; i < ChildNodes.Count; i++) {
-        context.Data.Push(args[i]);
-        ChildNodes[i].Evaluate(context, AstMode.Write); 
+    protected override object DoEvaluate(ScriptThread thread) {
+      thread.CurrentNode = this;  //standard prolog
+      // Is called once, at first evaluation of FunctionDefNode
+      // Creates parameter slots
+      foreach (var child in this.ChildNodes) {
+        var idNode = child as IdentifierNode;
+        if (idNode != null) {
+          thread.CurrentScope.Info.AddSlot(idNode.Symbol, SlotType.Parameter);
+        }
       }
+      thread.CurrentNode = Parent; //standard epilog
+      return null; 
     }//method
 
   }//class

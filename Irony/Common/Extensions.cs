@@ -10,22 +10,15 @@
  * **********************************************************************************/
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Irony.Interpreter;
 using Irony.Parsing;
+using Irony.Interpreter.Ast;
 
-namespace Irony.Interpreter.Ast {
-  public class BlockNode : StatementListNode {
-
-    public BlockNode() { }
-    public override void Init(ParsingContext context, ParseTreeNode treeNode) {
-      base.Init(context, treeNode.ChildNodes[0]);
-      AsString = "Block";
-    }
+namespace Irony {
+  internal static class Extensions {
+    //No extensions for now
 
 
   }//class
-}//namespace
+
+
+}//ns

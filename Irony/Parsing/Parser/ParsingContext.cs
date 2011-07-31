@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions; 
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
@@ -226,6 +227,27 @@ namespace Irony.Parsing {
 
     #endregion
 
+    #region Operators handling
+    public ExpressionType GetOperatorExpressionType(string symbol) {
+      OperatorInfo opInfo;
+      if (Language.Grammar.OperatorMappings.TryGetValue(symbol, out opInfo))
+        return opInfo.ExpressionType;
+      return CustomExpressionTypes.NotAnExpression;
+    }
+
+    public ExpressionType GetUnaryOperatorExpressionType(string symbol) {
+      switch (symbol.ToLowerInvariant()) {
+        case "+":   return ExpressionType.UnaryPlus;
+        case "-":   return ExpressionType.Negate;
+        case "!":
+        case "not":
+        case "~" :
+          return ExpressionType.Not;
+        default:
+          return CustomExpressionTypes.NotAnExpression; 
+      }
+    }
+    #endregion
 
   }//class
 

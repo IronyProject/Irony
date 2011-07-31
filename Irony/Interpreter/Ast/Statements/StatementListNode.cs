@@ -20,6 +20,7 @@ using Irony.Parsing;
 namespace Irony.Interpreter.Ast {
 
   public class StatementListNode : AstNode {
+    AstNode _singleChild; //stores a single child when child count == 1, for fast access
      
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
@@ -30,19 +31,60 @@ namespace Irony.Interpreter.Ast {
           AddChild(string.Empty, child); 
       }
       AsString = "Statement List";
+      if (ChildNodes.Count == 0) {
+        AsString += " (Empty)";
+      } else 
+         ChildNodes[ChildNodes.Count - 1].Flags |= AstNodeFlags.IsTail;
     }
 
-    public override void EvaluateNode(EvaluationContext context, AstMode mode) {
-      if (ChildNodes.Count == 0) return;
-      ChildNodes[ChildNodes.Count - 1].Flags |= AstNodeFlags.IsTail;
-      int iniCount = context.Data.Count; 
-      foreach(var stmt in ChildNodes) {
-        stmt.Evaluate(context, AstMode.Read);
-        //restore position, in case a statement left something (like standalone expression vs assignment) 
-        context.Data.PopUntil(iniCount);
-      }
-      context.Data.Push(context.LastResult); //push it back again
+    protected override object DoEvaluate(ScriptThread thread) {
+      thread.CurrentNode = this;  //standard prolog
+      lock (LockObject) {
+        switch (ChildNodes.Count) {
+          case 0:
+            Evaluate = EvaluateEmpty;
+            break;
+          case 1:
+            _singleChild = ChildNodes[0];
+            Evaluate = EvaluateOne;
+            break; 
+          default:
+            Evaluate = EvaluateMultiple;
+            break; 
+        }//switch
+      }//lock
+      var result = Evaluate(thread);
+      thread.CurrentNode = Parent; //standard epilog
+      return result;
     }
+
+    private object EvaluateEmpty(ScriptThread thread) {
+      return null; 
+    }
+
+    private object EvaluateOne(ScriptThread thread) {
+      thread.CurrentNode = this;  //standard prolog
+      object result = _singleChild.Evaluate(thread);
+      thread.CurrentNode = Parent; //standard epilog
+      return result;
+    }
+
+    private object EvaluateMultiple(ScriptThread thread) {
+      thread.CurrentNode = this;  //standard prolog
+      object result = null;
+      for (int i=0; i< ChildNodes.Count; i++) {
+        result = ChildNodes[i].Evaluate(thread);
+      }
+      thread.CurrentNode = Parent; //standard epilog
+      return result; //return result of last statement
+    }
+
+    public override void SetIsTail() {
+      base.SetIsTail();
+      if (ChildNodes.Count > 0)
+        ChildNodes[ChildNodes.Count - 1].SetIsTail(); 
+    }
+
     
   }//class
 

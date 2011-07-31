@@ -67,6 +67,84 @@ namespace Irony.Parsing {
       HintType = hintType;
       Data = data; 
     }
-  }//class
+  } //class
 
+  // Base class for custom grammar hints
+  public abstract class CustomGrammarHint : GrammarHint {
+    public ParserActionType Action { get; private set; }
+    public CustomGrammarHint(ParserActionType action) : base(HintType.Custom, null) {
+      Action = action;
+    }
+    public abstract bool Match(ConflictResolutionArgs args);
+  }
+
+  // Semi-automatic conflict resolution hint
+  public class TokenPreviewHint : CustomGrammarHint {
+    public int MaxPreviewTokens { get; set; } // preview limit
+    private string FirstString { get; set; }
+    private ICollection<string> OtherStrings { get; set; }
+    private Terminal FirstTerminal { get; set; }
+    private ICollection<Terminal> OtherTerminals { get; set; }
+
+    private TokenPreviewHint(ParserActionType action) : base(action) {
+      FirstString = String.Empty;
+      OtherStrings = new HashSet<string>();
+      FirstTerminal = null;
+      OtherTerminals = new HashSet<Terminal>();
+      MaxPreviewTokens = 0;
+    }
+
+    public TokenPreviewHint(ParserActionType action, string first) : this(action) {
+      FirstString = first;
+    }
+
+    public TokenPreviewHint(ParserActionType action, Terminal first) : this(action) {
+      FirstTerminal = first;
+    }
+
+    public TokenPreviewHint ComesBefore(params string[] others) {
+      Array.ForEach(others, term => OtherStrings.Add(term));
+      return this;
+    }
+
+    public TokenPreviewHint ComesBefore(params Terminal[] others) {
+      Array.ForEach(others, term => OtherTerminals.Add(term));
+      return this;
+    }
+
+    public TokenPreviewHint SetMaxPreview(int max) {
+      MaxPreviewTokens = max;
+      return this;
+    }
+
+    public override void Init(GrammarData grammarData) {
+      base.Init(grammarData);
+      // convert strings to terminals, if needed
+      FirstTerminal = FirstTerminal ?? Grammar.ToTerm(FirstString);
+      if (OtherTerminals.Count == 0 && OtherStrings.Count > 0)
+        Array.ForEach(OtherStrings.Select(s => Grammar.ToTerm(s)).ToArray(), term => OtherTerminals.Add(term));
+    }
+
+    public override bool Match(ConflictResolutionArgs args) {
+      try {
+        args.Scanner.BeginPreview();
+
+        var count = 0;
+        var token = args.Scanner.GetToken();
+        while (token != null && token.Terminal != args.Context.Language.Grammar.Eof) {
+          if (token.Terminal == FirstTerminal)
+            return true;
+          if (OtherTerminals.Contains(token.Terminal))
+            return false;
+          if (++count > MaxPreviewTokens && MaxPreviewTokens > 0)
+            return false;
+          token = args.Scanner.GetToken();
+        }
+        return false;
+      }
+      finally {
+        args.Scanner.EndPreview(true);
+      }
+    }
+  }
 }

@@ -130,6 +130,7 @@
     <Compile Include="Parsing\Terminals\DsvLiteral.cs" />
     <Compile Include="Parsing\Terminals\FixedLengthLiteral.cs" />
     <Compile Include="Parsing\Terminals\ImpliedSymbolTerminal.cs" />
+    <Compile Include="Parsing\Terminals\LineContinuationTerminal.cs" />
     <Compile Include="Parsing\Terminals\QuotedValueLiteral.cs" />
     <Compile Include="Parsing\Terminals\RegExLiteral.cs" />
     <Compile Include="Parsing\Terminals\FreeTextLiteral.cs" />

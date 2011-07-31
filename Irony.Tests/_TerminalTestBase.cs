@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Irony.Parsing;
+using Irony.Tests.Grammars;
 
 namespace Irony.Tests {
 #if USE_NUNIT

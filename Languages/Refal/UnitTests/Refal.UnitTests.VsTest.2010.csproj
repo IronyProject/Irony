@@ -10,7 +10,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Refal.UnitTests</RootNamespace>
-    <AssemblyName>Refal.UnitTests</AssemblyName>
+    <AssemblyName>Refal.UnitTests.VsTest</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -54,9 +54,9 @@
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
       <Name>010.Irony.2010</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Refal.csproj">
+    <ProjectReference Include="..\Refal.2010.csproj">
       <Project>{19A86418-BA99-41F4-80A5-A7F3A6383123}</Project>
-      <Name>Refal %28Languages\Refal\Refal%29</Name>
+      <Name>Refal.2010</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

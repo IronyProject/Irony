@@ -40,8 +40,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants>VS2008</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -161,6 +160,7 @@
     <Compile Include="Parsing\Terminals\DsvLiteral.cs" />
     <Compile Include="Parsing\Terminals\FixedLengthLiteral.cs" />
     <Compile Include="Parsing\Terminals\ImpliedSymbolTerminal.cs" />
+    <Compile Include="Parsing\Terminals\LineContinuationTerminal.cs" />
     <Compile Include="Parsing\Terminals\QuotedValueLiteral.cs" />
     <Compile Include="Parsing\Terminals\RegExLiteral.cs" />
     <Compile Include="Parsing\Terminals\FreeTextLiteral.cs" />

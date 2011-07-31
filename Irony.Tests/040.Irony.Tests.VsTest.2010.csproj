@@ -71,7 +71,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommentTerminalTests.cs" />
+    <Compile Include="ConflictResolutionTests.cs" />
     <Compile Include="DataLiteralsTests.cs" />
+    <Compile Include="Grammars\ConflictResolutionTestGrammar1.cs" />
+    <Compile Include="Grammars\ConflictResolutionTestGrammar2.cs" />
+    <Compile Include="Grammars\ConflictResolutionTestGrammar3.cs" />
+    <Compile Include="Grammars\ConflictResolutionTestGrammar4.cs" />
+    <Compile Include="Grammars\TestGrammar.cs" />
+    <Compile Include="LineContinuationTests.cs" />
     <Compile Include="RegExLiteralTests.cs" />
     <Compile Include="FreeTextLiteralTests.cs" />
     <Compile Include="IdentifierTerminalTests.cs" />
@@ -79,7 +86,6 @@
     <Compile Include="NumberLiteralTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringLiteralTests.cs" />
-    <Compile Include="TestGrammar.cs" />
     <Compile Include="_TerminalTestBase.cs" />
   </ItemGroup>
   <ItemGroup>

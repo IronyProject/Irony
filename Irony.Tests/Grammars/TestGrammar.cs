@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Irony.Parsing;
 
-namespace Irony.Tests {
+namespace Irony.Tests.Grammars {
   public class TestGrammar : Grammar {
     public TestGrammar() {
       var root = new NonTerminal("root"); 

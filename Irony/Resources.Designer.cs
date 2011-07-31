@@ -376,6 +376,15 @@ namespace Irony {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NewLine expected..
+        /// </summary>
+        public static string ErrNewLineExpected {
+            get {
+                return ResourceManager.GetString("ErrNewLineExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NLALR process is in indefinite loop, number of states exceeded 3000..
         /// </summary>
         public static string ErrNLALRhang {

@@ -259,6 +259,7 @@ namespace Irony.Parsing.Construction {
 
     private void ResolveConflictByHints(ParserState state, Terminal conflict) {
       var stateData = state.BuilderData;
+
       //reduce hints
       var reduceItems = stateData.ReduceItems.SelectByLookahead(conflict);
       foreach(var reduceItem in reduceItems)
@@ -267,8 +268,8 @@ namespace Irony.Parsing.Construction {
           state.BuilderData.ResolvedConflicts.Add(conflict);
           return; 
         }
-      
-      //Shift hints
+
+      //shift hints
       var shiftItems = stateData.ShiftItems.SelectByCurrent(conflict);
       foreach (var shiftItem in shiftItems)
         if(shiftItem.Core.Hints.Find(h => h.HintType == HintType.ResolveToShift) != null) {
@@ -276,6 +277,7 @@ namespace Irony.Parsing.Construction {
           state.BuilderData.ResolvedConflicts.Add(conflict);
           return; 
         }
+
       //code hints
       // first prepare data for conflict action: reduceProduction (for possible reduce) and newState (for possible shift)
       var reduceProduction = reduceItems.First().Core.Production; //take first of reduce productions
@@ -285,12 +287,53 @@ namespace Irony.Parsing.Construction {
       allItems.AddRange(state.BuilderData.ShiftItems.SelectByCurrent(conflict)); 
       allItems.AddRange(state.BuilderData.ReduceItems.SelectByLookahead(conflict)); 
       // Scan all items and try to find hint with resolution type Code
-      foreach (var item in allItems)
-        if(item.Core.Hints.Find(h => h.HintType == HintType.ResolveInCode) != null) {
+      foreach (var item in allItems) {
+        if (item.Core.Hints.Find(h => h.HintType == HintType.ResolveInCode) != null) {
           state.Actions[conflict] = new ParserAction(ParserActionType.Code, newState, reduceProduction);
           state.BuilderData.ResolvedConflicts.Add(conflict);
           return; 
         }
+      }
+
+      //custom hints
+      // find custom grammar hints and build custom conflict resolver
+      var customHints = new List<CustomGrammarHint>();
+      var hintItems = new Dictionary<CustomGrammarHint, LRItem>();
+      LRItem defaultItem = null; // the first item with no hints
+      foreach (var item in allItems) {
+        var hints = item.Core.Hints.OfType<CustomGrammarHint>();
+        foreach (var hint in hints) {
+          customHints.Add(hint);
+          hintItems[hint] = item;
+        }
+        if (defaultItem == null && !hints.Any())
+          defaultItem = item;
+      }
+      // if there are custom hints, build conflict resolver
+      if (customHints.Count > 0) {
+        state.Actions[conflict] = new ParserAction(newState, reduceProduction, args => {
+          // examine all custom hints and select the first production that matched
+          foreach (var customHint in customHints) {
+            if (customHint.Match(args)) {
+              var item = hintItems[customHint];
+              args.ReduceProduction = item.Core.Production;
+              args.Result = customHint.Action;
+              return;
+            }
+          }
+          // no hints matched, select default LRItem
+          if (defaultItem != null) {
+            args.ReduceProduction = defaultItem.Core.Production;
+            args.Result = args.NewShiftState != null ? ParserActionType.Shift : ParserActionType.Reduce;
+            return;
+          }
+          // prefer Reduce if Shift operation is not available
+          args.Result = args.NewShiftState != null ? ParserActionType.Shift : ParserActionType.Reduce;
+          // TODO: figure out what to do next
+        });
+        state.BuilderData.ResolvedConflicts.Add(conflict);
+        return;
+      }
     }
 
     private void ResolveConflictByPrecedence(ParserState state, Terminal conflict) {

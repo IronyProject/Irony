@@ -1,9 +1,20 @@
-﻿using Refal.Runtime;
+﻿using System;
+using Refal.Runtime;
 
-namespace Refal.UnitTests {
+namespace Refal.UnitTests
+{
+	#region Unit testing platform abstraction layer
+#if NUNIT
+	using NUnit.Framework;
+	using TestClass = NUnit.Framework.TestFixtureAttribute;
+	using TestMethod = NUnit.Framework.TestAttribute;
+	using TestContext = System.Object;
+#else
 	using Microsoft.VisualStudio.TestTools.UnitTesting;
+#endif
+	#endregion
 
-  /// <summary>
+	/// <summary>
 	/// Refal runtime library tests
 	/// </summary>
 	[TestClass]
@@ -367,6 +378,24 @@ namespace Refal.UnitTests {
 			Assert.IsTrue(result[1] is long);
 			Assert.AreEqual((char)result[0], '-');
 			Assert.AreEqual((long)result[1], 2612368466027);
+		}
+
+		[TestMethod]
+		public void RefalLibrary_TestChr()
+		{
+			var refal = new RefalLibrary(null);
+			var expr = PassiveExpression.Build(13, 10, 0x20, "NewLine");
+			var result = refal.Chr(expr);
+
+			// result should be '\r', '\n', ' ' and Environment.NewLine
+			var expected = ("\r\n " + Environment.NewLine).ToCharArray();
+			Assert.AreEqual(result.Count, expected.Length);
+
+			for (int i = 0; i < result.Count; i++)
+			{
+				Assert.IsTrue(result[i] is char);
+				Assert.AreEqual(expected[i], (char)result[i]);
+			}
 		}
 	}
 }

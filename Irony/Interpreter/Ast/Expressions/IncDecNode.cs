@@ -44,9 +44,6 @@ namespace Irony.Interpreter.Ast {
       if (OpSymbol == "--" || OpSymbol == "++") return;
       IsPostfix = true; 
       OpSymbol = treeNode.ChildNodes[1].FindTokenAndGetText();
-      if (OpSymbol == "--" || OpSymbol == "++") return;
-      //report error
-      throw new AstException(this, Resources.ErrInvalidArgsForIncDec);
     }
 
     protected override object DoEvaluate(ScriptThread thread) {

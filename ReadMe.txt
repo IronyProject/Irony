@@ -2,8 +2,8 @@ ReadMe file for Irony project
 http://www.codeplex.com/irony
 
 Prerequisites
-  OS: Windows XP, Vista or Windows 7; 
-  Visual Studio 2008, .NET Framework 3.5
+  OS: Windows 7; 
+  Visual Studio 2010, .NET Framework 4.0
   
 Demo instructions
 To run Grammar Explorer
@@ -36,7 +36,7 @@ This project shares almost all sources files with core Irony project. It has a c
 and uses it in a few places to select different code pieces for different environments. 
 The output assembly name is IronySL.dll. By default this project is not compiled when you build the solution -
 so it does not break your build if you don't have SL files on your computer. 
-To compile this project you must have Silverlight 3 Tools installed: 
+To compile this project you must have Silverlight 4 Tools installed: 
 (http://www.microsoft.com/downloads/details.aspx?familyid=9442b0f2-7465-417a-88f3-5e7b5409e9dd&displaylang=en)
 Credit for Irony-SL adaptation goes to Kirill Osenkov
  

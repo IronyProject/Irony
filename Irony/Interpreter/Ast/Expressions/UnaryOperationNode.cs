@@ -31,8 +31,6 @@ namespace Irony.Interpreter.Ast {
       Argument = AddChild("Arg", treeNode.ChildNodes[1]);
       base.AsString = OpSymbol + "(unary op)";
       base.ExpressionType = context.GetUnaryOperatorExpressionType(OpSymbol);
-      if (ExpressionType == CustomExpressionTypes.NotAnExpression) 
-        throw new AstException(this, string.Format(Resources.ErrNoImplForUnaryOp, OpSymbol));
     }
 
     protected override object DoEvaluate(ScriptThread thread) {

@@ -19,9 +19,12 @@ using System.Diagnostics;
 using Irony.Interpreter.Ast; 
 using Irony.Parsing;
 
+// This file is excluded from the build. The functionality will be moved to ScriptApp class.
+// For now keeping this file to have quick access to "old" code.
+
+
 namespace Irony.Interpreter {
 
-  //No longer used, replaced by  ScriptApp class. 
   public class ScriptInterpreter {
     #region Fields and properties
     public readonly LanguageData Language;

@@ -76,13 +76,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Common\Extensions.cs" />
-    <Compile Include="Common\HotSwapDictionary.cs" />
+    <None Include="Common\HotSwapDictionary.cs" />
     <Compile Include="Interpreter\Ast\Base\AstHelperClasses.cs" />
     <Compile Include="Interpreter\Ast\Functions\Closure.cs" />
     <Compile Include="Interpreter\Ast\SpecialNodes\EmptyStatementNode.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Interpreter\Ast\Statements\BlockNode.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Interpreter\Execution\ScriptApp.cs" />
@@ -98,7 +95,6 @@
     <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime_OpDispatch.cs" />
     <Compile Include="Interpreter\LanguageRuntime\NoneClass.cs" />
     <Compile Include="Common\GenericAstInterfaces.cs" />
-    <Compile Include="Interpreter\Ast\Base\AstException.cs" />
     <Compile Include="Interpreter\Ast\Functions\FunctionCallNode.cs" />
     <Compile Include="Interpreter\Ast\Functions\FunctionDefNode.cs" />
     <Compile Include="Interpreter\Ast\Functions\ParamListNode.cs" />
@@ -220,6 +216,7 @@
     <None Include="irony.snk" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Interpreter\_about_Irony_Interpreter.txt" />
     <Content Include="Parsing\Data\Construction\_about_parser_construction.txt" />
   </ItemGroup>
   <ItemGroup>

@@ -52,7 +52,7 @@ namespace Irony.Samples.MiniPython {
       var ExtStmt = new NonTerminal("ExtStmt");
       //Just as a test for NotSupportedNode
       var ReturnStmt = new NonTerminal("return", typeof(NotSupportedNode));
-      var Block = new NonTerminal("Block", typeof(BlockNode));
+      var Block = new NonTerminal("Block");
       var StmtList = new NonTerminal("StmtList", typeof(StatementListNode));
 
       var ParamList = new NonTerminal("ParamList", typeof(ParamListNode));
@@ -98,7 +98,7 @@ namespace Irony.Samples.MiniPython {
       // 6. Miscellaneous: punctuation, braces, transient nodes
       MarkPunctuation("(", ")", ":");
       RegisterBracePair("(", ")");
-      MarkTransient(Term, Expr, Stmt, ExtStmt, UnOp, BinOp, ExtStmt, ParExpr);
+      MarkTransient(Term, Expr, Stmt, ExtStmt, UnOp, BinOp, ExtStmt, ParExpr, Block);
 
       // 7. Error recovery rule
       ExtStmt.ErrorRule = SyntaxError + Eos;

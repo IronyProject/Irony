@@ -59,7 +59,6 @@
     <Compile Include="Common\GenericAstInterfaces.cs" />
     <Compile Include="Common\HotSwapDictionary.cs" />
     <Compile Include="Common\StringUtils.cs" />
-    <Compile Include="Interpreter\Ast\Base\AstException.cs" />
     <Compile Include="Interpreter\Ast\Base\AstHelperClasses.cs" />
     <Compile Include="Interpreter\Ast\Base\AstInterfaces.cs" />
     <Compile Include="Interpreter\Ast\Base\AstNode.cs" />

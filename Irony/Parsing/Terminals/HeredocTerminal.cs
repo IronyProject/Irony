@@ -69,48 +69,42 @@ namespace Irony.Parsing {
             source.PreviewPosition = newPos;
 
             source.PreviewPosition++;
-            var heredocStart = source.PreviewPosition;
             var value = new StringBuilder();
-            while (true) {
+            var endFound = false;
+            var finalPos = -1;
+            while (!endFound) {
                 var eolPos = source.Text.IndexOfAny(_continueProcessing, source.PreviewPosition);
                 if (eolPos == -1)
                     break;
+                var nextEol = source.Text.IndexOfAny(_continueProcessing, eolPos + 1);
+                var line = nextEol == -1 ? source.Text.Substring(eolPos + 1) : source.Text.Substring(eolPos + 1, nextEol - eolPos - 1);
                 if (_flags == HeredocFlags.AllowIndentedEndToken) {
-                    var nextEol = source.Text.IndexOfAny(_continueProcessing, eolPos + 1);
-                    var line = nextEol == -1 ? source.Text.Substring(eolPos + 1) : source.Text.Substring(eolPos + 1, nextEol - eolPos - 1);
                     var endPos = source.Text.IndexOf(_token, eolPos + 1);
                     if ((endPos != -1 && nextEol != -1 && endPos < nextEol) || (nextEol == -1 && endPos != -1)) {
-                        var finalPos = endPos + _token.Length;
-                        var newSource = source.Text.Remove(newPos, finalPos - newPos);
-                        source.PreviewPosition = newPos;
-                        (source as SourceStream).SetText(newSource, source.PreviewPosition, true);
-                        Token token = source.CreateToken(_HeredocString.OutputTerminal);
-                        token.Value = value.ToString();
-                        return token;
-                    } else {
-                        value.Append(line);
-                        value.Append('\n');
-                        source.PreviewPosition = nextEol + 1;
+                        finalPos = endPos + _token.Length;
+                        endFound = true;
                     }
                 } else {
-                    var nextEol = source.Text.IndexOfAny(_continueProcessing, eolPos + 1);
-                    var line = nextEol == -1 ? source.Text.Substring(eolPos + 1) : source.Text.Substring(eolPos + 1, nextEol - eolPos - 1);
                     if (line.Length >= _token.Length && line.Substring(0, _token.Length) == _token) {
-                        var finalPos = nextEol == -1 ? eolPos + _token.Length + 1 : nextEol + _token.Length;
-                        var newSource = source.Text.Remove(newPos, finalPos - newPos);
-                        source.PreviewPosition = newPos;
-                        (source as SourceStream).SetText(newSource, source.PreviewPosition, true);
-                        Token token = source.CreateToken(_HeredocString.OutputTerminal);
-                        token.Value = value.ToString();
-                        return token;
-                    } else {
-                        value.Append(line);
-                        value.Append('\n');
-                        source.PreviewPosition = nextEol + 1;
+                        finalPos = nextEol == -1 ? eolPos + _token.Length + 1 : nextEol + _token.Length;
+                        endFound = true;
                     }
                 }
+                if (!endFound) {
+                    value.Append(line);
+                    value.Append('\n');
+                    source.PreviewPosition = nextEol + 1;
+                }
             }
-            return source.CreateErrorToken(Resources.ErrNoEndForHeredoc);
+            if (endFound) {
+                var newSource = source.Text.Remove(newPos, finalPos - newPos);
+                source.PreviewPosition = newPos;
+                (source as SourceStream).SetText(newSource, source.PreviewPosition, true);
+                Token token = source.CreateToken(_HeredocString).OutputTerminal);
+                token.Value = value.ToString();
+                return token;
+            } else
+                return source.CreateErrorToken(Resources.ErrNoEndForHeredoc);
         }
     }
 }

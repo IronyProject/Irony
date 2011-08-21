@@ -167,6 +167,8 @@ namespace Irony.Parsing {
             if (endFound) {
                 Token token = source.CreateToken(this.OutputTerminal);
                 token.Value = value.ToString();
+                if(source.Text.IndexOfAny(endOfLineMarker,newPos) != newPos)
+                    source.PreviewPosition = newPos;
                 return token;
             } else
                 return source.CreateErrorToken(Resources.ErrNoEndForHeredoc);

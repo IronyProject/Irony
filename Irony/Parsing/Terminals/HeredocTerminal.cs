@@ -49,7 +49,12 @@ namespace Irony.Parsing {
         }
         #endregion
 
-        private readonly HereDocSubTypeList _subtypes = new HereDocSubTypeList();
+        #region HereDocConsumedLine
+        struct HereDocConsumedLine {
+            public int offset;
+            public string text;
+        }
+        #endregion
 
         #region Constructors and Initialization
         public HereDocTerminal(string name)
@@ -67,28 +72,29 @@ namespace Irony.Parsing {
             : this(name, start, options) {
                 outputTerminal = output;
         }
+
         public void AddStart(string startSymbol, HereDocOptions hereDocOptions) {
             _subtypes.Add(startSymbol, hereDocOptions);
         }
         #endregion
 
-        public override IList<string> GetFirsts() {
-            List<string> firsts = new List<string>();
-            foreach (var subtype in _subtypes) {
-                firsts.Add(subtype.Start);
-            }
-            return firsts;
-        }
+        #region Private fields
+        private readonly HereDocSubTypeList _subtypes = new HereDocSubTypeList();
 
         private char[] endOfLineMarker = { '\n', '\r' };
 
         private char[] endOfTokenMarker = { ' ', '\n', '\r' };
 
         private Terminal outputTerminal;
+        #endregion
 
-        struct HereDocConsumedLine {
-            public int offset;
-            public string text;
+        #region Overrides
+        public override IList<string> GetFirsts() {
+            List<string> firsts = new List<string>();
+            foreach (var subtype in _subtypes) {
+                firsts.Add(subtype.Start);
+            }
+            return firsts;
         }
 
         public override Token TryMatch(ParsingContext context, ISourceStream source) {
@@ -180,5 +186,6 @@ namespace Irony.Parsing {
             } else
                 return source.CreateErrorToken(Resources.ErrNoEndForHeredoc);
         }
+        #endregion
     }
 }

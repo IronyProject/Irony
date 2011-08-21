@@ -1,8 +1,14 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="HeredocTerminal.cs" company="Microsoft">
-// TODO: Update copyright text.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿#region License
+/* **********************************************************************************
+ * Copyright (c) Michael Tindal
+ * This source code is subject to terms and conditions of the MIT License
+ * for Irony. A copy of the license can be found in the License.txt file
+ * at the root of this distribution. 
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * MIT License.
+ * You must not remove this notice from this software.
+ * **********************************************************************************/
+#endregion
 
 using System;
 using System.Collections.Generic;
@@ -12,58 +18,89 @@ using System.Globalization;
 namespace Irony.Parsing {
     
     [Flags]
-    public enum HeredocFlags {
+    public enum HereDocOptions {
         None = 0,
         AllowIndentedEndToken = 0x01,
     }
 
-    /// <summary>
-    /// TODO: Update summary.
-    /// </summary>
-    public class HeredocTerminal : CompoundTerminalBase {
-        private HeredocFlags _flags;
+    public class HereDocTerminal : Terminal {
 
-        public string StartSymbol = "<<";
+        #region HereDocSubType
+        class HereDocSubType {
+            internal readonly string Start;
+            internal readonly HereDocOptions Flags;
 
-        public HeredocTerminal(string name)
+            internal HereDocSubType(string start, HereDocOptions flags) {
+                Start = start;
+                Flags = flags;
+            }
+
+            internal static int LongerStartFirst(HereDocSubType x, HereDocSubType y) {
+                try {//in case any of them is null
+                    if (x.Start.Length > y.Start.Length) return -1;
+                } catch { }
+                return 0;
+            }
+        }
+        class HereDocSubTypeList : List<HereDocSubType> {
+            internal void Add(string start, HereDocOptions flags) {
+                base.Add(new HereDocSubType(start, flags));
+            }
+        }
+        #endregion
+
+        private readonly HereDocSubTypeList _subtypes = new HereDocSubTypeList();
+
+        #region Constructors and Initialization
+        public HereDocTerminal(string name)
             : base(name) {
-            _flags = HeredocFlags.None;
             base.SetFlag(TermFlags.IsLiteral);
         }
 
-        public HeredocTerminal(string name, string startSymbol, HeredocFlags flags)
-            : base(name) {
-            StartSymbol = startSymbol;
-            _flags = flags;
+        public HereDocTerminal(string name, string start, HereDocOptions options)
+            : this(name) {
+            _subtypes.Add(start, options);
         }
 
-        public override void Init(GrammarData grammarData) {
-            base.Init(grammarData);
+        public void AddStart(string startSymbol, HereDocOptions hereDocOptions) {
+            _subtypes.Add(startSymbol, hereDocOptions);
         }
+        #endregion
 
         public override IList<string> GetFirsts() {
-            var result = new StringList();
-            result.Add(StartSymbol.ToString());
-            return result;
+            List<string> firsts = new List<string>();
+            foreach (var subtype in _subtypes) {
+                firsts.Add(subtype.Start);
+            }
+            return firsts;
         }
 
-        private char[] _continueProcessing = { '\n', '\r' };
+        private char[] endOfLineMarker = { '\n', '\r' };
 
-        private char[] _endOfToken = { ' ', '\n', '\r' };
-
-        private static Terminal _HeredocString = new StringLiteral("HeredocString");
+        private char[] endOfTokenMarker = { ' ', '\n', '\r' };
 
         public override Token TryMatch(ParsingContext context, ISourceStream source) {
-            var startPos = source.PreviewPosition;
+            // First determine which subtype we are working with:
+            _subtypes.Sort(HereDocSubType.LongerStartFirst);
+            HereDocSubType subtype = null;
+            foreach (HereDocSubType s in _subtypes) {
+                if (source.Text.IndexOf(s.Start, source.PreviewPosition) == source.PreviewPosition) {
+                    subtype = s;
+                    break;
+                }
+            }
+            if (subtype == null) {
+                return null;
+            }
             //Find the end of the heredoc token
-            var newPos = source.Text.IndexOfAny(_endOfToken, source.PreviewPosition + StartSymbol.Length);
+            var newPos = source.Text.IndexOfAny(endOfTokenMarker, source.PreviewPosition + subtype.Start.Length);
             //We could not find the end of the token
             if (newPos == -1)
                 return source.CreateErrorToken(Resources.ErrNoEndForHeredoc);// "No end symbol for heredoc." 
             source.PreviewPosition = newPos;
-            var tokenLength = source.PreviewPosition - source.Location.Position - StartSymbol.Length;
-            var _token = source.Text.Substring(source.PreviewPosition - tokenLength, tokenLength);
-            newPos = source.Text.IndexOfAny(_continueProcessing, source.PreviewPosition);
+            var tagLength = source.PreviewPosition - source.Location.Position - subtype.Start.Length;
+            var tag = source.Text.Substring(source.PreviewPosition - tagLength, tagLength);
+            newPos = source.Text.IndexOfAny(endOfLineMarker, source.PreviewPosition);
             if (newPos == -1)
                 return source.CreateErrorToken(Resources.ErrNoEndForHeredoc);
             source.PreviewPosition = newPos;
@@ -73,20 +110,20 @@ namespace Irony.Parsing {
             var endFound = false;
             var finalPos = -1;
             while (!endFound) {
-                var eolPos = source.Text.IndexOfAny(_continueProcessing, source.PreviewPosition);
+                var eolPos = source.Text.IndexOfAny(endOfLineMarker, source.PreviewPosition);
                 if (eolPos == -1)
                     break;
-                var nextEol = source.Text.IndexOfAny(_continueProcessing, eolPos + 1);
+                var nextEol = source.Text.IndexOfAny(endOfLineMarker, eolPos + 1);
                 var line = nextEol == -1 ? source.Text.Substring(eolPos + 1) : source.Text.Substring(eolPos + 1, nextEol - eolPos - 1);
-                if (_flags == HeredocFlags.AllowIndentedEndToken) {
-                    var endPos = source.Text.IndexOf(_token, eolPos + 1);
+                if (subtype.Flags.HasFlag(HereDocOptions.AllowIndentedEndToken)) {
+                    var endPos = source.Text.IndexOf(tag, eolPos + 1);
                     if ((endPos != -1 && nextEol != -1 && endPos < nextEol) || (nextEol == -1 && endPos != -1)) {
-                        finalPos = endPos + _token.Length;
+                        finalPos = endPos + tag.Length;
                         endFound = true;
                     }
                 } else {
-                    if (line.Length >= _token.Length && line.Substring(0, _token.Length) == _token) {
-                        finalPos = nextEol == -1 ? eolPos + _token.Length + 1 : nextEol + _token.Length;
+                    if (line.Length >= tag.Length && line.Substring(0, tag.Length) == tag) {
+                        finalPos = nextEol == -1 ? eolPos + tag.Length + 1 : nextEol + tag.Length;
                         endFound = true;
                     }
                 }
@@ -100,7 +137,7 @@ namespace Irony.Parsing {
                 var newSource = source.Text.Remove(newPos, finalPos - newPos);
                 source.PreviewPosition = newPos;
                 (source as SourceStream).SetText(newSource, source.PreviewPosition, true);
-                Token token = source.CreateToken(_HeredocString).OutputTerminal);
+                Token token = source.CreateToken(this.OutputTerminal);
                 token.Value = value.ToString();
                 return token;
             } else

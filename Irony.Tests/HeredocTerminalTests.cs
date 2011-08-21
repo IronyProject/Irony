@@ -58,7 +58,7 @@ namespace Irony.Tests {
 
         [TestMethod]
         public void TestHereDocLiteral() {
-            var term = new HeredocTerminal("Heredoc");
+            var term = new HereDocTerminal("Heredoc","<<",HereDocOptions.None);
             SetTerminal(term);
             TryMatch(@"<<BEGIN
 test
@@ -70,7 +70,7 @@ BEGIN");
 
         [TestMethod]
         public void TestHereDocIndentedLiteral() {
-            var term = new HeredocTerminal("Heredoc", "<<-", HeredocFlags.AllowIndentedEndToken);
+            var term = new HereDocTerminal("Heredoc", "<<-", HereDocOptions.AllowIndentedEndToken);
             SetTerminal(term);
             TryMatch(@"<<-BEGIN
 test
@@ -82,7 +82,7 @@ test
 
         [TestMethod]
         public void TestHereDocLiteralError() {
-            var term = new HeredocTerminal("Heredoc");
+            var term = new HereDocTerminal("Heredoc","<<",HereDocOptions.None);
             SetTerminal(term);
             TryMatch(@"<<BEGIN
 test");
@@ -92,7 +92,7 @@ test");
 
         [TestMethod]
         public void TestHereDocIndentedLiteralError() {
-            var term = new HeredocTerminal("Heredoc", "<<-", HeredocFlags.AllowIndentedEndToken);
+            var term = new HereDocTerminal("Heredoc", "<<-", HereDocOptions.AllowIndentedEndToken);
             SetTerminal(term);
             TryMatch(@"<<-BEGIN
 test");
@@ -102,7 +102,7 @@ test");
 
         [TestMethod]
         public void TestHereDocLiteralErrorIndented() {
-            var term = new HeredocTerminal("Heredoc");
+            var term = new HereDocTerminal("Heredoc", "<<", HereDocOptions.None);
             SetTerminal(term);
             TryMatch(@"<<BEGIN
 test

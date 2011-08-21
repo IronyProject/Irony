@@ -167,8 +167,7 @@ namespace Irony.Parsing {
                         }
                     }
                     if (!foundLine) {
-                        value.Append(line);
-                        value.Append('\n');
+                        value.AppendLine(line);
                         HereDocConsumedLine cline = new HereDocConsumedLine();
                         cline.offset = eolPos + 1;
                         cline.text = line;

@@ -60,8 +60,13 @@ namespace Irony.Parsing {
         public HereDocTerminal(string name, string start, HereDocOptions options)
             : this(name) {
             _subtypes.Add(start, options);
+            outputTerminal = this.OutputTerminal;
         }
 
+        public HereDocTerminal(string name, string start, HereDocOptions options, Terminal output)
+            : this(name, start, options) {
+                outputTerminal = output;
+        }
         public void AddStart(string startSymbol, HereDocOptions hereDocOptions) {
             _subtypes.Add(startSymbol, hereDocOptions);
         }
@@ -78,6 +83,8 @@ namespace Irony.Parsing {
         private char[] endOfLineMarker = { '\n', '\r' };
 
         private char[] endOfTokenMarker = { ' ', '\n', '\r' };
+
+        private Terminal outputTerminal;
 
         struct HereDocConsumedLine {
             public int offset;
@@ -165,7 +172,7 @@ namespace Irony.Parsing {
                 }
             }
             if (endFound) {
-                Token token = source.CreateToken(this.OutputTerminal);
+                Token token = source.CreateToken(outputTerminal);
                 token.Value = value.ToString();
                 if(source.Text.IndexOfAny(endOfLineMarker,newPos) != newPos)
                     source.PreviewPosition = newPos;

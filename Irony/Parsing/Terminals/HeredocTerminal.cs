@@ -79,7 +79,20 @@ namespace Irony.Parsing {
 
         private char[] endOfTokenMarker = { ' ', '\n', '\r' };
 
+        struct HereDocConsumedLine {
+            public int offset;
+            public string text;
+        }
+
         public override Token TryMatch(ParsingContext context, ISourceStream source) {
+            List<HereDocConsumedLine> consumedLines;
+            if (context.Values.ContainsKey("HereDocConsumedLines")) {
+                consumedLines = context.Values["HereDocConsumedLines"] as List<HereDocConsumedLine>;
+            } else {
+                consumedLines = new List<HereDocConsumedLine>();
+                context.Values["HereDocConsumedLines"] = consumedLines;
+            }
+
             // First determine which subtype we are working with:
             _subtypes.Sort(HereDocSubType.LongerStartFirst);
             HereDocSubType subtype = null;
@@ -108,7 +121,6 @@ namespace Irony.Parsing {
             source.PreviewPosition++;
             var value = new StringBuilder();
             var endFound = false;
-            var finalPos = -1;
             while (!endFound) {
                 var eolPos = source.Text.IndexOfAny(endOfLineMarker, source.PreviewPosition);
                 if (eolPos == -1)
@@ -118,25 +130,41 @@ namespace Irony.Parsing {
                 if (subtype.Flags.HasFlag(HereDocOptions.AllowIndentedEndToken)) {
                     var endPos = source.Text.IndexOf(tag, eolPos + 1);
                     if ((endPos != -1 && nextEol != -1 && endPos < nextEol) || (nextEol == -1 && endPos != -1)) {
-                        finalPos = endPos + tag.Length;
+                        HereDocConsumedLine cline = new HereDocConsumedLine();
+                        cline.offset = eolPos + 1;
+                        cline.text = line;
+                        consumedLines.Add(cline);
                         endFound = true;
                     }
                 } else {
                     if (line.Length >= tag.Length && line.Substring(0, tag.Length) == tag) {
-                        finalPos = nextEol == -1 ? eolPos + tag.Length + 1 : nextEol + tag.Length;
+                        HereDocConsumedLine cline = new HereDocConsumedLine();
+                        cline.offset = eolPos + 1;
+                        cline.text = line;
+                        consumedLines.Add(cline);
                         endFound = true;
                     }
                 }
                 if (!endFound) {
-                    value.Append(line);
-                    value.Append('\n');
-                    source.PreviewPosition = nextEol + 1;
+                    bool foundLine = false;
+                    foreach (HereDocConsumedLine consumed in consumedLines) {
+                        if (consumed.text == line && consumed.offset == eolPos + 1) {
+                            foundLine = true;
+                            break;
+                        }
+                    }
+                    if (!foundLine) {
+                        value.Append(line);
+                        value.Append('\n');
+                        HereDocConsumedLine cline = new HereDocConsumedLine();
+                        cline.offset = eolPos + 1;
+                        cline.text = line;
+                        consumedLines.Add(cline);
+                        source.PreviewPosition = nextEol + 1;
+                    }
                 }
             }
             if (endFound) {
-                var newSource = source.Text.Remove(newPos, finalPos - newPos);
-                source.PreviewPosition = newPos;
-                (source as SourceStream).SetText(newSource, source.PreviewPosition, true);
                 Token token = source.CreateToken(this.OutputTerminal);
                 token.Value = value.ToString();
                 return token;

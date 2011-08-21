@@ -173,8 +173,8 @@ namespace Irony.Parsing {
                         cline.offset = eolPos + 1;
                         cline.text = line;
                         consumedLines.Add(cline);
-                        source.PreviewPosition = nextEol + 1;
                     }
+                    source.PreviewPosition = nextEol + 1;
                 }
             }
             if (endFound) {

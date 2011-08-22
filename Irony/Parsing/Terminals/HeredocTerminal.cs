@@ -127,7 +127,8 @@ namespace Irony.Parsing {
                 context.TokenCreated += (sender, args) => {
                     if (args.Context.CurrentToken.Terminal == context.Language.Grammar.NewLine.OutputTerminal) {
                         int nextPosition = GetNextPosition(context);
-                        args.Context.Source.PreviewPosition = nextPosition;
+                        if(nextPosition != -1)
+                            args.Context.Source.PreviewPosition = nextPosition;
                     }
                 };
                 context.Values["HereDocEventCreated"] = true;

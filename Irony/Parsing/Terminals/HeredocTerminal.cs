@@ -124,12 +124,10 @@ namespace Irony.Parsing {
         private void SetUpEvent(ParsingContext context) {
             char[] endOfLineMarker = context.Language.Grammar.LineTerminators.ToCharArray();
             if (!context.Values.ContainsKey("HereDocEventCreated")) {
-                context.TokenCreated += (sender, args) => {
-                    if (args.Context.CurrentToken.Terminal == context.Language.Grammar.NewLine.OutputTerminal) {
-                        int nextPosition = GetNextPosition(context);
-                        if(nextPosition != -1)
-                            args.Context.Source.PreviewPosition = nextPosition;
-                    }
+                context.Language.Grammar.NewLine.ValidateToken += (sender, args) => {
+                    int nextPosition = GetNextPosition(context);
+                    if (nextPosition != -1)
+                        args.Context.Source.PreviewPosition = nextPosition;
                 };
                 context.Values["HereDocEventCreated"] = true;
             }

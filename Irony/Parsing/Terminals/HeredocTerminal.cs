@@ -179,8 +179,6 @@ namespace Irony.Parsing {
                 var eolPos = source.Text.IndexOfAny(endOfLineMarker, source.PreviewPosition);
                 if (eolPos == -1)
                     break;
-                bool doExtraShift = (source.PreviewChar == '\r' && source.NextPreviewChar == '\n');
-                if (doExtraShift) eolPos += 1;
                 source.PreviewPosition = eolPos + 1;
                 var nextEol = source.Text.IndexOfAny(endOfLineMarker, eolPos + 1);
                 var line = nextEol == -1 ? source.Text.Substring(eolPos + 1) : source.Text.Substring(eolPos + 1, nextEol - eolPos - 1);

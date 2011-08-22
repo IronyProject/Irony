@@ -109,15 +109,16 @@ namespace Irony.Parsing {
             return null;
         }
 
-        private HashSet<int> CreateConsumedLines(ParsingContext context) {
-            object temp;
-            if (context.Values.TryGetValue("HereDocConsumedLines", out temp)) {
-                return temp as HashSet<int>;
-            } else {
-                HashSet<int> consumedLines = new HashSet<int>();
-                context.Values["HereDocConsumedLines"] = consumedLines;
-                return consumedLines;
+        private int GetNextPosition(ParsingContext context) {
+            try {
+                return (int)context.Values["HereDocNextPosition"];
+            } catch { 
+                return -1; 
             }
+        }
+
+        private void SetNextPosition(ParsingContext context, int position) {
+            context.Values["HereDocNextPosition"] = position;
         }
 
         private void SetUpEvent(ParsingContext context) {
@@ -125,18 +126,8 @@ namespace Irony.Parsing {
             if (!context.Values.ContainsKey("HereDocEventCreated")) {
                 context.TokenCreated += (sender, args) => {
                     if (args.Context.CurrentToken.Terminal == context.Language.Grammar.NewLine.OutputTerminal) {
-                        HashSet<int> consumedLines = CreateConsumedLines(context);
-                        ISourceStream csource = args.Context.Source;
-                        var eolPos = csource.Text.IndexOfAny(endOfLineMarker, csource.PreviewPosition);
-                        if (consumedLines.Contains(eolPos + 1)) {
-                            int highestPosition = eolPos + 1;
-                            foreach (int position in consumedLines) {
-                                if (position > highestPosition)
-                                    highestPosition = position;
-                            }
-                            var nextLinePosition = csource.Text.IndexOfAny(endOfLineMarker, highestPosition);
-                            csource.PreviewPosition = nextLinePosition;
-                        }
+                        int nextPosition = GetNextPosition(context);
+                        args.Context.Source.PreviewPosition = nextPosition;
                     }
                 };
                 context.Values["HereDocEventCreated"] = true;
@@ -159,7 +150,6 @@ namespace Irony.Parsing {
         }
 
         public override Token TryMatch(ParsingContext context, ISourceStream source) {
-            HashSet<int> consumedLines = CreateConsumedLines(context);
             SetUpEvent(context);
 
             // First determine which subtype we are working with:
@@ -179,6 +169,9 @@ namespace Irony.Parsing {
             source.PreviewPosition = endOfLinePos;
 
             source.PreviewPosition++;
+            if (GetNextPosition(context) != -1)
+                source.PreviewPosition = GetNextPosition(context);
+
             var value = new StringBuilder();
             var endFound = false;
             while (!endFound) {
@@ -193,11 +186,9 @@ namespace Irony.Parsing {
 
                 endFound = subtype.CheckEnd(context, source, line, tag);
 
-                bool foundLine = consumedLines.Contains(eolPos + 1);
-                if (!foundLine) {
-                    if (!endFound) value.AppendLine(line);
-                    consumedLines.Add(eolPos + 1);
-                }
+                if (!endFound) value.AppendLine(line);
+                SetNextPosition(context, nextEol + 1);
+
                 source.PreviewPosition = nextEol + 1;
             }
             if (endFound) {
@@ -205,6 +196,8 @@ namespace Irony.Parsing {
                 token.Value = value.ToString();
                 if (source.Text.IndexOfAny(endOfLineMarker, endOfTagPos) != endOfTagPos)
                     source.PreviewPosition = endOfTagPos;
+                else
+                    SetNextPosition(context, -1);
                 return token;
             } else
                 return source.CreateErrorToken(Resources.ErrNoEndForHeredoc);

@@ -184,16 +184,20 @@ namespace Irony.Parsing {
                 endFound = subtype.CheckEnd(context, source, line, tag);
 
                 if (!endFound) value.AppendLine(line);
-                SetNextPosition(context, nextEol + 1);
 
-                source.PreviewPosition = nextEol + 1;
+                if (nextEol != -1) {
+                    SetNextPosition(context, nextEol + 1);
+
+                    source.PreviewPosition = nextEol + 1;
+                }
             }
             if (endFound) {
                 Token token = source.CreateToken(this.OutputTerminal);
                 token.Value = value.ToString();
-                if (source.Text.IndexOfAny(endOfLineMarker, endOfTagPos) != endOfTagPos)
+                if (source.Text.IndexOfAny(endOfLineMarker, endOfTagPos) != endOfTagPos) {
+                    source.ForcePreviewPosition = true;
                     source.PreviewPosition = endOfTagPos;
-                else
+                }  else
                     SetNextPosition(context, -1);
                 return token;
             } else

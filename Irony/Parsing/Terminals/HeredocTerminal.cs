@@ -120,6 +120,18 @@ namespace Irony.Parsing {
             }
         }
 
+        private string GetCurrentTag(ParsingContext context) {
+            try {
+                return (string)context.Values["HereDocCurrentTag"];
+            } catch {
+                return "";
+            }
+        }
+
+        private void SetCurrentTag(ParsingContext context, string tag) {
+            context.Values["HereDocCurrentTag"] = tag;
+        }
+
         private void SetNextPosition(ParsingContext context, int position) {
             context.Values["HereDocNextPosition"] = position;
         }
@@ -131,7 +143,7 @@ namespace Irony.Parsing {
                     int nextPosition = GetNextPosition(context);
                     if (nextPosition != -1) {
                         args.Context.Source.ForcePreviewPosition = true;
-                        args.Context.Source.PreviewPosition = nextPosition;
+                        args.Context.Source.PreviewPosition = nextPosition + GetCurrentTag(context).Length;
                     }
                 };
                 context.Values["HereDocEventCreated"] = true;
@@ -219,10 +231,12 @@ namespace Irony.Parsing {
                     source.ForcePreviewPosition = true;
                     source.PreviewPosition = endOfTagPos;
                     value.AppendLine();
+                    SetCurrentTag(context, tag);
                 } else {
                     source.ForcePreviewPosition = true;
                     source.PreviewPosition += tag.Length;
                     SetNextPosition(context, -1);
+                    SetCurrentTag(context, "");
                 }
                 token.Value = value.ToString();
                 return token;

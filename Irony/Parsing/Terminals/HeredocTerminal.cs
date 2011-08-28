@@ -175,10 +175,11 @@ namespace Irony.Parsing {
             source.PreviewPosition = endOfLinePos;
 
             source.PreviewPosition++;
-            bool firstLine = false;
-            if (GetNextPosition(context) != -1) {
+            var firstLine = false;
+            var nextPosition = GetNextPosition(context);
+            if (nextPosition != -1) {
                 firstLine = true;
-                source.PreviewPosition = GetNextPosition(context);
+                source.PreviewPosition = nextPosition;
             }
 
             var value = new StringBuilder();
@@ -187,7 +188,6 @@ namespace Irony.Parsing {
             var spaceCount = 0;
             while (!endFound) {
                 var eolPos = -1;
-                var nextPosition = GetNextPosition(context);
                 if (firstLine) {
                     eolPos = nextPosition;
                 } else {

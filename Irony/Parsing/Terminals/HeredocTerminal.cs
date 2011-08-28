@@ -53,9 +53,11 @@ namespace Irony.Parsing {
                 return source.Text.Substring(source.PreviewPosition - tagLength, tagLength);
             }
 
-            internal bool CheckEnd(ParsingContext context, ISourceStream source, string line, string tag) {
+            internal bool CheckEnd(ParsingContext context, ISourceStream source, string line, string tag, out int spaceCount) {
+                spaceCount = 0;
                 if (this.Flags.HasFlag(HereDocOptions.AllowIndentedEndToken)) {
                     if (line.Trim().IndexOf(tag, context.Language.Grammar.CaseSensitive ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase) == 0) {
+                        spaceCount = line.IndexOf(tag);
                         return true;
                     }
                 } else {
@@ -182,6 +184,7 @@ namespace Irony.Parsing {
             var value = new StringBuilder();
             var endFound = false;
             var currentLineCount = 0;
+            var spaceCount = 0;
             while (!endFound) {
                 var eolPos = -1;
                 var nextPosition = GetNextPosition(context);
@@ -204,7 +207,7 @@ namespace Irony.Parsing {
                 var nextEol = source.Text.IndexOfAny(endOfLineMarker, eolPos + 1);
                 var line = nextEol == -1 ? source.Text.Substring(eolPos + 1) : source.Text.Substring(eolPos + 1, nextEol - eolPos - 1);
 
-                endFound = subtype.CheckEnd(context, source, line, tag);
+                endFound = subtype.CheckEnd(context, source, line, tag, out spaceCount);
 
                 if (!endFound) { if (currentLineCount != 0) value.AppendLine(); currentLineCount++;  value.Append(line); }
 
@@ -224,7 +227,7 @@ namespace Irony.Parsing {
                     value.AppendLine();
                 } else {
                     source.ForcePreviewPosition = true;
-                    source.PreviewPosition += tag.Length;
+                    source.PreviewPosition += tag.Length + spaceCount;
                     SetNextPosition(context, -1);
                 }
                 token.Value = value.ToString();

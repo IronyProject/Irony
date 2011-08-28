@@ -181,6 +181,7 @@ namespace Irony.Parsing {
 
             var value = new StringBuilder();
             var endFound = false;
+            var currentLineCount = 0;
             while (!endFound) {
                 var eolPos = -1;
                 var nextPosition = GetNextPosition(context);
@@ -205,7 +206,7 @@ namespace Irony.Parsing {
 
                 endFound = subtype.CheckEnd(context, source, line, tag);
 
-                if (!endFound) { value.AppendLine(); value.Append(line); }
+                if (!endFound) { if (currentLineCount != 0) value.AppendLine(); currentLineCount++;  value.Append(line); }
 
                 if (nextEol != -1) {
                     SetNextPosition(context, nextEol + 1);

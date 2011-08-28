@@ -101,7 +101,7 @@ test
 BEGIN");
             Assert.IsNotNull(_token, "Failed to produce a token on valid string.");
             Assert.IsNotNull(_token.Value, "Token Value field is null - should be string.");
-            Assert.IsTrue((string)_token.Value == "test" + Environment.NewLine, "Token Value is wrong, got {0} of type {1}", _token.Value, _token.Value.GetType().ToString());
+            Assert.IsTrue((string)_token.Value == "test", "Token Value is wrong, got {0} of type {1}", _token.Value, _token.Value.GetType().ToString());
         }
 
         [TestMethod]
@@ -113,7 +113,7 @@ test
                         BEGIN");
             Assert.IsNotNull(_token, "Failed to produce a token on valid string.");
             Assert.IsNotNull(_token.Value, "Token Value field is null - should be string.");
-            Assert.IsTrue((string)_token.Value == "test" + Environment.NewLine, "Token Value is wrong, got {0} of type {1}", _token.Value, _token.Value.GetType().ToString());
+            Assert.IsTrue((string)_token.Value == "test", "Token Value is wrong, got {0} of type {1}", _token.Value, _token.Value.GetType().ToString());
         }
 
         [TestMethod]

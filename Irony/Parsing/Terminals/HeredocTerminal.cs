@@ -111,7 +111,10 @@ namespace Irony.Parsing {
 
         private int GetNextPosition(ParsingContext context) {
             try {
-                return (int)context.Values["HereDocNextPosition"];
+                int nextPosition = (int)context.Values["HereDocNextPosition"];
+                if (context.Source.Text[nextPosition - 1] == '\r' && context.Source.Text[nextPosition] == '\n')
+                    return nextPosition + 1;
+                return nextPosition;
             } catch { 
                 return -1; 
             }
@@ -129,8 +132,6 @@ namespace Irony.Parsing {
                     if (nextPosition != -1) {
                         args.Context.Source.ForcePreviewPosition = true;
                         args.Context.Source.PreviewPosition = nextPosition;
-                        if (args.Context.Source.Text[nextPosition] == '\n')
-                            args.Context.Source.PreviewPosition++;
                     }
                 };
                 context.Values["HereDocEventCreated"] = true;

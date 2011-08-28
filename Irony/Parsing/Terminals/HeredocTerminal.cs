@@ -126,8 +126,12 @@ namespace Irony.Parsing {
             if (!context.Values.ContainsKey("HereDocEventCreated")) {
                 context.Language.Grammar.NewLine.ValidateToken += (sender, args) => {
                     int nextPosition = GetNextPosition(context);
-                    if (nextPosition != -1)
+                    if (nextPosition != -1) {
+                        args.Context.Source.ForcePreviewPosition = true;
                         args.Context.Source.PreviewPosition = nextPosition;
+                        if (args.Context.Source.Text[nextPosition] == '\n')
+                            args.Context.Source.PreviewPosition++;
+                    }
                 };
                 context.Values["HereDocEventCreated"] = true;
             }

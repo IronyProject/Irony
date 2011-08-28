@@ -173,22 +173,39 @@ namespace Irony.Parsing {
             source.PreviewPosition = endOfLinePos;
 
             source.PreviewPosition++;
-            if (GetNextPosition(context) != -1)
+            bool firstLine = false;
+            if (GetNextPosition(context) != -1) {
+                firstLine = true;
                 source.PreviewPosition = GetNextPosition(context);
+            }
 
             var value = new StringBuilder();
             var endFound = false;
             while (!endFound) {
-                var eolPos = source.Text.IndexOfAny(endOfLineMarker, source.PreviewPosition);
+                var eolPos = -1;
+                var nextPosition = GetNextPosition(context);
+                if (firstLine) {
+                    eolPos = nextPosition;
+                } else {
+                    eolPos = source.Text.IndexOfAny(endOfLineMarker, source.PreviewPosition);
+                }
                 if (eolPos == -1)
                     break;
-                source.PreviewPosition = eolPos + 1;
+                if (firstLine) {
+                    source.PreviewPosition = eolPos;
+                    eolPos--;
+                    firstLine = false;
+                } else {
+                    if (source.Text[eolPos + 1] == '\n' && source.Text[eolPos] == '\r')
+                        eolPos++;
+                    source.PreviewPosition = eolPos + 1;
+                }
                 var nextEol = source.Text.IndexOfAny(endOfLineMarker, eolPos + 1);
                 var line = nextEol == -1 ? source.Text.Substring(eolPos + 1) : source.Text.Substring(eolPos + 1, nextEol - eolPos - 1);
 
                 endFound = subtype.CheckEnd(context, source, line, tag);
 
-                if (!endFound) value.AppendLine(line);
+                if (!endFound) { value.AppendLine(); value.Append(line); }
 
                 if (nextEol != -1) {
                     SetNextPosition(context, nextEol + 1);
@@ -198,12 +215,16 @@ namespace Irony.Parsing {
             }
             if (endFound) {
                 Token token = source.CreateToken(this.OutputTerminal);
-                token.Value = value.ToString();
                 if (source.Text.IndexOfAny(endOfLineMarker, endOfTagPos) != endOfTagPos) {
                     source.ForcePreviewPosition = true;
                     source.PreviewPosition = endOfTagPos;
-                }  else
+                    value.AppendLine();
+                } else {
+                    source.ForcePreviewPosition = true;
+                    source.PreviewPosition += tag.Length;
                     SetNextPosition(context, -1);
+                }
+                token.Value = value.ToString();
                 return token;
             } else
                 return source.CreateErrorToken(Resources.ErrNoEndForHeredoc);

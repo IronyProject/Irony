@@ -52,7 +52,7 @@ namespace Irony.Parsing {
     CreateAst = 0x08, //create AST nodes 
 
     //Runtime
-    CanRunSample = 0x0100,
+    // CanRunSample = 0x0100, //DEPRECATED, Grammar Explorer uses ICanRunSample interface implementation as indicator/runner of samples
     SupportsCommandLine = 0x0200,
     TailRecursive = 0x0400, //Tail-recursive language - Scheme is one example
     SupportsBigInt = 0x01000,

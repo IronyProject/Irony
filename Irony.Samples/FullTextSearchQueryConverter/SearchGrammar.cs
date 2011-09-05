@@ -10,8 +10,7 @@ using System.Globalization;
 namespace Irony.Samples.FullTextSearch
 {
   [Language("SearchGrammar", "1.0", "Google-to-SQL query converter")]
-  public class SearchGrammar : Grammar
-    {
+  public class SearchGrammar : Grammar, ICanRunSample  {
         public SearchGrammar() : base(false)   {
           this.GrammarComments = 
             "Google-to-SQL full-text query format converter. Based on original project by Michael Coles.\r\n" +
@@ -64,7 +63,6 @@ namespace Irony.Samples.FullTextSearch
           //also do not report braces as expected
           this.AddToNoReportGroup("(", ")", "<", ">"); 
 
-          LanguageFlags |= LanguageFlags.CanRunSample;
         }
 
         //Creates extended identifier terminal that allows international characters
@@ -89,8 +87,8 @@ namespace Irony.Samples.FullTextSearch
           return term;
         }
 
-        public override string RunSample(LanguageData language, ParseTree parseTree, ref object data) {
-          var sql = ConvertQuery(parseTree.Root);
+        public string RunSample(RunSampleArgs args) {
+          var sql = ConvertQuery(args.ParsedSample.Root);
           return sql;
         }
 

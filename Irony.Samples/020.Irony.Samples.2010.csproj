@@ -81,7 +81,7 @@
     <Compile Include="Java\JavaGrammar.Syntax.cs" />
     <Compile Include="MiniPython\MiniPython.cs" />
     <Compile Include="GWBasic\GwBasicGrammar.cs" />
-    <Compile Include="ExpressionEvaluator\ExpressionEvaluatorGrammar.cs" />
+    <Compile Include="ExpressionEvaluator\SampleExpressionEvaluatorGrammar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scheme\SchemeGrammar.cs" />
     <None Include="SourceSamples\c#\bottles-v11-long.cs" />
@@ -119,7 +119,9 @@
     <None Include="SourceSamples\Wiki\Sample1_codeplex.txt" />
     <None Include="SourceSamples\_about.txt" />
     <Content Include="Java\about_java_grammar.txt" />
-    <None Include="SourceSamples\ExpressionEvaluator\PerfSample.txt" />
+    <None Include="SourceSamples\ExpressionEvaluator\PerfTest.txt" />
+    <None Include="SourceSamples\ExpressionEvaluator\UseMath.txt" />
+    <None Include="SourceSamples\ExpressionEvaluator\UseEnv.txt" />
     <Content Include="SourceSamples\ExpressionEvaluator\StringSample.txt" />
     <Content Include="SourceSamples\Java\about_samples.txt" />
     <Content Include="SourceSamples\Java\Sample 1.java" />
@@ -128,11 +130,15 @@
     <Content Include="SourceSamples\Java\Sample 4.java" />
     <Content Include="SourceSamples\Java\Sample 5.java" />
     <Content Include="SourceSamples\Java\Sample 6.java" />
-    <None Include="SourceSamples\MiniPython\PerfSample.py" />
+    <None Include="SourceSamples\MiniPython\PerfTest.py" />
     <Content Include="SourceSamples\Wiki\Sample1_creole.txt" />
     <Content Include="SQL\Sql89-GoldParser.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Irony.Interpreter\015.Irony.Interpreter.2010.csproj">
+      <Project>{321A7F5D-00C2-4095-9970-075CDEE8C139}</Project>
+      <Name>015.Irony.Interpreter.2010</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Irony\010.Irony.2010.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
       <Name>010.Irony.2010</Name>

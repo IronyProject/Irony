@@ -21,8 +21,8 @@ namespace Irony.Parsing {
   // Irony parser/scanner reports an error like "Syntax error, invalid character. Expected: <expected list>."
   // The <expected list> is a list of all terminals (symbols) that are expected in current position.
   // This list might quite long and quite difficult to look through. The solution is to provide Group names for 
-  // groups of terminals - Group of type Normal. 
-  // Some terminals might be excluded from showing in expected list by including them into group of type Exclude. 
+  // groups of terminals - theses are groups of type Normal. 
+  // Some terminals might be excluded from showing in expected list by including them into group of type DoNotReport. 
   // Finally, Operator group allows you to specify group name for all operator symbols without listing operators -
   // Irony will collect all operator symbols registered with RegisterOperator method automatically. 
 

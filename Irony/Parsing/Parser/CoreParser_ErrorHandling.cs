@@ -144,7 +144,8 @@ namespace Irony.Parsing {
             terms.ExceptWith(group.Terminals); 
       //Add normal and operator groups
       foreach(var group in grammar.TermReportGroups)
-        if(group.GroupType == TermReportGroupType.Normal || group.GroupType == TermReportGroupType.Operator && terms.Overlaps(group.Terminals)) {
+        if((group.GroupType == TermReportGroupType.Normal || group.GroupType == TermReportGroupType.Operator) && 
+             terms.Overlaps(group.Terminals)) {
           result.Add(group.Alias); 
           terms.ExceptWith(group.Terminals);
         }

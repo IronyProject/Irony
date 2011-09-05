@@ -74,30 +74,31 @@
     <Compile Include="Interpreter\Ast\PrimitiveNodes\IdentifierNode.cs" />
     <Compile Include="Interpreter\Ast\PrimitiveNodes\LiteralValueNode.cs" />
     <Compile Include="Interpreter\Ast\PrimitiveNodes\StringTemplateNode.cs" />
+    <Compile Include="Interpreter\Ast\SpecialNodes\EmptyStatementNode.cs" />
     <Compile Include="Interpreter\Ast\SpecialNodes\NotSupportedNode.cs" />
     <Compile Include="Interpreter\Ast\SpecialNodes\NullNode.cs" />
     <Compile Include="Interpreter\Ast\Statements\AssignmentNode.cs" />
     <Compile Include="Interpreter\Ast\Statements\StatementListNode.cs" />
+    <Compile Include="Interpreter\Bindings\Binding.cs" />
+    <Compile Include="Interpreter\Bindings\ClrInteropBindings.cs" />
+    <Compile Include="Interpreter\Bindings\SlotBinding.cs" />
     <Compile Include="Interpreter\Diagnostics\ScriptException.cs" />
     <Compile Include="Interpreter\Diagnostics\ScriptStackTrace.cs" />
     <Compile Include="Interpreter\Execution\ScriptApp.cs" />
     <Compile Include="Interpreter\Execution\ScriptThread.cs" />
-    <Compile Include="Interpreter\LanguageRuntime\Binding.cs" />
     <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime.cs" />
     <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime_Binding.cs" />
     <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime_OpDispatch.cs" />
     <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime_OpDispatch_Init.cs" />
     <Compile Include="Interpreter\LanguageRuntime\NoneClass.cs" />
     <Compile Include="Interpreter\LanguageRuntime\OperatorImplementation.cs" />
-    <Compile Include="Interpreter\Metadata\ModuleInfo.cs" />
     <Compile Include="Interpreter\Metadata\ScopeInfo.cs" />
     <Compile Include="Interpreter\Metadata\ScriptAppInfo.cs" />
     <Compile Include="Interpreter\Metadata\SlotInfo.cs" />
-    <Compile Include="Interpreter\Scopes\Accessors\Base.cs" />
-    <Compile Include="Interpreter\Scopes\Accessors\SlotReader.cs" />
-    <Compile Include="Interpreter\Scopes\Accessors\SlotWriter.cs" />
+    <Compile Include="Interpreter\Scopes\ImportSpec.cs" />
     <Compile Include="Interpreter\Scopes\Scope.cs" />
     <Compile Include="Interpreter\Scopes\ScopeValuesDictionary.cs" />
+    <Compile Include="Interpreter\Scopes\ScriptModule.cs" />
     <Compile Include="Interpreter\Scopes\_ScopeBase.cs" />
     <Compile Include="Microsoft\BigInteger.cs" />
     <Compile Include="Microsoft\Complex64.cs" />
@@ -172,6 +173,7 @@
     <EmbeddedResource Include="Resources.resx" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Interpreter\_about_Irony_Interpreter.txt" />
     <Content Include="Parsing\Data\Construction\_about_parser_construction.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />

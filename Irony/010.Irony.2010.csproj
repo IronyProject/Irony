@@ -75,51 +75,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Common\Extensions.cs" />
-    <None Include="Common\HotSwapDictionary.cs" />
-    <Compile Include="Interpreter\Ast\Base\AstHelperClasses.cs" />
-    <Compile Include="Interpreter\Ast\Functions\Closure.cs" />
-    <Compile Include="Interpreter\Ast\SpecialNodes\EmptyStatementNode.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Interpreter\Execution\ScriptApp.cs" />
-    <Compile Include="Interpreter\LanguageRuntime\Binding.cs" />
-    <Compile Include="Interpreter\Scopes\Accessors\Base.cs" />
-    <Compile Include="Interpreter\Scopes\Accessors\SlotReader.cs" />
-    <Compile Include="Interpreter\Scopes\_ScopeBase.cs" />
-    <Compile Include="Interpreter\Scopes\ScopeValuesDictionary.cs" />
-    <Compile Include="Interpreter\Metadata\SlotInfo.cs" />
-    <Compile Include="Interpreter\Diagnostics\ScriptStackTrace.cs" />
-    <Compile Include="Interpreter\Execution\ScriptThread.cs" />
-    <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime_Binding.cs" />
-    <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime_OpDispatch.cs" />
-    <Compile Include="Interpreter\LanguageRuntime\NoneClass.cs" />
-    <Compile Include="Common\GenericAstInterfaces.cs" />
-    <Compile Include="Interpreter\Ast\Functions\FunctionCallNode.cs" />
-    <Compile Include="Interpreter\Ast\Functions\FunctionDefNode.cs" />
-    <Compile Include="Interpreter\Ast\Functions\ParamListNode.cs" />
-    <Compile Include="Interpreter\Ast\Statements\AssignmentNode.cs" />
-    <Compile Include="Interpreter\Ast\Expressions\IfNode.cs" />
-    <Compile Include="Interpreter\Ast\Statements\StatementListNode.cs" />
-    <Compile Include="Interpreter\Ast\PrimitiveNodes\StringTemplateNode.cs" />
-    <Compile Include="Interpreter\Ast\Expressions\IncDecNode.cs" />
-    <Compile Include="Interpreter\Ast\SpecialNodes\NullNode.cs" />
-    <Compile Include="Interpreter\Ast\Expressions\ExpressionListNode.cs" />
-    <Compile Include="Interpreter\Ast\SpecialNodes\NotSupportedNode.cs" />
-    <Compile Include="Interpreter\Execution\CommandLine.cs" />
-    <Compile Include="Interpreter\LanguageRuntime\OperatorImplementation.cs" />
-    <Compile Include="Interpreter\Metadata\ScopeInfo.cs" />
-    <Compile Include="Interpreter\Diagnostics\ScriptException.cs" />
-    <None Include="Interpreter\OLD_Interpreter.cs" />
-    <Compile Include="Interpreter\Ast\PrimitiveNodes\LiteralValueNode.cs" />
-    <Compile Include="Interpreter\Scopes\Accessors\SlotWriter.cs" />
-    <Compile Include="Interpreter\Metadata\ModuleInfo.cs" />
+    <Compile Include="Interfaces.cs" />
     <Compile Include="Parsing\Grammar\GrammarError.cs" />
     <Compile Include="Parsing\Grammar\OperatorInfo.cs" />
     <Compile Include="Parsing\Grammar\TermReportGroups.cs" />
     <Compile Include="Parsing\Diagnostics\ParseTreeExtensions.cs" />
     <Compile Include="Parsing\Parser\ParsingEventArgs.cs" />
-    <Compile Include="Common\StringUtils.cs" />
+    <Compile Include="Utilities\StringUtils.cs" />
     <Compile Include="Parsing\Parser\CoreParser_ErrorHandling.cs" />
     <Compile Include="Parsing\Diagnostics\ParserTrace.cs" />
     <Compile Include="Parsing\Terminals\DataLiteralBase.cs" />
@@ -143,7 +105,6 @@
     <Compile Include="Parsing\Data\Construction\ParserDataBuilder_HelperClasses.cs" />
     <Compile Include="Parsing\Data\Construction\ParserDataBuilder.cs" />
     <Compile Include="Parsing\Data\Construction\ScannerDataBuilder.cs" />
-    <Compile Include="Interpreter\Ast\Base\AstInterfaces.cs" />
     <Compile Include="Parsing\Parser\Parser.cs" />
     <Compile Include="Parsing\Data\ParserData.cs" />
     <Compile Include="Parsing\Parser\ParserStack.cs" />
@@ -175,11 +136,6 @@
     <Compile Include="Parsing\Grammar\BnfTerm.cs" />
     <Compile Include="Parsing\Grammar\Grammar.cs" />
     <Compile Include="Parsing\Terminals\TerminalFactory.cs" />
-    <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime_OpDispatch_Init.cs" />
-    <Compile Include="Interpreter\Ast\Expressions\BinaryOperationNode.cs" />
-    <Compile Include="Interpreter\Ast\Expressions\UnaryOperationNode.cs" />
-    <Compile Include="Interpreter\Ast\PrimitiveNodes\IdentifierNode.cs" />
-    <Compile Include="Interpreter\Ast\Base\AstNode.cs" />
     <Compile Include="Parsing\TokenFilters\CodeOutlineFilter.cs" />
     <Compile Include="Parsing\TokenFilters\TokenFilter.cs" />
     <Compile Include="Microsoft\Complex64.cs" />
@@ -190,9 +146,6 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Microsoft\BigInteger.cs" />
-    <Compile Include="Interpreter\Metadata\ScriptAppInfo.cs" />
-    <Compile Include="Interpreter\Scopes\Scope.cs" />
-    <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -216,12 +169,9 @@
     <None Include="irony.snk" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Interpreter\_about_Irony_Interpreter.txt" />
     <Content Include="Parsing\Data\Construction\_about_parser_construction.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="SilverlightOnly\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
       <Visible>False</Visible>

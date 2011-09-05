@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{321A7F5D-00C2-4095-9970-075CDEE8C139}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Irony.Interpreter</RootNamespace>
+    <AssemblyName>Irony.Interpreter</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Ast\Base\AstHelperClasses.cs" />
+    <Compile Include="Ast\Base\AstInterfaces.cs" />
+    <Compile Include="Ast\Base\AstNode.cs" />
+    <Compile Include="Ast\Expressions\BinaryOperationNode.cs" />
+    <Compile Include="Ast\Expressions\ExpressionListNode.cs" />
+    <Compile Include="Ast\Expressions\IfNode.cs" />
+    <Compile Include="Ast\Expressions\IncDecNode.cs" />
+    <Compile Include="Ast\Expressions\UnaryOperationNode.cs" />
+    <Compile Include="Ast\Functions\Closure.cs" />
+    <Compile Include="Ast\Functions\FunctionCallNode.cs" />
+    <Compile Include="Ast\Functions\FunctionDefNode.cs" />
+    <Compile Include="Ast\Functions\ParamListNode.cs" />
+    <Compile Include="Ast\PrimitiveNodes\IdentifierNode.cs" />
+    <Compile Include="Ast\PrimitiveNodes\LiteralValueNode.cs" />
+    <Compile Include="Ast\PrimitiveNodes\StringTemplateNode.cs" />
+    <Compile Include="Ast\SpecialNodes\EmptyStatementNode.cs" />
+    <Compile Include="Ast\SpecialNodes\NotSupportedNode.cs" />
+    <Compile Include="Ast\SpecialNodes\NullNode.cs" />
+    <Compile Include="Ast\Statements\AssignmentNode.cs" />
+    <Compile Include="Ast\Statements\StatementListNode.cs" />
+    <Compile Include="Diagnostics\ScriptException.cs" />
+    <Compile Include="Diagnostics\ScriptStackTrace.cs" />
+    <Compile Include="InterpretedLanguageGrammar.cs" />
+    <Compile Include="LanguageRuntime\LanguageRuntime.cs" />
+    <Compile Include="LanguageRuntime\LanguageRuntime_Binding.cs" />
+    <Compile Include="LanguageRuntime\LanguageRuntime_OpDispatch.cs" />
+    <Compile Include="LanguageRuntime\LanguageRuntime_OpDispatch_Init.cs" />
+    <Compile Include="LanguageRuntime\NoneClass.cs" />
+    <Compile Include="LanguageRuntime\OperatorImplementation.cs" />
+    <Compile Include="_Evaluator\ExpressionEvaluator.cs" />
+    <Compile Include="_Evaluator\ExpressionEvaluatorGrammar.cs" />
+    <None Include="OLD_Interpreter.cs" />
+    <None Include="Unused\HotSwapDictionary.cs" />
+    <Compile Include="Scopes\Bindings\Binding.cs" />
+    <Compile Include="Scopes\Bindings\ClrInteropBindings.cs" />
+    <Compile Include="Scopes\Bindings\SlotBinding.cs" />
+    <Compile Include="Scopes\ImportSpec.cs" />
+    <Compile Include="Scopes\Scope.cs" />
+    <Compile Include="Scopes\ScopeInfo.cs" />
+    <Compile Include="Scopes\ScopeValuesDictionary.cs" />
+    <Compile Include="Scopes\ScriptAppInfo.cs" />
+    <Compile Include="Scopes\ModuleInfo.cs" />
+    <Compile Include="Scopes\SlotInfo.cs" />
+    <Compile Include="Scopes\_ScopeBase.cs" />
+    <Compile Include="SriptApplication\CommandLine.cs" />
+    <Compile Include="SriptApplication\ScriptApp.cs" />
+    <Compile Include="SriptApplication\ScriptThread.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="_about_Irony_Interpreter.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Irony\010.Irony.2010.csproj">
+      <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
+      <Name>010.Irony.2010</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

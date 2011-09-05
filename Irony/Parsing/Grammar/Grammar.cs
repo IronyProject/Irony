@@ -15,8 +15,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Text;
-using Irony.Interpreter.Ast;
-using Irony.Interpreter;
 
 namespace Irony.Parsing { 
 
@@ -60,7 +58,8 @@ namespace Irony.Parsing {
     public readonly TerminalSet FallbackTerminals = new TerminalSet();
 
     public Type DefaultNodeType;
-    public Type DefaultLiteralNodeType = typeof(LiteralValueNode); //default node type for literals
+    public Type DefaultLiteralNodeType; //default node type for literals
+    public Type DefaultIdentifierNodeType; //default node type for identifiers
 
 
     /// <summary>
@@ -274,30 +273,6 @@ namespace Irony.Parsing {
     }//method
     #endregion
 
-
-    #region Running in Grammar Explorer
-    //This method allows custom implementation of running a sample in Grammar Explorer
-    // By default it evaluates a parse tree using default interpreter 
-    public virtual string RunSample(LanguageData language, ParseTree parsedSample, ref object data) {
-      // Irony interpreter requires that once a script is executed in a ScriptApp, it is bound to ScriptAppInfo object, 
-      // and all later script executions should be performed only in the context of the same app.
-      // (because first execution sets up a lot of things, like slots, scopes, etc, which are bound to script app).
-      // We save the app instance in Tag property of the parsed tree and reuse it if we find it there on 
-      // consequitive re-runs. 
-      var appInfo = parsedSample.Tag as ScriptAppInfo;
-      if (appInfo == null) {
-        var runtime = new LanguageRuntime(language);
-        appInfo = new ScriptAppInfo(runtime, parsedSample);
-        parsedSample.Tag = appInfo;
-      }
-      var env = new ScriptApp(appInfo);
-      var ctx = new ScriptThread(env);
-      var root = parsedSample.Root.AstNode as AstNode;
-      //for (int i = 0; i < 1000; i++) //for perf measurements, to execute 1000 times
-      appInfo.Execute(ctx);
-      return env.OutputBuffer.ToString();
-    }
-    #endregion
 
 
     #region MakePlusRule, MakeStarRule methods

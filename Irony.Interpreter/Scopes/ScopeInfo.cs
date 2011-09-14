@@ -1,4 +1,16 @@
-﻿using System;
+﻿#region License
+/* **********************************************************************************
+ * Copyright (c) Roman Ivantsov
+ * This source code is subject to terms and conditions of the MIT License
+ * for Irony. A copy of the license can be found in the License.txt file
+ * at the root of this distribution. 
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * MIT License.
+ * You must not remove this notice from this software.
+ * **********************************************************************************/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,7 +33,7 @@ namespace Irony.Interpreter {
     public Scope ScopeInstance; //Experiment: reusable scope instance; see ScriptThread.cs class
 
     private SlotInfoDictionary _slots;
-    private object _lockObject = new object(); 
+    internal protected object LockObject = new object(); 
 
     public ScopeInfo(AstNode ownerNode, bool caseSensitive) {
       if (ownerNode == null)
@@ -56,7 +68,7 @@ namespace Irony.Interpreter {
 
     #region Slot operations
     public SlotInfo AddSlot(string name, SlotType type) {
-      lock (_lockObject) {
+      lock (LockObject) {
         var index = type == SlotType.Value ? ValuesCount++ : ParametersCount++;
         var slot = new SlotInfo(this, type, name, index);
         _slots.Add(name, slot);
@@ -66,7 +78,7 @@ namespace Irony.Interpreter {
 
     //Returns null if slot not found.
     public SlotInfo GetSlot(string name) {
-      lock (_lockObject) {
+      lock (LockObject) {
         SlotInfo slot;
         _slots.TryGetValue(name, out slot);
         return slot;
@@ -74,19 +86,19 @@ namespace Irony.Interpreter {
     }
 
     public IList<SlotInfo> GetSlots() {
-      lock (_lockObject) {
+      lock (LockObject) {
         return new List<SlotInfo>(_slots.Values);
       }
     }
 
     public IList<string> GetNames() {
-      lock (_lockObject) {
+      lock (LockObject) {
         return new List<string>(_slots.Keys);
       }
     }
 
     public int GetSlotCount() {
-      lock (_lockObject) {
+      lock (LockObject) {
         return _slots.Count;
       }
     }

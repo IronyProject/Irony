@@ -15,12 +15,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Numerics;
 using System.Diagnostics;
 using Irony.Parsing;
 
 namespace Irony.Interpreter { 
-  using BigInteger = Microsoft.Scripting.Math.BigInteger;
-  using Complex = Microsoft.Scripting.Math.Complex64;
 
   //Initialization of Runtime
   public partial class LanguageRuntime {
@@ -155,7 +154,7 @@ namespace Irony.Interpreter {
       AddConverter(typeof(UInt64), targetType, value => (double)(UInt64)value);
       AddConverter(typeof(Single), targetType, value => (double)(Single)value);
       if (_supportsBigInt)
-        AddConverter(typeof(BigInteger), targetType, value => ((BigInteger)value).ToDouble(null));
+        AddConverter(typeof(BigInteger), targetType, value => ((double) (BigInteger)value));
 
       //->Single
       targetType = typeof(Single);
@@ -168,7 +167,7 @@ namespace Irony.Interpreter {
       AddConverter(typeof(Int64), targetType, value => (Single)(Int64)value);
       AddConverter(typeof(UInt64), targetType, value => (Single)(UInt64)value);
       if (_supportsBigInt)
-        AddConverter(typeof(BigInteger), targetType, value => (Single)((BigInteger)value).ToDouble(null));
+        AddConverter(typeof(BigInteger), targetType, value => (Single)(BigInteger)value);
       
       //->UInt64
       targetType = typeof(UInt64);
@@ -227,16 +226,16 @@ namespace Irony.Interpreter {
 
     public static object ConvertBigIntToComplex(object value) {
       BigInteger bi = (BigInteger)value;
-      return new Complex(bi.ToFloat64());
+      return new Complex((double) bi, 0);
     }
 
     public static object ConvertAnyToComplex(object value) {
       double d = Convert.ToDouble(value);
-      return new Complex(d);
+      return new Complex(d, 0);
     }
     public static object ConvertAnyIntToBigInteger(object value) {
       long l = Convert.ToInt64(value);
-      return BigInteger.Create(l);
+      return new BigInteger(l);
     }
     #endregion
 
@@ -319,8 +318,6 @@ namespace Irony.Interpreter {
       AddBinary(op, typeof(decimal), (x, y) => (decimal)x % (decimal)y);
       if (_supportsBigInt)
         AddBinary(op, typeof(BigInteger), (x, y) => (BigInteger)x % (BigInteger)y);
-      if (_supportsComplex)
-        AddBinary(op, typeof(Complex), (x, y) => (Complex)x % (Complex)y);
 
       // For bitwise operator, we provide explicit implementations for "small" integer types
       op = ExpressionType.And;
@@ -439,8 +436,6 @@ namespace Irony.Interpreter {
       AddUnary(op, typeof(decimal), x => +(decimal)x);
       if (_supportsBigInt)
         AddUnary(op, typeof(BigInteger), x => +(BigInteger)x);
-      if (_supportsComplex)
-        AddUnary(op, typeof(Complex), x => +(Complex)x);
 
       op = ExpressionType.Negate;
       AddUnary(op, typeof(sbyte), x => -(sbyte)x);

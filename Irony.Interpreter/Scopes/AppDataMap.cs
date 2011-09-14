@@ -19,32 +19,23 @@ using Irony.Interpreter.Ast;
 
 namespace Irony.Interpreter {
 
-  /// <summary>
-  /// Represents a full meta-data set of a script app. 
-  /// </summary>
-  public class ScriptAppInfo  {
-    public readonly Parser Parser; 
-    public readonly LanguageRuntime Runtime;
-    public readonly bool LanguageCaseSensitive;
-
+  /// <summary> Represents a set of all of static scopes/modules in the application.  </summary>
+  public class AppDataMap  {
+    public AstNode ProgramRoot; //artificial root associated with MainModule
     public ScopeInfoList StaticScopeInfos = new ScopeInfoList();
     public ModuleInfoList Modules = new ModuleInfoList(); 
     public ModuleInfo MainModule;
-    public AstNode ProgramRoot; //artificial root associated with MainModule
-    private object _lockObject = new object(); 
+    public readonly bool LanguageCaseSensitive;
 
-    public ScriptAppInfo(LanguageRuntime runtime) {
-      Runtime = runtime;
-      Parser = new Parser(Runtime.Language); 
-      LanguageCaseSensitive = Runtime.Language.Grammar.CaseSensitive;
-      var ProgramRoot = new AstNode(); 
+    public AppDataMap(bool languageCaseSensitive, AstNode programRoot = null) {
+      LanguageCaseSensitive = languageCaseSensitive;
+      ProgramRoot = programRoot?? new AstNode(); 
       var mainScopeInfo = new ScopeInfo(ProgramRoot, LanguageCaseSensitive); 
       StaticScopeInfos.Add(mainScopeInfo);
       mainScopeInfo.StaticIndex = 0;
       MainModule = new ModuleInfo("main", "main", mainScopeInfo);
       Modules.Add(MainModule);
     }
-
 
     public ModuleInfo GetModule(AstNode moduleNode) {
       foreach (var m in Modules)

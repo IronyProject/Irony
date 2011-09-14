@@ -33,6 +33,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Xml" />
@@ -67,6 +68,7 @@
     <Compile Include="LanguageRuntime\LanguageRuntime_OpDispatch_Init.cs" />
     <Compile Include="LanguageRuntime\NoneClass.cs" />
     <Compile Include="LanguageRuntime\OperatorImplementation.cs" />
+    <Compile Include="SriptApplication\ConsoleAdaptor.cs" />
     <Compile Include="_Evaluator\ExpressionEvaluator.cs" />
     <Compile Include="_Evaluator\ExpressionEvaluatorGrammar.cs" />
     <None Include="OLD_Interpreter.cs" />
@@ -78,7 +80,7 @@
     <Compile Include="Scopes\Scope.cs" />
     <Compile Include="Scopes\ScopeInfo.cs" />
     <Compile Include="Scopes\ScopeValuesDictionary.cs" />
-    <Compile Include="Scopes\ScriptAppInfo.cs" />
+    <Compile Include="Scopes\AppDataMap.cs" />
     <Compile Include="Scopes\ModuleInfo.cs" />
     <Compile Include="Scopes\SlotInfo.cs" />
     <Compile Include="Scopes\_ScopeBase.cs" />

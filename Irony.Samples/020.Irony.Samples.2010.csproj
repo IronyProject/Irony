@@ -110,7 +110,7 @@
     <None Include="SourceSamples\Scheme\Fib.scm" />
     <Content Include="CSharp\Notes.txt" />
     <None Include="SourceSamples\99 bottles.bas" />
-    <None Include="SourceSamples\ExpressionEvaluator\OpSample.txt" />
+    <None Include="SourceSamples\SampleExpressionEvaluator\OpSample.txt" />
     <None Include="SourceSamples\SearchGrammar\Search1.txt" />
     <None Include="SourceSamples\SQL\sql_op_test.txt" />
     <None Include="SourceSamples\SQL\sql_sample1.txt" />
@@ -119,10 +119,11 @@
     <None Include="SourceSamples\Wiki\Sample1_codeplex.txt" />
     <None Include="SourceSamples\_about.txt" />
     <Content Include="Java\about_java_grammar.txt" />
-    <None Include="SourceSamples\ExpressionEvaluator\PerfTest.txt" />
-    <None Include="SourceSamples\ExpressionEvaluator\UseMath.txt" />
-    <None Include="SourceSamples\ExpressionEvaluator\UseEnv.txt" />
-    <Content Include="SourceSamples\ExpressionEvaluator\StringSample.txt" />
+    <None Include="SourceSamples\SampleExpressionEvaluator\PerfTest.txt" />
+    <None Include="SourceSamples\SampleExpressionEvaluator\UseMath.txt" />
+    <None Include="SourceSamples\SampleExpressionEvaluator\UseEnv.txt" />
+    <None Include="SourceSamples\SampleExpressionEvaluator\UseCustomBuiltIns.txt" />
+    <Content Include="SourceSamples\SampleExpressionEvaluator\StringSample.txt" />
     <Content Include="SourceSamples\Java\about_samples.txt" />
     <Content Include="SourceSamples\Java\Sample 1.java" />
     <Content Include="SourceSamples\Java\Sample 2.java" />

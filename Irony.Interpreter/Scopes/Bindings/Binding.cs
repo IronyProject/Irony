@@ -27,7 +27,7 @@ namespace Irony.Interpreter {
     public BindingRequest(ScriptThread thread, AstNode fromNode, string symbol, BindingOptions options) {
       Thread = thread;
       FromNode = fromNode;
-      FromModule = thread.App.Info.GetModule(fromNode.ModuleNode);
+      FromModule = thread.App.DataMap.GetModule(fromNode.ModuleNode);
       Symbol = symbol;
       Options = options;
       FromScopeInfo = thread.CurrentScope.Info;

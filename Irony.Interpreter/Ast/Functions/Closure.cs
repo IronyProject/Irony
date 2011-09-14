@@ -24,5 +24,9 @@ namespace Irony.Interpreter.Ast {
       return result; 
     }
 
+    public override string ToString() {
+      return TargetNode.ToString(); //returns nice string like "<function add>"
+    }
+
   } //class
 }

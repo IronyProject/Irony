@@ -15,12 +15,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Numerics;
 using Irony.Parsing;
 using Irony.Interpreter.Ast;
 
 namespace Irony.Interpreter { 
-  using BigInteger = Microsoft.Scripting.Math.BigInteger;
-  using Complex = Microsoft.Scripting.Math.Complex64;
 
   public class ConsoleWriteEventArgs : EventArgs {
     public string Text;
@@ -61,19 +60,6 @@ namespace Irony.Interpreter {
       if(value == NoneValue) 
         return false;
       return value != null; 
-    }
-
-    public void AddBuiltInMethods(Type fromType) {
-      var imports = new ClrClassMembersImport(fromType);
-      BuiltIns.Add(imports);
-    }
-    public void AddBuiltInMethods(object instance) {
-      var imports = new ClrClassMembersImport(instance.GetType(), instance);
-      BuiltIns.Add(imports);
-    }
-    public void AddBuiltInMethod(Delegate method) {
-      var imports = new ClrClassMembersImport(null);
-      BuiltIns.Add(imports);
     }
 
     #region ConsoleWrite event

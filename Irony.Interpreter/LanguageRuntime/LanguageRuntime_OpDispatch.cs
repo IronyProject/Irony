@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Numerics; 
 
 namespace Irony.Interpreter {
-  using BigInteger = Microsoft.Scripting.Math.BigInteger;
-  using Complex = Microsoft.Scripting.Math.Complex64;
 
   public partial class LanguageRuntime {
     public readonly OperatorImplementationTable OperatorImplementations = new OperatorImplementationTable(2000);

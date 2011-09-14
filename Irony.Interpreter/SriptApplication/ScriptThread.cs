@@ -28,7 +28,7 @@ namespace Irony.Interpreter {
  
     public ScriptThread(ScriptApp app) {
       App = app;
-      Runtime = App.Info.Runtime;
+      Runtime = App.Runtime;
       CurrentScope = app.MainScope;
     }
 

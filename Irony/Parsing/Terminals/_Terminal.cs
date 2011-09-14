@@ -43,7 +43,7 @@ namespace Irony.Parsing {
     
     //Terminal to attach to the output token. By default is set to the Terminal itself
     // Use SetOutputTerminal method to change it. For example of use see TerminalFactory.CreateSqlIdentifier and sample SQL grammar
-    public Terminal OutputTerminal { get; private set; }
+    public Terminal OutputTerminal { get; protected set; }
 
     public TokenEditorInfo EditorInfo;
     public byte MultilineIndex;

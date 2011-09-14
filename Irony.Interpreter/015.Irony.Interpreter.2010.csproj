@@ -71,7 +71,6 @@
     <Compile Include="SriptApplication\ConsoleAdaptor.cs" />
     <Compile Include="_Evaluator\ExpressionEvaluator.cs" />
     <Compile Include="_Evaluator\ExpressionEvaluatorGrammar.cs" />
-    <None Include="OLD_Interpreter.cs" />
     <None Include="Unused\HotSwapDictionary.cs" />
     <Compile Include="Scopes\Bindings\Binding.cs" />
     <Compile Include="Scopes\Bindings\ClrInteropBindings.cs" />
@@ -83,7 +82,7 @@
     <Compile Include="Scopes\AppDataMap.cs" />
     <Compile Include="Scopes\ModuleInfo.cs" />
     <Compile Include="Scopes\SlotInfo.cs" />
-    <Compile Include="Scopes\_ScopeBase.cs" />
+    <Compile Include="Scopes\ScopeBase.cs" />
     <Compile Include="SriptApplication\CommandLine.cs" />
     <Compile Include="SriptApplication\ScriptApp.cs" />
     <Compile Include="SriptApplication\ScriptThread.cs" />

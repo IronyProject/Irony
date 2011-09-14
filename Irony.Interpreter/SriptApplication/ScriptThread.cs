@@ -1,5 +1,14 @@
-﻿//#define REUSE_SCOPES
-
+﻿#region License
+/* **********************************************************************************
+ * Copyright (c) Roman Ivantsov
+ * This source code is subject to terms and conditions of the MIT License
+ * for Irony. A copy of the license can be found in the License.txt file
+ * at the root of this distribution. 
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * MIT License.
+ * You must not remove this notice from this software.
+ * **********************************************************************************/
+#endregion
 
 using System;
 using System.Collections.Generic;
@@ -22,10 +31,6 @@ namespace Irony.Interpreter {
     public ICallTarget Tail;
     public object[] TailArgs;
 
-#if REUSE_SCOPES
-    private static object[] _nulls = new object[1000]; 
-#endif
- 
     public ScriptThread(ScriptApp app) {
       App = app;
       Runtime = App.Runtime;
@@ -39,26 +44,10 @@ namespace Irony.Interpreter {
 
 
     public void PushClosureScope(ScopeInfo scopeInfo, Scope closureParent, object[] parameters) {
-#if REUSE_SCOPES
-      //Experiment: reusing scopes. Reduces GC collections by 50%, but perf degrades by 5%. 
-      // The label REUSE_SCOPES is defined at the beginning of this file.
-      var scope = Interlocked.Exchange(ref scopeInfo.ScopeInstance, null);
-      if (scope != null) {
-        scope.Caller = CurrentScope;
-        scope.Creator = closureParent;
-        scope.Parameters = parameters;
-        CurrentScope = scope;
-        return; 
-      }      
-#endif
       CurrentScope = new Scope(scopeInfo, CurrentScope, closureParent, parameters);
     }
 
     public void PopScope() {
-#if REUSE_SCOPES
-      Array.Copy(_nulls, CurrentScope.Values, CurrentScope.Values.Length);
-      Interlocked.Exchange(ref CurrentScope.Info.ScopeInstance, CurrentScope);
-#endif
       CurrentScope = CurrentScope.Caller;
     }
 

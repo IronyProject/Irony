@@ -17,23 +17,20 @@ namespace Irony.Interpreter {
 
     // This method allows custom implementation of running a sample in Grammar Explorer
     // By default it evaluates a parse tree using default interpreter.
-    // Irony's interpeter has one restriction: once a script (represented by AST node) is evaluated by an interpreter (ScriptApp), 
-    // its internal fields in AST nodes become tied to this particular instance of ScriptApp (more precisely ScriptAppInfo).
-    // If you want to evaluate the AST tree again, you have to do it in the context of the same ScriptAppInfo. 
+    // Irony's interpeter has one restriction: once a script (represented by AST node) is evaluated in ScriptApp, 
+    // its internal fields in AST nodes become tied to this particular instance of ScriptApp (more precisely DataMap).
+    // If you want to evaluate the AST tree again, you have to do it in the context of the same DataMap. 
     // Grammar Explorer may call RunSample method repeatedly for evaluation of the same parsed script. So we keep ScriptApp instance in 
     // the field, and if we get the same script node, then we reuse the ScriptApp thus satisfying the requirement. 
     private ScriptApp _app;
-    private AstNode _prevRoot;
+    private ParseTree _prevSample;
     
     public virtual string RunSample(RunSampleArgs args) {
-      var astRoot = args.ParsedSample.Root.AstNode as AstNode;
-      if (astRoot == null)
-        throw new Exception("Cannot execute sample: AST root is null.");
-      if (_app == null || _prevRoot != astRoot)
+      if (_app == null || args.ParsedSample != _prevSample)
         _app = new ScriptApp(args.Language); 
-      _prevRoot = astRoot;
+      _prevSample = args.ParsedSample;
 
-      for (int i = 0; i < 10000; i++) //for perf measurements, to execute 1000 times
+      // for (int i = 0; i < 10000; i++)  //for perf measurements, to execute 1000 times
         _app.Evaluate(args.ParsedSample);
       return _app.OutputBuffer.ToString();
     }

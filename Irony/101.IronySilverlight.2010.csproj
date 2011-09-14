@@ -47,6 +47,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
+    <Reference Include="System.Numerics, Version=2.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Windows" />
     <Reference Include="system" />
     <Reference Include="System.Core" />
@@ -55,54 +56,7 @@
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Common\Extensions.cs" />
-    <Compile Include="Common\GenericAstInterfaces.cs" />
-    <Compile Include="Common\HotSwapDictionary.cs" />
-    <Compile Include="Common\StringUtils.cs" />
-    <Compile Include="Interpreter\Ast\Base\AstHelperClasses.cs" />
-    <Compile Include="Interpreter\Ast\Base\AstInterfaces.cs" />
-    <Compile Include="Interpreter\Ast\Base\AstNode.cs" />
-    <Compile Include="Interpreter\Ast\Expressions\BinaryOperationNode.cs" />
-    <Compile Include="Interpreter\Ast\Expressions\ExpressionListNode.cs" />
-    <Compile Include="Interpreter\Ast\Expressions\IfNode.cs" />
-    <Compile Include="Interpreter\Ast\Expressions\IncDecNode.cs" />
-    <Compile Include="Interpreter\Ast\Expressions\UnaryOperationNode.cs" />
-    <Compile Include="Interpreter\Ast\Functions\Closure.cs" />
-    <Compile Include="Interpreter\Ast\Functions\FunctionCallNode.cs" />
-    <Compile Include="Interpreter\Ast\Functions\FunctionDefNode.cs" />
-    <Compile Include="Interpreter\Ast\Functions\ParamListNode.cs" />
-    <Compile Include="Interpreter\Ast\PrimitiveNodes\IdentifierNode.cs" />
-    <Compile Include="Interpreter\Ast\PrimitiveNodes\LiteralValueNode.cs" />
-    <Compile Include="Interpreter\Ast\PrimitiveNodes\StringTemplateNode.cs" />
-    <Compile Include="Interpreter\Ast\SpecialNodes\EmptyStatementNode.cs" />
-    <Compile Include="Interpreter\Ast\SpecialNodes\NotSupportedNode.cs" />
-    <Compile Include="Interpreter\Ast\SpecialNodes\NullNode.cs" />
-    <Compile Include="Interpreter\Ast\Statements\AssignmentNode.cs" />
-    <Compile Include="Interpreter\Ast\Statements\StatementListNode.cs" />
-    <Compile Include="Interpreter\Bindings\Binding.cs" />
-    <Compile Include="Interpreter\Bindings\ClrInteropBindings.cs" />
-    <Compile Include="Interpreter\Bindings\SlotBinding.cs" />
-    <Compile Include="Interpreter\Diagnostics\ScriptException.cs" />
-    <Compile Include="Interpreter\Diagnostics\ScriptStackTrace.cs" />
-    <Compile Include="Interpreter\Execution\ScriptApp.cs" />
-    <Compile Include="Interpreter\Execution\ScriptThread.cs" />
-    <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime.cs" />
-    <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime_Binding.cs" />
-    <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime_OpDispatch.cs" />
-    <Compile Include="Interpreter\LanguageRuntime\LanguageRuntime_OpDispatch_Init.cs" />
-    <Compile Include="Interpreter\LanguageRuntime\NoneClass.cs" />
-    <Compile Include="Interpreter\LanguageRuntime\OperatorImplementation.cs" />
-    <Compile Include="Interpreter\Metadata\ScopeInfo.cs" />
-    <Compile Include="Interpreter\Metadata\ScriptAppInfo.cs" />
-    <Compile Include="Interpreter\Metadata\SlotInfo.cs" />
-    <Compile Include="Interpreter\Scopes\ImportSpec.cs" />
-    <Compile Include="Interpreter\Scopes\Scope.cs" />
-    <Compile Include="Interpreter\Scopes\ScopeValuesDictionary.cs" />
-    <Compile Include="Interpreter\Scopes\ScriptModule.cs" />
-    <Compile Include="Interpreter\Scopes\_ScopeBase.cs" />
-    <Compile Include="Microsoft\BigInteger.cs" />
-    <Compile Include="Microsoft\Complex64.cs" />
-    <Compile Include="Microsoft\MathResources.Designer.cs" />
+    <Compile Include="Interfaces.cs" />
     <Compile Include="Parsing\Data\Construction\GrammarDataBuilder.cs" />
     <Compile Include="Parsing\Data\Construction\LanguageDataBuilder.cs" />
     <Compile Include="Parsing\Data\Construction\ParserDataBuilder.cs" />
@@ -167,14 +121,16 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs" />
     <Compile Include="SilverlightOnly\Stopwatch.cs" />
+    <Compile Include="Utilities\StringUtils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Microsoft\MathResources.resx" />
     <EmbeddedResource Include="Resources.resx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Interpreter\_about_Irony_Interpreter.txt" />
     <Content Include="Parsing\Data\Construction\_about_parser_construction.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="irony.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <ProjectExtensions>

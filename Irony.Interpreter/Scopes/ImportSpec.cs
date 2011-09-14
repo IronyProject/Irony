@@ -12,7 +12,23 @@ namespace Irony.Interpreter {
     ClrClassMembers,
   }
 
-  public class ImportSpecList : List<ImportSpec> { }
+  public class ImportSpecList : List<ImportSpec> {
+    public ImportSpec AddStaticMembers(Type fromType) {
+      var import = new ClrClassMembersImport(fromType);
+      Add(import);
+      return import;
+    }
+    public ImportSpec AddInstanceMembers(object instance) {
+      var import = new ClrClassMembersImport(instance.GetType(), instance);
+      Add(import);
+      return import;
+    }
+    public ImportSpec AddInstanceMember(string member, object instance) {
+      var import = new ClrClassMembersImport(instance.GetType(), instance, member);
+      Add(import);
+      return import;
+    }
+  }
 
   public class ImportSpec {
     public ImportType Type;
@@ -70,9 +86,11 @@ namespace Irony.Interpreter {
   public class ClrClassMembersImport : ImportSpec {
     public Type TargetType;
     public object Instance;
-    public ClrClassMembersImport(Type targetType, object instance = null) : base(ImportType.ClrClassMembers) {
+    public string MemberFilter; 
+    public ClrClassMembersImport(Type targetType, object instance = null, string memberFilter = null) : base(ImportType.ClrClassMembers) {
       TargetType = targetType;
-      Instance = instance; 
+      Instance = instance;
+      MemberFilter = memberFilter;
     }
 
     public override Binding Bind(BindingRequest request) {
@@ -84,6 +102,10 @@ namespace Irony.Interpreter {
 
       if (request.IgnoreCase)
         flags |= BindingFlags.IgnoreCase;
+      if (!string.IsNullOrEmpty(MemberFilter)) {
+        if (string.Compare(request.Symbol, MemberFilter, request.IgnoreCase) != 0)
+          return null; 
+      }
       var members = TargetType.GetMember(request.Symbol, flags);
       if (members != null && members.Length > 0) {
         return new ClrMemberBinding(request.Options, members, Instance);

@@ -72,6 +72,7 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -81,6 +82,7 @@
     <Compile Include="Parsing\Grammar\TermReportGroups.cs" />
     <Compile Include="Parsing\Diagnostics\ParseTreeExtensions.cs" />
     <Compile Include="Parsing\Parser\ParsingEventArgs.cs" />
+    <None Include="Parsing\Terminals\HereDocTerminal.cs" />
     <Compile Include="Utilities\StringUtils.cs" />
     <Compile Include="Parsing\Parser\CoreParser_ErrorHandling.cs" />
     <Compile Include="Parsing\Diagnostics\ParserTrace.cs" />
@@ -138,14 +140,7 @@
     <Compile Include="Parsing\Terminals\TerminalFactory.cs" />
     <Compile Include="Parsing\TokenFilters\CodeOutlineFilter.cs" />
     <Compile Include="Parsing\TokenFilters\TokenFilter.cs" />
-    <Compile Include="Microsoft\Complex64.cs" />
-    <Compile Include="Microsoft\MathResources.Designer.cs">
-      <DependentUpon>MathResources.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Microsoft\BigInteger.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -153,12 +148,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Microsoft\MathResources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>MathResources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-      <CustomToolNamespace>Microsoft.Scripting.Math</CustomToolNamespace>
-    </EmbeddedResource>
     <EmbeddedResource Include="Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

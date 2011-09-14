@@ -136,17 +136,6 @@ Press Ctrl-C to exit the program at any time.
     }
 
 
-    #region Running in Grammar Explorer
-    private static ExpressionEvaluator _evaluator; 
-    public override string RunSample(RunSampleArgs args) {
-      if (_evaluator == null)
-        _evaluator = new ExpressionEvaluator(args.Language);
-      _evaluator.App.ClearOutputBuffer(); 
-      for(int i=0; i<1000; i++)
-        _evaluator.Evaluate(args.ParsedSample); 
-      return _evaluator.App.OutputBuffer.ToString();
-    }
-    #endregion
 
   }//class
 

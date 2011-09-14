@@ -19,96 +19,110 @@ namespace Irony.Interpreter {
     Aborted
   }
 
-  public enum AppMode {
-    CommandLine,
-    RunAll,
-  }
-
-
   /// <summary> Represents a running instance of a script application.  </summary>
   public sealed class ScriptApp {
-    public ScriptAppInfo Info;
+    public readonly LanguageData Language;
+    public readonly LanguageRuntime Runtime;
+    public Parser Parser { get; private set; }
+
+    public AppDataMap DataMap;
 
     public Scope[] StaticScopes;
-    public Scope MainScope; 
-
+    public Scope MainScope;
     public IDictionary<string, object> Globals {get; private set;}
-    public StringBuilder OutputBuffer = new StringBuilder();
-    private object _lockObject = new object();
     private IList<Assembly> ImportedAssemblies = new List<Assembly>();
 
-    // Current mode/status variables
-    // TODO:  TO BE COMPLETED.
-    // 07/31/2011 - incomplete, just copied all variables from old Interpreter class.
-    public AppStatus Status;
-    public AppMode Mode; 
-    public long EvaluationTime;
+    public StringBuilder OutputBuffer = new StringBuilder();
+    private object _lockObject = new object();
 
-    public ParserMessageList ParserMessages;
+    // Current mode/status variables
+    public AppStatus Status;
+    public long EvaluationTime;
     public Exception LastException;
+    public bool RethrowExceptions; 
 
     public ParseTree LastScript { get; private set; } //the root node of the last executed script
 
 
     #region Constructors
     public ScriptApp(LanguageData language) {
+      Language = language;
       var grammar = language.Grammar as InterpretedLanguageGrammar;
-      var runtime = grammar.CreateRuntime(language); 
-      Info = new ScriptAppInfo(runtime); 
+      Runtime = grammar.CreateRuntime(language);
+      DataMap = new AppDataMap(Language.Grammar.CaseSensitive); 
       Init(); 
     }
 
-    public ScriptApp(LanguageRuntime runtime)  { 
-      Info = new ScriptAppInfo(runtime);
+    public ScriptApp(LanguageRuntime runtime)  {
+      Runtime = runtime;
+      Language = Runtime.Language;
+      DataMap = new AppDataMap(Language.Grammar.CaseSensitive);
       Init(); 
     }
 
-    public ScriptApp(ScriptAppInfo info) {
-      Info = info;
+    public ScriptApp(AppDataMap dataMap) {
+      DataMap = dataMap;
       Init(); 
     }
 
     [SecuritySafeCritical]
     private void Init() {
+      Parser = new Parser(Language);
       //Create static scopes
-      MainScope = new Scope(Info.MainModule.ScopeInfo, null, null, null);
-      StaticScopes = new Scope[Info.StaticScopeInfos.Count];
+      MainScope = new Scope(DataMap.MainModule.ScopeInfo, null, null, null);
+      StaticScopes = new Scope[DataMap.StaticScopeInfos.Count];
       StaticScopes[0] = MainScope;
       Globals = MainScope.AsDictionary();
     }
     
     #endregion
 
+    public ParserMessageList GetParserMessages() {
+      return Parser.Context.CurrentParseTree.ParserMessages;
+    }
     // Utilities
     public IEnumerable<Assembly> GetImportAssemblies() {
       //simple default case - return all assemblies loaded in domain
       return AppDomain.CurrentDomain.GetAssemblies(); 
     }
 
+    public ParseMode ParserMode {
+      get { return Parser.Context.Mode; }
+      set { Parser.Context.Mode = value; }
+    }
+
     #region Evaluation
     public object Evaluate(string script) {
-      var parsedScript = Info.Parser.Parse(script);
-      if (parsedScript.HasErrors())
-        throw new Exception("Syntax errors found.");
+      var parsedScript = Parser.Parse(script);
+      if (parsedScript.HasErrors()) {
+        Status = AppStatus.SyntaxError;
+        if (RethrowExceptions)
+          throw new ScriptException("Syntax errors found.");
+        return null; 
+      }
+ 
+      if (ParserMode == ParseMode.CommandLine && Parser.Context.Status == ParserStatus.AcceptedPartial) {
+        Status = AppStatus.WaitingMoreInput;
+        return null; 
+      }
       LastScript = parsedScript;
       var result = EvaluateParsedScript(); 
       return result;
     }
 
-    // Irony interpreter requires that once a script is executed in a ScriptApp, it is bound to ScriptAppInfo object, 
-    // and all later script executions should be performed only in the context of the same app.
-    // (because first execution sets up a lot of things, like slots, scopes, etc, which are bound to ScriptAppInfo).
-    // We save the app instance in Tag property of the parsed tree and reuse it if we find it there on 
-    // consequitive re-runs. 
+    // Irony interpreter requires that once a script is executed in a ScriptApp, it is bound to AppDataMap object, 
+    // and all later script executions should be performed only in the context of the same app (or at least by an App with the same DataMap).
+    // The reason is because the first execution sets up a data-binding fields, like slots, scopes, etc, which are bound to ScopeInfo objects, 
+    // which in turn is part of DataMap.
     public object Evaluate(ParseTree parsedScript) {
       var root = parsedScript.Root.AstNode as AstNode;
-      if (root.Parent != null && root.Parent != Info.ProgramRoot)
+      if (root.Parent != null && root.Parent != DataMap.ProgramRoot)
         throw new Exception("Cannot evaluate parsed script. It had been already evaluated in a different application.");
       LastScript = parsedScript;
       return EvaluateParsedScript(); 
     }
 
-    public object EvaluateAgain() {
+    public object Evaluate() {
       if (LastScript == null)
         throw new Exception("No previously parsed/evaluated script.");
       return EvaluateParsedScript(); 
@@ -116,43 +130,32 @@ namespace Irony.Interpreter {
 
     //Actual implementation
     private object EvaluateParsedScript() {
-      
-      LastScript.Tag = Info;
+      LastScript.Tag = DataMap;
       var root = LastScript.Root.AstNode as AstNode;
       root.DependentScopeInfo = MainScope.Info;
 
+      Status = AppStatus.Evaluating;
       ScriptThread thread = null;
       try {
         thread = new ScriptThread(this);
         var result = root.Evaluate(thread);
         if (result != null)
           thread.App.WriteLine(result.ToString());
+        Status = AppStatus.Ready;
         return result; 
       } catch (ScriptException se) {
+        Status = AppStatus.RuntimeError;
         se.Location = thread.CurrentNode.Location;
-        se.ScriptStackTrace = thread.GetStackTrace();  
-        throw;
-      }
+        se.ScriptStackTrace = thread.GetStackTrace();
+        LastException = se;
+        Status = AppStatus.RuntimeError;
+        if (RethrowExceptions)
+          throw;
+        return null; 
+      }//catch
+
     }
     #endregion
-
-
-
-    #region Async execution - not implemented for now
-    public bool AsyncExecuting() {
-      return Status == AppStatus.Evaluating;
-    }
-
-    public void AsyncAbort() {
-      //TODO: implement this
-    }
-
-    public void AsyncExecute(string script) {
-
-    }
-
-    #endregion
-
 
 
     #region Output writing

@@ -18,8 +18,12 @@ namespace Irony.Interpreter.Evaluator {
       get { return App.Globals; }
     }
 
-    public ExpressionEvaluator() {
-      Grammar = new ExpressionEvaluatorGrammar();
+    //Default constructor, creates default evaluator 
+    public ExpressionEvaluator() : this(new ExpressionEvaluatorGrammar()) { }
+
+    //Allows creating customized evaluators
+    public ExpressionEvaluator(ExpressionEvaluatorGrammar grammar) {
+      Grammar = grammar;
       Language = new LanguageData(Grammar);
       Init();
     }
@@ -34,11 +38,8 @@ namespace Irony.Interpreter.Evaluator {
       Parser = new Parser(Language);
       Runtime = Grammar.CreateRuntime(Language);
       //Import static methods of types
-      Runtime.AddBuiltInMethods(typeof(System.Math));
-      Runtime.AddBuiltInMethods(typeof(Environment));
-      // Import instance methods of CurrentThread
-      Runtime.AddBuiltInMethods(Thread.CurrentThread);
-      
+      Runtime.BuiltIns.AddStaticMembers(typeof(System.Math));
+      Runtime.BuiltIns.AddStaticMembers(typeof(Environment));
       App = new ScriptApp(Runtime);
     }
     
@@ -47,13 +48,14 @@ namespace Irony.Interpreter.Evaluator {
       return result; 
     }
 
-    public object EvaluateAgain() {
-      return App.EvaluateAgain(); 
-    }
-
     public object Evaluate(ParseTree parsedScript) {
       var result = App.Evaluate(parsedScript);
       return result;
+    }
+
+    //Evaluates again the previously parsed/evaluated script
+    public object Evaluate() {
+      return App.Evaluate(); 
     }
 
 

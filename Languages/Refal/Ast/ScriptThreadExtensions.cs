@@ -1,14 +1,15 @@
-﻿using System;
-using System.Text;
-using System.Linq;
+﻿// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
+using System;
 using System.Collections.Generic;
-using Irony.Parsing;
 using Irony.Interpreter;
 
 namespace Refal
 {
 	/// <summary>
-	/// Refal script thread should be able to store the last recognized pattern
+	/// Refal script thread should be able to store the last recognized pattern.
 	/// </summary>
 	public static class ScriptThreadExtensions
 	{
@@ -30,7 +31,7 @@ namespace Refal
 		/// </summary>
 		public static void SetLastPattern(this ScriptThread thread, Refal.Runtime.Pattern pattern)
 		{
-			var binding = thread.Bind(LastPatternSymbolName, BindingOptions.Write);
+			var binding = thread.Bind(LastPatternSymbolName, BindingOptions.Write | BindingOptions.ExistingOrNew);
 			binding.SetValueRef(thread, pattern);
 		}
 

@@ -1,15 +1,17 @@
-﻿using System;
-using System.Text;
-using System.Linq;
+﻿// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
+using System;
 using System.Collections.Generic;
+using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
-using Irony.Interpreter;
 
 namespace Refal
 {
 	/// <summary>
-	/// Temporary AST nodes used internally while building AST
+	/// Temporary AST nodes used internally while building AST.
 	/// </summary>
 	public class AuxiliaryNode : AstNode
 	{

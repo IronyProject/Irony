@@ -1,14 +1,17 @@
-using System;
+// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
 using System.Collections.Generic;
+using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
-using Irony.Interpreter;
 using Refal.Runtime;
 
 namespace Refal
 {
 	/// <summary>
-	/// Expression is a sequence of symbols, macrodigits, bound variables and function calls
+	/// Expression is a sequence of symbols, macrodigits, bound variables and function calls.
 	/// </summary>
 	public class Expression : AstNode
 	{
@@ -26,7 +29,11 @@ namespace Refal
 			foreach (var node in parseNode.ChildNodes)
 			{
 				if (node.AstNode is AstNode)
-					Terms.Add(node.AstNode as AstNode);
+				{
+					var astNode = node.AstNode as AstNode;
+					astNode.Parent = this;
+					Terms.Add(astNode);
+				}
 			}
 		}
 

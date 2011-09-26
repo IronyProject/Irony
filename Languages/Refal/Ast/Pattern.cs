@@ -1,14 +1,16 @@
-using System;
+// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
 using System.Collections.Generic;
+using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
-using Irony.Interpreter;
-using Refal.Runtime;
 
 namespace Refal
 {
 	/// <summary>
-	/// Pattern is a passive expression that may contain free variables
+	/// Pattern is a passive expression that may contain free variables.
 	/// </summary>
 	public class Pattern : AstNode
 	{
@@ -31,7 +33,11 @@ namespace Refal
 			foreach (var node in parseNode.ChildNodes)
 			{
 				if (node.AstNode is AstNode)
-					Terms.Add(node.AstNode as AstNode);
+				{
+					var astNode = node.AstNode as AstNode;
+					astNode.Parent = this;
+					Terms.Add(astNode);
+				}
 			}
 		}
 

@@ -1,14 +1,16 @@
-using System;
-using System.Collections.Generic;
+// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
+using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
-using Irony.Interpreter;
 using Refal.Runtime;
 
 namespace Refal
 {
 	/// <summary>
-	/// DefinedFunction is a function defined in the current compulation unit
+	/// DefinedFunction is a function defined in the current compulation unit.
 	/// </summary>
 	public class DefinedFunction : Function
 	{
@@ -29,6 +31,7 @@ namespace Refal
 				else if (node.AstNode is Block)
 				{
 					Block = (node.AstNode as Block);
+					Block.Parent = this;
 				}
 				else if (node.Term is KeyTerm && node.Term.Name == "$ENTRY")
 				{
@@ -44,13 +47,23 @@ namespace Refal
 
 		public override object Call(ScriptThread thread, object[] parameters)
 		{
-			thread.
-		}
-		public override void Call(ScriptAppInfo context)
-		{
-			context.PushFrame(Name, null, context.CurrentFrame); // AstNode argument
-			Block.Evaluate(context, AstMode.None);
-			context.PopFrame();
+			var newScopeInfo = new ScopeInfo(this, thread.App.Parser.Language.Grammar.CaseSensitive);
+			thread.PushScope(newScopeInfo, parameters);
+
+			try
+			{
+				var expression =
+					parameters != null && parameters.Length > 0 ?
+						parameters[0] as PassiveExpression : null;
+
+				Block.InputExpression = expression;
+				Block.BlockPattern = null;
+				return Block.Evaluate(thread);
+			}
+			finally
+			{
+				thread.PopScope();
+			}
 		}
 
 		public override string ToString()

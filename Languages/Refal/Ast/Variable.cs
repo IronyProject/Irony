@@ -63,23 +63,48 @@ namespace Refal
 			parseNode.AstNode = varNode;
 		}
 
-		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		protected override object DoEvaluate(ScriptThread thread)
 		{
-			// read variable from last recognized pattern
-			if (mode == AstMode.Read)
+			// standard prolog
+			thread.CurrentNode = this;
+
+			try
 			{
-				if (context.GetLastPattern() == null)
-					context.ThrowError("No pattern recognized");
+				// get last recognized pattern
+				var pattern = thread.GetLastPattern();
+				if (pattern == null)
+				{
+					thread.ThrowScriptError("No pattern recognized!");
+					return null;
+				}
 
-				// push variable contents onto stack
-				var pattern = context.GetLastPattern();
-				context.Data.Push(pattern.GetVariable(Index));
-				return;
+				// read variable from the last recognized pattern
+				return pattern.GetVariable(Index);
 			}
-
-			// create variable for pattern matching
-			context.Data.Push(CreateVariable());
+			finally
+			{
+				// standard epilog
+				thread.CurrentNode = Parent;
+			}
 		}
+
+		//public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		//{
+		//    // read variable from last recognized pattern
+		//    if (mode == AstMode.Read)
+		//    {
+		//        if (context.GetLastPattern() == null)
+		//            context.ThrowError("No pattern recognized");
+
+		//        // push variable contents onto stack
+		//        var pattern = context.GetLastPattern();
+		//        context.Data.Push(pattern.GetVariable(Index));
+		//        return;
+		//    }
+
+		//    // create variable for pattern matching
+		//    context.Data.Push(CreateVariable());
+		//}
 
 		/// <summary>
 		/// Create pattern variable

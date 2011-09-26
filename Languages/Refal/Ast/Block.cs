@@ -45,20 +45,28 @@ namespace Refal
 				yield return s;
 		}
 
-		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		protected override object DoEvaluate(ScriptThread thread)
 		{
-			foreach (Sentence sentence in Sentences)
+			// standard prolog
+			thread.CurrentNode = this;
+
+			try
 			{
-				sentence.BlockPattern = BlockPattern;
-				sentence.Evaluate(context, mode);
+				foreach (var sentence in Sentences)
+				{
+					sentence.BlockPattern = BlockPattern;
+					if (Convert.ToBoolean(sentence.Evaluate(thread)))
+						return true;
+				}
 
-				// if some sentence is evaluated to true, then stop
-				var result = context.Data.Pop();
-				if (Convert.ToBoolean(result) == true)
-					return;
+				thread.ThrowScriptError("Recognition impossible");
+				return false;
 			}
-
-			context.ThrowError("Recognition impossible");
+			finally
+			{
+				// standard epilog
+				thread.CurrentNode = Parent;
+			}
 		}
 
 		public override string ToString()

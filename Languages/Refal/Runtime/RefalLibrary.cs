@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using Irony.Interpreter.Ast;
 using Irony.Interpreter;
-using BigInteger = Microsoft.Scripting.Math.BigInteger;
+//using BigInteger = Microsoft.Scripting.Math.BigInteger;
 
 namespace Refal.Runtime
 {
@@ -19,9 +19,9 @@ namespace Refal.Runtime
 	public class RefalLibrary
 	{
 		/// <summary>
-		/// Irony interpreter evaluation context
+		/// Script execution thread.
 		/// </summary>
-		public ScriptAppInfo EvaluationContext { get; private set; }
+		public ScriptThread EvaluationContext { get; private set; }
 
 		/// <summary>
 		/// File I/O support: handle (expression) -> StreamReader/StreamWriter

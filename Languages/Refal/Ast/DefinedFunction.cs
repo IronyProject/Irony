@@ -42,6 +42,10 @@ namespace Refal
 			return Block.GetChildNodes();
 		}
 
+		public override object Call(ScriptThread thread, object[] parameters)
+		{
+			thread.
+		}
 		public override void Call(ScriptAppInfo context)
 		{
 			context.PushFrame(Name, null, context.CurrentFrame); // AstNode argument

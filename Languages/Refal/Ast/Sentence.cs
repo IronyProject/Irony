@@ -54,52 +54,68 @@ namespace Refal
 				yield return Expression;
 		}
 
-		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		protected override object DoEvaluate(ScriptThread thread)
 		{
-			// evaluate pattern and copy bound variables of the current block
-			var patt = Pattern.Instantiate(context, mode);
-			if (BlockPattern != null)
+			// standard prolog
+			thread.CurrentNode = this;
+
+			try
 			{
-				patt.CopyBoundVariables(BlockPattern);
+				//?
 			}
-
-			// pop expression from evaluation stack
-			var expr = context.Data.Pop() as Runtime.PassiveExpression;
-
-			// if pattern is recognized, calculate new expression and return true
-			var result = patt.Match(expr);
-			if (result)
+			finally
 			{
-				// store last recognized pattern as a local variable
-				context.SetLastPattern(patt);
-
-				// match succeeded, return expression
-				if (Expression != null)
-				{
-					Expression.Evaluate(context, AstMode.Read);
-					context.Data.Push(true);
-					return;
-				}
-
-				// match succeeded? it depends on conditions
-				if (Conditions != null)
-				{
-					Conditions.Evaluate(context, mode);
-
-					// check if conditions succeeded
-					result = Convert.ToBoolean(context.Data.Pop());
-					if (result)
-					{
-						context.Data.Push(true);
-						return;
-					}
-				}
+				// standard epilog
+				thread.CurrentNode = Parent;
 			}
-
-			// push expression back for the next sentence
-			context.Data.Push(expr);
-			context.Data.Push(false); // match failed
 		}
+
+		//public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		//{
+		//    // evaluate pattern and copy bound variables of the current block
+		//    var patt = Pattern.Instantiate(context, mode);
+		//    if (BlockPattern != null)
+		//    {
+		//        patt.CopyBoundVariables(BlockPattern);
+		//    }
+
+		//    // pop expression from evaluation stack
+		//    var expr = context.Data.Pop() as Runtime.PassiveExpression;
+
+		//    // if pattern is recognized, calculate new expression and return true
+		//    var result = patt.Match(expr);
+		//    if (result)
+		//    {
+		//        // store last recognized pattern as a local variable
+		//        context.SetLastPattern(patt);
+
+		//        // match succeeded, return expression
+		//        if (Expression != null)
+		//        {
+		//            Expression.Evaluate(context, AstMode.Read);
+		//            context.Data.Push(true);
+		//            return;
+		//        }
+
+		//        // match succeeded? it depends on conditions
+		//        if (Conditions != null)
+		//        {
+		//            Conditions.Evaluate(context, mode);
+
+		//            // check if conditions succeeded
+		//            result = Convert.ToBoolean(context.Data.Pop());
+		//            if (result)
+		//            {
+		//                context.Data.Push(true);
+		//                return;
+		//            }
+		//        }
+		//    }
+
+		//    // push expression back for the next sentence
+		//    context.Data.Push(expr);
+		//    context.Data.Push(false); // match failed
+		//}
 
 		public override string ToString()
 		{

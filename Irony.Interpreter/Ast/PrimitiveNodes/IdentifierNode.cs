@@ -42,7 +42,7 @@ namespace Irony.Interpreter.Ast {
       return result; 
     }
 
-    protected internal override void SetValue(ScriptThread thread, object value) {
+    public override void SetValue(ScriptThread thread, object value) {
       thread.CurrentNode = this;  //standard prolog
       if (_accessor == null) {
         _accessor = thread.Bind(Symbol, BindingOptions.Write | BindingOptions.ExistingOrNew);

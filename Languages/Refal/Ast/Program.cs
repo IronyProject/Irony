@@ -68,32 +68,54 @@ namespace Refal
 			}
 		}
 
-		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		protected override object DoEvaluate(ScriptThread thread)
 		{
-			if (EntryPoint == null)
-				context.ThrowError("No entry point defined (entry point is a function named «Go»)");
+			// standard prolog
+			thread.CurrentNode = this;
 
-			// load standard run-time library functions
-			var libraryFunctions = LibraryFunction.ExtractLibraryFunctions(context, new RefalLibrary(context));
-			foreach (LibraryFunction libFun in libraryFunctions)
+			try
 			{
-				context.SetValue(libFun.Name, libFun);
-			}
+				if (EntryPoint == null)
+				{
+					thread.ThrowScriptError("No entry point defined (entry point is a function named «Go»)");
+					return null;
+				}
 
-			// define all functions
-			foreach (Function fun in FunctionList)
+				//?
+			}
+			finally
 			{
-				fun.Evaluate(context, mode);
+				// standard epilog
+				thread.CurrentNode = Parent;
 			}
-
-			// call entry point with empty expression as an argument
-			context.Data.Push(Runtime.PassiveExpression.Build());
-			EntryPoint.Call(context);
-
-			// discard execution results
-			context.Data.Pop();
-			context.ClearLastResult();
 		}
+
+		//public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		//{
+		//    if (EntryPoint == null)
+		//        context.ThrowError("No entry point defined (entry point is a function named «Go»)");
+
+		//    // load standard run-time library functions
+		//    var libraryFunctions = LibraryFunction.ExtractLibraryFunctions(context, new RefalLibrary(context));
+		//    foreach (LibraryFunction libFun in libraryFunctions)
+		//    {
+		//        context.SetValue(libFun.Name, libFun);
+		//    }
+
+		//    // define all functions
+		//    foreach (Function fun in FunctionList)
+		//    {
+		//        fun.Evaluate(context, mode);
+		//    }
+
+		//    // call entry point with empty expression as an argument
+		//    context.Data.Push(Runtime.PassiveExpression.Build());
+		//    EntryPoint.Call(context);
+
+		//    // discard execution results
+		//    context.Data.Pop();
+		//    context.ClearLastResult();
+		//}
 
 		public override string ToString()
 		{

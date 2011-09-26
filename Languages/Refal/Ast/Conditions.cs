@@ -61,43 +61,79 @@ namespace Refal
 				yield return MoreConditions;
 		}
 
-		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		protected override object DoEvaluate(ScriptThread thread)
 		{
-			// evaluate expression
-			Expression.Evaluate(context, AstMode.Read);
+			// standard prolog
+			thread.CurrentNode = this;
 
-			// extract last recognized pattern (it contains bound variables)
-			var lastPattern = context.GetLastPattern();
-			if (lastPattern == null)
+			try
 			{
-				context.ThrowError("Internal error: last recognized pattern is lost");
+				// evaluate expression
+				var expression = Expression.EvaluateExpression(thread);
+
+				// extract last recognized pattern (it contains bound variables)
+				var lastPattern = thread.GetLastPattern();
+				if (lastPattern == null)
+				{
+					thread.ThrowScriptError("Internal error: last recognized pattern is lost.");
+				}
+
+				// with-clause
+				if (Block != null)
+				{
+					Block.BlockPattern = lastPattern;
+					return Block.Evaluate(thread);
+				}
+
+				// where-clause
+				if (Pattern != null)
+				{
+					EvaluateWhereClause(expression, lastPattern, thread);
+				}
 			}
-
-			// with-clause
-			if (Block != null)
+			finally
 			{
-				Block.BlockPattern = lastPattern;
-				Block.Evaluate(context, mode);
-
-				// with-clause is always successful
-				context.Data.Push(true);
-			}
-
-			// where-clause
-			if (Pattern != null)
-			{
-				EvaluateWhereClause(lastPattern, context, mode);
+				// standard epilog
+				thread.CurrentNode = Parent;
 			}
 		}
 
-		void EvaluateWhereClause(Runtime.Pattern lastPattern, ScriptAppInfo context, AstMode mode)
+		//public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		//{
+		//    // evaluate expression
+		//    Expression.Evaluate(context, AstMode.Read);
+
+		//    // extract last recognized pattern (it contains bound variables)
+		//    var lastPattern = context.GetLastPattern();
+		//    if (lastPattern == null)
+		//    {
+		//        context.ThrowError("Internal error: last recognized pattern is lost");
+		//    }
+
+		//    // with-clause
+		//    if (Block != null)
+		//    {
+		//        Block.BlockPattern = lastPattern;
+		//        Block.Evaluate(context, mode);
+
+		//        // with-clause is always successful
+		//        context.Data.Push(true);
+		//    }
+
+		//    // where-clause
+		//    if (Pattern != null)
+		//    {
+		//        EvaluateWhereClause(lastPattern, context, mode);
+		//    }
+		//}
+
+		bool EvaluateWhereClause(Runtime.PassiveExpression expr, Runtime.Pattern lastPattern, ScriptThread thread)
 		{
 			// instantiate where-clause pattern
-			var patt = Pattern.Instantiate(context, mode);
+			var patt = Pattern.Instantiate(thread);
 			patt.CopyBoundVariables(lastPattern);
 
 			// perform matching
-			var expr = context.Data.Pop() as Runtime.PassiveExpression;
 			var result = patt.Match(expr);
 			if (result)
 			{

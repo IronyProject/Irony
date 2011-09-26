@@ -41,36 +41,40 @@ namespace Refal
 				yield return term;
 		}
 
-		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		protected override object DoEvaluate(ScriptThread thread)
 		{
-			foreach (var term in Terms)
+			return EvaluateTerms(thread);
+		}
+
+		private object[] EvaluateTerms(ScriptThread thread)
+		{
+			// standard prolog
+			thread.CurrentNode = this;
+
+			try
 			{
-				// in pattern, variables are never read
-				mode = term is Variable ? AstMode.None : AstMode.Read;
-				term.Evaluate(context, mode);
+				var terms = new List<object>();
+
+				foreach (var term in Terms)
+				{
+					// in pattern, variables are never read
+					var result = term.Evaluate(thread);
+					terms.Add(result);
+				}
+
+				return terms.ToArray();
+			}
+			finally
+			{
+				// standard epilog
+				thread.CurrentNode = Parent;
 			}
 		}
-
-		private object[] EvaluateTerms(ScriptAppInfo context, AstMode mode)
-		{
-			// save initial stack position
-			var initialCount = context.Data.Count;
-			Evaluate(context, mode);
-
-			// get terms from evaluation stack
-			var args = new List<object>();
-			while (context.Data.Count > initialCount)
-				args.Add(context.Data.Pop());
-
-			// restore original order
-			args.Reverse();
-			return args.ToArray();
-		}
 		
-		public Runtime.Pattern Instantiate(ScriptAppInfo context, AstMode mode)
+		public Runtime.Pattern Instantiate(ScriptThread thread)
 		{
 			// evaluate pattern and instantiate Runtime.Pattern
-			return new Runtime.Pattern(EvaluateTerms(context, mode));
+			return new Runtime.Pattern(EvaluateTerms(thread));
 		}
 
 		public override string ToString()

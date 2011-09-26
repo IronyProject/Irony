@@ -41,21 +41,33 @@ namespace Refal
 			get { return Terms.Count == 0; }
 		}
 
-		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		protected override object DoEvaluate(ScriptThread thread)
 		{
-			// evaluate terms
-			var initialCount = context.Data.Count;
-			foreach (var term in Terms)
-				term.Evaluate(context, mode);
+			return EvaluateExpression(thread);
+		}
 
-			// build passive expression from terms
-			var args = new List<object>();
-			while (context.Data.Count > initialCount)
-				args.Add(context.Data.Pop());
+		internal Runtime.PassiveExpression EvaluateExpression(ScriptThread thread)
+		{
+			// standard prolog
+			thread.CurrentNode = this;
 
-			// build expression and push onto stack
-			args.Reverse();
-			context.Data.Push(PassiveExpression.Build(args.ToArray()));
+			try
+			{
+				var terms = new List<object>();
+
+				foreach (var term in Terms)
+				{
+					var result = term.Evaluate(thread);
+					terms.Add(result);
+				}
+
+				return PassiveExpression.Build(terms.ToArray());
+			}
+			finally
+			{
+				// standard epilog
+				thread.CurrentNode = Parent;
+			}
 		}
 
 		public override string ToString()

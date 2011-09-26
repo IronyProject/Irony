@@ -14,12 +14,25 @@ namespace Refal
 	{
 		public string Name { get; set; } // TODO: value.Replace("-", "__")
 
-		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		protected override object DoEvaluate(ScriptThread thread)
 		{
-			// define function
-			context.SetValue(Name, this);
+			// standard prolog
+			thread.CurrentNode = this;
+
+			try
+			{
+				// define function: bind function name to the current instance
+				var binding = thread.Bind(Name, BindingOptions.Write);
+				binding.SetValueRef(thread, this);
+				return null;
+			}
+			finally
+			{
+				// standard epilog
+				thread.CurrentNode = Parent;
+			}
 		}
 
-		public abstract void Call(ScriptAppInfo context);
+		public virtual abstract object Call(ScriptThread thread, object[] parameters);
 	}
 }

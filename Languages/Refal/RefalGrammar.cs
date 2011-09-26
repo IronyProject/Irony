@@ -3,15 +3,17 @@ using System.Text;
 using System.Collections.Generic;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
+using Irony.Interpreter;
 
 namespace Refal
 {
 	/// <summary>
 	/// Refal-5 Grammar
 	/// Written by Alexey Yakovlev, yallie@yandex.ru
+	/// http://refal.codeplex.com
 	/// </summary>
-	[Language("Refal5", "0.1 alpha", "Refal-5.NET language interpreter")]
-	public class RefalGrammar : Grammar
+	[Language("Refal5", "0.2 alpha", "Refal-5.NET language interpreter")]
+	public class RefalGrammar : InterpretedLanguageGrammar
 	{
 		public RefalGrammar() : base(true) // case sensitive
 		{

@@ -1,14 +1,17 @@
-using System;
+// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
 using System.Collections.Generic;
+using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
-using Irony.Interpreter;
 using Refal.Runtime;
 
 namespace Refal
 {
 	/// <summary>
-	/// Expression is a sequence of symbols, macrodigits, bound variables and function calls
+	/// Expression is a sequence of symbols, macrodigits, bound variables and function calls.
 	/// </summary>
 	public class Expression : AstNode
 	{
@@ -26,8 +29,14 @@ namespace Refal
 			foreach (var node in parseNode.ChildNodes)
 			{
 				if (node.AstNode is AstNode)
-					Terms.Add(node.AstNode as AstNode);
+				{
+					var astNode = node.AstNode as AstNode;
+					astNode.Parent = this;
+					Terms.Add(astNode);
+				}
 			}
+
+			AsString = "expression";
 		}
 
 		public override System.Collections.IEnumerable GetChildNodes()
@@ -41,26 +50,33 @@ namespace Refal
 			get { return Terms.Count == 0; }
 		}
 
-		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		protected override object DoEvaluate(ScriptThread thread)
 		{
-			// evaluate terms
-			var initialCount = context.Data.Count;
-			foreach (var term in Terms)
-				term.Evaluate(context, mode);
-
-			// build passive expression from terms
-			var args = new List<object>();
-			while (context.Data.Count > initialCount)
-				args.Add(context.Data.Pop());
-
-			// build expression and push onto stack
-			args.Reverse();
-			context.Data.Push(PassiveExpression.Build(args.ToArray()));
+			return EvaluateExpression(thread);
 		}
 
-		public override string ToString()
+		internal Runtime.PassiveExpression EvaluateExpression(ScriptThread thread)
 		{
-			return "expression";
+			// standard prolog
+			thread.CurrentNode = this;
+
+			try
+			{
+				var terms = new List<object>();
+
+				foreach (var term in Terms)
+				{
+					var result = term.Evaluate(thread);
+					terms.Add(result);
+				}
+
+				return PassiveExpression.Build(terms.ToArray());
+			}
+			finally
+			{
+				// standard epilog
+				thread.CurrentNode = Parent;
+			}
 		}
 	}
 }

@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Refal.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,6 +34,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -44,7 +46,6 @@
     <Compile Include="Ast\Block.cs" />
     <Compile Include="Ast\Conditions.cs" />
     <Compile Include="Ast\DefinedFunction.cs" />
-    <Compile Include="Ast\EvaluationContextExtensions.cs" />
     <Compile Include="Ast\Expression.cs" />
     <Compile Include="Ast\ExpressionInBraces.cs" />
     <Compile Include="Ast\ExpressionVariable.cs" />
@@ -54,6 +55,7 @@
     <Compile Include="Ast\LiteralValueNodeHelper.cs" />
     <Compile Include="Ast\Pattern.cs" />
     <Compile Include="Ast\Program.cs" />
+    <Compile Include="Ast\ScriptThreadExtensions.cs" />
     <Compile Include="Ast\Sentence.cs" />
     <Compile Include="Ast\SymbolVariable.cs" />
     <Compile Include="Ast\TermVariable.cs" />
@@ -76,13 +78,14 @@
     <None Include="RefalAstNodes.cd" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Irony.Interpreter\015.Irony.Interpreter.2010.csproj">
+      <Project>{321A7F5D-00C2-4095-9970-075CDEE8C139}</Project>
+      <Name>015.Irony.Interpreter.2010</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Irony\010.Irony.2010.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
       <Name>010.Irony.2010</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Refal_readme_first.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

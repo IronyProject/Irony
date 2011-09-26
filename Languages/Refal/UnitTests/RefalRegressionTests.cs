@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text.RegularExpressions;
+using Irony;
 using Irony.Parsing;
 
 namespace Refal.UnitTests
@@ -17,7 +18,9 @@ namespace Refal.UnitTests
 	#endregion
 
 	/// <summary>
-	/// Refal regression tests
+	/// Refal regression tests.
+	/// Written by Alexey Yakovlev, yallie@yandex.ru.
+	/// http://refal.codeplex.com
 	/// </summary>
 	[TestClass]
 	public class RefalRegressionTests
@@ -135,9 +138,9 @@ namespace Refal.UnitTests
 			Assert.IsNotNull(parseTree);
 			Assert.IsFalse(parseTree.HasErrors());
 
-			string result = grammar.RunSample(parseTree);
+			string result = grammar.RunSample(new RunSampleArgs(parser.Language, null, parseTree));
 			Assert.IsNotNull(result);
-			Assert.AreEqual(result, LoadResourceText(outputResourceName));
+			Assert.AreEqual(LoadResourceText(outputResourceName), result);
 		}
 
 		/// <summary>

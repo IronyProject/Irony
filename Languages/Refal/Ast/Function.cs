@@ -1,14 +1,14 @@
-using System;
-using System.Collections.Generic;
-using Irony.Interpreter.Ast;
-using Irony.Parsing;
+// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
 using Irony.Interpreter;
-using Refal.Runtime;
+using Irony.Interpreter.Ast;
 
 namespace Refal
 {
 	/// <summary>
-	/// Base node for all functions
+	/// Base node for all functions.
 	/// </summary>
 	public abstract class Function : AstNode, ICallTarget
 	{
@@ -22,9 +22,12 @@ namespace Refal
 			try
 			{
 				// define function: bind function name to the current instance
-				var binding = thread.Bind(Name, BindingOptions.Write);
+				var binding = thread.Bind(Name, BindingOptions.Write | BindingOptions.NewOnly);
 				binding.SetValueRef(thread, this);
-				return null;
+
+				// set Evaluate method and return the current node
+				Evaluate = t => this;
+				return this;
 			}
 			finally
 			{
@@ -33,6 +36,6 @@ namespace Refal
 			}
 		}
 
-		public virtual abstract object Call(ScriptThread thread, object[] parameters);
+		public abstract object Call(ScriptThread thread, object[] parameters);
 	}
 }

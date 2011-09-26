@@ -8,8 +8,8 @@ using Irony.Interpreter;
 namespace Refal
 {
 	/// <summary>
-	/// Refal-5 Grammar
-	/// Written by Alexey Yakovlev, yallie@yandex.ru
+	/// Refal-5 Grammar.
+	/// Written by Alexey Yakovlev, yallie@yandex.ru.
 	/// http://refal.codeplex.com
 	/// </summary>
 	[Language("Refal5", "0.2 alpha", "Refal-5.NET language interpreter")]
@@ -115,7 +115,7 @@ namespace Refal
 			RegisterBracePair("{", "}");
 
 			MarkTransient(Definition, PatternItem, ExpressionItem, SemicolonOpt, EntryOpt, Extern, CommaOrAmpersand, VarPrefix, VarIndex, RExpressionOrWhereOrWithClause);
-			LanguageFlags = LanguageFlags.CreateAst | LanguageFlags.CanRunSample | LanguageFlags.TailRecursive;
+			LanguageFlags = LanguageFlags.CreateAst | LanguageFlags.SupportsBigInt | LanguageFlags.TailRecursive;
 		}
 
 		void LineComment_ValidateToken(object sender, ParsingEventArgs args)

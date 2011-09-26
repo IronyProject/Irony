@@ -1,15 +1,17 @@
+// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
 using System;
 using System.Linq;
-using System.Collections.Generic;
+using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
-using Irony.Interpreter;
-using Refal.Runtime;
 
 namespace Refal
 {
 	/// <summary>
-	/// Function call
+	/// Function call.
 	/// </summary>
 	public class FunctionCall : AstNode
 	{
@@ -51,7 +53,9 @@ namespace Refal
 				}
 				else if (node.AstNode is Expression)
 				{
-					Expression = (node.AstNode as Expression);
+					var astNode = node.AstNode as Expression;
+					astNode.Parent = this;
+					Expression = astNode;
 				}
 			}
 		}
@@ -61,28 +65,42 @@ namespace Refal
 			return Expression.GetChildNodes();
 		}
 
-		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		protected override object DoEvaluate(ScriptThread thread)
 		{
-			Expression.Evaluate(context, mode);
+			// standard prolog
+			thread.CurrentNode = this;
 
-			object value;
-			if (context.TryGetValue(FunctionName, out value))
+			try
 			{
-				ICallTarget function = value as ICallTarget;
+				var parameter = Expression.Evaluate(thread);
+				var binding = thread.Bind(FunctionName, BindingOptions.Read);
+				var result = binding.GetValueRef(thread);
+				if (result == null)
+				{
+					thread.ThrowScriptError("Unknown identifier: {0}", FunctionName);
+					return null;
+				}
+
+				var function = result as ICallTarget;
 				if (function == null)
-					context.ThrowError("This identifier cannot be called: {0}", FunctionName);
+				{
+					thread.ThrowScriptError("This identifier cannot be called: {0}", FunctionName);
+					return null;
+				}
 
-				function.Call(context);
-				return;
+				return function.Call(thread, new object[] { parameter });
 			}
-
-			context.ThrowError("Unknown identifier: {0}", FunctionName);
+			finally
+			{
+				// standard epilog
+				thread.CurrentNode = Parent;
+			}
 		}
 
-		public override SourceLocation GetErrorAnchor()
-		{
-			return (NameSpan != null ? NameSpan.Value : Span).Location;
-		}
+		//public override SourceLocation GetErrorAnchor()
+		//{
+		//    return (NameSpan != null ? NameSpan.Value : Span).Location;
+		//}
 
 		public override string ToString()
 		{

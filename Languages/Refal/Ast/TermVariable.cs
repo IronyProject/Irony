@@ -1,14 +1,11 @@
-using System;
-using System.Collections.Generic;
-using Irony.Interpreter.Ast;
-using Irony.Parsing;
-using Irony.Interpreter;
-using Refal.Runtime;
+// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
 
 namespace Refal
 {
 	/// <summary>
-	/// Variable of form t.X that can be bound either to a symbol or to expression in a structure braces
+	/// Variable of form t.X that can be bound either to a symbol or to expression in a structure braces.
 	/// </summary>
 	public class TermVariable : Variable
 	{

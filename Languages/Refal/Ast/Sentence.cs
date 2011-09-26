@@ -1,9 +1,11 @@
-using System;
+// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
 using System.Linq;
-using System.Collections.Generic;
+using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
-using Irony.Interpreter;
 using Refal.Runtime;
 
 namespace Refal
@@ -24,6 +26,8 @@ namespace Refal
 
 		public Runtime.Pattern BlockPattern { get; set; }
 
+		public PassiveExpression InputExpression { get; set; }
+
 		public override void Init(ParsingContext context, ParseTreeNode parseNode)
 		{
 			base.Init(context, parseNode);
@@ -39,6 +43,14 @@ namespace Refal
 					var nodes = (node.AstNode as AuxiliaryNode).ChildNodes;
 					Conditions = nodes.OfType<Conditions>().FirstOrDefault();
 					Expression = nodes.OfType<Expression>().FirstOrDefault();
+				}
+			}
+
+			foreach (var astNode in new AstNode[] { Pattern, Conditions, Expression })
+			{
+				if (astNode != null)
+				{
+					astNode.Parent = this;
 				}
 			}
 		}
@@ -61,7 +73,35 @@ namespace Refal
 
 			try
 			{
-				//?
+				// evaluate pattern and copy bound variables of the current block
+				var patt = Pattern.Instantiate(thread);
+				if (BlockPattern != null)
+				{
+					patt.CopyBoundVariables(BlockPattern);
+				}
+
+				// if pattern is recognized, calculate new expression and return true
+				var result = patt.Match(InputExpression);
+				if (result)
+				{
+					// store last recognized pattern as a local variable
+					thread.SetLastPattern(patt);
+
+					// matching, return expression
+					if (Expression != null)
+					{
+						return Expression.Evaluate(thread);
+					}
+
+					// matching succeeded? it depends on conditions
+					if (Conditions != null)
+					{
+						return Conditions.Evaluate(thread);
+					}
+				}
+
+				// matching failed
+				return null;
 			}
 			finally
 			{
@@ -69,53 +109,6 @@ namespace Refal
 				thread.CurrentNode = Parent;
 			}
 		}
-
-		//public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
-		//{
-		//    // evaluate pattern and copy bound variables of the current block
-		//    var patt = Pattern.Instantiate(context, mode);
-		//    if (BlockPattern != null)
-		//    {
-		//        patt.CopyBoundVariables(BlockPattern);
-		//    }
-
-		//    // pop expression from evaluation stack
-		//    var expr = context.Data.Pop() as Runtime.PassiveExpression;
-
-		//    // if pattern is recognized, calculate new expression and return true
-		//    var result = patt.Match(expr);
-		//    if (result)
-		//    {
-		//        // store last recognized pattern as a local variable
-		//        context.SetLastPattern(patt);
-
-		//        // match succeeded, return expression
-		//        if (Expression != null)
-		//        {
-		//            Expression.Evaluate(context, AstMode.Read);
-		//            context.Data.Push(true);
-		//            return;
-		//        }
-
-		//        // match succeeded? it depends on conditions
-		//        if (Conditions != null)
-		//        {
-		//            Conditions.Evaluate(context, mode);
-
-		//            // check if conditions succeeded
-		//            result = Convert.ToBoolean(context.Data.Pop());
-		//            if (result)
-		//            {
-		//                context.Data.Push(true);
-		//                return;
-		//            }
-		//        }
-		//    }
-
-		//    // push expression back for the next sentence
-		//    context.Data.Push(expr);
-		//    context.Data.Push(false); // match failed
-		//}
 
 		public override string ToString()
 		{

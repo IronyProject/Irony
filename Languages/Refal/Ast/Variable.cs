@@ -1,16 +1,18 @@
+// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
 using System;
-using System.Collections.Generic;
+using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
-using Irony.Interpreter;
-using Refal.Runtime;
 
 namespace Refal
 {
 	/// <summary>
-	/// Variable is a part of refal expression that can be bound to a value
-	/// Being part of a pattern is not bound to a value and is called "free variable"
-	/// In an expression to the right of "=" variable is bound to a value
+	/// Variable is a part of refal expression that can be bound to a value.
+	/// Being part of a pattern is not bound to a value and is called "free variable".
+	/// In an expression to the right of "=" variable is bound to a value.
 	/// </summary>
 	public abstract class Variable : AstNode
 	{
@@ -87,24 +89,6 @@ namespace Refal
 				thread.CurrentNode = Parent;
 			}
 		}
-
-		//public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
-		//{
-		//    // read variable from last recognized pattern
-		//    if (mode == AstMode.Read)
-		//    {
-		//        if (context.GetLastPattern() == null)
-		//            context.ThrowError("No pattern recognized");
-
-		//        // push variable contents onto stack
-		//        var pattern = context.GetLastPattern();
-		//        context.Data.Push(pattern.GetVariable(Index));
-		//        return;
-		//    }
-
-		//    // create variable for pattern matching
-		//    context.Data.Push(CreateVariable());
-		//}
 
 		/// <summary>
 		/// Create pattern variable

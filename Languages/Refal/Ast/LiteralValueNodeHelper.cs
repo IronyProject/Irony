@@ -1,14 +1,14 @@
-﻿using System;
-using System.Text;
-using System.Linq;
-using System.Collections.Generic;
+﻿// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
 
 namespace Refal
 {
 	/// <summary>
-	/// Initializes Refal literal nodes
+	/// Initializes Refal literal nodes.
 	/// </summary>
 	public static class LiteralValueNodeHelper
 	{

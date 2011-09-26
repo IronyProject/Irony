@@ -1,21 +1,25 @@
-using System;
-using System.Linq;
+// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
 using System.Collections.Generic;
+using System.Linq;
+using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
-using Irony.Interpreter;
-using Refal.Runtime;
 
 namespace Refal
 {
 	/// <summary>
-	/// Block is a sequence of sentences
+	/// Block is a sequence of sentences.
 	/// </summary>
 	public class Block : AstNode
 	{
 		public IList<Sentence> Sentences { get; private set; }
 
 		public Runtime.Pattern BlockPattern { get; set; }
+
+		public Runtime.PassiveExpression InputExpression { get; set; }
 
 		public Block()
 		{
@@ -32,9 +36,12 @@ namespace Refal
 				if (node.AstNode is AuxiliaryNode)
 				{
 					var auxNode = node.AstNode as AuxiliaryNode;
-					
+
 					foreach (var s in auxNode.ChildNodes.OfType<Sentence>())
+					{
+						s.Parent = this;
 						Sentences.Add(s);
+					}
 				}
 			}
 		}
@@ -54,13 +61,15 @@ namespace Refal
 			{
 				foreach (var sentence in Sentences)
 				{
+					sentence.InputExpression = InputExpression;
 					sentence.BlockPattern = BlockPattern;
-					if (Convert.ToBoolean(sentence.Evaluate(thread)))
-						return true;
+					var result = sentence.Evaluate(thread);
+					if (result != null)
+						return result;
 				}
 
 				thread.ThrowScriptError("Recognition impossible");
-				return false;
+				return null;
 			}
 			finally
 			{

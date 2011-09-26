@@ -9,7 +9,7 @@
       Transition.Include method. Thus we avoid an extra step of "Transitive closure" of Include relation. See note about efficiency below.     
    3. We don't use Reads and DirectRead relation between transitions. "Reads" relation 
       between transitions is replaced by Reads relation between states. So state A READS state B if you can move from state A to state B
-      using shifts over nullable terminals. ParserStateData.ReadStateSet contains all states that current state Reads. ReadStateSet 
+      using shifts over nullable non-terminals. ParserStateData.ReadStateSet contains all states that current state Reads. ReadStateSet 
       is computed on-demand, and all reads are immediately propagated through transitive chain - see source code of the method. 
       For DirectReads set for a transition in DeRemer-Penello - we use a state.ShiftTerminals set of the target state of the transition 
        - obviously this is the same set.
@@ -25,16 +25,17 @@
  
  About computing ExpectedTerminals set for parser states.
   ExpectedTerms is a property of ParserState and contains all Terminals that parser expects in this state. This set is used by Scanner 
-  which Terminal to use for recongizing next token when it has a choice of more than one. (This is called Scanner-Parser link facility).
+  to filter out terminals for the next token when it has a choice of more than one for a current input character. 
+  (This is called Scanner-Parser link facility).
   The question now is how to compute this set. There are are several kinds of Parser states:
     1. Containing shift items only. The ExpectedSet is a union of all "current" terms of all shift items. State.BuilderData.ShiftTerms 
        already contains this set - easy case.
     2. Containing shift AND reduce items. This is inadequate set. The expected set is a union of all current terms of shift items 
-       (like in previous case) plus all lookaheads of reduce items. Reduce items have lookaheads computed, because it is inadequate state.
+       (like in previous case) plus all lookaheads of reduce items. Reduce items have lookaheads computed, because it is an inadequate state.
     3. Containing 2 or more reduce items - this is again an inadequate state, each reduce items has lookaheads computed, so expected set
        is a union of lookaheads of reduce items.
-    4. Containing a single reduce item. This is a troubled case. The state is not inadequate, so we don't compute lookaheads for a single
-       reduce items - there is no need for them, only a single action is possible. 
+    4. Containing a single reduce item. This is a problem case. The state is not inadequate - we do not compute lookaheads for a single
+       reduce item, as there is no need for them - only a single action is possible. 
   The solution for the last case with a single reduce item is the following: we do not compute ExpectedSet for such states, but make sure 
   that scanner-parser link is never activated in this case. We do it in Parser code by NOT reading the next token from Scanner when 
   current state has a single reduce action (DefaultReduceAction property is not null). We do not read next token because it is not needed

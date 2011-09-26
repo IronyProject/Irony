@@ -86,6 +86,9 @@ namespace Irony.Parsing {
     #region overrides
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
+      if (this.AstNodeType == null && this.AstNodeCreator == null)
+        this.AstNodeType = grammarData.Grammar.DefaultIdentifierNodeType;
+
       AllChars = AllChars?? String.Empty;
       AllFirstChars = AllFirstChars ?? string.Empty;
       //Adjust case restriction. We adjust only first chars; if first char is ok, we will scan the rest without restriction 
@@ -105,9 +108,6 @@ namespace Irony.Parsing {
         Grammar.FallbackTerminals.Add(this);
       if (this.EditorInfo == null) 
         this.EditorInfo = new TokenEditorInfo(TokenType.Identifier, TokenColor.Identifier, TokenTriggers.None);
-      if (this.AstNodeType == null && this.AstNodeCreator == null &&
-           grammarData.Grammar.LanguageFlags.HasFlag(LanguageFlags.CreateAst))
-        this.AstNodeType = typeof(Irony.Interpreter.Ast.IdentifierNode);
     }
 
     //TODO: put into account non-Ascii aplhabets specified by means of Unicode categories!

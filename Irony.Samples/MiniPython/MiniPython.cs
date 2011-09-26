@@ -26,8 +26,8 @@ namespace Irony.Samples.MiniPython {
   // Python is important test case for Irony as an indentation-sensitive language.
 
   [Language("MiniPython", "0.2", "Micro-subset of Python, work in progress")]
-  public class MiniPythonGrammar : Irony.Parsing.Grammar {
-    public MiniPythonGrammar() {
+  public class MiniPythonGrammar : InterpretedLanguageGrammar {
+    public MiniPythonGrammar() : base(caseSensitive: true) {
 
       // 1. Terminals
       var number = TerminalFactory.CreatePythonNumber("number");
@@ -125,7 +125,7 @@ Press Ctrl-C to exit the program at any time.
       ConsolePromptMoreInput = "..."; 
       
       // 10. Language flags
-      this.LanguageFlags = LanguageFlags.NewLineBeforeEOF | LanguageFlags.CreateAst | LanguageFlags.CanRunSample | LanguageFlags.SupportsBigInt;
+      this.LanguageFlags = LanguageFlags.NewLineBeforeEOF | LanguageFlags.CreateAst | LanguageFlags.SupportsBigInt;
 
     }//constructor
 

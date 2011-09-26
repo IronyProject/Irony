@@ -4,9 +4,9 @@ namespace Irony.Samples.Java
 {
 	partial class JavaGrammar
 	{
-		private const bool EnableAutomaticConflictResolution = true;
 		private void InitializeSyntax()
 		{
+		  bool enableAutomaticConflictResolution = true; //Roman: moved it here and made var instead of const to get rid of compiler warnings
 
 #region Identifier and Literals
 			#pragma warning disable 168
@@ -21,7 +21,7 @@ namespace Irony.Samples.Java
 			};
 			var identifier = new NonTerminal("identifier")
 			                 	{
-			                 		Rule = EnableAutomaticConflictResolution
+			                 		Rule = enableAutomaticConflictResolution
 			                 		       	? PreferShiftHere() + identifier_raw
 			                 		       	: identifier_raw
 			                 	};
@@ -143,7 +143,7 @@ namespace Irony.Samples.Java
 			var THIS_RAW = ToTerm("this", "this");
 			var THIS = new NonTerminal("_this_")
 			           	{
-			           		Rule = EnableAutomaticConflictResolution
+			           		Rule = enableAutomaticConflictResolution
 			           		       	? PreferShiftHere() + THIS_RAW
 			           		       	: THIS_RAW
 			           	};
@@ -157,7 +157,7 @@ namespace Irony.Samples.Java
 			var L_PAR_RAW = ToTerm("(", "l_par");
 			var L_PAR = new NonTerminal("_(_")
 			            	{
-			            		Rule = EnableAutomaticConflictResolution
+			            		Rule = enableAutomaticConflictResolution
 			            		       	? PreferShiftHere() + L_PAR_RAW
 			            		       	: L_PAR_RAW
 			            	};
@@ -165,7 +165,7 @@ namespace Irony.Samples.Java
 			var L_BKT_RAW = ToTerm("[", "l_bkt");
 			var L_BKT = new NonTerminal("_[_")
 			            	{
-			            		Rule = EnableAutomaticConflictResolution
+			            		Rule = enableAutomaticConflictResolution
 			            		       	? PreferShiftHere() + L_BKT_RAW
 			            		       	: L_BKT_RAW
 			            	};

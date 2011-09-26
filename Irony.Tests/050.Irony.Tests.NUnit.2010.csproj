@@ -97,6 +97,10 @@
     <Compile Include="_TerminalTestBase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Irony.Interpreter\015.Irony.Interpreter.2010.csproj">
+      <Project>{321A7F5D-00C2-4095-9970-075CDEE8C139}</Project>
+      <Name>015.Irony.Interpreter.2010</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Irony.Samples\020.Irony.Samples.2010.csproj">
       <Project>{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}</Project>
       <Name>020.Irony.Samples.2010</Name>

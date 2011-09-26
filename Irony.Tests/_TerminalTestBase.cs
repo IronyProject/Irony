@@ -14,6 +14,7 @@ namespace Irony.Tests {
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 #endif
 
+  [TestClass]
   public class TerminalTestsBase {
     protected TestGrammar _grammar;
     protected LanguageData _language; 

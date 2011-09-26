@@ -1,0 +1,5 @@
+#Demo of custom object's method import. SampleExpressionEvaluatorGrammar adds methods of 
+# HelperObject (a single method GetGreeting) to runtime BuiltIn methods. 
+# UserName comes from static property of Environment (imported into built-ins by expression evaluator).
+# GetDate is a single instance method implemented by Sample grammar class
+greeting = GetGreeting(UserName) + "\r\nToday is: " + GetDate()

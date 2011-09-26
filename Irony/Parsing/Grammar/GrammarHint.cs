@@ -82,13 +82,13 @@ namespace Irony.Parsing {
   public class TokenPreviewHint : CustomGrammarHint {
     public int MaxPreviewTokens { get; set; } // preview limit
     private string FirstString { get; set; }
-    private ICollection<string> OtherStrings { get; set; }
+    private StringSet OtherStrings { get; set; }
     private Terminal FirstTerminal { get; set; }
-    private ICollection<Terminal> OtherTerminals { get; set; }
+    private HashSet<Terminal> OtherTerminals { get; set; }
 
     private TokenPreviewHint(ParserActionType action) : base(action) {
       FirstString = String.Empty;
-      OtherStrings = new HashSet<string>();
+      OtherStrings = new StringSet();
       FirstTerminal = null;
       OtherTerminals = new HashSet<Terminal>();
       MaxPreviewTokens = 0;
@@ -103,12 +103,12 @@ namespace Irony.Parsing {
     }
 
     public TokenPreviewHint ComesBefore(params string[] others) {
-      Array.ForEach(others, term => OtherStrings.Add(term));
+      OtherStrings.AddRange(others); 
       return this;
     }
 
     public TokenPreviewHint ComesBefore(params Terminal[] others) {
-      Array.ForEach(others, term => OtherTerminals.Add(term));
+      OtherTerminals.UnionWith(others); 
       return this;
     }
 

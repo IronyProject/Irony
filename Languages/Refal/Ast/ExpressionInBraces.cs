@@ -1,14 +1,16 @@
-using System;
-using System.Collections.Generic;
+// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
+using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
-using Irony.Interpreter;
 using Refal.Runtime;
 
 namespace Refal
 {
 	/// <summary>
-	/// Expression or pattern in structure braces ()
+	/// Expression or pattern in structure braces ().
 	/// </summary>
 	public class ExpressionInBraces : AstNode
 	{
@@ -21,8 +23,14 @@ namespace Refal
 			foreach (var node in parseNode.ChildNodes)
 			{
 				if (node.AstNode is AstNode)
-					InnerExpression = (node.AstNode as AstNode);
+				{
+					var astNode = node.AstNode as AstNode;
+					astNode.Parent = this;
+					InnerExpression = astNode;
+				}
 			}
+
+			AsString = "(structure braces)";
 		}
 
 		public override System.Collections.IEnumerable GetChildNodes()
@@ -30,17 +38,14 @@ namespace Refal
 			return InnerExpression.GetChildNodes();
 		}
 
-		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		internal PassiveExpression EvaluateExpression(ScriptThread thread)
 		{
-			context.Data.Push(new OpeningBrace());
-			if (InnerExpression != null)
-				InnerExpression.Evaluate(context, mode);
-			context.Data.Push(new ClosingBrace());
-		}
+			if (InnerExpression == null)
+			{
+				return PassiveExpression.Build(new OpeningBrace(), new ClosingBrace());
+			}
 
-		public override string ToString()
-		{
-			return "(structure braces)";
+			return PassiveExpression.Build(new OpeningBrace(), InnerExpression.Evaluate(thread), new ClosingBrace());
 		}
 	}
 }

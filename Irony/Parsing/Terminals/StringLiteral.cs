@@ -77,7 +77,6 @@ namespace Irony.Parsing {
     #region constructors and initialization
     public StringLiteral(string name): base(name) {
       base.SetFlag(TermFlags.IsLiteral);
-      base.AstNodeType = typeof(Irony.Interpreter.Ast.LiteralValueNode);
     }
 
     public StringLiteral(string name, string startEndSymbol, StringOptions options) : this(name) {
@@ -115,6 +114,8 @@ namespace Irony.Parsing {
     #region overrides: Init, GetFirsts, ReadBody, etc...
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
+      if (AstNodeType == null)
+        base.AstNodeType = grammarData.Grammar.DefaultLiteralNodeType;
       _startSymbolsFirsts = string.Empty;
       if (_subtypes.Count == 0) {
         grammarData.Language.Errors.Add(GrammarErrorLevel.Error, null, Resources.ErrInvStrDef, this.Name); //"Error in string literal [{0}]: No start/end symbols specified."

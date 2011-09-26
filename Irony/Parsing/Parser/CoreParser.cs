@@ -259,14 +259,16 @@ namespace Irony.Parsing {
       int firstChildIndex = Context.ParserStack.Count - childCount;
       var span = ComputeNewNodeSpan(childCount);
       var newNode = new ParseTreeNode(action.ReduceProduction, span);
+      var newIsOp = newNode.Term.Flags.HasFlag(TermFlags.IsOperator); 
       for(int i = 0; i < childCount; i++) {
         var childNode = Context.ParserStack[firstChildIndex + i];
         if(ShouldSkipChildNode(childNode))
           continue; //skip punctuation or empty transient nodes
         CheckCreateAstNode(childNode); //AST nodes for lists and for terminals are created here 
-        //For single-child reduces inherit precedence and associativity, to cover a standard case: BinOp->+|-|*|/; 
-        // BinOp node should inherit precedence from underlying operator symbol
-        if(childCount == 1 && childNode.Precedence != BnfTerm.NoPrecedence) {
+        //Inherit precedence and associativity, to cover a standard case: BinOp->+|-|*|/; 
+        // BinOp node should inherit precedence from underlying operator symbol. Keep in mind special case of SQL operator "NOT LIKE" which consists
+        // of 2 tokens. We therefore inherit "max" precedence from any children
+        if(newIsOp && childNode.Precedence != BnfTerm.NoPrecedence && childNode.Precedence > newNode.Precedence) {
           newNode.Precedence = childNode.Precedence;
           newNode.Associativity = childNode.Associativity;
         }

@@ -14,12 +14,6 @@ namespace Irony.Samples.ConsoleCalculator {
       Console.Title = "Irony Console Sample";
       Console.WriteLine("Irony Console Sample.");
       Console.WriteLine("");
-      Console.WriteLine(" DOES NOT WORK IN CURRENT VERSION.");
-      Console.WriteLine(" Press any key to exit.");
-      Console.ReadKey();
-      return; 
-      
-/*      
       Console.WriteLine("Select a grammar to load:");
       Console.WriteLine("  1. Expression Evaluator");
       Console.WriteLine("  2. mini-Python");
@@ -30,7 +24,7 @@ namespace Irony.Samples.ConsoleCalculator {
       Grammar grammar; 
       switch (choice) {
         case "1": 
-          grammar = new ExpressionEvaluatorGrammar();
+          grammar = new SampleExpressionEvaluatorGrammar();
           break;
         case "2":
           grammar = new MiniPython.MiniPythonGrammar();
@@ -43,7 +37,6 @@ namespace Irony.Samples.ConsoleCalculator {
       var runtime = new LanguageRuntime(language);
       var commandLine = new CommandLine(runtime);
       commandLine.Run();
- */
     }
 
   }//class

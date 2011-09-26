@@ -21,7 +21,7 @@ namespace Irony.Samples.SQL {
       var comma = ToTerm(",");
       var dot = ToTerm(".");
       var CREATE = ToTerm("CREATE"); 
-      var NULL = ToTerm("NULL"); 
+      var NULL = ToTerm("NULL");
       var NOT = ToTerm("NOT");
       var UNIQUE = ToTerm("UNIQUE"); 
       var WITH = ToTerm("WITH");
@@ -46,7 +46,7 @@ namespace Irony.Samples.SQL {
       var AS = ToTerm("AS");
       var COUNT = ToTerm("COUNT");
       var JOIN = ToTerm("JOIN");
-      var BY = ToTerm("BY"); 
+      var BY = ToTerm("BY");
 
       //Non-terminals
       var Id = new NonTerminal("Id");
@@ -117,7 +117,6 @@ namespace Irony.Samples.SQL {
       var stmtList = new NonTerminal("stmtList");
       var funArgs = new NonTerminal("funArgs");
       var inStmt = new NonTerminal("inStmt");
-
 
       //BNF Rules
       this.Root = stmtList;
@@ -227,17 +226,20 @@ namespace Irony.Samples.SQL {
       //Operators
       RegisterOperators(10, "*", "/", "%"); 
       RegisterOperators(9, "+", "-");
-      RegisterOperators(8, "=" , ">" , "<" , ">=" , "<=" , "<>" , "!=" , "!<" , "!>");
+      RegisterOperators(8, "=", ">", "<", ">=", "<=", "<>", "!=", "!<", "!>", "LIKE", "IN");
       RegisterOperators(7, "^", "&", "|");
-      RegisterOperators(6, "NOT"); 
+      RegisterOperators(6, NOT); 
       RegisterOperators(5, "AND");
-      RegisterOperators(4, "OR", "LIKE", "IN");
+      RegisterOperators(4, "OR");
 
       MarkPunctuation(",", "(", ")");
       MarkPunctuation(asOpt, semiOpt);
       //Note: we cannot declare binOp as transient because it includes operators "NOT LIKE", "NOT IN" consisting of two tokens. 
       // Transient non-terminals cannot have more than one non-punctuation child nodes.
-      base.MarkTransient(stmt, term, asOpt, aliasOpt, stmtLine, expression);
+      // Instead, we mark binOp as Operator, so that it inherits precedence value from it's children, and this precedence is used
+      // in conflict resolution when binOp node is sitting on the stack
+      base.MarkTransient(stmt, term, asOpt, aliasOpt, stmtLine, expression, unOp, tuple);
+      binOp.SetFlag(TermFlags.IsOperator); 
 
     }//constructor
 

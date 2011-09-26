@@ -1,15 +1,15 @@
-using System;
-using System.Collections.Generic;
-using Irony.Interpreter.Ast;
-using Irony.Parsing;
+// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
 using Irony.Interpreter;
-using Refal.Runtime;
+using Irony.Parsing;
 
 namespace Refal
 {
 	/// <summary>
-	/// External function is a library function referenced from the current compilation unit
-	/// External functions are not supported yet
+	/// External function is a library function referenced from the current compilation unit.
+	/// External functions are not supported yet.
 	/// </summary>
 	public class ExternalFunction : Function
 	{
@@ -17,20 +17,22 @@ namespace Refal
 		{
 			Span = sourceSpan;
 		}
-		
+
+		public override void Init(ParsingContext context, ParseTreeNode treeNode)
+		{
+			base.Init(context, treeNode);
+			AsString = "extern " + Name;
+		}
+
 		public override System.Collections.IEnumerable GetChildNodes()
 		{
 			yield break;
 		}
 
-		public override void Call(ScriptAppInfo context)
+		public override object Call(ScriptThread thread, object[] parameters)
 		{
-			context.ThrowError("Calling external function is not supported");
-		}
-
-		public override string ToString()
-		{
-			return "extern " + Name;
+			thread.ThrowScriptError("Calling external function is not supported");
+			return null;
 		}
 	}
 }

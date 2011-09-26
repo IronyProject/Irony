@@ -1,15 +1,17 @@
+// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
 using System;
 using System.Linq;
-using System.Collections.Generic;
+using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
-using Irony.Interpreter;
-using Refal.Runtime;
 
 namespace Refal
 {
 	/// <summary>
-	/// Where- and When-clauses
+	/// Where- and When-clauses.
 	/// </summary>
 	public class Conditions : AstNode
 	{
@@ -41,7 +43,15 @@ namespace Refal
 					MoreConditions = nodes.OfType<Conditions>().FirstOrDefault();
 					ResultExpression = nodes.OfType<Expression>().FirstOrDefault();
 				}
+
+				foreach (var astNode in new AstNode[] { Expression, Pattern, Block, MoreConditions, ResultExpression })
+				{
+					if (astNode != null)
+						astNode.Parent = this;
+				}
 			}
+
+			AsString = Block != null ? "with-clause" : "where-clause";
 		}
 
 		public override System.Collections.IEnumerable GetChildNodes()
@@ -61,76 +71,75 @@ namespace Refal
 				yield return MoreConditions;
 		}
 
-		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		protected override object DoEvaluate(ScriptThread thread)
 		{
-			// evaluate expression
-			Expression.Evaluate(context, AstMode.Read);
+			// standard prolog
+			thread.CurrentNode = this;
 
-			// extract last recognized pattern (it contains bound variables)
-			var lastPattern = context.GetLastPattern();
-			if (lastPattern == null)
+			try
 			{
-				context.ThrowError("Internal error: last recognized pattern is lost");
+				// evaluate expression
+				var expression = Expression.EvaluateExpression(thread);
+
+				// extract last recognized pattern (it contains bound variables)
+				var lastPattern = thread.GetLastPattern();
+				if (lastPattern == null)
+				{
+					thread.ThrowScriptError("Internal error: last recognized pattern is lost.");
+				}
+
+				// with-clause
+				if (Block != null)
+				{
+					Block.InputExpression = expression;
+					Block.BlockPattern = lastPattern;
+					return Block.Evaluate(thread);
+				}
+
+				// where-clause
+				if (Pattern != null)
+				{
+					return EvaluateWhereClause(expression, lastPattern, thread);
+				}
+
+				return false;
 			}
-
-			// with-clause
-			if (Block != null)
+			finally
 			{
-				Block.BlockPattern = lastPattern;
-				Block.Evaluate(context, mode);
-
-				// with-clause is always successful
-				context.Data.Push(true);
-			}
-
-			// where-clause
-			if (Pattern != null)
-			{
-				EvaluateWhereClause(lastPattern, context, mode);
+				// standard epilog
+				thread.CurrentNode = Parent;
 			}
 		}
 
-		void EvaluateWhereClause(Runtime.Pattern lastPattern, ScriptAppInfo context, AstMode mode)
+		bool EvaluateWhereClause(Runtime.PassiveExpression expr, Runtime.Pattern lastPattern, ScriptThread thread)
 		{
 			// instantiate where-clause pattern
-			var patt = Pattern.Instantiate(context, mode);
+			var patt = Pattern.Instantiate(thread);
 			patt.CopyBoundVariables(lastPattern);
 
 			// perform matching
-			var expr = context.Data.Pop() as Runtime.PassiveExpression;
 			var result = patt.Match(expr);
 			if (result)
 			{
 				// store last recognized pattern as a local variable
-				context.SetLastPattern(patt);
+				thread.SetLastPattern(patt);
 
 				// match succeeded, return true
 				if (ResultExpression != null)
 				{
-					ResultExpression.Evaluate(context, AstMode.Read);
-					context.Data.Push(true);
-					return;
+					return Convert.ToBoolean(ResultExpression.Evaluate(thread));
 				}
 
 				// match succeeded? depends on more conditions
 				if (MoreConditions != null)
 				{
 					// return true or false
-					MoreConditions.Evaluate(context, AstMode.Read);
-					return;
+					return Convert.ToBoolean(MoreConditions.Evaluate(thread));
 				}
 			}
 
-			// match failed, return false
-			context.Data.Push(false);
-		}
-
-		public override string ToString()
-		{
-			if (Block != null)
-				return "with-clause";
-
-			return "where-clause";
+			// matching failed, return false
+			return false;
 		}
 	}
 }

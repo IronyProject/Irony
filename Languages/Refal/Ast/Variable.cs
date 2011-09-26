@@ -62,6 +62,7 @@ namespace Refal
 			}
 
 			varNode.Span = parseNode.Span;
+			varNode.AsString = varNode.Index;
 			parseNode.AstNode = varNode;
 		}
 
@@ -72,6 +73,12 @@ namespace Refal
 
 			try
 			{
+				// is it pattern variable? then don't evaluate it.
+				if (UseType == NodeUseType.Name)
+				{
+					return CreateVariable();
+				}
+
 				// get last recognized pattern
 				var pattern = thread.GetLastPattern();
 				if (pattern == null)
@@ -94,10 +101,5 @@ namespace Refal
 		/// Create pattern variable
 		/// </summary>
 		public abstract Runtime.Variable CreateVariable();
-
-		public override string ToString()
-		{
-			return Index;
-		}
 	}
 }

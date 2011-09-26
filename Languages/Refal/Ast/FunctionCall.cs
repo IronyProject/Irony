@@ -58,6 +58,10 @@ namespace Refal
 					Expression = astNode;
 				}
 			}
+
+			// error anchor points to the exact error location in the source code
+			ErrorAnchor = (NameSpan != null ? NameSpan.Value : Span).Location;
+			AsString = "call " + FunctionName;
 		}
 
 		public override System.Collections.IEnumerable GetChildNodes()
@@ -95,16 +99,6 @@ namespace Refal
 				// standard epilog
 				thread.CurrentNode = Parent;
 			}
-		}
-
-		//public override SourceLocation GetErrorAnchor()
-		//{
-		//    return (NameSpan != null ? NameSpan.Value : Span).Location;
-		//}
-
-		public override string ToString()
-		{
-			return "call " + FunctionName;
 		}
 	}
 }

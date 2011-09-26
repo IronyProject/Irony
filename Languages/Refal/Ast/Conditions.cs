@@ -50,6 +50,8 @@ namespace Refal
 						astNode.Parent = this;
 				}
 			}
+
+			AsString = Block != null ? "with-clause" : "where-clause";
 		}
 
 		public override System.Collections.IEnumerable GetChildNodes()
@@ -138,14 +140,6 @@ namespace Refal
 
 			// matching failed, return false
 			return false;
-		}
-
-		public override string ToString()
-		{
-			if (Block != null)
-				return "with-clause";
-
-			return "where-clause";
 		}
 	}
 }

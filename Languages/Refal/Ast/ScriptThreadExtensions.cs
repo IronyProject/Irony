@@ -15,10 +15,9 @@ namespace Refal
 	{
 		/// Unique names for implicit local variables
 		static string LastPatternSymbolName = Guid.NewGuid().ToString();
-		static string DataStackSymbolName = Guid.NewGuid().ToString();
 
 		/// <summary>
-		/// Retrieve last evaluated pattern
+		/// Retrieve last evaluated pattern.
 		/// </summary>
 		public static Refal.Runtime.Pattern GetLastPattern(this ScriptThread thread)
 		{
@@ -27,29 +26,12 @@ namespace Refal
 		}
 
 		/// <summary>
-		/// Set last evaluated pattern
+		/// Set last evaluated pattern.
 		/// </summary>
 		public static void SetLastPattern(this ScriptThread thread, Refal.Runtime.Pattern pattern)
 		{
 			var binding = thread.Bind(LastPatternSymbolName, BindingOptions.Write | BindingOptions.ExistingOrNew);
 			binding.SetValueRef(thread, pattern);
-		}
-
-		/// <summary>
-		/// Retrieve data stack of the given thread.
-		/// </summary>
-		public static Stack<object> GetDataStack(this ScriptThread thread)
-		{
-			var binding = thread.Bind(DataStackSymbolName, BindingOptions.Read | BindingOptions.Write);
-			var stack = binding.GetValueRef(thread) as Stack<object>;
-			if (stack != null)
-			{
-				return stack;
-			}
-
-			stack = new Stack<object>();
-			binding.SetValueRef(thread, stack);
-			return stack;
 		}
 	}
 }

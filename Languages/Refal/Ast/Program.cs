@@ -52,6 +52,8 @@ namespace Refal
 					}
 				}
 			}
+
+			AsString = "Refal-5 program";
 		}
 
 		public override System.Collections.IEnumerable GetChildNodes()
@@ -107,11 +109,6 @@ namespace Refal
 				// standard epilog
 				thread.CurrentNode = Parent;
 			}
-		}
-
-		public override string ToString()
-		{
-			return "Refal-5 program";
 		}
 	}
 }

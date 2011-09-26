@@ -29,6 +29,8 @@ namespace Refal
 					InnerExpression = astNode;
 				}
 			}
+
+			AsString = "(structure braces)";
 		}
 
 		public override System.Collections.IEnumerable GetChildNodes()
@@ -44,11 +46,6 @@ namespace Refal
 			}
 
 			return PassiveExpression.Build(new OpeningBrace(), InnerExpression.Evaluate(thread), new ClosingBrace());
-		}
-
-		public override string ToString()
-		{
-			return "(structure braces)";
 		}
 	}
 }

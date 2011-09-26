@@ -44,6 +44,8 @@ namespace Refal
 					}
 				}
 			}
+
+			AsString = "block";
 		}
 
 		public override System.Collections.IEnumerable GetChildNodes()
@@ -76,11 +78,6 @@ namespace Refal
 				// standard epilog
 				thread.CurrentNode = Parent;
 			}
-		}
-
-		public override string ToString()
-		{
-			return "block";
 		}
 	}
 }

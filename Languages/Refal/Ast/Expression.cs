@@ -35,6 +35,8 @@ namespace Refal
 					Terms.Add(astNode);
 				}
 			}
+
+			AsString = "expression";
 		}
 
 		public override System.Collections.IEnumerable GetChildNodes()
@@ -75,11 +77,6 @@ namespace Refal
 				// standard epilog
 				thread.CurrentNode = Parent;
 			}
-		}
-
-		public override string ToString()
-		{
-			return "expression";
 		}
 	}
 }

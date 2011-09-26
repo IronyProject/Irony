@@ -38,6 +38,8 @@ namespace Refal
 					IsPublic = true;
 				}
 			}
+
+			AsString = (IsPublic ? "public " : "private ") + Name;
 		}
 
 		public override System.Collections.IEnumerable GetChildNodes()
@@ -64,11 +66,6 @@ namespace Refal
 			{
 				thread.PopScope();
 			}
-		}
-
-		public override string ToString()
-		{
-			return (IsPublic ? "public " : "private ") + Name;
 		}
 	}
 }

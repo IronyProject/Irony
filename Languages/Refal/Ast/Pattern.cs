@@ -36,9 +36,12 @@ namespace Refal
 				{
 					var astNode = node.AstNode as AstNode;
 					astNode.Parent = this;
+					astNode.UseType = NodeUseType.Name; // do not evaluate pattern variables
 					Terms.Add(astNode);
 				}
 			}
+
+			AsString = "pattern";
 		}
 
 		public override System.Collections.IEnumerable GetChildNodes()
@@ -81,11 +84,6 @@ namespace Refal
 		{
 			// evaluate pattern and instantiate Runtime.Pattern
 			return new Runtime.Pattern(EvaluateTerms(thread));
-		}
-
-		public override string ToString()
-		{
-			return "pattern";
 		}
 	}
 }

@@ -17,7 +17,13 @@ namespace Refal
 		{
 			Span = sourceSpan;
 		}
-		
+
+		public override void Init(ParsingContext context, ParseTreeNode treeNode)
+		{
+			base.Init(context, treeNode);
+			AsString = "extern " + Name;
+		}
+
 		public override System.Collections.IEnumerable GetChildNodes()
 		{
 			yield break;
@@ -27,11 +33,6 @@ namespace Refal
 		{
 			thread.ThrowScriptError("Calling external function is not supported");
 			return null;
-		}
-
-		public override string ToString()
-		{
-			return "extern " + Name;
 		}
 	}
 }

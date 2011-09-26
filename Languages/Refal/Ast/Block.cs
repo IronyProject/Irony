@@ -1,21 +1,25 @@
-using System;
-using System.Linq;
+// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
 using System.Collections.Generic;
+using System.Linq;
+using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
-using Irony.Interpreter;
-using Refal.Runtime;
 
 namespace Refal
 {
 	/// <summary>
-	/// Block is a sequence of sentences
+	/// Block is a sequence of sentences.
 	/// </summary>
 	public class Block : AstNode
 	{
 		public IList<Sentence> Sentences { get; private set; }
 
 		public Runtime.Pattern BlockPattern { get; set; }
+
+		public Runtime.PassiveExpression InputExpression { get; set; }
 
 		public Block()
 		{
@@ -32,11 +36,16 @@ namespace Refal
 				if (node.AstNode is AuxiliaryNode)
 				{
 					var auxNode = node.AstNode as AuxiliaryNode;
-					
+
 					foreach (var s in auxNode.ChildNodes.OfType<Sentence>())
+					{
+						s.Parent = this;
 						Sentences.Add(s);
+					}
 				}
 			}
+
+			AsString = "block";
 		}
 
 		public override System.Collections.IEnumerable GetChildNodes()
@@ -45,25 +54,30 @@ namespace Refal
 				yield return s;
 		}
 
-		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		protected override object DoEvaluate(ScriptThread thread)
 		{
-			foreach (Sentence sentence in Sentences)
+			// standard prolog
+			thread.CurrentNode = this;
+
+			try
 			{
-				sentence.BlockPattern = BlockPattern;
-				sentence.Evaluate(context, mode);
+				foreach (var sentence in Sentences)
+				{
+					sentence.InputExpression = InputExpression;
+					sentence.BlockPattern = BlockPattern;
+					var result = sentence.Evaluate(thread);
+					if (result != null)
+						return result;
+				}
 
-				// if some sentence is evaluated to true, then stop
-				var result = context.Data.Pop();
-				if (Convert.ToBoolean(result) == true)
-					return;
+				thread.ThrowScriptError("Recognition impossible");
+				return null;
 			}
-
-			context.ThrowError("Recognition impossible");
-		}
-
-		public override string ToString()
-		{
-			return "block";
+			finally
+			{
+				// standard epilog
+				thread.CurrentNode = Parent;
+			}
 		}
 	}
 }

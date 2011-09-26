@@ -9,40 +9,40 @@ using System.Reflection;
 using System.Collections.Generic;
 using Irony.Interpreter.Ast;
 using Irony.Interpreter;
-using BigInteger = Microsoft.Scripting.Math.BigInteger;
+using System.Numerics;
 
 namespace Refal.Runtime
 {
 	/// <summary>
-	/// Run-time library
+	/// Refal run-time library.
 	/// </summary>
 	public class RefalLibrary
 	{
 		/// <summary>
-		/// Irony interpreter evaluation context
+		/// Script execution thread.
 		/// </summary>
-		public ScriptAppInfo EvaluationContext { get; private set; }
+		public ScriptThread ScriptThread { get; private set; }
 
 		/// <summary>
-		/// File I/O support: handle (expression) -> StreamReader/StreamWriter
+		/// File I/O support: handle (expression) -> StreamReader/StreamWriter.
 		/// </summary>
 		IDictionary<string, object> OpenFiles { get; set; }
 
 		/// <summary>
-		/// Bury/Dig functions expression storage
+		/// Bury/Dig functions expression storage.
 		/// </summary>
 		IDictionary<string, PassiveExpression> BuriedKeys { get; set; }
 
 		IDictionary<string, PassiveExpression> BuriedValues { get; set; }
 
 		/// <summary>
-		/// Command line arguments
+		/// Command line arguments.
 		/// </summary>
 		protected string[] CommandLineArguments { get; set; }
 
-		public RefalLibrary(ScriptAppInfo ctx)
+		public RefalLibrary(ScriptThread thread)
 		{
-			EvaluationContext = ctx;
+			ScriptThread = thread;
 			OpenFiles = new Dictionary<string, object>();
 			BuriedKeys = new Dictionary<string, PassiveExpression>();
 			BuriedValues = new Dictionary<string, PassiveExpression>();
@@ -57,7 +57,7 @@ namespace Refal.Runtime
 				return null;
 
 			//Console.WriteLine("{0}", expression.ToStringBuilder(0));
-			EvaluationContext.Write(expression.ToStringBuilder(0).ToString() + Environment.NewLine);
+			ScriptThread.App.Write(expression.ToStringBuilder(0).ToString());
 
 			return expression;
 		}
@@ -68,7 +68,7 @@ namespace Refal.Runtime
 				return null;
 
 			//Console.WriteLine("{0}", expression.ToStringBuilder(0));
-			EvaluationContext.Write(expression.ToStringBuilder(0).ToString() + Environment.NewLine);
+			ScriptThread.App.Write(expression.ToStringBuilder(0).ToString());
 
 			return null;
 		}
@@ -271,17 +271,17 @@ namespace Refal.Runtime
 					}
 
 					if (o is int)
-						return BigInteger.Create(sign * (int)o);
+						return new BigInteger(sign * (int)o);
 
 					if (o is long)
-						return BigInteger.Create(sign * (long)o);
+						return new BigInteger(sign * (long)o);
 
 					if (o is BigInteger)
 						return sign * (BigInteger)o;
 
 					// warning: BigInteger doesn't support parsing strings
 					if (o is string)
-						return BigInteger.Create(sign * Convert.ToInt64(o));
+						return new BigInteger(sign * Convert.ToInt64(o));
 				}
 
 				return BigInteger.Zero;
@@ -289,13 +289,13 @@ namespace Refal.Runtime
 
 			// try convert single symbol
 			if (value is int)
-				return BigInteger.Create((int)value);
+				return new BigInteger((int)value);
 			if (value is long)
-				return BigInteger.Create((long)value);
+				return new BigInteger((long)value);
 			if (value is BigInteger)
 				return (BigInteger)value;
 			if (value is string)
-				return BigInteger.Create(Convert.ToInt64(value));
+				return new BigInteger(Convert.ToInt64(value)); // TODO
 			return BigInteger.Zero;
 		}
 
@@ -325,13 +325,10 @@ namespace Refal.Runtime
 				bigIntValue = -bigIntValue;
 			}
 
-			int intValue;
-			long longValue;
-
-			if (bigIntValue.AsInt32(out intValue))
-				result[valueIndex] = intValue;
-			else if (bigIntValue.AsInt64(out longValue))
-				result[valueIndex] = longValue;
+			if (bigIntValue >= int.MinValue && bigIntValue <= int.MaxValue)
+				result[valueIndex] = (int)bigIntValue;
+			else if (bigIntValue >= long.MinValue && bigIntValue <= long.MaxValue)
+				result[valueIndex] = (long)bigIntValue;
 			else
 				result[valueIndex] = bigIntValue;
 

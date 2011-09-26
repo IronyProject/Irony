@@ -1,25 +1,41 @@
-using System;
-using System.Collections.Generic;
-using Irony.Interpreter.Ast;
-using Irony.Parsing;
+// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
 using Irony.Interpreter;
-using Refal.Runtime;
+using Irony.Interpreter.Ast;
 
 namespace Refal
 {
 	/// <summary>
-	/// Base node for all functions
+	/// Base node for all functions.
 	/// </summary>
 	public abstract class Function : AstNode, ICallTarget
 	{
 		public string Name { get; set; } // TODO: value.Replace("-", "__")
 
-		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		protected override object DoEvaluate(ScriptThread thread)
 		{
-			// define function
-			context.SetValue(Name, this);
+			// standard prolog
+			thread.CurrentNode = this;
+
+			try
+			{
+				// define function: bind function name to the current instance
+				var binding = thread.Bind(Name, BindingOptions.Write | BindingOptions.NewOnly);
+				binding.SetValueRef(thread, this);
+
+				// set Evaluate method and return the current node
+				Evaluate = t => this;
+				return this;
+			}
+			finally
+			{
+				// standard epilog
+				thread.CurrentNode = Parent;
+			}
 		}
 
-		public abstract void Call(ScriptAppInfo context);
+		public abstract object Call(ScriptThread thread, object[] parameters);
 	}
 }

@@ -1,15 +1,17 @@
-﻿using System;
-using System.Text;
-using System.Linq;
+﻿// Refal5.NET interpreter
+// Written by Alexey Yakovlev <yallie@yandex.ru>
+// http://refal.codeplex.com
+
+using System;
 using System.Collections.Generic;
+using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
-using Irony.Interpreter;
 
 namespace Refal
 {
 	/// <summary>
-	/// Temporary AST nodes used internally while building AST
+	/// Temporary AST nodes used internally while building AST.
 	/// </summary>
 	public class AuxiliaryNode : AstNode
 	{
@@ -57,7 +59,7 @@ namespace Refal
 			throw new NotImplementedException("Auxiliary nodes should not appear in the final AST");
 		}
 
-		public override void EvaluateNode(ScriptAppInfo context, AstMode mode)
+		protected override object DoEvaluate(ScriptThread thread)
 		{
 			throw new NotImplementedException("Auxiliary node cannot be interpreted");
 		}

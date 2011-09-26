@@ -1,0 +1,25 @@
+SELECT Name 
+  FROM Production.Product 
+WHERE ProductSubcategoryID IN (
+   SELECT ProductSubcategoryID 
+   FROM Production.ProductSubcategory 
+   WHERE Name = 'Wheels'
+)
+go;
+
+SELECT au_lname, state
+FROM authors
+WHERE state IN ('CA', 'IN', 'MD');
+
+SELECT [au_lname], "au_fname"
+FROM authors
+WHERE au_id NOT IN
+    (SELECT au_id
+    FROM titleauthor
+    WHERE royaltyper < 50)
+
+
+
+
+
+

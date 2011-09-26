@@ -1,0 +1,10 @@
+syntax: glob
+*.suo
+*.user
+*.cache
+*.Cache
+*.FileListAbsolute.txt
+*.gpState
+bin
+obj
+TestResults/*.trx

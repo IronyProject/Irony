@@ -81,7 +81,7 @@
     <Compile Include="Java\JavaGrammar.Syntax.cs" />
     <Compile Include="MiniPython\MiniPython.cs" />
     <Compile Include="GWBasic\GwBasicGrammar.cs" />
-    <Compile Include="ExpressionEvaluator\SampleExpressionEvaluatorGrammar.cs" />
+    <Compile Include="SampleExpressionEvaluator\SampleExpressionEvaluatorGrammar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scheme\SchemeGrammar.cs" />
     <None Include="SourceSamples\c#\bottles-v11-long.cs" />
@@ -123,6 +123,8 @@
     <None Include="SourceSamples\SampleExpressionEvaluator\UseMath.txt" />
     <None Include="SourceSamples\SampleExpressionEvaluator\UseEnv.txt" />
     <None Include="SourceSamples\SampleExpressionEvaluator\UseCustomBuiltIns.txt" />
+    <Content Include="SourceSamples\SampleExpressionEvaluator\TestIif.txt" />
+    <Content Include="SourceSamples\SampleExpressionEvaluator\TestFormatAndPrint.txt" />
     <Content Include="SourceSamples\SampleExpressionEvaluator\StringSample.txt" />
     <Content Include="SourceSamples\Java\about_samples.txt" />
     <Content Include="SourceSamples\Java\Sample 1.java" />

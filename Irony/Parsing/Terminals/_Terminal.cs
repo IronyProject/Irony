@@ -55,7 +55,7 @@ namespace Irony.Parsing {
       base.Init(grammarData);
       //By default for Literal terminals assign node type in Grammar.DefaultLiteralNodeType
       bool assignLiteralType = (AstNodeType == null && AstNodeCreator == null &&
-          Flags.HasFlag(TermFlags.IsLiteral) &&  Grammar.LanguageFlags.HasFlag(LanguageFlags.CreateAst));
+          Flags.IsSet(TermFlags.IsLiteral) &&  Grammar.LanguageFlags.IsSet(LanguageFlags.CreateAst));
       if (assignLiteralType)
         AstNodeType = this.Grammar.DefaultLiteralNodeType;
     }

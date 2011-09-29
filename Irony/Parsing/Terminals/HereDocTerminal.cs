@@ -55,7 +55,7 @@ namespace Irony.Parsing {
 
       internal bool CheckEnd(ParsingContext context, ISourceStream source, string line, string tag, out int spaceCount) {
         spaceCount = 0;
-        if (this.Flags.HasFlag(HereDocOptions.AllowIndentedEndToken)) {
+        if (this.Flags.IsSet(HereDocOptions.AllowIndentedEndToken)) {
           if (line.Trim().IndexOf(tag, context.Language.Grammar.CaseSensitive ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase) == 0) {
             spaceCount = line.IndexOf(tag);
             return true;

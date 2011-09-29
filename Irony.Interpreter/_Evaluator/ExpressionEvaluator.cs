@@ -31,30 +31,18 @@ namespace Irony.Interpreter.Evaluator {
     }
 
     //Default constructor, creates default evaluator 
-    public ExpressionEvaluator() : this(new ExpressionEvaluatorGrammar()) { }
+    public ExpressionEvaluator() : this(new ExpressionEvaluatorGrammar()) {
+    }
 
-    //Allows creating customized evaluators
+    //Default constructor, creates default evaluator 
     public ExpressionEvaluator(ExpressionEvaluatorGrammar grammar) {
       Grammar = grammar;
       Language = new LanguageData(Grammar);
-      Init();
-    }
-
-    public ExpressionEvaluator(LanguageData language) {
-      Language = language;
-      Grammar = Language.Grammar as ExpressionEvaluatorGrammar;
-      Init(); 
-    }
-
-    private void Init() {
       Parser = new Parser(Language);
       Runtime = Grammar.CreateRuntime(Language);
-      //Import static methods of types
-      Runtime.BuiltIns.AddStaticMembers(typeof(System.Math));
-      Runtime.BuiltIns.AddStaticMembers(typeof(Environment));
       App = new ScriptApp(Runtime);
     }
-    
+
     public object Evaluate(string script) {
       var result = App.Evaluate(script);
       return result; 

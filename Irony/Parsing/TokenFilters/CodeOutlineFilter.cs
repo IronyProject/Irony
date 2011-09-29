@@ -140,7 +140,7 @@ namespace Irony.Parsing {
       }
       CurrentToken = token;
       _isContinuation = (token.Terminal == ContinuationTerminal && ContinuationTerminal != null);
-      _isOperator = token.Terminal.Flags.HasFlag(TermFlags.IsOperator);
+      _isOperator = token.Terminal.Flags.IsSet(TermFlags.IsOperator);
       if (!_isContinuation)
         OutputTokens.Push(token); //by default input token goes to output, except continuation symbol
     }

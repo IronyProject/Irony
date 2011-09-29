@@ -26,9 +26,9 @@ namespace Irony.Interpreter.Ast {
 
     public UnaryOperationNode() { }
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
-      base.Init(context, treeNode); 
-      OpSymbol = treeNode.ChildNodes[0].FindTokenAndGetText();
-      Argument = AddChild("Arg", treeNode.ChildNodes[1]);
+      base.Init(context, treeNode);
+      OpSymbol = treeNode.MappedChildNodes[0].FindTokenAndGetText();
+      Argument = AddChild("Arg", treeNode.MappedChildNodes[1]);
       base.AsString = OpSymbol + "(unary op)";
       base.ExpressionType = context.GetUnaryOperatorExpressionType(OpSymbol);
     }

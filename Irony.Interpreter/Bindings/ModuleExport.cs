@@ -13,29 +13,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
-using Irony.Interpreter.Ast;
 
 namespace Irony.Interpreter {
 
-  public class ModuleInfoList : List<ModuleInfo> { }
-
-  public class ModuleInfo {
-    public readonly string Name;
-    public readonly string FileName;
-    public readonly ScopeInfo ScopeInfo; //scope for module variables
-    public readonly BindingSourceList Imports = new BindingSourceList();
-
-    public ModuleInfo(string name, string fileName, ScopeInfo scopeInfo) {
-      Name = name;
-      FileName = fileName;
-      ScopeInfo = scopeInfo;
+  // Module export, container for public, exported symbols from module
+  // Just a skeleton, to be completed
+  public class ModuleExport: IBindingSource {
+    public ModuleInfo Module;
+    public ModuleExport(ModuleInfo module)  {
+      Module = module; 
     }
 
-    //Used for imported modules
-    public Binding BindToExport(BindingRequest request) {
-      return null; 
+    public Binding Bind(BindingRequest request) {
+      return null;
     }
-
   }
+
+
+
 }

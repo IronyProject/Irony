@@ -217,8 +217,8 @@ namespace Irony.Parsing {
 
     //Gives a chance of custom AST node creation at Grammar level
     // by default calls Term's method
-    public virtual void CreateAstNode(ParsingContext context, ParseTreeNode nodeInfo) {
-      nodeInfo.Term.CreateAstNode(context, nodeInfo);
+    public virtual void CreateAstNode(ParsingContext context, ParseTreeNode parseTreeNode) {
+      parseTreeNode.Term.CreateAstNode(context, parseTreeNode);
     }
 
     /// <summary>

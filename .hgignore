@@ -8,3 +8,4 @@ syntax: glob
 bin
 obj
 TestResults/*.trx
+Irony_All.2010.sln - Shortcut.lnk

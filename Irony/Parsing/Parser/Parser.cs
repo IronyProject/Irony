@@ -58,7 +58,7 @@ namespace Irony.Parsing {
     public ParseTree Parse(string sourceText, string fileName) {
       if (Context.Status != ParserStatus.AcceptedPartial)
         Reset();
-      var createAst = Language.Grammar.LanguageFlags.HasFlag(LanguageFlags.CreateAst);
+      var createAst = Language.Grammar.LanguageFlags.IsSet(LanguageFlags.CreateAst);
       var keepLineNumbering = Context.Status == ParserStatus.AcceptedPartial;
       Context.SourceStream.SetText(sourceText, 0, keepLineNumbering);
       Context.CurrentParseTree = new ParseTree(sourceText, fileName);

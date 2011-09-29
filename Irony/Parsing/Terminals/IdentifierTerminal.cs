@@ -163,7 +163,7 @@ namespace Irony.Parsing {
       if (Grammar.KeyTerms.TryGetValue(token.Text, out keyTerm)) {
         token.KeyTerm = keyTerm;
         //if it is reserved word, then overwrite terminal
-        if (keyTerm.Flags.HasFlag(TermFlags.IsReservedWord))
+        if (keyTerm.Flags.IsSet(TermFlags.IsReservedWord))
           token.SetTerminal(keyTerm); 
       }
     }

@@ -49,10 +49,7 @@ namespace Irony.Interpreter.Ast {
     public readonly AstNodeList ChildNodes = new AstNodeList();  //List of child nodes
     
     //Reference to Evaluate method implementation. Initially set to DoEvaluate virtual method. 
-    // Intentionally made internal - to prevent calling it directly like childNode.Evaluate(context). 
-    // Instead, use EvaluationContext.Evaluate(node) method. 
-    // Use SetEvaluate public method to set the reference in custom nodes. 
-    internal EvaluateMethod Evaluate;
+    public EvaluateMethod Evaluate;
 
     // Public default constructor
     public AstNode() {

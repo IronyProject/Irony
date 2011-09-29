@@ -121,25 +121,38 @@ namespace Irony.Parsing {
     #region AST node creations: AstNodeType, AstNodeCreator, AstNodeCreated
     public Type AstNodeType;
     public object AstNodeConfig; //config data passed to AstNode
-    public AstNodeCreator AstNodeCreator;
-    public event EventHandler<AstNodeEventArgs> AstNodeCreated;
+    public AstNodeCreator AstNodeCreator; // a custom method for creating AST nodes
+    public event EventHandler<AstNodeEventArgs> AstNodeCreated; //an event signalling that AST node is created. 
 
-    public virtual void CreateAstNode(ParsingContext context, ParseTreeNode nodeInfo) {
+    // An optional map (selector, filter) of child AST nodes. This facility provides a way to adjust the "map" of child nodes in various languages to 
+    // the structure of a standard AST nodes (that can be shared betweeen languages). 
+    // ParseTreeNode object has two properties containing list nodes: ChildNodes and MappedChildNodes.
+    //  If term.AstPartsMap is null, these two child node lists are identical and contain all child nodes. 
+    // If AstParts is not null, then MappedChildNodes will contain child nodes identified by indexes in the map. 
+    // For example, if we set  
+    //           term.AstPartsMap = new int[] {1, 4, 2}; 
+    // then MappedChildNodes will contain 3 child nodes, which are under indexes 1, 4, 2 in ChildNodes list.
+    // The mapping is performed in CoreParser.cs, method CheckCreateMappedChildNodeList.
+    public int[] AstPartsMap; 
+
+    public virtual void CreateAstNode(ParsingContext context, ParseTreeNode parseTreeNode) {
+      //First check the custom creator delegate
       if (AstNodeCreator != null) {
-        AstNodeCreator(context, nodeInfo);
-        //We assume that Node creator method creates node and initializes it, so parser does not need to call 
-        // IAstNodeInit.InitNode() method on node object.
+        AstNodeCreator(context, parseTreeNode);
+        // We assume that Node creator method creates node and initializes it, so parser does not need to call 
+        // IAstNodeInit.Init() method on node object.
         return;
       }
-      Type nodeType = GetAstNodeType(context, nodeInfo);
+      Type nodeType = GetAstNodeType(context, parseTreeNode);
       if (nodeType == null) 
         return; //we give a warning on grammar validation about this situation
-      nodeInfo.AstNode =  Activator.CreateInstance(nodeType);
+      parseTreeNode.AstNode =  Activator.CreateInstance(nodeType);
       //Initialize node
-      var iInit = nodeInfo.AstNode as IAstNodeInit;
+      var iInit = parseTreeNode.AstNode as IAstNodeInit;
       if (iInit != null)
-        iInit.Init(context, nodeInfo); 
+        iInit.Init(context, parseTreeNode); 
     }
+
 
     //method may be overriden to provide node type different from this.AstNodeType. StringLiteral is overriding this method
     // to use different node type for template strings

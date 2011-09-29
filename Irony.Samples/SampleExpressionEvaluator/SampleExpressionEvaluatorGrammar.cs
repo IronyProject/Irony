@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Irony.Parsing;
+using Irony.Interpreter; 
 using Irony.Interpreter.Evaluator;
 
 namespace Irony.Samples {
@@ -28,36 +29,34 @@ Case-insensitive. Supports big integers, float data types, variables, assignment
 arithmetic operations, augmented assignments (+=, -=), inc/dec (++,--), strings with embedded expressions.";
     }
 
-    public override Interpreter.LanguageRuntime CreateRuntime(Parsing.LanguageData language) {
+    //Intercept creating runtime and add custom builtin method
+    public override LanguageRuntime CreateRuntime(Parsing.LanguageData language) {
       var runtime = base.CreateRuntime(language);
+      runtime.BuiltIns.AddMethod(MethodHelper.GetGreeting, "GetGreeting", 1, 1, "user");
+      runtime.BuiltIns.AddMethod(MethodHelper.GetDate, "GetDate");
       return runtime; 
     }
 
     #region Running in Grammar Explorer
     private static ExpressionEvaluator _evaluator;
     public override string RunSample(RunSampleArgs args) {
-      if (_evaluator == null) {
-        _evaluator = new ExpressionEvaluator(args.Language);
-        // Example: importing a single instance member or all instance members of some object
-        // Import instance methods of GreetingsHelper. Note: because Irony currently uses reflection to call methods, methods must be public
-        var helper = new GreetingsHelper();
-        _evaluator.Runtime.BuiltIns.AddInstanceMember("GetDate", this);
-        _evaluator.Runtime.BuiltIns.AddInstanceMembers(helper);
-      }
+      if (_evaluator == null) 
+        _evaluator = new ExpressionEvaluator(this);
       _evaluator.App.ClearOutputBuffer();
-      _evaluator.Evaluate(args.ParsedSample);
+      //for (int i = 0; i < 1000; i++)  //for perf measurements, to execute 1000 times
+        _evaluator.Evaluate(args.ParsedSample);
       return _evaluator.App.OutputBuffer.ToString();
     }
 
-    public string GetDate() {
-      return DateTime.Now.ToLongDateString(); 
-    }
     #endregion
 
     //An example of adding a built-in method
-    class GreetingsHelper {
-      public string GetGreeting(string user) {
-        return "Hello, " + user + "!";
+    static class MethodHelper {
+      public static string GetGreeting(ScriptThread thread, object[] args) {
+        return "Hello, " + args[0] + "!";
+      }
+      public static string GetDate(ScriptThread thread, object[] args) {
+        return DateTime.Today.ToLongDateString();
       }
     }
 

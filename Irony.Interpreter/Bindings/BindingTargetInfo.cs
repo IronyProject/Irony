@@ -14,28 +14,31 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Irony.Interpreter.Ast;
 
 namespace Irony.Interpreter {
 
-  public class ModuleInfoList : List<ModuleInfo> { }
-
-  public class ModuleInfo {
-    public readonly string Name;
-    public readonly string FileName;
-    public readonly ScopeInfo ScopeInfo; //scope for module variables
-    public readonly BindingSourceList Imports = new BindingSourceList();
-
-    public ModuleInfo(string name, string fileName, ScopeInfo scopeInfo) {
-      Name = name;
-      FileName = fileName;
-      ScopeInfo = scopeInfo;
-    }
-
-    //Used for imported modules
-    public Binding BindToExport(BindingRequest request) {
-      return null; 
-    }
-
+  public enum BindingTargetType {
+    Slot,
+    BuiltInObject,
+    SpecialForm,
+    ClrInterop,
+    Custom, // any special non-standard type for specific language
   }
+
+
+  public class BindingTargetInfo {
+    public readonly string Symbol;
+    public readonly BindingTargetType Type;
+    public BindingTargetInfo(string symbol, BindingTargetType type) {
+      Symbol = symbol; 
+      Type = type;
+    }
+
+    public override string ToString() {
+      return Symbol + "/" + Type.ToString();
+    }
+
+  }//class
+
+
 }

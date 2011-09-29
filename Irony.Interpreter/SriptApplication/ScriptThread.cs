@@ -20,7 +20,7 @@ using Irony.Interpreter.Ast;
 
 namespace Irony.Interpreter {
   /// <summary> Represents a running thread in script application.  </summary>
-  public sealed class ScriptThread {
+  public sealed class ScriptThread : IBindingSource {
     public readonly ScriptApp App;
     public readonly LanguageRuntime Runtime; 
 
@@ -51,9 +51,9 @@ namespace Irony.Interpreter {
       CurrentScope = CurrentScope.Caller;
     }
 
-    public Binding Bind(string symbol, BindingOptions options) {
+    public Binding Bind(string symbol, BindingRequestFlags options) {
       var request = new BindingRequest(this, CurrentNode, symbol, options);
-      var binding = Runtime.BindSymbol(request);
+      var binding = Bind(request); 
       if (binding == null)
         ThrowScriptError("Unknown symbol '{0}'.", symbol); 
       return binding; 
@@ -88,5 +88,13 @@ namespace Irony.Interpreter {
 
     #endregion
 
+
+    #region IBindingSource Members
+
+    public Binding Bind(BindingRequest request) {
+      return Runtime.Bind(request);
+    }
+
+    #endregion
   }//class
 }

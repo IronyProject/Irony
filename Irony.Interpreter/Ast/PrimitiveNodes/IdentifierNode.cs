@@ -35,7 +35,7 @@ namespace Irony.Interpreter.Ast {
     //Executed only once, on the first call
     protected override object DoEvaluate(ScriptThread thread) {
       thread.CurrentNode = this;  //standard prolog
-      _accessor = thread.Bind(Symbol, BindingOptions.Read);
+      _accessor = thread.Bind(Symbol, BindingRequestFlags.Read);
       this.Evaluate = _accessor.GetValueRef; // Optimization - directly set method ref to accessor's method. EvaluateReader;
       var result = this.Evaluate(thread);
       thread.CurrentNode = Parent; //standard epilog
@@ -45,7 +45,7 @@ namespace Irony.Interpreter.Ast {
     protected internal override void SetValue(ScriptThread thread, object value) {
       thread.CurrentNode = this;  //standard prolog
       if (_accessor == null) {
-        _accessor = thread.Bind(Symbol, BindingOptions.Write | BindingOptions.ExistingOrNew);
+        _accessor = thread.Bind(Symbol, BindingRequestFlags.Write | BindingRequestFlags.ExistingOrNew);
       }
       _accessor.SetValueRef(thread, value);
       thread.CurrentNode = Parent;  //standard epilog

@@ -83,6 +83,8 @@
     <Compile Include="Parsing\Diagnostics\ParseTreeExtensions.cs" />
     <Compile Include="Parsing\Parser\ParsingEventArgs.cs" />
     <None Include="Parsing\Terminals\HereDocTerminal.cs" />
+    <Compile Include="Utilities\Extensions.cs" />
+    <Compile Include="Utilities\OperatorUtility.cs" />
     <Compile Include="Utilities\StringUtils.cs" />
     <Compile Include="Parsing\Parser\CoreParser_ErrorHandling.cs" />
     <Compile Include="Parsing\Diagnostics\ParserTrace.cs" />

@@ -49,7 +49,7 @@ namespace Irony.Interpreter {
     public AppStatus Status;
     public long EvaluationTime;
     public Exception LastException;
-    public bool RethrowExceptions; 
+    public bool RethrowExceptions = true;  
 
     public ParseTree LastScript { get; private set; } //the root node of the last executed script
 
@@ -158,10 +158,17 @@ namespace Irony.Interpreter {
         se.Location = thread.CurrentNode.Location;
         se.ScriptStackTrace = thread.GetStackTrace();
         LastException = se;
-        Status = AppStatus.RuntimeError;
         if (RethrowExceptions)
           throw;
-        return null; 
+        return null;
+      } catch (Exception ex) {
+        Status = AppStatus.RuntimeError;
+        var se = new ScriptException(ex.Message, ex, thread.CurrentNode.Location, thread.GetStackTrace()); 
+        LastException = se;
+        if (RethrowExceptions)
+          throw se;
+        return null;
+
       }//catch
 
     }
@@ -169,21 +176,37 @@ namespace Irony.Interpreter {
 
 
     #region Output writing
+    #region ConsoleWrite event
+    public event EventHandler<ConsoleWriteEventArgs> ConsoleWrite;
+    private void OnConsoleWrite(string text) {
+      if (ConsoleWrite != null) {
+        ConsoleWriteEventArgs args = new ConsoleWriteEventArgs(text);
+        ConsoleWrite(this, args);
+      }
+    }
+    #endregion
+
+
+
     public void Write(string text) {
       lock(_lockObject){
+        OnConsoleWrite(text); 
         OutputBuffer.Append(text);
       }
     }
     public void WriteLine(string text) {
       lock(_lockObject){
+        OnConsoleWrite(text + Environment.NewLine);
         OutputBuffer.AppendLine(text);
       }
     }
+
     public void ClearOutputBuffer() {
       lock(_lockObject){
         OutputBuffer.Clear();
       }
     }
+
     public string GetOutput() {
       lock(_lockObject){
         return OutputBuffer.ToString();

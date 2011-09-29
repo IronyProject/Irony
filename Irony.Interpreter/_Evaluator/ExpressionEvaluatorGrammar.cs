@@ -27,13 +27,16 @@ namespace Irony.Interpreter.Evaluator {
   //  the result of calculation is the result of last expression or assignment.
   //  Irony's default  runtime provides expression evaluation. 
   //  supports inc/dec operators (++,--), both prefix and postfix, and combined assignment operators like +=, -=, etc.
+  //  supports bool operators &, |, and short-circuit versions &&, ||
+  //  supports ternary ?: operator
 
   [Language("ExpressionEvaluator", "1.0", "Multi-line expression evaluator")]
   public class ExpressionEvaluatorGrammar : InterpretedLanguageGrammar {
     public ExpressionEvaluatorGrammar() : base(caseSensitive: false) { 
       this.GrammarComments = 
 @"Irony expression evaluator. Case-insensitive. Supports big integers, float data types, variables, assignments,
-arithmetic operations, augmented assignments (+=, -=), inc/dec (++,--), strings with embedded expressions." ;
+arithmetic operations, augmented assignments (+=, -=), inc/dec (++,--), strings with embedded expressions; 
+bool operations &,&&, |, ||; ternary '?:' operator." ;
       // 1. Terminals
       var number = new NumberLiteral("number");
       //Let's allow big integers (with unlimited number of digits):
@@ -80,7 +83,7 @@ arithmetic operations, augmented assignments (+=, -=), inc/dec (++,--), strings 
       UnExpr.Rule = UnOp + Term;
       UnOp.Rule = ToTerm("+") | "-"; 
       BinExpr.Rule = Expr + BinOp + Expr;
-      BinOp.Rule = ToTerm("+") | "-" | "*" | "/" | "**" | "==" | "<" | "<=" | ">" | ">=" | "!=";
+      BinOp.Rule = ToTerm("+") | "-" | "*" | "/" | "**" | "==" | "<" | "<=" | ">" | ">=" | "!=" | "&&" | "||" | "&" | "|";
       PrefixIncDec.Rule = IncDecOp + identifier;
       PostfixIncDec.Rule = identifier + IncDecOp;
       IncDecOp.Rule = ToTerm("++") | "--";
@@ -98,6 +101,7 @@ arithmetic operations, augmented assignments (+=, -=), inc/dec (++,--), strings 
 
       // 4. Operators precedence
       RegisterOperators(10, "?");
+      RegisterOperators(15, "&", "&&", "|", "||");
       RegisterOperators(20, "==", "<", "<=", ">", ">=", "!=");
       RegisterOperators(30, "+", "-");
       RegisterOperators(40, "*", "/");
@@ -133,6 +137,10 @@ Press Ctrl-C to exit the program at any time.
       //9. Language flags. 
       // Automatically add NewLine before EOF so that our BNF rules work correctly when there's no final line break in source
       this.LanguageFlags = LanguageFlags.NewLineBeforeEOF | LanguageFlags.CreateAst | LanguageFlags.SupportsBigInt;
+    }
+
+    public override LanguageRuntime CreateRuntime(LanguageData language) {
+      return new ExpressionEvaluatorRuntime(language); 
     }
 
 

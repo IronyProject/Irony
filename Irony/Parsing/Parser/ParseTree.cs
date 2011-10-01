@@ -16,8 +16,6 @@ using System.Linq;
 using System.Text;
 
 namespace Irony.Parsing {
-
-
   /* 
     A node for a parse tree (concrete syntax tree) - an initial syntax representation produced by parser.
     It contains all syntax elements of the input text, each element represented by a generic node ParseTreeNode. 
@@ -44,6 +42,7 @@ namespace Irony.Parsing {
     public bool IsError;
     internal ParserState State;      //used by parser to store current state when node is pushed into the parser stack
     public object Tag; //for use by custom parsers, Irony does not use it
+    public CommentBlock Comments; //Comments preceding this node
 
     private ParseTreeNode(){
       ChildNodes = MappedChildNodes = new ParseTreeNodeList();
@@ -112,6 +111,13 @@ namespace Irony.Parsing {
   }//class
 
   public class ParseTreeNodeList : List<ParseTreeNode> { }
+
+  public class CommentBlock {
+    public TokenList Tokens = new TokenList();
+    public override string ToString() {
+      return string.Join(Environment.NewLine, Tokens); 
+    }
+  }
 
   public enum ParseTreeStatus {
     Parsing,

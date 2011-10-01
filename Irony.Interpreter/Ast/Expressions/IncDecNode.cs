@@ -30,7 +30,7 @@ namespace Irony.Interpreter.Ast {
 
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      FindOpAndDetectPostfix(context, treeNode); 
+      FindOpAndDetectPostfix(treeNode); 
       int argIndex = IsPostfix? 0 : 1;
       Argument = AddChild(NodeUseType.ValueReadWrite, "Arg", treeNode.MappedChildNodes[argIndex]);
       BinaryOpSymbol = OpSymbol[0].ToString(); //take a single char out of ++ or --
@@ -38,7 +38,7 @@ namespace Irony.Interpreter.Ast {
       base.AsString = OpSymbol + (IsPostfix ? "(postfix)" : "(prefix)");
     }
 
-    private void FindOpAndDetectPostfix(ParsingContext context, ParseTreeNode treeNode) {
+    private void FindOpAndDetectPostfix(ParseTreeNode treeNode) {
       IsPostfix = false; //assume it 
       OpSymbol = treeNode.MappedChildNodes[0].FindTokenAndGetText();
       if (OpSymbol == "--" || OpSymbol == "++") return;

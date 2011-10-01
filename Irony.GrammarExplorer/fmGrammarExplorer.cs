@@ -322,7 +322,7 @@ namespace Irony.GrammarExplorer {
       if (_parser == null || !_parser.Language.CanParse()) return; 
       _parseTree = null;
       GC.Collect(); //to avoid disruption of perf times with occasional collections
-      _parser.Context.SetOption(ParseOptions.TraceParser, chkParserTrace.Checked);
+      _parser.Context.EnableTracing(chkParserTrace.Checked);
       try {
         _parser.Parse(txtSource.Text, "<source>");
       } catch (Exception ex) {

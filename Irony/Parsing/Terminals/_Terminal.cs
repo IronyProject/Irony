@@ -81,10 +81,10 @@ namespace Irony.Parsing {
     #endregion
 
     #region Events: ValidateToken
-    public event EventHandler<ParsingEventArgs> ValidateToken;
-    protected internal virtual void InvokeValidateToken(ParsingContext context) {
+    public event EventHandler<ValidateTokenEventArgs> ValidateToken;
+    protected internal virtual void OnValidateToken(ParsingContext context) {
       if (ValidateToken != null)
-        ValidateToken(this,  context.SharedParsingEventArgs);
+        ValidateToken(this,  context.SharedValidateTokenEventArgs);
     }
     #endregion
 

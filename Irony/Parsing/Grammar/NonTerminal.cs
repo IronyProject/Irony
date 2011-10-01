@@ -48,6 +48,18 @@ namespace Irony.Parsing {
     //Converted template with index list
     private string _convertedTemplate;
     private IntList _captionParameters;
+
+    // Productions are used internally by Parser builder
+    internal ProductionList Productions = new ProductionList();
+    #endregion
+
+    #region Events: Reduced
+    //Note that Reduced event may be called more than once for a List node 
+    public event EventHandler<ReducedEventArgs> Reduced;
+    internal void OnReduced(ParsingContext context, Production reducedProduction, ParseTreeNode resultNode) {
+      if (Reduced != null)
+        Reduced(this, new ReducedEventArgs(context, reducedProduction, resultNode));
+    }
     #endregion
 
     #region overrides: ToString, Init
@@ -63,11 +75,9 @@ namespace Irony.Parsing {
     }
     #endregion
 
-    #region data used by Parser builder
-    public readonly ProductionList Productions = new ProductionList();
-    #endregion
-
+    // Contributed by Alexey Yakovlev (yallie)
     #region custom grammar hints
+    //TODO: API needs some refinement
     TokenPreviewHint TokenPreviewHint { get; set; }
     internal void InsertCustomHints() {
       if (TokenPreviewHint != null && Productions.Count > 0) {
@@ -91,15 +101,6 @@ namespace Irony.Parsing {
       return TokenPreviewHint = new TokenPreviewHint(ParserActionType.Shift, first);
     }
     #endregion
-
-    public static string NonTerminalsToString(IEnumerable<NonTerminal> terms, string separator) {
-      var sb = new StringBuilder();
-      foreach (var term in terms) {
-        sb.Append(term.ToString());
-        sb.Append(separator);
-      }
-      return sb.ToString().Trim();
-    }
 
     #region NodeCaptionTemplate utilities
     //We replace original tag '#{i}'  (where i is the index of the child node to put here)
@@ -140,13 +141,13 @@ namespace Irony.Parsing {
 
   public class NonTerminalList : List<NonTerminal> {
     public override string ToString() {
-      return NonTerminal.NonTerminalsToString(this, " "); 
+      return string.Join(" ", this); 
     }
   }
 
   public class NonTerminalSet : HashSet<NonTerminal> {
     public override string ToString() {
-      return NonTerminal.NonTerminalsToString(this, " "); 
+      return string.Join(" ", this);
     }
   }
 

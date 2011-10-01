@@ -22,7 +22,7 @@ namespace Irony.Parsing {
 
   [Flags]
   public enum ParseOptions {
-    GrammarDebugging = 0x01,
+    Reserved = 0x01,
     TraceParser = 0x02,
     AnalyzeCode = 0x10,   //run code analysis; effective only in Module mode
   }
@@ -62,6 +62,7 @@ namespace Irony.Parsing {
     internal readonly ParserStack ParserStack = new ParserStack();
     internal readonly ParserStack ParserInputStack = new ParserStack();
 
+    public CommentBlock CurrentCommentBlock; 
     public ParseTree CurrentParseTree { get; internal set; }
     public readonly TokenStack OpenBraces = new TokenStack();
     public ParserTrace ParserTrace = new ParserTrace();
@@ -79,6 +80,7 @@ namespace Irony.Parsing {
     internal IEnumerator<Token> FilteredTokens; //stream of tokens after filter
     internal TokenStack PreviewTokens = new TokenStack();
     internal ParsingEventArgs SharedParsingEventArgs;
+    internal ValidateTokenEventArgs SharedValidateTokenEventArgs;
 
     public VsScannerStateMap VsLineScanState; //State variable used in line scanning mode for VS integration
 
@@ -108,11 +110,8 @@ namespace Irony.Parsing {
       //This might be a problem for multi-threading - if we have several contexts on parallel threads with different culture.
       //Resources.Culture is static property (this is not Irony's fault, this is auto-generated file).
       Resources.Culture = Culture; 
-      //We assume that if Irony is compiled in Debug mode, then developer is debugging his grammar/language implementation
-#if DEBUG
-      Options |= ParseOptions.GrammarDebugging;
-#endif
-      SharedParsingEventArgs = new ParsingEventArgs(this); 
+      SharedParsingEventArgs = new ParsingEventArgs(this);
+      SharedValidateTokenEventArgs = new ValidateTokenEventArgs(this); 
     }
     #endregion
 
@@ -126,19 +125,14 @@ namespace Irony.Parsing {
     }
     #endregion
 
-    #region Options helper methods
-    public bool OptionIsSet(ParseOptions option) {
-      return (Options & option) != 0;
-    }
-    public void SetOption(ParseOptions option, bool value) {
-      if (value)
-        Options |= option;
-      else
-        Options &= ~option;
-    }
-    #endregion
-
     #region Error handling and tracing
+    public void EnableTracing(bool value) {
+      if (value)
+        Options |= ParseOptions.TraceParser;
+      else
+        Options &= ~ParseOptions.TraceParser;
+    }
+
     public void AddParserError(string message, params object[] args) {
       var location = CurrentParserInput == null? Source.Location : CurrentParserInput.Span.Location;
       HasErrors = true; 
@@ -150,12 +144,12 @@ namespace Irony.Parsing {
       if (args != null && args.Length > 0)
         message = string.Format(message, args);
       CurrentParseTree.ParserMessages.Add(new ParserMessage(level, location, message, CurrentParserState));
-      if (OptionIsSet(ParseOptions.TraceParser)) 
+      if (Options.IsSet(ParseOptions.TraceParser)) 
         ParserTrace.Add( new ParserTraceEntry(CurrentParserState, ParserStack.Top, CurrentParserInput, message, true));
     }
 
     public void AddTrace(string message, params object[] args) {
-      if (!OptionIsSet(ParseOptions.TraceParser)) return;
+      if (!Options.IsSet(ParseOptions.TraceParser)) return;
       if (args != null && args.Length > 0)
         message = string.Format(message, args); 
       ParserTrace.Add(new ParserTraceEntry(CurrentParserState, ParserStack.Top, CurrentParserInput, message, false));

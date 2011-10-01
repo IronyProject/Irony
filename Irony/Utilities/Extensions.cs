@@ -12,6 +12,9 @@ namespace Irony.Parsing {
     public static bool IsSet(this LanguageFlags enumValue, LanguageFlags flag) {
       return (enumValue & flag) != 0;
     }
+    public static bool IsSet(this ParseOptions enumValue, ParseOptions flag) {
+      return (enumValue & flag) != 0;
+    }
   }//class
 
 }

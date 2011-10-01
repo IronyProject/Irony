@@ -68,21 +68,37 @@ namespace Irony.Parsing {
     }
 
     private void FetchToken() {
-      Token token;
-      //First skip all non-grammar tokens
-      do {
-        token = Parser.Scanner.GetToken();
-      } while (token.Terminal.Flags.IsSet(TermFlags.IsNonGrammar) && token.Terminal != _grammar.Eof);
+      var token = GetScannerToken();
       if (token.Terminal.Flags.IsSet(TermFlags.IsBrace))
         token = CheckBraceToken(token);
       Context.CurrentParserInput = new ParseTreeNode(token);
+      //attach comments if any accumulated to content token
+      if (Context.CurrentCommentBlock != null && token.Terminal.Category == TokenCategory.Content) { 
+        Context.CurrentParserInput.Comments = Context.CurrentCommentBlock;
+        Context.CurrentCommentBlock = null;
+      }
       Context.ParserInputStack.Push(Context.CurrentParserInput);
+    }
+
+    // Reads token from scanner, skips all non-grammar tokens but accumulates comment tokens in CurrentCommentBlock
+    private Token GetScannerToken() {
+      Token token;
+      Terminal term;
+      do {
+        token = Parser.Scanner.GetToken();
+        term = token.Terminal; 
+        if (term.Category == TokenCategory.Comment) {
+          if (Context.CurrentCommentBlock == null) Context.CurrentCommentBlock = new CommentBlock();
+          Context.CurrentCommentBlock.Tokens.Add(token);
+        }
+      } while (term.Flags.IsSet(TermFlags.IsNonGrammar) && term != _grammar.Eof);
+      return token; 
     }
     #endregion
 
     #region execute actions
     private void ExecuteAction() {
-      _traceEnabled = Context.OptionIsSet(ParseOptions.TraceParser);
+      _traceEnabled = Context.Options.IsSet(ParseOptions.TraceParser);
       //Read input only if DefaultReduceAction is null - in this case the state does not contain ExpectedSet,
       // so parser cannot assist scanner when it needs to select terminal and therefore can fail
       if (Context.CurrentParserInput == null && Context.CurrentParserState.DefaultAction == null)
@@ -183,15 +199,15 @@ namespace Irony.Parsing {
     #region ExecuteReduce
     private void ExecuteReduce(ParserAction action) {
       var reduceProduction = action.ReduceProduction; 
-      ParseTreeNode newNode; 
+      ParseTreeNode resultNode; 
       if(reduceProduction.IsSet(ProductionFlags.IsListBuilder)) 
-        newNode = ReduceExistingList(action);
+        resultNode = ReduceExistingList(action);
       else if(reduceProduction.LValue.Flags.IsSet(TermFlags.IsListContainer)) 
-        newNode = ReduceListContainer(action);
+        resultNode = ReduceListContainer(action);
       else if (reduceProduction.LValue.Flags.IsSet(TermFlags.IsTransient))
-        newNode = ReduceTransientNonTerminal(action);
+        resultNode = ReduceTransientNonTerminal(action);
       else 
-        newNode = ReduceRegularNode(action);
+        resultNode = ReduceRegularNode(action);
       //final reduce actions ----------------------------------------------------------
       Context.ParserStack.Pop(reduceProduction.RValues.Count);
       //Push new node into stack and move to new state
@@ -200,8 +216,13 @@ namespace Irony.Parsing {
       if (_traceEnabled) Context.AddTrace(Resources.MsgTracePoppedState, reduceProduction.LValue.Name);
       // Shift to new state (LALR) - execute shift over non-terminal
       var shift = Context.CurrentParserState.Actions[reduceProduction.LValue];
-      Context.ParserStack.Push(newNode, shift.NewState);
+      Context.ParserStack.Push(resultNode, shift.NewState);
       Context.CurrentParserState = shift.NewState;
+      //Copy comment block from first child; if comments precede child node, they precede the parent as well. 
+      if (resultNode.ChildNodes.Count > 0)
+        resultNode.Comments = resultNode.ChildNodes[0].Comments;
+      //Invoke event
+      reduceProduction.LValue.OnReduced(Context, reduceProduction, resultNode);
     }
 
     private ParseTreeNode ReduceExistingList(ParserAction action) {

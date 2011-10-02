@@ -91,7 +91,7 @@ namespace Refal
 				var libraryFunctions = LibraryFunction.ExtractLibraryFunctions(thread, new RefalLibrary(thread));
 				foreach (var libFun in libraryFunctions)
 				{
-					var binding = thread.Bind(libFun.Name, BindingOptions.Write | BindingOptions.ExistingOrNew);
+					var binding = thread.Bind(libFun.Name, BindingRequestFlags.Write | BindingRequestFlags.ExistingOrNew);
 					binding.SetValueRef(thread, libFun);
 				}
 

@@ -23,9 +23,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Languages", "Languages", "{0850FA53-413E-4AF9-B918-8FF524FFA5D7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Refal", "Refal", "{FEE137AB-6C8B-4576-81BE-119DA16DCF78}"
-	ProjectSection(SolutionItems) = preProject
-		Refal_readme_first.txt = Refal_readme_first.txt
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.2010", "Languages\Refal\Refal.2010.csproj", "{19A86418-BA99-41F4-80A5-A7F3A6383123}"
 EndProject

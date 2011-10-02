@@ -22,7 +22,7 @@ namespace Refal
 			try
 			{
 				// define function: bind function name to the current instance
-				var binding = thread.Bind(Name, BindingOptions.Write | BindingOptions.NewOnly);
+				var binding = thread.Bind(Name, BindingRequestFlags.Write | BindingRequestFlags.NewOnly);
 				binding.SetValueRef(thread, this);
 
 				// set Evaluate method and return the current node

@@ -140,6 +140,7 @@ Global
 		{19A86418-BA99-41F4-80A5-A7F3A6383123}.FxCop|Any CPU.ActiveCfg = Release|Any CPU
 		{19A86418-BA99-41F4-80A5-A7F3A6383123}.FxCop|Any CPU.Build.0 = Release|Any CPU
 		{19A86418-BA99-41F4-80A5-A7F3A6383123}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19A86418-BA99-41F4-80A5-A7F3A6383123}.Release|Any CPU.Build.0 = Release|Any CPU
 		{19A86418-BA99-41F4-80A5-A7F3A6383123}.Silverlight Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{19A86418-BA99-41F4-80A5-A7F3A6383123}.Silverlight Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19A86418-BA99-41F4-80A5-A7F3A6383123}.Silverlight Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -151,6 +152,7 @@ Global
 		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.FxCop|Any CPU.ActiveCfg = Release|Any CPU
 		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.FxCop|Any CPU.Build.0 = Release|Any CPU
 		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.Silverlight Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.Silverlight Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.Silverlight Release|Any CPU.ActiveCfg = Release|Any CPU

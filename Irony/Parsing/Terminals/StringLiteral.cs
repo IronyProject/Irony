@@ -145,7 +145,7 @@ namespace Irony.Parsing {
       //For templates only
       if(isTemplate) {
         //Check that template settings object is provided
-        var templateSettings = this.AstNodeConfig as StringTemplateSettings;
+        var templateSettings = this.AstData as StringTemplateSettings;
         if(templateSettings == null)
           grammarData.Language.Errors.Add(GrammarErrorLevel.Error, null, Resources.ErrTemplNoSettings, this.Name); //"Error in string literal [{0}]: IsTemplate flag is set, but TemplateSettings is not provided."
         else if (templateSettings.ExpressionRoot == null)

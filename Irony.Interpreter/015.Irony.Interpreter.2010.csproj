@@ -39,7 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Ast\Base\AstHelperClasses.cs" />
+    <Compile Include="Ast\Base\BasicTypes.cs" />
     <Compile Include="Ast\Base\AstInterfaces.cs" />
     <Compile Include="Ast\Base\AstNode.cs" />
     <Compile Include="LanguageRuntime\SpecialFormsLibrary.cs" />

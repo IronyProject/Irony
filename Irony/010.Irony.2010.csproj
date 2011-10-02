@@ -76,7 +76,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AST\Interfaces.cs" />
+    <None Include="Ast\AstBuilder.cs" />
+    <None Include="Ast\AstNodeConfig.cs" />
+    <Compile Include="Parsing\Interfaces.cs" />
     <Compile Include="Parsing\Grammar\GrammarError.cs" />
     <Compile Include="Parsing\Grammar\OperatorInfo.cs" />
     <Compile Include="Parsing\Grammar\TermReportGroups.cs" />
@@ -160,6 +162,7 @@
     <None Include="irony.snk" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Ast\_about.txt" />
     <Content Include="Parsing\Data\Construction\_about_parser_construction.txt" />
   </ItemGroup>
   <ItemGroup />

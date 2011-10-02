@@ -55,7 +55,7 @@ bool operations &,&&, |, ||; ternary '?:' operator." ;
       var templateSettings = new StringTemplateSettings(); //by default set to Ruby-style settings 
       templateSettings.ExpressionRoot = Expr; //this defines how to evaluate expressions inside template
       this.SnippetRoots.Add(Expr);
-      stringLit.AstNodeConfig = templateSettings;
+      stringLit.AstData = templateSettings;
       //--------------------------------------------------------------------------------------------------------
 
       // 2. Non-terminals

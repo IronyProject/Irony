@@ -119,8 +119,20 @@ namespace Irony.Parsing {
     #endregion
 
     #region AST node creations: AstNodeType, AstNodeCreator, AstNodeCreated
+
+    /* -- new stuff
+    public Ast.AstNodeConfig AstConfig {
+      get {
+       if (_astConfig == null) 
+         _astConfig = new Ast.AstNodeConfig(); 
+        return _astConfig; 
+      }
+      set {_astConfig = value; }
+    } Ast.AstNodeConfig _astConfig;
+ */ 
+    
     public Type AstNodeType;
-    public object AstNodeConfig; //config data passed to AstNode
+    public object AstData; //config data passed to AstNode
     public AstNodeCreator AstNodeCreator; // a custom method for creating AST nodes
     public event EventHandler<AstNodeEventArgs> AstNodeCreated; //an event signalling that AST node is created. 
 

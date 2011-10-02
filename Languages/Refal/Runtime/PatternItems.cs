@@ -108,6 +108,11 @@ namespace Refal.Runtime
 		{
 		}
 
+		public override int GetHashCode()
+		{
+			return '(';
+		}
+
 		public override bool Equals(object obj)
 		{
 			return obj is OpeningBrace;
@@ -123,6 +128,11 @@ namespace Refal.Runtime
 	{
 		public ClosingBrace()
 		{
+		}
+
+		public override int GetHashCode()
+		{
+			return ')';
 		}
 
 		public override bool Equals(object obj)

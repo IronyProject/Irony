@@ -94,7 +94,7 @@ namespace Irony.Interpreter.Ast {
       return null; 
     }
 
-    public virtual void SetValue(ScriptThread thread, object value) {
+    protected internal virtual void SetValue(ScriptThread thread, object value) {
       //Place the prolog/epilog lines in every implementation of SetValue method (see DoEvaluate above)
     }
 

@@ -106,11 +106,8 @@ namespace Irony.Parsing {
       var token = Context.CurrentToken;
       //If we have normal token then return it
       if (token != null && !token.IsError()) {
-        //set position to point after the result token unless the preview position is forced
-        if (!Context.SourceStream.ForcePreviewPosition)
-            Context.SourceStream.PreviewPosition = Context.SourceStream.Location.Position + token.Length;
-        else
-            Context.SourceStream.ForcePreviewPosition = false;
+        //set position to point after the result token
+        Context.SourceStream.PreviewPosition = Context.SourceStream.Location.Position + token.Length;
         Context.SourceStream.MoveLocationToPreviewPosition();
         return;
       }

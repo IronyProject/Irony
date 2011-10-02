@@ -32,11 +32,6 @@ namespace Irony.Parsing {
     SourceLocation Location { get; set; }
 
     /// <summary>
-    /// Do not reset the preview position when a token is created.
-    /// </summary>
-    bool ForcePreviewPosition { get; set; }
-
-    /// <summary>
     /// Gets or sets the current preview position in the source file. Must be greater or equal to Location.Position
     /// </summary>
     int PreviewPosition { get; set; }

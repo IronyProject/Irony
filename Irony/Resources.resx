@@ -439,10 +439,4 @@
   <data name="ErrOpNotDefinedForType" xml:space="preserve">
     <value>Operator '{0}' is not defined for types {1}.</value>
   </data>
-  <data name="ErrNewLineExpected" xml:space="preserve">
-    <value>A new line was expected but not found.</value>
-  </data>
-  <data name="ErrNoEndForHeredoc" xml:space="preserve">
-    <value>No end for heredoc literal.</value>
-  </data>
 </root>

@@ -78,7 +78,7 @@
     <Compile Include="Grammars\ConflictResolutionTestGrammar3.cs" />
     <Compile Include="Grammars\ConflictResolutionTestGrammar4.cs" />
     <Compile Include="Grammars\TestGrammar.cs" />
-    <Compile Include="HeredocTerminalTests.cs" />
+    <None Include="HeredocTerminalTests.cs" />
     <Compile Include="LineContinuationTests.cs" />
     <Compile Include="RegExLiteralTests.cs" />
     <Compile Include="FreeTextLiteralTests.cs" />

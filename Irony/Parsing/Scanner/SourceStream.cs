@@ -46,9 +46,8 @@ namespace Irony.Parsing {
       }
     } SourceLocation _location;
 
-    public int PreviewPosition { get; set; }
+    public int PreviewPosition {get; set; }
 
-    public bool ForcePreviewPosition { get; set; }
     public int TabWidth { get; set; }
 
     public char PreviewChar {
@@ -68,10 +67,7 @@ namespace Irony.Parsing {
     }
 
     public void ResetPreviewPosition() {
-        if (!ForcePreviewPosition)
-            PreviewPosition = Location.Position;
-        else
-            ForcePreviewPosition = false;
+      PreviewPosition = Location.Position;
     }
 
     public bool MatchSymbol(string symbol, bool ignoreCase) {

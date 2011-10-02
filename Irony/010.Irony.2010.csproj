@@ -93,7 +93,6 @@
     <Compile Include="Parsing\Terminals\DataLiteralBase.cs" />
     <Compile Include="Parsing\Terminals\DsvLiteral.cs" />
     <Compile Include="Parsing\Terminals\FixedLengthLiteral.cs" />
-    <Compile Include="Parsing\Terminals\HeredocTerminal.cs" />
     <Compile Include="Parsing\Terminals\ImpliedSymbolTerminal.cs" />
     <Compile Include="Parsing\Terminals\LineContinuationTerminal.cs" />
     <Compile Include="Parsing\Terminals\QuotedValueLiteral.cs" />

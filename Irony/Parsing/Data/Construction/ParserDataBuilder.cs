@@ -337,7 +337,7 @@ namespace Irony.Parsing.Construction {
     }
 
     private void ResolveConflictByPrecedence(ParserState state, Terminal conflict) {
-      if (!conflict.Flags.HasFlag(TermFlags.IsOperator)) return; 
+      if (!conflict.Flags.IsSet(TermFlags.IsOperator)) return; 
       var stateData = state.BuilderData;
       if (!stateData.ShiftTerminals.Contains(conflict)) return; //it is not shift-reduce
       var shiftAction = state.Actions[conflict];

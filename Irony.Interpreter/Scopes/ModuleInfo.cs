@@ -24,7 +24,7 @@ namespace Irony.Interpreter {
     public readonly string Name;
     public readonly string FileName;
     public readonly ScopeInfo ScopeInfo; //scope for module variables
-    public readonly ImportSpecList Imports = new ImportSpecList();
+    public readonly BindingSourceList Imports = new BindingSourceList();
 
     public ModuleInfo(string name, string fileName, ScopeInfo scopeInfo) {
       Name = name;

@@ -128,7 +128,7 @@ namespace Irony.Parsing {
         Context.SourceStream.ResetPreviewPosition();
         Context.CurrentToken = term.TryMatch(Context, Context.Source);
         if (Context.CurrentToken != null) 
-          term.InvokeValidateToken(Context);
+          term.OnValidateToken(Context);
         if (Context.CurrentToken != null) {
           //check if we need to fire LineStart token before this token; 
           // we do it only if the token is not a comment; comments should be ignored by the outline logic
@@ -147,7 +147,7 @@ namespace Irony.Parsing {
     }
 
     private bool NeedLineStartToken(SourceLocation forLocation) {
-      return _grammar.LanguageFlags.HasFlag(LanguageFlags.EmitLineStartToken) && 
+      return _grammar.LanguageFlags.IsSet(LanguageFlags.EmitLineStartToken) && 
           forLocation.Line > Context.PreviousLineStart.Line;
     }
 
@@ -205,7 +205,7 @@ namespace Irony.Parsing {
         termsForCurrentChar = Data.FallbackTerminals; 
       //if we are recovering, previewing or there's no parser state, then return list as is
       if(Context.Status == ParserStatus.Recovering || Context.Status == ParserStatus.Previewing
-          || Context.CurrentParserState == null || _grammar.LanguageFlags.HasFlag(LanguageFlags.DisableScannerParserLink)
+          || Context.CurrentParserState == null || _grammar.LanguageFlags.IsSet(LanguageFlags.DisableScannerParserLink)
           || Context.Mode == ParseMode.VsLineScan) {
         Context.CurrentTerminals.AddRange(termsForCurrentChar);
         return; 
@@ -237,7 +237,7 @@ namespace Irony.Parsing {
         if (priorToken != null && !priorToken.IsError() && (token.Length < priorToken.Length))
           continue; 
         Context.CurrentToken = token; //now it becomes current token
-        term.InvokeValidateToken(Context); //validate it
+        term.OnValidateToken(Context); //validate it
         if (Context.CurrentToken != null) 
           priorToken = Context.CurrentToken;
       }

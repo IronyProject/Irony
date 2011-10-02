@@ -23,7 +23,7 @@ namespace Irony.Interpreter.Ast {
      
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      foreach (var child in treeNode.ChildNodes)
+      foreach (var child in treeNode.MappedChildNodes)
         AddChild(NodeUseType.Parameter, "param", child); 
       AsString = "param_list[" + ChildNodes.Count + "]";
     }

@@ -20,6 +20,16 @@ using Irony.Parsing;
 
 namespace Irony.Interpreter {
 
+  //An abstraction of a Console. 
+  public interface IConsoleAdaptor {
+    bool Canceled { get; set; }
+    void Write(string text);
+    void WriteLine(string text);
+    void SetTextStyle(ConsoleTextStyle style);
+    int Read(); //reads a key
+    string ReadLine(); //reads a line; returns null if Ctrl-C is pressed
+    void SetTitle(string title);
+  }
 
   //WARNING: Ctrl-C for aborting running script does NOT work when you run console app from Visual Studio 2010. 
   // Run executable directly from bin folder. 

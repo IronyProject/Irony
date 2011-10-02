@@ -1,0 +1,3 @@
+﻿# Testing special form "IIF"
+# You can also use equivalent "?" operator: '1 > 0 ? "true" : 1/0'
+iif(1 > 0, "true", 1/0)  # notice that if-false argument is not evaluated

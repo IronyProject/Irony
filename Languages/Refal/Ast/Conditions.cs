@@ -102,7 +102,9 @@ namespace Refal
 					return EvaluateWhereClause(expression, lastPattern, thread);
 				}
 
-				return false;
+				// we should never get here
+				thread.ThrowScriptError("Internal error: AST node doen't represent neither where- nor when-clause.");
+				return null;
 			}
 			finally
 			{
@@ -111,7 +113,7 @@ namespace Refal
 			}
 		}
 
-		bool EvaluateWhereClause(Runtime.PassiveExpression expr, Runtime.Pattern lastPattern, ScriptThread thread)
+		object EvaluateWhereClause(Runtime.PassiveExpression expr, Runtime.Pattern lastPattern, ScriptThread thread)
 		{
 			// instantiate where-clause pattern
 			var patt = Pattern.Instantiate(thread);
@@ -124,22 +126,21 @@ namespace Refal
 				// store last recognized pattern as a local variable
 				thread.SetLastPattern(patt);
 
-				// match succeeded, return true
+				// match succeeded, return result expression
 				if (ResultExpression != null)
 				{
-					return Convert.ToBoolean(ResultExpression.Evaluate(thread));
+					return ResultExpression.Evaluate(thread);
 				}
 
-				// match succeeded? depends on more conditions
+				// match succeeded, evaluate more conditions
 				if (MoreConditions != null)
 				{
-					// return true or false
-					return Convert.ToBoolean(MoreConditions.Evaluate(thread));
+					return MoreConditions.Evaluate(thread);
 				}
 			}
 
-			// matching failed, return false
-			return false;
+			// matching failed, return nothing
+			return null;
 		}
 	}
 }

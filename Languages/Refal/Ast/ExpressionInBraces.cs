@@ -38,6 +38,11 @@ namespace Refal
 			return InnerExpression.GetChildNodes();
 		}
 
+		protected override object DoEvaluate(ScriptThread thread)
+		{
+			return EvaluateExpression(thread);
+		}
+
 		internal PassiveExpression EvaluateExpression(ScriptThread thread)
 		{
 			if (InnerExpression == null)

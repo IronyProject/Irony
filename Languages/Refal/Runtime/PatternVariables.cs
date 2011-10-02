@@ -38,6 +38,11 @@ namespace Refal.Runtime
 		protected abstract MatchResult MatchAny(PassiveExpression expression, ref int exIndex);
 
 		protected abstract MatchResult MatchSame(PassiveExpression expression, ref int exIndex);
+
+		public override string ToString()
+		{
+			return Value == null ? Name : string.Format("{0}={1}", Name, Value);
+		}
 	}
 
 	/// <summary>
@@ -86,7 +91,10 @@ namespace Refal.Runtime
 
 		public override string ToString()
 		{
-			return string.Format("SymbolVariable {0}, value = {1}", Name, Value);
+			return Value == null ? Name : string.Format("{0}={1}", Name,
+				Value is char ? "'" + Value.ToString() + "'" :
+				Value is string ? "\"" + Value.ToString() + "\"" :
+				Value.ToString());
 		}
 	}
 
@@ -179,11 +187,6 @@ namespace Refal.Runtime
 
 			return MatchResult.Failure;
 		}
-
-		public override string ToString()
-		{
-			return string.Format("TermVariable {0}, value = {1}", Name, Value);
-		}
 	}
 
 	/// <summary>
@@ -263,7 +266,8 @@ namespace Refal.Runtime
 
 		public override string ToString()
 		{
-			return string.Format("ExpressionVariable {0}, value = {1}", Name, Value);
+			return Value == null ? Name : string.Format("{0}={1}", Name,
+				Value is PassiveExpression && (Value as PassiveExpression).Count > 0 ? Value.ToString() : "[]");
 		}
 	}
 }

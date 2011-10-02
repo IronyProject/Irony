@@ -107,7 +107,7 @@ namespace Irony.Parsing.Construction {
       foreach(var group in _grammar.TermReportGroups)
         if(group.GroupType == TermReportGroupType.Operator) {
           foreach(var term in _grammarData.Terminals)
-            if (term.Flags.HasFlag(TermFlags.IsOperator))
+            if (term.Flags.IsSet(TermFlags.IsOperator))
               group.Terminals.Add(term); 
           return; 
         }
@@ -115,7 +115,7 @@ namespace Irony.Parsing.Construction {
 
     private void FindClosingBraces() {
       foreach(var term in _grammar.KeyTerms.Values) {
-        if (term.Flags.HasFlag(TermFlags.IsCloseBrace))
+        if (term.Flags.IsSet(TermFlags.IsCloseBrace))
           _grammarData.ClosingBraces.Add(term.Text);
       }
     }
@@ -213,12 +213,12 @@ namespace Irony.Parsing.Construction {
           production.Flags |= ProductionFlags.HasTerminals;
           if (t.Category == TokenCategory.Error) production.Flags |= ProductionFlags.IsError;
         }
-        if(rv.Flags.HasFlag(TermFlags.IsPunctuation)) continue;
+        if(rv.Flags.IsSet(TermFlags.IsPunctuation)) continue;
       }//foreach
       var lvalue = production.LValue;
       //Set IsListBuilder flag
       if (production.RValues.Count > 0 && production.RValues[0] == production.LValue
-          && lvalue.Flags.HasFlag(TermFlags.IsList))
+          && lvalue.Flags.IsSet(TermFlags.IsList))
         production.Flags |= ProductionFlags.IsListBuilder;
     }//method
 
@@ -245,7 +245,7 @@ namespace Irony.Parsing.Construction {
         //Go thru all elements of production and check nullability
         bool allNullable = true;
         foreach (BnfTerm child in prod.RValues) {
-          allNullable &= child.Flags.HasFlag(TermFlags.IsNullable);
+          allNullable &= child.Flags.IsSet(TermFlags.IsNullable);
         }//foreach child
         if (allNullable) {
           nonTerminal.SetFlag(TermFlags.IsNullable);
@@ -263,7 +263,7 @@ namespace Irony.Parsing.Construction {
             var item = prod.LR0Items[i];
             item.TailIsNullable = true;
             if (item.Current == null) continue;
-            if (!item.Current.Flags.HasFlag(TermFlags.IsNullable))
+            if (!item.Current.Flags.IsSet(TermFlags.IsNullable))
               break; //for i
           }//for i
         }//foreach prod
@@ -272,16 +272,16 @@ namespace Irony.Parsing.Construction {
 
     #region Grammar Validation
     private void ValidateGrammar() {
-      var createAst = _grammar.LanguageFlags.HasFlag(LanguageFlags.CreateAst); 
+      var createAst = _grammar.LanguageFlags.IsSet(LanguageFlags.CreateAst); 
       var missingAstTypeSet = new NonTerminalSet();
       var invalidTransSet = new NonTerminalSet();
       foreach(var nt in _grammarData.NonTerminals) {
         //Check that if CreateAst flag is set then AstNodeType or AstNodeCreator is assigned on all non-transient nodes.
-        if(createAst && nt.AstNodeCreator == null && nt.AstNodeType == null && !nt.Flags.HasFlag(TermFlags.NoAstNode))
+        if(createAst && nt.AstNodeCreator == null && nt.AstNodeType == null && !nt.Flags.IsSet(TermFlags.NoAstNode))
           missingAstTypeSet.Add(nt);
-        if(nt.Flags.HasFlag(TermFlags.IsTransient)) {
+        if(nt.Flags.IsSet(TermFlags.IsTransient)) {
           //List non-terminals cannot be marked transient - otherwise there may be some ambiguities and inconsistencies
-          if (nt.Flags.HasFlag(TermFlags.IsList))
+          if (nt.Flags.IsSet(TermFlags.IsList))
             _language.Errors.Add(GrammarErrorLevel.Error, null, Resources.ErrListCannotBeTransient, nt.Name);
           //Count number of non-punctuation child nodes in each production
           foreach(var prod in nt.Productions)
@@ -306,7 +306,7 @@ namespace Irony.Parsing.Construction {
     private int CountNonPunctuationTerms(Production production) {
       int count = 0;
       foreach(var rvalue in production.RValues)
-        if (!rvalue.Flags.HasFlag(TermFlags.IsPunctuation)) count++;
+        if (!rvalue.Flags.IsSet(TermFlags.IsPunctuation)) count++;
       return count; 
     }
     #endregion

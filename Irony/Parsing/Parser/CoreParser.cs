@@ -68,21 +68,37 @@ namespace Irony.Parsing {
     }
 
     private void FetchToken() {
-      Token token;
-      //First skip all non-grammar tokens
-      do {
-        token = Parser.Scanner.GetToken();
-      } while (token.Terminal.Flags.HasFlag(TermFlags.IsNonGrammar) && token.Terminal != _grammar.Eof);
-      if (token.Terminal.Flags.HasFlag(TermFlags.IsBrace))
+      var token = GetScannerToken();
+      if (token.Terminal.Flags.IsSet(TermFlags.IsBrace))
         token = CheckBraceToken(token);
       Context.CurrentParserInput = new ParseTreeNode(token);
+      //attach comments if any accumulated to content token
+      if (Context.CurrentCommentBlock != null && token.Terminal.Category == TokenCategory.Content) { 
+        Context.CurrentParserInput.Comments = Context.CurrentCommentBlock;
+        Context.CurrentCommentBlock = null;
+      }
       Context.ParserInputStack.Push(Context.CurrentParserInput);
+    }
+
+    // Reads token from scanner, skips all non-grammar tokens but accumulates comment tokens in CurrentCommentBlock
+    private Token GetScannerToken() {
+      Token token;
+      Terminal term;
+      do {
+        token = Parser.Scanner.GetToken();
+        term = token.Terminal; 
+        if (term.Category == TokenCategory.Comment) {
+          if (Context.CurrentCommentBlock == null) Context.CurrentCommentBlock = new CommentBlock();
+          Context.CurrentCommentBlock.Tokens.Add(token);
+        }
+      } while (term.Flags.IsSet(TermFlags.IsNonGrammar) && term != _grammar.Eof);
+      return token; 
     }
     #endregion
 
     #region execute actions
     private void ExecuteAction() {
-      _traceEnabled = Context.OptionIsSet(ParseOptions.TraceParser);
+      _traceEnabled = Context.Options.IsSet(ParseOptions.TraceParser);
       //Read input only if DefaultReduceAction is null - in this case the state does not contain ExpectedSet,
       // so parser cannot assist scanner when it needs to select terminal and therefore can fail
       if (Context.CurrentParserInput == null && Context.CurrentParserState.DefaultAction == null)
@@ -156,7 +172,7 @@ namespace Irony.Parsing {
       if (Context.CurrentParserState.Actions.TryGetValue(Context.CurrentParserInput.Term, out action))
         return action;
       //If input is EOF and NewLineBeforeEof flag is set, try injecting NewLine into input
-      if (Context.CurrentParserInput.Term == _grammar.Eof && _grammar.LanguageFlags.HasFlag(LanguageFlags.NewLineBeforeEOF) &&
+      if (Context.CurrentParserInput.Term == _grammar.Eof && _grammar.LanguageFlags.IsSet(LanguageFlags.NewLineBeforeEOF) &&
           Context.CurrentParserState.Actions.TryGetValue(_grammar.NewLine, out action)) {
         InjectNewLineToken(); 
         return action; 
@@ -183,15 +199,15 @@ namespace Irony.Parsing {
     #region ExecuteReduce
     private void ExecuteReduce(ParserAction action) {
       var reduceProduction = action.ReduceProduction; 
-      ParseTreeNode newNode; 
+      ParseTreeNode resultNode; 
       if(reduceProduction.IsSet(ProductionFlags.IsListBuilder)) 
-        newNode = ReduceExistingList(action);
-      else if(reduceProduction.LValue.Flags.HasFlag(TermFlags.IsListContainer)) 
-        newNode = ReduceListContainer(action);
-      else if (reduceProduction.LValue.Flags.HasFlag(TermFlags.IsTransient))
-        newNode = ReduceTransientNonTerminal(action);
+        resultNode = ReduceExistingList(action);
+      else if(reduceProduction.LValue.Flags.IsSet(TermFlags.IsListContainer)) 
+        resultNode = ReduceListContainer(action);
+      else if (reduceProduction.LValue.Flags.IsSet(TermFlags.IsTransient))
+        resultNode = ReduceTransientNonTerminal(action);
       else 
-        newNode = ReduceRegularNode(action);
+        resultNode = ReduceRegularNode(action);
       //final reduce actions ----------------------------------------------------------
       Context.ParserStack.Pop(reduceProduction.RValues.Count);
       //Push new node into stack and move to new state
@@ -200,8 +216,13 @@ namespace Irony.Parsing {
       if (_traceEnabled) Context.AddTrace(Resources.MsgTracePoppedState, reduceProduction.LValue.Name);
       // Shift to new state (LALR) - execute shift over non-terminal
       var shift = Context.CurrentParserState.Actions[reduceProduction.LValue];
-      Context.ParserStack.Push(newNode, shift.NewState);
+      Context.ParserStack.Push(resultNode, shift.NewState);
       Context.CurrentParserState = shift.NewState;
+      //Copy comment block from first child; if comments precede child node, they precede the parent as well. 
+      if (resultNode.ChildNodes.Count > 0)
+        resultNode.Comments = resultNode.ChildNodes[0].Comments;
+      //Invoke event
+      reduceProduction.LValue.OnReduced(Context, reduceProduction, resultNode);
     }
 
     private ParseTreeNode ReduceExistingList(ParserAction action) {
@@ -217,10 +238,11 @@ namespace Irony.Parsing {
       return listNode; 
     }
 
+    // Skip punctuation and empty transient nodes
     private bool ShouldSkipChildNode(ParseTreeNode childNode) {
-      if (childNode.Term.Flags.HasFlag(TermFlags.IsPunctuation))
+      if (childNode.Term.Flags.IsSet(TermFlags.IsPunctuation))
         return true; 
-      if (childNode.Term.Flags.HasFlag(TermFlags.IsTransient) && childNode.ChildNodes.Count == 0)
+      if (childNode.Term.Flags.IsSet(TermFlags.IsTransient) && childNode.ChildNodes.Count == 0)
         return true; 
       return false; 
     }
@@ -254,17 +276,20 @@ namespace Irony.Parsing {
       return new ParseTreeNode(action.ReduceProduction, span); 
     }
 
+    // Note that we create AST nodes 
     private ParseTreeNode ReduceRegularNode(ParserAction action) {
       var childCount = action.ReduceProduction.RValues.Count; 
       int firstChildIndex = Context.ParserStack.Count - childCount;
       var span = ComputeNewNodeSpan(childCount);
       var newNode = new ParseTreeNode(action.ReduceProduction, span);
-      var newIsOp = newNode.Term.Flags.HasFlag(TermFlags.IsOperator); 
+      var newIsOp = newNode.Term.Flags.IsSet(TermFlags.IsOperator); 
       for(int i = 0; i < childCount; i++) {
         var childNode = Context.ParserStack[firstChildIndex + i];
         if(ShouldSkipChildNode(childNode))
           continue; //skip punctuation or empty transient nodes
-        CheckCreateAstNode(childNode); //AST nodes for lists and for terminals are created here 
+        //AST nodes are created when we pop the (child) parse node from the stack, not when we push it into the stack. 
+        //  See more in comments to CheckCreateAstNode method
+        CheckCreateAstNode(childNode); 
         //Inherit precedence and associativity, to cover a standard case: BinOp->+|-|*|/; 
         // BinOp node should inherit precedence from underlying operator symbol. Keep in mind special case of SQL operator "NOT LIKE" which consists
         // of 2 tokens. We therefore inherit "max" precedence from any children
@@ -285,14 +310,22 @@ namespace Irony.Parsing {
       return new SourceSpan(first.Span.Location, last.Span.EndPosition - first.Span.Location.Position);
     }
 
+    //Note that we create AST objects for parse nodes only when we pop the node from the stack (when it is a child being added to to its parent). 
+    // So only when we form a parent node, we run thru children in the stack top and check/create their AST nodes.
+    // This is done to provide correct initialization of List nodes (created with Plus or Star operation). 
+    // We create a parse tree node for a list non-terminal very early, when we encounter its first element. We push the newly created list node into
+    // the stack. At this moment it is too early to create the AST node for the list. We should wait until all child nodes are parsed and accumulated
+    // in the stack. Only then, when list construction is finished, we can create AST node and provide it with all list elements.  
     private void CheckCreateAstNode(ParseTreeNode parseNode) {
       try {
         //Check preconditions
-        if (!_grammar.LanguageFlags.HasFlag(LanguageFlags.CreateAst))
+        if (!_grammar.LanguageFlags.IsSet(LanguageFlags.CreateAst))
           return; 
-        if (parseNode.AstNode != null || parseNode.Term.Flags.HasFlag(TermFlags.IsTransient) 
-            || parseNode.Term.Flags.HasFlag(TermFlags.NoAstNode)) return;  
+        if (parseNode.AstNode != null || parseNode.Term.Flags.IsSet(TermFlags.IsTransient) 
+            || parseNode.Term.Flags.IsSet(TermFlags.NoAstNode)) return;  
         if (Context.Status != ParserStatus.Parsing || Context.HasErrors) return; 
+        //Prepare mapped child node list
+        CheckCreateMappedChildNodeList(parseNode); 
         //Actually create node
         _grammar.CreateAstNode(Context, parseNode);
         if (parseNode.AstNode != null)
@@ -301,6 +334,16 @@ namespace Irony.Parsing {
         Context.AddParserMessage(ParserErrorLevel.Error, parseNode.Span.Location, Resources.ErrFailedCreateNode, parseNode.Term.Name, ex.Message); 
       }
     }
+
+    private bool CheckCreateMappedChildNodeList(ParseTreeNode parseTreeNode) {
+      var term = parseTreeNode.Term;
+      if (term.AstPartsMap == null) return false; 
+      parseTreeNode.MappedChildNodes = new ParseTreeNodeList();
+      foreach (var index in term.AstPartsMap)
+        parseTreeNode.MappedChildNodes.Add(parseTreeNode.ChildNodes[index]);
+      return true; 
+    }
+
     #endregion
 
     private void ExecuteConflictAction(ParserAction action) {
@@ -357,7 +400,7 @@ namespace Irony.Parsing {
 
     #region Braces handling
     private Token CheckBraceToken(Token token) {
-      if (token.Terminal.Flags.HasFlag(TermFlags.IsOpenBrace)) {
+      if (token.Terminal.Flags.IsSet(TermFlags.IsOpenBrace)) {
         Context.OpenBraces.Push(token);
         return token;
       }

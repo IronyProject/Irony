@@ -31,9 +31,9 @@ namespace Irony.Interpreter.Ast {
       base.Init(context, treeNode);
       _languageCaseSensitive = context.Language.Grammar.CaseSensitive;
       //child #0 is usually a keyword like "def"
-      NameNode = AddChild("Name", treeNode.ChildNodes[1]);
-      Parameters = AddChild("Parameters", treeNode.ChildNodes[2]);
-      Body = AddChild("Body", treeNode.ChildNodes[3]);
+      NameNode = AddChild("Name", treeNode.MappedChildNodes[1]);
+      Parameters = AddChild("Parameters", treeNode.MappedChildNodes[2]);
+      Body = AddChild("Body", treeNode.MappedChildNodes[3]);
       AsString = "<Function " + NameNode.AsString + ">";
       Body.SetIsTail(); //this will be propagated to the last statement
     }

@@ -21,7 +21,7 @@ namespace Irony.Interpreter.Ast{
 
   //This interface is expected by Irony's Gramamr Explorer. 
   public interface ICallTarget {
-    object Call(ScriptThread thread, Object[] parameters); 
+    object Call(ScriptThread thread, object[] parameters); 
   }
 
   //Simple visitor interface

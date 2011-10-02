@@ -55,7 +55,7 @@ namespace Irony.Parsing {
       base.Init(grammarData);
       //By default for Literal terminals assign node type in Grammar.DefaultLiteralNodeType
       bool assignLiteralType = (AstNodeType == null && AstNodeCreator == null &&
-          Flags.HasFlag(TermFlags.IsLiteral) &&  Grammar.LanguageFlags.HasFlag(LanguageFlags.CreateAst));
+          Flags.IsSet(TermFlags.IsLiteral) &&  Grammar.LanguageFlags.IsSet(LanguageFlags.CreateAst));
       if (assignLiteralType)
         AstNodeType = this.Grammar.DefaultLiteralNodeType;
     }
@@ -81,10 +81,10 @@ namespace Irony.Parsing {
     #endregion
 
     #region Events: ValidateToken
-    public event EventHandler<ParsingEventArgs> ValidateToken;
-    protected internal virtual void InvokeValidateToken(ParsingContext context) {
+    public event EventHandler<ValidateTokenEventArgs> ValidateToken;
+    protected internal virtual void OnValidateToken(ParsingContext context) {
       if (ValidateToken != null)
-        ValidateToken(this,  context.SharedParsingEventArgs);
+        ValidateToken(this,  context.SharedValidateTokenEventArgs);
     }
     #endregion
 

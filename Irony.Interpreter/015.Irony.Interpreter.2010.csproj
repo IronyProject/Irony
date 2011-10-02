@@ -39,9 +39,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Ast\Base\AstHelperClasses.cs" />
+    <Compile Include="Ast\Base\BasicTypes.cs" />
     <Compile Include="Ast\Base\AstInterfaces.cs" />
     <Compile Include="Ast\Base\AstNode.cs" />
+    <Compile Include="LanguageRuntime\SpecialFormsLibrary.cs" />
     <Compile Include="Ast\Expressions\BinaryOperationNode.cs" />
     <Compile Include="Ast\Expressions\ExpressionListNode.cs" />
     <Compile Include="Ast\Expressions\IfNode.cs" />
@@ -61,6 +62,9 @@
     <Compile Include="Ast\Statements\StatementListNode.cs" />
     <Compile Include="Diagnostics\ScriptException.cs" />
     <Compile Include="Diagnostics\ScriptStackTrace.cs" />
+    <Compile Include="Bindings\BindingTargetInfo.cs" />
+    <Compile Include="Bindings\IBindingSource.cs" />
+    <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="InterpretedLanguageGrammar.cs" />
     <Compile Include="LanguageRuntime\LanguageRuntime.cs" />
     <Compile Include="LanguageRuntime\LanguageRuntime_Binding.cs" />
@@ -68,14 +72,18 @@
     <Compile Include="LanguageRuntime\LanguageRuntime_OpDispatch_Init.cs" />
     <Compile Include="LanguageRuntime\NoneClass.cs" />
     <Compile Include="LanguageRuntime\OperatorImplementation.cs" />
+    <Compile Include="Bindings\BindingRequest.cs" />
+    <Compile Include="Bindings\BuiltInObjectBinding.cs" />
+    <Compile Include="Bindings\SpecialFormBinding.cs" />
+    <Compile Include="Bindings\ModuleExport.cs" />
     <Compile Include="SriptApplication\ConsoleAdaptor.cs" />
     <Compile Include="_Evaluator\ExpressionEvaluator.cs" />
     <Compile Include="_Evaluator\ExpressionEvaluatorGrammar.cs" />
-    <None Include="Unused\HotSwapDictionary.cs" />
-    <Compile Include="Scopes\Bindings\Binding.cs" />
-    <Compile Include="Scopes\Bindings\ClrInteropBindings.cs" />
-    <Compile Include="Scopes\Bindings\SlotBinding.cs" />
-    <Compile Include="Scopes\ImportSpec.cs" />
+    <Compile Include="_Evaluator\ExpressionEvaluatorRuntime.cs" />
+    <None Include="Utilities\HotSwapDictionary.cs" />
+    <Compile Include="Bindings\Binding.cs" />
+    <Compile Include="Bindings\ClrInteropBindings.cs" />
+    <Compile Include="Bindings\SlotBinding.cs" />
     <Compile Include="Scopes\Scope.cs" />
     <Compile Include="Scopes\ScopeInfo.cs" />
     <Compile Include="Scopes\ScopeValuesDictionary.cs" />
@@ -89,6 +97,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Bindings\_about_bindings.txt" />
+    <Content Include="Scopes\_about_storage.txt" />
     <Content Include="_about_Irony_Interpreter.txt" />
   </ItemGroup>
   <ItemGroup>

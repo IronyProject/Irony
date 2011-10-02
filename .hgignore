@@ -7,4 +7,5 @@ syntax: glob
 *.gpState
 bin
 obj
+*.lnk
 TestResults/*

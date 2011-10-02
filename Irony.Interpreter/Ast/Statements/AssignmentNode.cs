@@ -31,9 +31,9 @@ namespace Irony.Interpreter.Ast {
 
     public override void Init(ParsingContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      Target = AddChild(NodeUseType.ValueWrite, "To", treeNode.ChildNodes[0]);
+      Target = AddChild(NodeUseType.ValueWrite, "To", treeNode.MappedChildNodes[0]);
       //Get Op and baseOp if it is combined assignment
-      AssignmentOp = treeNode.ChildNodes[1].FindTokenAndGetText();
+      AssignmentOp = treeNode.MappedChildNodes[1].FindTokenAndGetText();
       if (string.IsNullOrEmpty(AssignmentOp))
         AssignmentOp = "=";
       BinaryExpressionType = CustomExpressionTypes.NotAnExpression;

@@ -35,9 +35,9 @@ namespace Irony.Interpreter {
 
 
     protected virtual void InitOperatorImplementations() {
-      _supportsComplex = this.Language.Grammar.LanguageFlags.HasFlag(LanguageFlags.SupportsComplex);
-      _supportsBigInt = this.Language.Grammar.LanguageFlags.HasFlag(LanguageFlags.SupportsBigInt);
-      _supportsRational = this.Language.Grammar.LanguageFlags.HasFlag(LanguageFlags.SupportsRational);
+      _supportsComplex = this.Language.Grammar.LanguageFlags.IsSet(LanguageFlags.SupportsComplex);
+      _supportsBigInt = this.Language.Grammar.LanguageFlags.IsSet(LanguageFlags.SupportsBigInt);
+      _supportsRational = this.Language.Grammar.LanguageFlags.IsSet(LanguageFlags.SupportsRational);
       // TODO: add support for Rational
       if (SmartBoxingEnabled)
         InitBoxes();

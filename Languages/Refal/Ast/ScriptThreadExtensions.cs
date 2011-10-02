@@ -21,7 +21,7 @@ namespace Refal
 		/// </summary>
 		public static Refal.Runtime.Pattern GetLastPattern(this ScriptThread thread)
 		{
-			var binding = thread.Bind(LastPatternSymbolName, BindingOptions.Read);
+			var binding = thread.Bind(LastPatternSymbolName, BindingRequestFlags.Read);
 			return binding.GetValueRef(thread) as Refal.Runtime.Pattern;
 		}
 
@@ -30,7 +30,7 @@ namespace Refal
 		/// </summary>
 		public static void SetLastPattern(this ScriptThread thread, Refal.Runtime.Pattern pattern)
 		{
-			var binding = thread.Bind(LastPatternSymbolName, BindingOptions.Write | BindingOptions.ExistingOrNew);
+			var binding = thread.Bind(LastPatternSymbolName, BindingRequestFlags.Write | BindingRequestFlags.ExistingOrNew);
 			binding.SetValueRef(thread, pattern);
 		}
 	}

@@ -77,7 +77,7 @@ namespace Refal
 			try
 			{
 				var parameter = Expression.Evaluate(thread);
-				var binding = thread.Bind(FunctionName, BindingOptions.Read);
+				var binding = thread.Bind(FunctionName, BindingRequestFlags.Read);
 				var result = binding.GetValueRef(thread);
 				if (result == null)
 				{

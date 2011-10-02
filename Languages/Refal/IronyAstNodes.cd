@@ -6,15 +6,7 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="Irony.Interpreter.Ast.BinaryOperationNode">
-    <Position X="1.5" Y="9.75" Width="1.5" />
-    <InheritanceLine Type="Irony.Interpreter.Ast.AstNode" FixedToPoint="true">
-      <Path>
-        <Point X="1.25" Y="1.509" />
-        <Point X="1.25" Y="9.45" />
-        <Point X="2.188" Y="9.45" />
-        <Point X="2.188" Y="9.75" />
-      </Path>
-    </InheritanceLine>
+    <Position X="1.5" Y="9.5" Width="1.5" />
     <TypeIdentifier />
   </Class>
   <Class Name="Irony.Interpreter.Ast.ExpressionListNode">
@@ -34,20 +26,19 @@
     <TypeIdentifier />
   </Class>
   <Class Name="Irony.Interpreter.Ast.FunctionDefNode">
-    <Position X="6.75" Y="4" Width="1.5" />
+    <Position X="6.75" Y="6.25" Width="1.5" />
     <TypeIdentifier />
-    <Lollipop Position="0.2" />
   </Class>
   <Class Name="Irony.Interpreter.Ast.ParamListNode">
     <Position X="3.25" Y="4" Width="1.5" />
     <TypeIdentifier />
   </Class>
   <Class Name="Irony.Interpreter.Ast.IdentifierNode">
-    <Position X="6.75" Y="9.75" Width="1.5" />
+    <Position X="6.75" Y="9.5" Width="1.5" />
     <TypeIdentifier />
   </Class>
   <Class Name="Irony.Interpreter.Ast.LiteralValueNode">
-    <Position X="5" Y="9.75" Width="1.5" />
+    <Position X="5" Y="9.5" Width="1.5" />
     <TypeIdentifier />
   </Class>
   <Class Name="Irony.Interpreter.Ast.StringTemplateNode">
@@ -67,11 +58,7 @@
     <TypeIdentifier />
   </Class>
   <Class Name="Irony.Interpreter.Ast.AssignmentNode">
-    <Position X="3.25" Y="9.75" Width="1.5" />
-    <TypeIdentifier />
-  </Class>
-  <Class Name="Irony.Interpreter.Ast.BlockNode">
-    <Position X="6.75" Y="8" Width="1.5" />
+    <Position X="3.25" Y="9.5" Width="1.5" />
     <TypeIdentifier />
   </Class>
   <Class Name="Irony.Interpreter.Ast.IfNode">
@@ -79,7 +66,7 @@
     <TypeIdentifier />
   </Class>
   <Class Name="Irony.Interpreter.Ast.StatementListNode">
-    <Position X="6.75" Y="6.25" Width="1.5" />
+    <Position X="6.75" Y="4" Width="1.5" />
     <TypeIdentifier />
   </Class>
   <Font Name="Tahoma" Size="8.25" />

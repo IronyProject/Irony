@@ -70,6 +70,7 @@ namespace Refal
 						return result;
 				}
 
+				// standard Refal exception: input expression doesn't match any pattern
 				thread.ThrowScriptError("Recognition impossible");
 				return null;
 			}

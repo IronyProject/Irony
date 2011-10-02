@@ -57,7 +57,7 @@ namespace Refal.Runtime
 				return null;
 
 			//Console.WriteLine("{0}", expression.ToStringBuilder(0));
-			ScriptThread.App.Write(expression.ToStringBuilder(0).ToString());
+			ScriptThread.App.WriteLine(expression.ToStringBuilder(0).ToString());
 
 			return expression;
 		}
@@ -68,7 +68,7 @@ namespace Refal.Runtime
 				return null;
 
 			//Console.WriteLine("{0}", expression.ToStringBuilder(0));
-			ScriptThread.App.Write(expression.ToStringBuilder(0).ToString());
+			ScriptThread.App.WriteLine(expression.ToStringBuilder(0).ToString());
 
 			return null;
 		}

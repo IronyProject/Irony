@@ -52,7 +52,7 @@ namespace Refal
 
 		protected override object DoEvaluate(ScriptThread thread)
 		{
-			return EvaluateTerms(thread);
+			return Instantiate(thread);
 		}
 
 		private object[] EvaluateTerms(ScriptThread thread)

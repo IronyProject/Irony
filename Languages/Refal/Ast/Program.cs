@@ -91,7 +91,7 @@ namespace Refal
 				var libraryFunctions = LibraryFunction.ExtractLibraryFunctions(thread, new RefalLibrary(thread));
 				foreach (var libFun in libraryFunctions)
 				{
-					var binding = thread.Bind(libFun.Name, BindingOptions.Write | BindingOptions.NewOnly);
+					var binding = thread.Bind(libFun.Name, BindingOptions.Write | BindingOptions.ExistingOrNew);
 					binding.SetValueRef(thread, libFun);
 				}
 
@@ -102,7 +102,8 @@ namespace Refal
 				}
 
 				// call entry point with an empty expression
-				return EntryPoint.Call(thread, new object[] { PassiveExpression.Build() });
+				EntryPoint.Call(thread, new object[] { PassiveExpression.Build() });
+				return null;
 			}
 			finally
 			{

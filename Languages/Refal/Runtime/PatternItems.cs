@@ -56,13 +56,27 @@ namespace Refal.Runtime
 				return MatchResult.Failure;
 
 			// symbol matches single symbol
-			if (Value.Equals(expression[exIndex]))
+			if ((Value == null && expression[exIndex] != null) || !Value.Equals(expression[exIndex]))
 			{
-				exIndex++;
-				return MatchResult.Success;
+				return MatchResult.Failure;
 			}
 
-			return MatchResult.Failure;
+			exIndex++;
+			return MatchResult.Success;
+		}
+
+		public override string ToString()
+		{
+			if (Value == null)
+				return "null";
+
+			if (Value is char)
+				return "'" + Value.ToString() + "'";
+
+			if (Value is string)
+				return "\"" + Value.ToString() + "\"";
+
+			return Value.ToString();
 		}
 	}
 
@@ -94,6 +108,11 @@ namespace Refal.Runtime
 		{
 		}
 
+		public override bool Equals(object obj)
+		{
+			return obj is OpeningBrace;
+		}
+
 		public override string ToString()
 		{
 			return "(";
@@ -104,6 +123,11 @@ namespace Refal.Runtime
 	{
 		public ClosingBrace()
 		{
+		}
+
+		public override bool Equals(object obj)
+		{
+			return obj is ClosingBrace;
 		}
 
 		public override string ToString()

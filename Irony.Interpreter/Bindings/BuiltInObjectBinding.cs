@@ -43,7 +43,7 @@ namespace Irony.Interpreter {
   }
 
   // The class contains information about built-in function. It has double purpose. 
-  // First, it is used as a BindingTargetInfo instance (meta-data) for a binding to built-in function. 
+  // First, it is used as a BindingTargetInfo instance (meta-data) for a binding to a built-in function. 
   // Second, we use it as a reference to a custom built-in method that we store in LanguageRuntime.BuiltIns table. 
   // For this, we make it implement IBindingSource - we can add it to BuiltIns table of LanguageRuntime, which is a table of IBindingSource instances.
   // Being IBindingSource, it can produce a binding object to the target method - singleton in fact; 

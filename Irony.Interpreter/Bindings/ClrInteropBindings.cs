@@ -19,6 +19,8 @@ using Irony.Interpreter.Ast;
 
 namespace Irony.Interpreter {
 
+  //Unfinished, work in progress, file disabled for now
+
   public enum ClrTargetType {
     Namespace,
     Type,

@@ -42,6 +42,7 @@
     <Compile Include="Ast\Base\BasicTypes.cs" />
     <Compile Include="Ast\Base\AstInterfaces.cs" />
     <Compile Include="Ast\Base\AstNode.cs" />
+    <None Include="Ast\Expressions\_DotOperationNode.cs" />
     <Compile Include="LanguageRuntime\SpecialFormsLibrary.cs" />
     <Compile Include="Ast\Expressions\BinaryOperationNode.cs" />
     <Compile Include="Ast\Expressions\ExpressionListNode.cs" />

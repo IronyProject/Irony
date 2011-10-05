@@ -27,6 +27,8 @@ namespace Irony.Interpreter {
     NewOnly = 0x20,  // for new variable, for ex, in JavaScript "var x..." - introduces x as new variable
   }
 
+  //Binding request is a container for information about requested binding. Binding request goes from an Ast node to language runtime. 
+  // For example, identifier node would request a binding for an identifier. 
   public class BindingRequest {
     public ScriptThread Thread;
     public AstNode FromNode;

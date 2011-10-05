@@ -59,26 +59,23 @@ namespace Refal
 			// standard prolog
 			thread.CurrentNode = this;
 
-			try
+			foreach (var sentence in Sentences)
 			{
-				foreach (var sentence in Sentences)
-				{
-					sentence.InputExpression = InputExpression;
-					sentence.BlockPattern = BlockPattern;
-					var result = sentence.Evaluate(thread);
-					if (result != null)
-						return result;
-				}
+				sentence.InputExpression = InputExpression;
+				sentence.BlockPattern = BlockPattern;
 
-				// standard Refal exception: input expression doesn't match any pattern
-				thread.ThrowScriptError("Recognition impossible");
-				return null;
+				var result = sentence.Evaluate(thread);
+				if (result != null)
+				{
+					// standard epilog
+					thread.CurrentNode = Parent;
+					return result;
+				}
 			}
-			finally
-			{
-				// standard epilog
-				thread.CurrentNode = Parent;
-			}
+
+			// standard Refal exception: input expression doesn't match any pattern
+			thread.ThrowScriptError("Recognition impossible");
+			return null;
 		}
 	}
 }

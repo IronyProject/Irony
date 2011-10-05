@@ -76,41 +76,42 @@ namespace Refal
 			// standard prolog
 			thread.CurrentNode = this;
 
-			try
+			// evaluate expression
+			var expression = Expression.EvaluateExpression(thread);
+			object result = null;
+
+			// extract last recognized pattern (it contains bound variables)
+			var lastPattern = thread.GetLastPattern();
+			if (lastPattern == null)
 			{
-				// evaluate expression
-				var expression = Expression.EvaluateExpression(thread);
+				thread.ThrowScriptError("Internal error: last recognized pattern is lost.");
+				return null; // never gets here
+			}
 
-				// extract last recognized pattern (it contains bound variables)
-				var lastPattern = thread.GetLastPattern();
-				if (lastPattern == null)
-				{
-					thread.ThrowScriptError("Internal error: last recognized pattern is lost.");
-				}
+			// with-clause
+			if (Block != null)
+			{
+				Block.InputExpression = expression;
+				Block.BlockPattern = lastPattern;
+				result = Block.Evaluate(thread);
+			}
 
-				// with-clause
-				if (Block != null)
-				{
-					Block.InputExpression = expression;
-					Block.BlockPattern = lastPattern;
-					return Block.Evaluate(thread);
-				}
+			// where-clause
+			else if (Pattern != null)
+			{
+				result = EvaluateWhereClause(expression, lastPattern, thread);
+			}
 
-				// where-clause
-				if (Pattern != null)
-				{
-					return EvaluateWhereClause(expression, lastPattern, thread);
-				}
-
-				// we should never get here
+			// internal compiler error
+			else
+			{
 				thread.ThrowScriptError("Internal error: AST node doen't represent neither where- nor when-clause.");
-				return null;
+				return null; // never get here
 			}
-			finally
-			{
-				// standard epilog
-				thread.CurrentNode = Parent;
-			}
+
+			// standard epilog
+			thread.CurrentNode = Parent;
+			return result;
 		}
 
 		object EvaluateWhereClause(Runtime.PassiveExpression expr, Runtime.Pattern lastPattern, ScriptThread thread)

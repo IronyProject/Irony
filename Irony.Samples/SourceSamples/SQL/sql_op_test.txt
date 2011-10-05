@@ -1,0 +1,4 @@
+-- testing operator precedence with various capitalization of OR,AND operators
+SELECT Name
+FROM Product
+where A oR B and C OR D + X * 5;

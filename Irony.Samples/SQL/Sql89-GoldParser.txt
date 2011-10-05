@@ -1,0 +1,259 @@
+﻿! -----------------------------------------------------------------------------------
+! SQL '89
+!
+! SQL (Structured Query Language)
+!
+! The SQL programming language was developed as a uniform means of modifying and
+! querying relational databases. By using a single abstract language to interact 
+! with the database, programs can be written that are independent of the vender and
+! format of the database itself. Variations are used by Oracle, Microsoft and most 
+! other developers
+!
+! In 1992, a new version SQL as released but has yet to be implemented by any major
+! developer. The reason to this lies in the sheer complexity of the grammar. SQL 92 
+! contains over 300 rules and a myraid of new features. For instance, in SQL 92, the
+! developer can create types using COBOL syntax rather than the normal data types of 
+! SQL 89. This reason combined with the fact that SQL 89 is a time-tested and 
+! ample tool maintains it as the standard of the database industry.
+!
+! Update:
+!   02/17/2005
+!     Added "NULL" to the <Value> rule, I also added more comments to the grammar
+!
+! Note: This is an ad hoc version of the language. If there are any flaws, please 
+! visit www.devincook.com/goldparser
+! -----------------------------------------------------------------------------------
+
+"Name"         = 'SQL 89'
+"Version"      = '1989'
+"About"        = 'This is the ANSI 89 version of SQL. Variations are used by'
+               | 'Oracle, Microsoft and most other database developers'
+
+"Start Symbol" = <Query>
+
+! =============================================================================
+! Comments
+! =============================================================================
+
+Comment Start = '/*'
+Comment End   = '*/'
+Comment Line  = '--'
+
+! =============================================================================
+! Terminals
+! =============================================================================
+
+{String Ch 1}      = {Printable} - ["]
+{String Ch 2}      = {Printable} - ['']
+{Id Ch Standard}   = {Alphanumeric} + [_]
+{Id Ch Extended}   = {Printable} - ['['] - [']']
+
+StringLiteral   = '"'{String Ch 1}*'"' | ''{String Ch 2}*''
+IntegerLiteral  = {Digit}+
+RealLiteral     = {Digit}+'.'{Digit}+
+
+!----- Identifiers in SQL are very complex. 
+
+Id             = ({Letter}{Id Ch Standard}* | '['{Id Ch Extended}+']')  ('.'({Letter}{Id Ch Standard}* | '['{Id Ch Extended}+']'))?
+
+! =============================================================================
+! Rules
+! =============================================================================
+
+<Query>       ::= <Alter Stm>
+                | <Create Stm>
+                | <Delete Stm>
+                | <Drop Stm>
+                | <Insert Stm>
+                | <Select Stm>
+                | <Update Stm>               
+                
+! =============================================================================
+! Table modification statements
+! =============================================================================
+           
+<Alter Stm>   ::= ALTER TABLE Id ADD  COLUMN <Field Def List> <Constraint Opt>
+                | ALTER TABLE Id ADD  <Constraint>
+                | ALTER TABLE Id DROP COLUMN Id
+                | ALTER TABLE Id DROP CONSTRAINT Id
+
+<Create Stm>  ::= CREATE <Unique> INDEX IntegerLiteral ON Id '(' <Order List> ')' <With Clause>
+                | CREATE TABLE Id '(' <ID List> ')' <Constraint Opt>
+
+<Unique>      ::= UNIQUE
+                |
+
+<With Clause> ::= WITH PRIMARY
+                | WITH DISALLOW NULL
+                | WITH IGNORE NULL
+                |
+
+<Field Def>   ::= Id <Type> NOT NULL
+                | Id <Type>
+
+<Field Def List> ::= <Field Def> ',' <Field Def List>
+                   | <Field Def>
+
+<Type>  ::=  BIT
+          |  DATE
+          |  TIME
+          |  TIMESTAMP
+          |  DECIMAL
+          |  REAL
+          |  FLOAT
+          |  SMALLINT
+          |  INTEGER
+          |  INTERVAL
+          |  CHARACTER 
+
+<Constraint Opt>  ::= <Constraint>
+                    |
+
+<Constraint>      ::= CONSTRAINT Id <Constraint Type>
+                    | CONSTRAINT Id
+
+<Constraint Type> ::= PRIMARY KEY '(' <Id List> ')'
+                    | UNIQUE      '(' <Id List> ')'
+                    | NOT NULL    '(' <Id List> ')'
+                    | FOREIGN KEY '(' <Id List> ')' REFERENCES Id '(' <Id List> ')'
+
+<Drop Stm>        ::= DROP TABLE Id
+                    | DROP INDEX Id ON Id
+
+! =============================================================================
+! Update database contents
+! =============================================================================
+
+<Insert Stm>    ::= INSERT INTO Id '(' <Id List> ')' <Select Stm>
+                  | INSERT INTO Id '(' <Id List> ')' VALUES '(' <Expr List> ')'
+
+<Update Stm>    ::= UPDATE Id SET <Assign List> <Where Clause>
+
+<Assign List>   ::= Id '=' <Expression> ',' <Assign List>
+                  | Id '=' <Expression> 
+
+<Delete Stm>    ::= DELETE FROM Id <Where Clause>
+
+! =============================================================================
+! Select Statement
+! =============================================================================
+
+<Select Stm>    ::= SELECT <Columns> <Into Clause> <From Clause> <Where Clause> <Group Clause> <Having Clause> <Order Clause>
+
+<Columns>       ::= <Restriction> '*'
+                  | <Restriction> <Column List>
+
+<Column List>   ::= <Column Item> ',' <Column List>
+                  | <Column Item>
+
+<Column Item>   ::= <Column Source>
+                  | <Column Source> Id      !ALIAS   
+                  
+<Column Source> ::= <Aggregate> 
+                  | Id                
+
+<Restriction>   ::= ALL
+                  | DISTINCT
+                  |
+
+<Aggregate>     ::= Count  '(' '*' ')'           
+                  | Count  '(' <Expression> ')'
+                  | Avg    '(' <Expression> ')'
+                  | Min    '(' <Expression> ')'
+                  | Max    '(' <Expression> ')'
+                  | StDev  '(' <Expression> ')'
+                  | StDevP '(' <Expression> ')'
+                  | Sum    '(' <Expression> ')'
+                  | Var    '(' <Expression> ')'
+                  | VarP   '(' <Expression> ')'
+
+<Into Clause>   ::= INTO Id
+                  |
+
+<From Clause>   ::= FROM <Id List> <Join Chain>
+
+<Join Chain>    ::= <Join> <Join Chain>
+                  |
+
+<Join>          ::= INNER JOIN <Id List> ON Id '=' Id                  
+                  | LEFT  JOIN <Id List> ON Id '=' Id                  
+                  | RIGHT JOIN <Id List> ON Id '=' Id                  
+                  |       JOIN <Id List> ON Id '=' Id                  
+
+
+<Where Clause>  ::= WHERE <Expression>
+                  |
+
+<Group Clause>  ::= GROUP BY <Id List>
+                  |
+
+<Order Clause>  ::= ORDER BY <Order List>
+                  |
+
+<Order List>    ::= ID <Order Type> ',' <Order List>
+                  | ID <Order Type>
+
+<Order Type>    ::= ASC
+                  | DESC
+                  |
+
+<Having Clause> ::= HAVING <Expression>
+                  |
+
+! ============================================================================= 
+! Expressions
+! =============================================================================
+
+<Expression>  ::= <And Exp> OR <Expression>
+                | <And Exp>
+
+<And Exp>     ::= <Not Exp> AND <And Exp>
+                | <Not Exp>
+
+<Not Exp>     ::= NOT <Pred Exp>
+                | <Pred Exp>
+
+<Pred Exp>    ::= <Add Exp> BETWEEN <Add Exp> AND <Add Exp>
+                | <Add Exp> NOT BETWEEN <Add Exp> AND <Add Exp>
+                | <Value> IS NOT NULL
+                | <Value> IS NULL
+                | <Add Exp> LIKE StringLiteral
+                | <Add Exp> IN   <Tuple>
+                | <Add Exp> '='  <Add Exp>
+                | <Add Exp> '<>' <Add Exp>
+                | <Add Exp> '!=' <Add Exp>
+                | <Add Exp> '>'  <Add Exp>
+                | <Add Exp> '>=' <Add Exp>
+                | <Add Exp> '<'  <Add Exp>
+                | <Add Exp> '<=' <Add Exp>
+                | <Add Exp>
+
+<Add Exp>     ::= <Add Exp> '+' <Mult Exp>
+                | <Add Exp> '-' <Mult Exp>
+                | <Mult Exp>
+
+<Mult Exp>    ::= <Mult Exp> '*' <Negate Exp> 
+                | <Mult Exp> '/' <Negate Exp>
+                | <Negate Exp>
+
+<Negate Exp>  ::= '-' <Value>
+                | <Value>
+        
+<Value>       ::= <Tuple>
+                | ID
+                | IntegerLiteral
+                | RealLiteral
+                | StringLiteral
+                | NULL
+
+<Tuple>       ::= '(' <Select Stm> ')'
+                | '(' <Expr List> ')'
+
+<Expr List>  ::= <Expression> ',' <Expr List>
+               | <Expression>
+
+<Id List>     ::= <Id Member> ',' <Id List> 
+                | <Id Member>
+
+<Id Member>   ::= Id
+                | Id Id

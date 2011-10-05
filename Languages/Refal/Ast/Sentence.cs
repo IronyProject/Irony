@@ -73,43 +73,38 @@ namespace Refal
 			// standard prolog
 			thread.CurrentNode = this;
 
-			try
+			// evaluate pattern and copy bound variables of the current block
+			var patt = Pattern.Instantiate(thread);
+			if (BlockPattern != null)
 			{
-				// evaluate pattern and copy bound variables of the current block
-				var patt = Pattern.Instantiate(thread);
-				if (BlockPattern != null)
+				patt.CopyBoundVariables(BlockPattern);
+			}
+
+			object result = null;
+
+			// if pattern is recognized, calculate new expression and return true
+			var success = patt.Match(InputExpression);
+			if (success)
+			{
+				// store last recognized pattern as a local variable
+				thread.SetLastPattern(patt);
+
+				// simple sentence
+				if (Expression != null)
 				{
-					patt.CopyBoundVariables(BlockPattern);
+					result = Expression.Evaluate(thread);
 				}
 
-				// if pattern is recognized, calculate new expression and return true
-				var result = patt.Match(InputExpression);
-				if (result)
+				// sentence with a where- or when-clause
+				else if (Conditions != null)
 				{
-					// store last recognized pattern as a local variable
-					thread.SetLastPattern(patt);
-
-					// matching, return expression
-					if (Expression != null)
-					{
-						return Expression.Evaluate(thread);
-					}
-
-					// matching succeeded? it depends on conditions
-					if (Conditions != null)
-					{
-						return Conditions.Evaluate(thread);
-					}
+					result = Conditions.Evaluate(thread);
 				}
+			}
 
-				// matching failed
-				return null;
-			}
-			finally
-			{
-				// standard epilog
-				thread.CurrentNode = Parent;
-			}
+			// standard epilog
+			thread.CurrentNode = Parent;
+			return result;
 		}
 	}
 }

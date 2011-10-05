@@ -60,23 +60,18 @@ namespace Refal
 			// standard prolog
 			thread.CurrentNode = this;
 
-			try
-			{
-				var terms = new List<object>();
+			var terms = new List<object>();
 
-				foreach (var term in Terms)
-				{
-					var result = term.Evaluate(thread);
-					terms.Add(result);
-				}
-
-				return PassiveExpression.Build(terms.ToArray());
-			}
-			finally
+			foreach (var term in Terms)
 			{
-				// standard epilog
-				thread.CurrentNode = Parent;
+				var result = term.Evaluate(thread);
+				terms.Add(result);
 			}
+
+			// standard epilog
+			thread.CurrentNode = Parent;
+
+			return PassiveExpression.Build(terms.ToArray());
 		}
 	}
 }

@@ -19,21 +19,16 @@ namespace Refal
 			// standard prolog
 			thread.CurrentNode = this;
 
-			try
-			{
-				// define function: bind function name to the current instance
-				var binding = thread.Bind(Name, BindingRequestFlags.Write | BindingRequestFlags.NewOnly);
-				binding.SetValueRef(thread, this);
+			// define function: bind function name to the current instance
+			var binding = thread.Bind(Name, BindingRequestFlags.Write | BindingRequestFlags.NewOnly);
+			binding.SetValueRef(thread, this);
 
-				// set Evaluate method and return the current node
-				Evaluate = t => this;
-				return this;
-			}
-			finally
-			{
-				// standard epilog
-				thread.CurrentNode = Parent;
-			}
+			// set Evaluate method and return the current node
+			Evaluate = t => this;
+
+			// standard epilog
+			thread.CurrentNode = Parent;
+			return this;
 		}
 
 		public abstract object Call(ScriptThread thread, object[] parameters);

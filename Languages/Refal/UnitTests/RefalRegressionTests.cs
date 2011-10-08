@@ -126,6 +126,12 @@ namespace Refal.UnitTests
 			RunSampleAndCompareResults("99-bottles-v2.ref", "99-bottles-v2.txt");
 		}
 
+		[TestMethod]
+		public void RefalTest_BrainfuckInterpreter()
+		{
+			RunSampleAndCompareResults("brainfuck.ref", "brainfuck.txt");
+		}
+
 		/// <summary>
 		/// Load sample program from resources, run it and check its output
 		/// </summary>

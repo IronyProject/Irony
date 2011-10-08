@@ -1,0 +1,4 @@
+# Member access sample
+# We add "foo" object to Globals dictionary at initialization of sample Evaluator
+foo.SampleField = "saaaample field value..."
+foo.SampleProp + ", " + foo.SampleField + ", " + foo.GetStuff()

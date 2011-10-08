@@ -1,0 +1,3 @@
+# Demo of custom object's method import. SampleExpressionEvaluatorGrammar adds 2 built-in methods: GetGreeting and GetDate.
+# UserName comes from static property of Environment (imported into built-ins by expression evaluator).
+greeting = GetGreeting(UserName) + "\r\n  Today is: " + GetDate()

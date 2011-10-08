@@ -46,7 +46,7 @@ namespace Irony.Interpreter.Ast {
 
     private void SetupEvaluateMethod(ScriptThread thread) {
       var languageTailRecursive = thread.Runtime.Language.Grammar.LanguageFlags.IsSet(LanguageFlags.TailRecursive);
-      lock (this.LockObject) {
+      lock (this.LockObject) { 
         var target = TargetRef.Evaluate(thread);
         if (target is SpecialForm) {
           _specialForm = target as SpecialForm;

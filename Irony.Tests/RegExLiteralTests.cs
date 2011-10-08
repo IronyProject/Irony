@@ -15,7 +15,7 @@ namespace Irony.Tests {
 #endif
     
   [TestClass]
-  public class RegExLiteralTests: TerminalTestsBase  {
+  public class RegexLiteralTests: TerminalTestsBase  {
 
     //Helper method - replaces single quote with double quote and then calls TryMatch, just to make it easier to write
     // strings with quotes for tests
@@ -27,7 +27,7 @@ namespace Irony.Tests {
     //The following test method and a fix are contributed by ashmind codeplex user
     [TestMethod]
     public void TestRegExLiteral() {
-      var term = new RegExLiteral("RegEx");
+      var term = new RegexLiteral("RegEx");
       SetTerminal(term);
       TryMatch(@"/abc\\\/de/gm  ");
       Assert.IsNotNull(_token, "Failed to produce a token on valid string.");

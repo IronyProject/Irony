@@ -35,7 +35,7 @@ namespace Irony.Parsing {
     Default = CreateRegExObject | UniqueSwitches,
   }
 
-  public class RegExLiteral : Terminal {
+  public class RegexLiteral : Terminal {
     public class RegexSwitchTable : Dictionary<char, RegexOptions> { }
     
     public Char StartSymbol = '/';
@@ -47,14 +47,14 @@ namespace Irony.Parsing {
 
     private char[] _stopChars; 
 
-    public RegExLiteral(string name) : base(name) {
+    public RegexLiteral(string name) : base(name) {
       Switches.Add('i', RegexOptions.IgnoreCase);
       Switches.Add('g', RegexOptions.None); //not sure what to do with this flag? anybody, any advice?
       Switches.Add('m', RegexOptions.Multiline);
       base.SetFlag(TermFlags.IsLiteral);
     }
 
-    public RegExLiteral(string name, char startEndSymbol, char escapeSymbol) : base(name) {
+    public RegexLiteral(string name, char startEndSymbol, char escapeSymbol) : base(name) {
       StartSymbol = startEndSymbol;
       EndSymbol = startEndSymbol;
       EscapeSymbol = escapeSymbol;

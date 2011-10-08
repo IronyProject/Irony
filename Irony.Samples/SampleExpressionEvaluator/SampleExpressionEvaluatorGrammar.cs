@@ -40,8 +40,26 @@ arithmetic operations, augmented assignments (+=, -=), inc/dec (++,--), strings 
     #region Running in Grammar Explorer
     private static ExpressionEvaluator _evaluator;
     public override string RunSample(RunSampleArgs args) {
-      if (_evaluator == null) 
+      if (_evaluator == null) {
         _evaluator = new ExpressionEvaluator(this);
+        //Adding custom object to demo accessing to properties, fields and methods
+        _evaluator.Globals["foo"] = new Foo();
+        //Adding an array to demo access by index
+        _evaluator.Globals["primes"] = new int[] {3, 5, 7, 11, 13};
+        var nums = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+        nums["one"] = "1";
+        nums["two"] = "2";
+        nums["three"] = "2";
+        _evaluator.Globals["nums"] = nums;
+        //Check data row access
+        var t = new System.Data.DataTable();
+        t.Columns.Add("Name", typeof(string));
+        t.Columns.Add("Age", typeof(int)); 
+        var row = t.NewRow();
+        row["Name"] = "John";
+        row["Age"] = 30;
+        _evaluator.Globals["row"] = row;        
+      }
       _evaluator.App.ClearOutputBuffer();
       //for (int i = 0; i < 1000; i++)  //for perf measurements, to execute 1000 times
         _evaluator.Evaluate(args.ParsedSample);
@@ -49,6 +67,27 @@ arithmetic operations, augmented assignments (+=, -=), inc/dec (++,--), strings 
     }
 
     #endregion
+
+    public class Foo {
+      public string SampleField = "Sample field value";
+      public string SampleProp { get; set; }
+
+      public Foo() {
+        SampleProp = "Sample prop value.";
+      }
+      public string GetStuff() {
+        return "stuff";
+      }
+
+      public string this[int i] {
+        get { return "#" + i; }
+        set { }
+      }
+      public string this[string key] {
+        get { return "Value-for-" + key; }
+        set { }
+      }
+    }
 
     //An example of adding a built-in method
     static class MethodHelper {

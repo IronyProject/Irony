@@ -30,6 +30,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>irony.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -42,7 +48,8 @@
     <Compile Include="Ast\Base\BasicTypes.cs" />
     <Compile Include="Ast\Base\AstInterfaces.cs" />
     <Compile Include="Ast\Base\AstNode.cs" />
-    <None Include="Ast\Expressions\_DotOperationNode.cs" />
+    <Compile Include="Ast\Expressions\IndexedAccessNode.cs" />
+    <Compile Include="Ast\Expressions\MemberAccessNode.cs" />
     <Compile Include="LanguageRuntime\SpecialFormsLibrary.cs" />
     <Compile Include="Ast\Expressions\BinaryOperationNode.cs" />
     <Compile Include="Ast\Expressions\ExpressionListNode.cs" />
@@ -81,6 +88,7 @@
     <Compile Include="_Evaluator\ExpressionEvaluator.cs" />
     <Compile Include="_Evaluator\ExpressionEvaluatorGrammar.cs" />
     <Compile Include="_Evaluator\ExpressionEvaluatorRuntime.cs" />
+    <None Include="irony.snk" />
     <None Include="Utilities\HotSwapDictionary.cs" />
     <Compile Include="Bindings\Binding.cs" />
     <Compile Include="Bindings\ClrInteropBindings.cs" />

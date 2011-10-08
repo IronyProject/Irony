@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions; 
 using System.Text;
+using System.Reflection;
 using Irony.Interpreter;
 using Irony.Parsing;
 
@@ -25,7 +26,7 @@ namespace Irony.Interpreter.Ast {
     public ExpressionType Op;
     private OperatorImplementation _lastUsed;
     private object _constValue;
-    private int _failureCount; 
+    private int _failureCount;
 
     public BinaryOperationNode() { }
 
@@ -51,7 +52,7 @@ namespace Irony.Interpreter.Ast {
           break; 
         case ExpressionType.OrElse:
           this.Evaluate = EvaluateOrElse;
-          break; 
+          break;
         default:
           this.Evaluate = DefaultEvaluateImplementation;
           break; 

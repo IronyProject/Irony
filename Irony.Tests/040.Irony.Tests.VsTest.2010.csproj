@@ -80,7 +80,7 @@
     <Compile Include="Grammars\TestGrammar.cs" />
     <None Include="HeredocTerminalTests.cs" />
     <Compile Include="LineContinuationTests.cs" />
-    <Compile Include="RegExLiteralTests.cs" />
+    <Compile Include="RegexLiteralTests.cs" />
     <Compile Include="FreeTextLiteralTests.cs" />
     <Compile Include="IdentifierTerminalTests.cs" />
     <Compile Include="IntegrationTests.cs" />

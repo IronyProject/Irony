@@ -50,10 +50,12 @@ namespace Irony.Interpreter.Ast {
     
     //Reference to Evaluate method implementation. Initially set to DoEvaluate virtual method. 
     public EvaluateMethod Evaluate;
+    public ValueSetterMethod SetValue; 
 
     // Public default constructor
     public AstNode() {
-      Evaluate = DoEvaluate;
+      this.Evaluate = DoEvaluate;
+      this.SetValue = DoSetValue;
     }
 
     #region IAstNodeInit Members
@@ -94,7 +96,7 @@ namespace Irony.Interpreter.Ast {
       return null; 
     }
 
-    protected internal virtual void SetValue(ScriptThread thread, object value) {
+    public virtual void DoSetValue(ScriptThread thread, object value) {
       //Place the prolog/epilog lines in every implementation of SetValue method (see DoEvaluate above)
     }
 

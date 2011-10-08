@@ -66,6 +66,9 @@ bool operations &,&&, |, ||; ternary '?:' operator." ;
       var TernaryIfExpr = new NonTerminal("TernaryIf", typeof(IfNode));
       var ArgList = new NonTerminal("ArgList", typeof(ExpressionListNode));
       var FunctionCall = new NonTerminal("FunctionCall", typeof(FunctionCallNode));
+      var MemberAccess = new NonTerminal("MemberAccess", typeof(MemberAccessNode));
+      var IndexedAccess = new NonTerminal("IndexedAccess", typeof(IndexedAccessNode));
+      var ObjectRef = new NonTerminal("ObjectRef"); // foo, foo.bar or f['bar']
       var UnOp = new NonTerminal("UnOp");
       var BinOp = new NonTerminal("BinOp", "operator");
       var PrefixIncDec = new NonTerminal("PrefixIncDec", typeof(IncDecNode));
@@ -78,22 +81,25 @@ bool operations &,&&, |, ||; ternary '?:' operator." ;
 
       // 3. BNF rules
       Expr.Rule = Term | UnExpr | BinExpr | PrefixIncDec | PostfixIncDec | TernaryIfExpr;
-      Term.Rule = number | ParExpr | identifier | stringLit | FunctionCall;
+      Term.Rule = number | ParExpr | stringLit | FunctionCall | identifier | MemberAccess | IndexedAccess;
       ParExpr.Rule = "(" + Expr + ")";
-      UnExpr.Rule = UnOp + Term;
+      UnExpr.Rule = UnOp + Term + ReduceHere();
       UnOp.Rule = ToTerm("+") | "-"; 
       BinExpr.Rule = Expr + BinOp + Expr;
       BinOp.Rule = ToTerm("+") | "-" | "*" | "/" | "**" | "==" | "<" | "<=" | ">" | ">=" | "!=" | "&&" | "||" | "&" | "|";
       PrefixIncDec.Rule = IncDecOp + identifier;
-      PostfixIncDec.Rule = identifier + IncDecOp;
+      PostfixIncDec.Rule = identifier + PreferShiftHere() + IncDecOp;
       IncDecOp.Rule = ToTerm("++") | "--";
       TernaryIfExpr.Rule = Expr + "?" + Expr + ":" + Expr;
-      AssignmentStmt.Rule = identifier + AssignmentOp + Expr;
+      MemberAccess.Rule = Expr + PreferShiftHere() + "." + identifier; 
+      AssignmentStmt.Rule = ObjectRef + AssignmentOp + Expr;
       AssignmentOp.Rule = ToTerm("=") | "+=" | "-=" | "*=" | "/=";
       Statement.Rule = AssignmentStmt | Expr | Empty;
       ArgList.Rule = MakeStarRule(ArgList, comma, Expr);
-      FunctionCall.Rule = identifier + "(" + ArgList + ")";
+      FunctionCall.Rule = Expr + PreferShiftHere() + "(" + ArgList + ")";
       FunctionCall.NodeCaptionTemplate = "call #{0}(...)";
+      ObjectRef.Rule = identifier | MemberAccess | IndexedAccess;
+      IndexedAccess.Rule = Expr + PreferShiftHere() + "[" + Expr + "]";
 
       Program.Rule = MakePlusRule(Program, NewLine, Statement);
 
@@ -108,9 +114,10 @@ bool operations &,&&, |, ||; ternary '?:' operator." ;
       RegisterOperators(50, Associativity.Right, "**");
 
       // 5. Punctuation and transient terms
-      MarkPunctuation("(", ")", "?", ":");
+      MarkPunctuation("(", ")", "?", ":", "[", "]");
       RegisterBracePair("(", ")");
-      MarkTransient(Term, Expr, Statement, BinOp, UnOp, IncDecOp, AssignmentOp, ParExpr);
+      RegisterBracePair("[", "]");
+      MarkTransient(Term, Expr, Statement, BinOp, UnOp, IncDecOp, AssignmentOp, ParExpr, ObjectRef);
 
       // 7. Syntax error reporting
       MarkNotReported("++", "--");

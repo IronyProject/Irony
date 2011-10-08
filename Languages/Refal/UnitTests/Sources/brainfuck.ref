@@ -62,7 +62,7 @@ RunStep {
   (',' e.P) (e.S) (s.I1 e.I2) e.O = (e.P) (<Input s.I1 e.S>) (e.I2) e.O;
   (',' e.P) (e.S) (e.I) e.O = (e.P) (<Input <Chr 0> e.S>) (e.I) e.O;
 
-* loop
+* loops
   (']' e.P) (e.S) (e.I) e.O = <Dg StartLoop> (e.S) (e.I) e.O;
   ('[' e.L ']' e.P) (e.S) (e.I) e.O, <IsZero e.S>: {
       True = (e.P) (e.S) (e.I) e.O;
@@ -71,7 +71,7 @@ RunStep {
   };
 
 * comments
-  (s.1 e.P) (e.S) (e.I) e.O = (e.P) (<GoLeft e.S>) (e.I) e.O;
+  (s.1 e.P) (e.S) (e.I) e.O = (e.P) (e.S) (e.I) e.O;
 }
 
 * Move caret to the left

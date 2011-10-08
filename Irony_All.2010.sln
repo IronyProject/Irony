@@ -36,6 +36,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{44A7
 		Languages\Refal\UnitTests\Sources\99-bottles-v2.ref = Languages\Refal\UnitTests\Sources\99-bottles-v2.ref
 		Languages\Refal\UnitTests\Sources\arith.ref = Languages\Refal\UnitTests\Sources\arith.ref
 		Languages\Refal\UnitTests\Sources\binary.ref = Languages\Refal\UnitTests\Sources\binary.ref
+		Languages\Refal\UnitTests\Sources\brainfuck.ref = Languages\Refal\UnitTests\Sources\brainfuck.ref
 		Languages\Refal\UnitTests\Sources\change-v1.ref = Languages\Refal\UnitTests\Sources\change-v1.ref
 		Languages\Refal\UnitTests\Sources\change-v2.ref = Languages\Refal\UnitTests\Sources\change-v2.ref
 		Languages\Refal\UnitTests\Sources\factorial.ref = Languages\Refal\UnitTests\Sources\factorial.ref

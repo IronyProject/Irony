@@ -50,6 +50,7 @@ bool operations &,&&, |, ||; ternary '?:' operator." ;
 
       //String literal with embedded expressions  ------------------------------------------------------------------
       var stringLit = new StringLiteral("string", "\"", StringOptions.AllowsAllEscapes | StringOptions.IsTemplate);
+      stringLit.AddStartEnd("'", StringOptions.AllowsAllEscapes | StringOptions.IsTemplate); 
       stringLit.AstNodeType = typeof(StringTemplateNode);
       var Expr = new NonTerminal("Expr"); //declare it here to use in template definition 
       var templateSettings = new StringTemplateSettings(); //by default set to Ruby-style settings 
@@ -149,6 +150,19 @@ Press Ctrl-C to exit the program at any time.
     public override LanguageRuntime CreateRuntime(LanguageData language) {
       return new ExpressionEvaluatorRuntime(language); 
     }
+
+    #region Running in Grammar Explorer
+    private static ExpressionEvaluator _evaluator;
+    public override string RunSample(RunSampleArgs args) {
+      if (_evaluator == null)
+        _evaluator = new ExpressionEvaluator(this);
+      _evaluator.ClearOutput();
+      //for (int i = 0; i < 1000; i++)  //for perf measurements, to execute 1000 times
+      _evaluator.Evaluate(args.ParsedSample);
+      return _evaluator.GetOutput();
+    }
+    #endregion
+
 
 
 

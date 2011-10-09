@@ -122,9 +122,8 @@
     <None Include="SourceSamples\SampleExpressionEvaluator\PerfTest.txt" />
     <None Include="SourceSamples\SampleExpressionEvaluator\UseMath.txt" />
     <None Include="SourceSamples\SampleExpressionEvaluator\UseEnv.txt" />
-    <None Include="SourceSamples\SampleExpressionEvaluator\UseCustomBuiltIns.txt" />
     <None Include="SourceSamples\SampleExpressionEvaluator\MemberAccess.txt" />
-    <None Include="SourceSamples\SampleExpressionEvaluator\MemberAccess2.txt" />
+    <None Include="SourceSamples\SampleExpressionEvaluator\_more_samples.txt" />
     <Content Include="SourceSamples\SampleExpressionEvaluator\TestIif.txt" />
     <Content Include="SourceSamples\SampleExpressionEvaluator\TestFormatAndPrint.txt" />
     <Content Include="SourceSamples\SampleExpressionEvaluator\StringSample.txt" />

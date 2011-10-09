@@ -1,4 +1,3 @@
 # Member access sample
-# We add "foo" object to Globals dictionary at initialization of sample Evaluator
-foo.SampleField = "saaaample field value..."
-foo.SampleProp + ", " + foo.SampleField + ", " + foo.GetStuff()
+# For more samples see EvaluatorTests.cs file in unit tests project.  
+"0123".Substring(1) + "abcd".Length     # expected '1234'

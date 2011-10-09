@@ -55,7 +55,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;USE_NUNIT</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -81,6 +81,7 @@
     <Compile Include="CommentTerminalTests.cs" />
     <Compile Include="ConflictResolutionTests.cs" />
     <Compile Include="DataLiteralsTests.cs" />
+    <Compile Include="EvaluatorTests.cs" />
     <Compile Include="Grammars\ConflictResolutionTestGrammar1.cs" />
     <Compile Include="Grammars\ConflictResolutionTestGrammar2.cs" />
     <Compile Include="Grammars\ConflictResolutionTestGrammar3.cs" />

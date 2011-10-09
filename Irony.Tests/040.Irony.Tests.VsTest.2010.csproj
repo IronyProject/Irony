@@ -73,6 +73,7 @@
     <Compile Include="CommentTerminalTests.cs" />
     <Compile Include="ConflictResolutionTests.cs" />
     <Compile Include="DataLiteralsTests.cs" />
+    <Compile Include="EvaluatorTests.cs" />
     <Compile Include="Grammars\ConflictResolutionTestGrammar1.cs" />
     <Compile Include="Grammars\ConflictResolutionTestGrammar2.cs" />
     <Compile Include="Grammars\ConflictResolutionTestGrammar3.cs" />

@@ -58,6 +58,12 @@ namespace Irony.Interpreter.Evaluator {
       return App.Evaluate(); 
     }
 
+    public void ClearOutput() {
+      App.ClearOutputBuffer(); 
+    }
+    public string GetOutput() {
+      return App.GetOutput(); 
+    }
 
   }//class
 }

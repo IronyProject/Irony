@@ -84,8 +84,16 @@ z =  x * 1.5       # = 9
 z -= y             # = 3   
 ";
       result = eval.Evaluate(script);
-      Assert.AreEqual(3.0, (double) result, 0.0001, "Unexpected computation result"); 
+      Assert.AreEqual(3.0, (double) result, 0.0001, "Unexpected computation result");
 
+      //&&, || operators
+      script = @"x = (1 > 0) || (1/0)";
+      result = eval.Evaluate(script);
+      Assert.AreEqual(true, result, "Unexpected computation result");
+
+      script = @"x = (1 < 0) && (1/0)";
+      result = eval.Evaluate(script);
+      Assert.AreEqual(false, result, "Unexpected computation result"); 
     }
 
     [TestMethod]

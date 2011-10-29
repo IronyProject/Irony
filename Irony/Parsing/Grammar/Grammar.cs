@@ -26,7 +26,8 @@ namespace Irony.Parsing {
     /// Can be set to false only through a parameter to grammar constructor.
     /// </summary>
     public readonly bool CaseSensitive = true;
-    public readonly StringComparer LanguageStringComparer; 
+    public readonly StringComparer LanguageStringComparer;
+    public readonly StringComparison StringComparisonMode; 
     
     //List of chars that unambigously identify the start of new token. 
     //used in scanner error recovery, and in quick parse path in NumberLiterals, Identifiers 
@@ -94,6 +95,7 @@ namespace Irony.Parsing {
       this.CaseSensitive = caseSensitive;
       bool ignoreCase =  !this.CaseSensitive;
       LanguageStringComparer = StringComparer.Create(System.Globalization.CultureInfo.InvariantCulture, ignoreCase);
+      StringComparisonMode = CaseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase;
       KeyTerms = new KeyTermTable(LanguageStringComparer);
       //Initialize console attributes
       ConsoleTitle = Resources.MsgDefaultConsoleTitle;

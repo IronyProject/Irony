@@ -33,6 +33,8 @@ namespace Irony.Parsing {
     public StringDictionary Escapes = new StringDictionary();
     public FreeTextOptions FreeTextOptions; 
     private char[] _stopChars;
+    bool _isSimple; //True if we have a single Terminator and no escapes
+    string _singleTerminator;
 
     public FreeTextLiteral(string name, params string[] terminators)  : this(name, FreeTextOptions.None, terminators) { }
     public FreeTextLiteral(string name, FreeTextOptions freeTextOptions, params string[] terminators) : base(name) {
@@ -48,6 +50,11 @@ namespace Irony.Parsing {
     }
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
+      _isSimple = Terminators.Count == 1 && Escapes.Count == 0;
+      if (_isSimple) {
+        _singleTerminator = Terminators.First(); 
+        return;
+      }
       var stopChars = new CharHashSet();
       foreach (var key in Escapes.Keys)
         stopChars.Add(key[0]);
@@ -57,45 +64,77 @@ namespace Irony.Parsing {
     }
 
     public override Token TryMatch(ParsingContext context, ISourceStream source) {
-      string tokenText = string.Empty;
+      if (!TryMatchPrefixes(context, source))
+        return null; 
+      return _isSimple ? TryMatchContentSimple(context, source) : TryMatchContentExtended(context, source); 
+    }
+
+    private bool TryMatchPrefixes(ParsingContext context, ISourceStream source) {
+      if (Firsts.Count == 0) 
+        return true;  
+      foreach (var first in Firsts)
+        if (source.MatchSymbol(first, !Grammar.CaseSensitive)) {
+          source.PreviewPosition += first.Length;
+          return true;
+        }
+      return false; 
+    }
+
+    private Token TryMatchContentSimple(ParsingContext context, ISourceStream source) {
+      var startPos = source.PreviewPosition; 
+      int p = source.Text.IndexOf(_singleTerminator, startPos, Grammar.StringComparisonMode);
+      if (p < 0 && IsSet(FreeTextOptions.AllowEof))
+        p = source.Text.Length;
+      if (p < 0)
+        return source.CreateErrorToken(Resources.ErrFreeTextNoEndTag, _singleTerminator);
+      var tokenText = source.Text.Substring(startPos, p - startPos);
+      return source.CreateToken(this.OutputTerminal, tokenText); 
+    }
+
+    private Token TryMatchContentExtended(ParsingContext context, ISourceStream source) {
+      StringBuilder tokenText = new StringBuilder();
       while (true) {
-        //Find next position
-        var newPos = source.Text.IndexOfAny(_stopChars, source.PreviewPosition);
-        if(newPos == -1) {
+        //Find next position of one of stop chars
+        var nextPos = source.Text.IndexOfAny(_stopChars, source.PreviewPosition);
+        if(nextPos == -1) {
           if(IsSet(FreeTextOptions.AllowEof)) {
             source.PreviewPosition = source.Text.Length;
             return source.CreateToken(this.OutputTerminal);
           }  else
             return null;
         }
-        tokenText += source.Text.Substring(source.PreviewPosition, newPos - source.PreviewPosition);
-        source.PreviewPosition = newPos;
+        var newText = source.Text.Substring(source.PreviewPosition, nextPos - source.PreviewPosition);
+        tokenText.Append(newText);
+        source.PreviewPosition = nextPos;
         //if it is escape, add escaped text and continue search
-        if (CheckEscape(source, ref tokenText)) 
+        if (CheckEscape(source, tokenText)) 
           continue;
         //check terminators
-        if (CheckTerminators(source, ref tokenText))
-          break; //from while (true)        
-      }
-      return source.CreateToken(this.OutputTerminal, tokenText);
+        if (CheckTerminators(source, tokenText))
+          break; //from while (true); we reached 
+        //The current stop is not at escape or terminator; add this char to token text and move on 
+        tokenText.Append(source.PreviewChar);
+        source.PreviewPosition++; 
+      }//while
+      return source.CreateToken(this.OutputTerminal, tokenText.ToString());
     }
 
-    private bool CheckEscape(ISourceStream source, ref string tokenText) {
+    private bool CheckEscape(ISourceStream source, StringBuilder tokenText) {
       foreach (var dictEntry in Escapes) {
         if (source.MatchSymbol(dictEntry.Key, !Grammar.CaseSensitive)) {
           source.PreviewPosition += dictEntry.Key.Length;
-          tokenText += dictEntry.Value;
+          tokenText.Append(dictEntry.Value);
           return true; 
         }
       }//foreach
       return false; 
     }
 
-    private bool CheckTerminators(ISourceStream source, ref string tokenText) {
+    private bool CheckTerminators(ISourceStream source, StringBuilder tokenText) {
       foreach(var term in Terminators)
         if(source.MatchSymbol(term, !Grammar.CaseSensitive)) {
           if (IsSet(FreeTextOptions.IncludeTerminator))
-            tokenText += term; 
+            tokenText.Append(term); 
           if (IsSet(FreeTextOptions.ConsumeTerminator | FreeTextOptions.IncludeTerminator))
             source.PreviewPosition += term.Length;
           return true;

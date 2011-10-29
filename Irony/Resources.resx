@@ -211,9 +211,6 @@
   <data name="ErrConflictMsgTemplate" xml:space="preserve">
     <value>{0} State {1} on inputs: {2}</value>
   </data>
-  <data name="ErrNLALRhang" xml:space="preserve">
-    <value>NLALR process is in indefinite loop, number of states exceeded 3000.</value>
-  </data>
   <data name="ErrNodeTypeNotSetOn" xml:space="preserve">
     <value>Warning: AstNodeType or AstNodeCreator is not set on non-terminals: {0}.</value>
   </data>
@@ -438,5 +435,11 @@
   </data>
   <data name="ErrOpNotDefinedForType" xml:space="preserve">
     <value>Operator '{0}' is not defined for types {1}.</value>
+  </data>
+  <data name="ErrFreeTextNoEndTag" xml:space="preserve">
+    <value>Failed to find the ending tag '{0}' for a text literal. </value>
+  </data>
+  <data name="ErrNewLineExpected" xml:space="preserve">
+    <value>Expected new line symbol.</value>
   </data>
 </root>

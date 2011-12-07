@@ -20,7 +20,7 @@ namespace Irony.Parsing {
           bool isAfterNewLine = (context.PreviousToken == null || context.PreviousToken.Terminal == Grammar.NewLine);
           if(!isAfterNewLine)  return null;
       }
-      if(!source.MatchSymbol(OpenTag, true)) return null;
+      if(!source.MatchSymbol(OpenTag)) return null;
       source.PreviewPosition += OpenTag.Length;
       //For headings and lists require space after
       if(TermType == WikiTermType.Heading || TermType == WikiTermType.List) {

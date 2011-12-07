@@ -16,6 +16,14 @@ using System.Text;
 
 namespace Irony.Parsing {
 
+  public static class TerminalPriority {
+    public static int Low = -1000;
+    public static int Normal = 0;
+    public static int High = 1000;
+    public static int ReservedWords = 900;
+
+  }
+
   public class Terminal : BnfTerm {
     #region Constructors
     public Terminal(string name)  : this(name, TokenCategory.Content, TermFlags.None) {  }
@@ -39,7 +47,7 @@ namespace Irony.Parsing {
     // For a given input char the scanner uses the hash table to look up the collection of terminals that may match this input symbol. 
     // It is the order in this collection that is determined by Priority property - the higher the priority, 
     // the earlier the terminal gets a chance to check the input. 
-    public int Priority; //default is 0
+    public int Priority = TerminalPriority.Normal; //default is 0
     
     //Terminal to attach to the output token. By default is set to the Terminal itself
     // Use SetOutputTerminal method to change it. For example of use see TerminalFactory.CreateSqlIdentifier and sample SQL grammar
@@ -109,8 +117,11 @@ namespace Irony.Parsing {
 
     #endregion
     //Priority constants
+    [Obsolete("Deprecated: use constants in TerminalPriority class instead")]
     public const int LowestPriority = -1000;
+    [Obsolete("Deprecated: use constants in TerminalPriority class instead")]
     public const int HighestPriority = 1000;
+    [Obsolete("Deprecated: use constants in TerminalPriority class instead")]
     public const int ReservedWordsPriority = 900; //almost top one
  
     public static string TerminalsToString(IEnumerable<Terminal> terminals, string separator) {

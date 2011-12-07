@@ -11,7 +11,7 @@ namespace Irony.Parsing {
     private char[] _stopChars;
 
     public WikiTextTerminal(string name) : base(name, WikiTermType.Text, string.Empty, string.Empty, string.Empty) {
-      this.Priority = Terminal.LowestPriority;
+      this.Priority = TerminalPriority.Low;
     }
 
     public override void Init(GrammarData grammarData) {

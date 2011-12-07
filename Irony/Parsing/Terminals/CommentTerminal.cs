@@ -21,7 +21,7 @@ namespace Irony.Parsing {
       this.StartSymbol = startSymbol;
       this.EndSymbols = new StringList();
       EndSymbols.AddRange(endSymbols);
-      Priority = Terminal.HighestPriority; //assign max priority
+      Priority = TerminalPriority.High; //assign max priority
     }
 
     public string StartSymbol;
@@ -64,7 +64,7 @@ namespace Irony.Parsing {
         return source.CreateToken(this.OutputTerminal);
       if (context.Mode == ParseMode.VsLineScan)
         return CreateIncompleteToken(context, source);
-      return source.CreateErrorToken(Resources.ErrUnclosedComment);
+      return context.CreateErrorToken(Resources.ErrUnclosedComment);
     }
 
     private Token CreateIncompleteToken(ParsingContext context, ISourceStream source) {
@@ -77,7 +77,7 @@ namespace Irony.Parsing {
 
     private bool BeginMatch(ParsingContext context, ISourceStream source) {
       //Check starting symbol
-      if (!source.MatchSymbol(StartSymbol, !Grammar.CaseSensitive)) return false;
+      if (!source.MatchSymbol(StartSymbol)) return false;
       source.PreviewPosition += StartSymbol.Length;
       return true; 
     }
@@ -96,7 +96,7 @@ namespace Irony.Parsing {
         //We found a character that might start an end symbol; let's see if it is true.
         source.PreviewPosition = firstCharPos;
         foreach (string endSymbol in EndSymbols) {
-          if (source.MatchSymbol(endSymbol, !Grammar.CaseSensitive)) {
+          if (source.MatchSymbol(endSymbol)) {
             //We found end symbol; eat end symbol only if it is not line comment.
             // For line comment, leave LF symbol there, it might be important to have a separate LF token
             if (!_isLineComment)

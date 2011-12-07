@@ -20,7 +20,7 @@ namespace Irony.Parsing {
       return new string[] {StartSymbol};
     }
     protected override string ReadBody(ParsingContext context, ISourceStream source) {
-      if (!source.MatchSymbol(StartSymbol, !Grammar.CaseSensitive)) return null; //this will result in null returned from TryMatch, no token
+      if (!source.MatchSymbol(StartSymbol)) return null; //this will result in null returned from TryMatch, no token
       var start = source.Location.Position + StartSymbol.Length;
       var end = source.Text.IndexOf(EndSymbol, start);
       if (end < 0) return null;

@@ -21,14 +21,12 @@ namespace Irony.Parsing {
   // ParserData is a field in LanguageData structure and is used by CoreParser when parsing intput. 
   // The state graph entry is InitialState state; the state graph encodes information usually contained 
   // in what is known in literature as transiton/goto tables.
-  // The graph is built from the language grammar by ParserBuilder. 
-  // See "Parsing Techniques", 2nd edition for introduction to non-canonical parsing algorithms
+  // The graph is built from the language grammar by ParserDataBuilder. 
   using Irony.Parsing.Construction;
   public class ParserData {
     public readonly LanguageData Language;
-    public ParserState InitialState;
-    public ParserStateTable InitialStates = new ParserStateTable(); //extra entries into automaton
-    public ParserState FinalState;
+    public ParserState InitialState; //main initial state
+    public ParserStateTable InitialStates = new ParserStateTable(); // Lookup table: AugmRoot => InitialState
     public readonly ParserStateList States = new ParserStateList();
     public ParserData(LanguageData language) {
       Language = language;

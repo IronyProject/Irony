@@ -16,7 +16,54 @@ using System.Globalization;
 using System.Linq.Expressions;
 using System.Text;
 
-namespace Irony.Parsing { 
+namespace Irony.Parsing {
+
+  #region enumerations: LanguageFlags, Associativity, TermListOptions
+  [Flags]
+  public enum LanguageFlags {
+    None = 0,
+
+    //Compilation options
+    //Be careful - use this flag ONLY if you use NewLine terminal in grammar explicitly!
+    // - it happens only in line-based languages like Basic.
+    NewLineBeforeEOF = 0x01,
+    //Emit LineStart token
+    EmitLineStartToken = 0x02,
+    DisableScannerParserLink = 0x04, //in grammars that define TokenFilters (like Python) this flag should be set
+    CreateAst = 0x08, //create AST nodes 
+
+    //Runtime
+    // CanRunSample = 0x0100, //DEPRECATED, Grammar Explorer uses ICanRunSample interface implementation as indicator/runner of samples
+    SupportsCommandLine = 0x0200,
+    TailRecursive = 0x0400, //Tail-recursive language - Scheme is one example
+    SupportsBigInt = 0x01000,
+    SupportsComplex = 0x02000,
+    SupportsRational = 0x04000,
+
+
+
+    //Default value
+    Default = None,
+  }
+
+  //Operator associativity types
+  public enum Associativity {
+    Left,
+    Right,
+    Neutral  //don't know what that means 
+  }
+
+  [Flags]
+  public enum TermListOptions {
+    None = 0,
+    AllowEmpty = 0x01,
+    AllowTrailingDelimiter = 0x02,
+    AddPreferShiftHint = 0x04,
+    //Combinations - use these
+    PlusList = AddPreferShiftHint, 
+    StarList = AllowEmpty | AddPreferShiftHint,
+  }
+  #endregion
 
   public partial class Grammar {
 
@@ -150,15 +197,6 @@ namespace Irony.Parsing {
       closeS.IsPairFor = openS;
     }
 
-    [Obsolete("RegisterPunctuation is renamed to MarkPunctuation.")]
-    public void RegisterPunctuation(params string[] symbols) {
-      MarkPunctuation(symbols);
-    }
-    [Obsolete("RegisterPunctuation is renamed to MarkPunctuation.")]
-    public void RegisterPunctuation(params BnfTerm[] terms) {
-      MarkPunctuation(terms);
-    }
-
     public void MarkPunctuation(params string[] symbols) {
       foreach (string symbol in symbols) {
         KeyTerm term = ToTerm(symbol);
@@ -278,62 +316,57 @@ namespace Irony.Parsing {
 
 
     #region MakePlusRule, MakeStarRule methods
-    public static BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm listMember) {
-      return MakePlusRule(listNonTerminal, null, listMember);
+    public BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm listMember) {
+      return MakeListRule(listNonTerminal, null, listMember);
     }
-    
-    public static BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember, TermListOptions options) {
-       bool allowTrailingDelimiter = (options & TermListOptions.AllowTrailingDelimiter) != 0;
-      if (delimiter == null || !allowTrailingDelimiter)
-        return MakePlusRule(listNonTerminal, delimiter, listMember); 
-      //create plus list
-      var plusList = new NonTerminal(listMember.Name + "+"); 
-      plusList.Rule = MakePlusRule(listNonTerminal, delimiter, listMember);
-      listNonTerminal.Rule = plusList | plusList + delimiter; 
-      listNonTerminal.SetFlag(TermFlags.IsListContainer); 
-      return listNonTerminal.Rule; 
+    public BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember) {
+      return MakeListRule(listNonTerminal, delimiter, listMember);
     }
-    
-    public static BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember) {
-      if (delimiter == null)
-        listNonTerminal.Rule = listMember | listNonTerminal + listMember;
-      else 
-        listNonTerminal.Rule = listMember | listNonTerminal + delimiter + listMember;
-      listNonTerminal.SetFlag(TermFlags.IsList);
-      return listNonTerminal.Rule;
+    public BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm listMember) {
+      return MakeListRule(listNonTerminal, null, listMember, TermListOptions.StarList);
+    }
+    public BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember) {
+      return MakeListRule(listNonTerminal, delimiter, listMember, TermListOptions.StarList);
     }
 
-    public static BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm listMember) {
-      return MakeStarRule(listNonTerminal, null, listMember, TermListOptions.None);
-    }
-    
-    public static BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember) {
-      return MakeStarRule(listNonTerminal, delimiter, listMember, TermListOptions.None); 
+    [Obsolete("Method overload is obsolete - use MakeListRule instead. Notice different order of parameters!")]
+    public BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember, TermListOptions options) {
+      return MakeListRule(listNonTerminal, delimiter, listMember, options);
+   }
+
+    [Obsolete("Method overload is obsolete - use MakeListRule instead. Notice different order of parameters!")]
+    public BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember, TermListOptions options) {
+      return MakeListRule(listNonTerminal, delimiter, listMember, options | TermListOptions.StarList);
     }
 
-    public static BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember, TermListOptions options) {
-       bool allowTrailingDelimiter = (options & TermListOptions.AllowTrailingDelimiter) != 0;
-      if (delimiter == null) {
-        //it is much simpler case
-        listNonTerminal.SetFlag(TermFlags.IsList);
-        listNonTerminal.Rule = _currentGrammar.Empty | listNonTerminal + listMember;
-        return listNonTerminal.Rule;
-      }
-      //Note that deceptively simple version of the star-rule 
-      //       Elem* -> Empty | Elem | Elem* + delim + Elem
-      //  does not work when you have delimiters. This simple version allows lists starting with delimiters -
-      // which is wrong. The correct formula is to first define "Elem+"-list, and then define "Elem*" list 
-      // as "Elem* -> Empty|Elem+" 
-      NonTerminal plusList = new NonTerminal(listMember.Name + "+");
-      plusList.Rule = MakePlusRule(plusList, delimiter, listMember);
-      plusList.SetFlag(TermFlags.NoAstNode); //to allow it to have AstNodeType not assigned
-      if (allowTrailingDelimiter)
-        listNonTerminal.Rule = _currentGrammar.Empty | plusList | plusList + delimiter;
-      else 
-        listNonTerminal.Rule = _currentGrammar.Empty | plusList;
-      listNonTerminal.SetFlag(TermFlags.IsListContainer); 
-      return listNonTerminal.Rule;
-    }
+    protected BnfExpression MakeListRule(NonTerminal list, BnfTerm delimiter, BnfTerm listMember, TermListOptions options = TermListOptions.PlusList) {
+      //If it is a star-list (allows empty), then we first build plus-list
+      var isStarList = options.IsSet(TermListOptions.AllowEmpty);
+      NonTerminal plusList = isStarList ? new NonTerminal(listMember.Name + "+") : list;
+      //"list" is the real list for which we will construct expression - it is either extra plus-list or original listNonTerminal. 
+      // In the latter case we will use it later to construct expression for listNonTerminal
+      plusList.Rule = plusList;  // rule => list
+      if (delimiter != null)
+        plusList.Rule += delimiter;  // rule => list + delim
+      if (options.IsSet(TermListOptions.AddPreferShiftHint))
+        plusList.Rule += PreferShiftHere(); // rule => list + delim + PreferShiftHere()
+      plusList.Rule += listMember;          // rule => list + delim + PreferShiftHere() + elem
+      plusList.Rule |= listMember;        // rule => list + delim + PreferShiftHere() + elem | elem
+      //trailing delimiter
+      if (options.IsSet(TermListOptions.AllowTrailingDelimiter) & delimiter != null)
+        plusList.Rule |= list + delimiter; // => list + delim + PreferShiftHere() + elem | elem | list + delim
+      // set Rule value
+      plusList.SetFlag(TermFlags.IsList);
+      //If we do not use exra list - we're done, return list.Rule
+      if (plusList == list) 
+        return list.Rule;
+      // Let's setup listNonTerminal.Rule using plus-list we just created
+      //If we are here, TermListOptions.AllowEmpty is set, so we have star-list
+      list.Rule = Empty | plusList;
+      plusList.SetFlag(TermFlags.NoAstNode); 
+      list.SetFlag(TermFlags.IsListContainer); //indicates that real list is one level lower
+      return list.Rule; 
+    }//method
     #endregion
 
     #region Hint utilities
@@ -431,7 +464,7 @@ namespace Irony.Parsing {
     // as a lookahead to Root non-terminal
     public readonly Terminal Eof = new Terminal("EOF", TokenCategory.Outline);
 
-    //Used for error tokens
+    //Used as a "line-start" indicator
     public readonly Terminal LineStartTerminal = new Terminal("LINE_START", TokenCategory.Outline);
 
     //Used for error tokens
@@ -441,8 +474,11 @@ namespace Irony.Parsing {
       get {
         if(_newLinePlus == null) {
           _newLinePlus = new NonTerminal("LF+");
+          //We do no use MakePlusRule method; we specify the rule explicitly to add PrefereShiftHere call - this solves some unintended shift-reduce conflicts
+          // when using NewLinePlus 
+          _newLinePlus.Rule = NewLine | _newLinePlus + PreferShiftHere() + NewLine;
           MarkPunctuation(_newLinePlus);
-          _newLinePlus.Rule = MakePlusRule(_newLinePlus, NewLine);
+          _newLinePlus.SetFlag(TermFlags.IsList);
         }
         return _newLinePlus;
       }

@@ -41,7 +41,7 @@ namespace Irony.Parsing {
       foreach (var entry in Constants) {
         var constant = entry.Key;
         if (source.PreviewPosition + constant.Length > text.Length) continue;
-        if (source.MatchSymbol(constant, !Grammar.CaseSensitive)) {
+        if (source.MatchSymbol(constant)) {
           source.PreviewPosition += constant.Length;
           return source.CreateToken(this.OutputTerminal, entry.Value);
         }

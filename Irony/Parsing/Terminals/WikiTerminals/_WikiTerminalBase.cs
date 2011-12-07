@@ -26,7 +26,7 @@ namespace Irony.Parsing {
       OpenTag = openTag;
       CloseTag = closeTag;
       HtmlElementName = htmlElementName; 
-      this.Priority = OpenTag.Length; //longer tags have higher priority
+      this.Priority = TerminalPriority.Normal + OpenTag.Length; //longer tags have higher priority
     }
 
     public override IList<string> GetFirsts() {

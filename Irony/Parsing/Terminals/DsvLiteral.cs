@@ -92,7 +92,7 @@ namespace Irony.Parsing {
       while(!source.EOF()) {
         while(source.PreviewChar != Terminator[0])
           source.PreviewPosition++;
-        if(source.MatchSymbol(Terminator, !Grammar.CaseSensitive)) {
+        if(source.MatchSymbol(Terminator)) {
           source.PreviewPosition += Terminator.Length;
           return;
         }//if

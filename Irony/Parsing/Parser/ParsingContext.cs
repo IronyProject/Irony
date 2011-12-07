@@ -66,15 +66,15 @@ namespace Irony.Parsing {
     public ParseTree CurrentParseTree { get; internal set; }
     public readonly TokenStack OpenBraces = new TokenStack();
     public ParserTrace ParserTrace = new ParserTrace();
-    public ISourceStream Source { get { return SourceStream; } }
     //list for terminals - for current parser state and current input char
     public TerminalList CurrentTerminals = new TerminalList();
     public Token CurrentToken; //The token just scanned by Scanner
     public Token PreviousToken; 
     public SourceLocation PreviousLineStart; //Location of last line start
 
+    public ISourceStream Source;
+  
     //Internal fields
-    internal SourceStream SourceStream;
     internal TokenFilterList TokenFilters = new TokenFilterList();
     internal TokenStack BufferedTokens = new TokenStack();
     internal IEnumerator<Token> FilteredTokens; //stream of tokens after filter
@@ -90,14 +90,7 @@ namespace Irony.Parsing {
     //values dictionary to use by custom language implementations to save some temporary values in parse process
     public readonly Dictionary<string, object> Values = new Dictionary<string, object>();
 
-    public int TabWidth {
-      get { return _tabWidth; }
-      set {
-         _tabWidth = value;
-         if (SourceStream != null) 
-                SourceStream.TabWidth = value;
-        }
-    } int _tabWidth = 8;    
+    public int TabWidth = 8;    
     
     #endregion 
 
@@ -132,6 +125,13 @@ namespace Irony.Parsing {
       else
         Options &= ~ParseOptions.TraceParser;
     }
+
+    public Token CreateErrorToken(string message, params object[] args) {
+      if (args != null && args.Length > 0)
+        message = string.Format(message, args);
+      return Source.CreateToken(Language.Grammar.SyntaxError, message);
+    }
+
 
     public void AddParserError(string message, params object[] args) {
       var location = CurrentParserInput == null? Source.Location : CurrentParserInput.Span.Location;
@@ -181,7 +181,7 @@ namespace Irony.Parsing {
     public void SetSourceLocation(SourceLocation location) {
       foreach (var filter in TokenFilters)
         filter.OnSetSourceLocation(location); 
-      SourceStream.Location = location;
+      Source.Location = location;
     }
 
     #region Expected term set computations
@@ -211,11 +211,13 @@ namespace Irony.Parsing {
           nextClosingBrace = nextClosingBraceTerm.Text; 
       }
       //Now check all closing braces in result set, and leave only nextClosingBrace
-      foreach(var closingBrace in Language.GrammarData.ClosingBraces) {
-        if (result.Contains(closingBrace) && closingBrace != nextClosingBrace)
-          result.Remove(closingBrace); 
-        
-      }
+      foreach (var term in Language.Grammar.KeyTerms.Values) {
+        if (term.Flags.IsSet(TermFlags.IsCloseBrace)) {
+          var brace = term.Text; 
+          if (result.Contains(brace) && brace != nextClosingBrace)
+            result.Remove(brace);
+        }
+      }//foreach term
       return result; 
     }
 

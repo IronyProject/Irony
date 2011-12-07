@@ -60,7 +60,7 @@ namespace Irony.Parsing {
     public IdentifierTerminal(string name, IdOptions options) : this(name, "_", "_") {
       Options = options; 
     }
-    public IdentifierTerminal(string name, string extraChars, string extraFirstChars): base(name) {
+    public IdentifierTerminal(string name, string extraChars, string extraFirstChars = ""): base(name) {
       AllFirstChars = Strings.AllLatinLetters + extraFirstChars;
       AllChars = Strings.AllLatinLetters + Strings.DecimalDigits + extraChars;
     }

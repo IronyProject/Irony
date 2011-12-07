@@ -146,7 +146,7 @@ namespace Irony.Parsing {
       if (!ReadBody(source, details))
         return null;
       if (details.Error != null) 
-        return source.CreateErrorToken(details.Error);
+        return context.CreateErrorToken(details.Error);
       if (details.IsPartial) {
         details.Value = details.Body;
       } else {
@@ -155,7 +155,7 @@ namespace Irony.Parsing {
         if(!ConvertValue(details)) {
           if (string.IsNullOrEmpty(details.Error))
             details.Error = Resources.ErrInvNumber;
-          return source.CreateErrorToken(details.Error); // "Failed to convert the value: {0}"
+          return context.CreateErrorToken(details.Error); // "Failed to convert the value: {0}"
         }
       }
       token = CreateToken(context, source, details);
@@ -191,7 +191,7 @@ namespace Irony.Parsing {
       if (_prefixesFirsts.IndexOf(source.PreviewChar) < 0)
         return;
       foreach (string pfx in Prefixes) {
-        if (!source.MatchSymbol(pfx, !CaseSensitive)) continue; 
+        if (!source.MatchSymbol(pfx)) continue; 
         //We found prefix
         details.Prefix = pfx;
         source.PreviewPosition += pfx.Length;
@@ -210,7 +210,7 @@ namespace Irony.Parsing {
     protected virtual void ReadSuffix(ISourceStream source, CompoundTokenDetails details) {
       if (_suffixesFirsts.IndexOf(source.PreviewChar) < 0) return;
       foreach (string sfx in Suffixes) {
-        if (!source.MatchSymbol(sfx, !CaseSensitive)) continue;
+        if (!source.MatchSymbol(sfx)) continue;
         //We found suffix
         details.Suffix = sfx;
         source.PreviewPosition += sfx.Length;

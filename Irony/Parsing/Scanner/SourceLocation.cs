@@ -19,7 +19,9 @@ namespace Irony.Parsing {
 
   public struct SourceLocation {
     public int Position;
+    /// <summary>Source line number, 0-based.</summary>
     public int Line;
+    /// <summary>Source column number, 0-based.</summary>
     public int Column;
     public SourceLocation(int position, int line, int column) {
       Position = position;
@@ -28,7 +30,7 @@ namespace Irony.Parsing {
     }
     //Line/col are zero-based internally
     public override string ToString() {
-      return string.Format(Resources.FmtRowCol, Line, Column);
+      return string.Format(Resources.FmtRowCol, Line + 1, Column + 1);
     }
     //Line and Column displayed to user should be 1-based
     public string ToUiString() {

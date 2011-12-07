@@ -18,7 +18,7 @@ namespace Irony.Parsing {
   // See SearchGrammar as an example of use of this terminal. 
   public class ImpliedSymbolTerminal : Terminal {
     public ImpliedSymbolTerminal(string name)  : base(name) { 
-      this.Priority = Terminal.LowestPriority; //This terminal should be tried after all candidate terminals failed. 
+      this.Priority = TerminalPriority.Low; //This terminal should be tried after all candidate terminals failed. 
     }
 
     public override void Init(Irony.Parsing.GrammarData grammarData) {

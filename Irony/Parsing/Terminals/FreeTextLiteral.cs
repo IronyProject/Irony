@@ -73,7 +73,7 @@ namespace Irony.Parsing {
       if (Firsts.Count == 0) 
         return true;  
       foreach (var first in Firsts)
-        if (source.MatchSymbol(first, !Grammar.CaseSensitive)) {
+        if (source.MatchSymbol(first)) {
           source.PreviewPosition += first.Length;
           return true;
         }
@@ -86,7 +86,7 @@ namespace Irony.Parsing {
       if (p < 0 && IsSet(FreeTextOptions.AllowEof))
         p = source.Text.Length;
       if (p < 0)
-        return source.CreateErrorToken(Resources.ErrFreeTextNoEndTag, _singleTerminator);
+        return context.CreateErrorToken(Resources.ErrFreeTextNoEndTag, _singleTerminator);
       var tokenText = source.Text.Substring(startPos, p - startPos);
       return source.CreateToken(this.OutputTerminal, tokenText); 
     }
@@ -121,7 +121,7 @@ namespace Irony.Parsing {
 
     private bool CheckEscape(ISourceStream source, StringBuilder tokenText) {
       foreach (var dictEntry in Escapes) {
-        if (source.MatchSymbol(dictEntry.Key, !Grammar.CaseSensitive)) {
+        if (source.MatchSymbol(dictEntry.Key)) {
           source.PreviewPosition += dictEntry.Key.Length;
           tokenText.Append(dictEntry.Value);
           return true; 
@@ -132,7 +132,7 @@ namespace Irony.Parsing {
 
     private bool CheckTerminators(ISourceStream source, StringBuilder tokenText) {
       foreach(var term in Terminators)
-        if(source.MatchSymbol(term, !Grammar.CaseSensitive)) {
+        if(source.MatchSymbol(term)) {
           if (IsSet(FreeTextOptions.IncludeTerminator))
             tokenText.Append(term); 
           if (IsSet(FreeTextOptions.ConsumeTerminator | FreeTextOptions.IncludeTerminator))

@@ -24,7 +24,8 @@ namespace Irony.Parsing {
     public readonly Scanner Scanner;
     public ParsingContext Context { get; internal set; }
     public readonly NonTerminal Root;
-    internal readonly ParserState InitialState;
+    // Either language root or initial state for parsing snippets - like Ruby's expressions in strings : "result= #{x+y}"  
+    internal readonly ParserState InitialState; 
 
     public Parser(Grammar grammar) : this (new LanguageData(grammar)) { }
     public Parser(LanguageData language) : this(language, null)  {}
@@ -56,11 +57,14 @@ namespace Irony.Parsing {
     }
 
     public ParseTree Parse(string sourceText, string fileName) {
-      if (Context.Status != ParserStatus.AcceptedPartial)
+      SourceLocation loc = default(SourceLocation); 
+      if (Context.Status == ParserStatus.AcceptedPartial){
+        var oldLoc = Context.Source.Location;
+        loc = new SourceLocation(oldLoc.Position, oldLoc.Line + 1, 0);
+      } else {
         Reset();
-      var createAst = Language.Grammar.LanguageFlags.IsSet(LanguageFlags.CreateAst);
-      var keepLineNumbering = Context.Status == ParserStatus.AcceptedPartial;
-      Context.SourceStream.SetText(sourceText, 0, keepLineNumbering);
+      }
+      Context.Source = new SourceStream(sourceText, this.Language.Grammar.CaseSensitive, Context.TabWidth, loc); 
       Context.CurrentParseTree = new ParseTree(sourceText, fileName);
       Context.Status = ParserStatus.Parsing;
       var sw = new Stopwatch();
@@ -86,7 +90,7 @@ namespace Irony.Parsing {
 
     public ParseTree ScanOnly(string sourceText, string fileName) {
       Context.CurrentParseTree = new ParseTree(sourceText, fileName);
-      Context.SourceStream.SetText(sourceText, 0, false);
+      Context.Source = new SourceStream(sourceText, Language.Grammar.CaseSensitive, Context.TabWidth);
       while (true) {
         var token = Scanner.GetToken();
         if (token == null || token.Terminal == Language.Grammar.Eof) break;

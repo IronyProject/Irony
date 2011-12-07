@@ -36,7 +36,6 @@ namespace Irony.Parsing.Construction {
       AssignWhitespaceAndDelimiters(); 
       InitTermLists();
       FillOperatorReportGroup(); 
-      FindClosingBraces(); 
       CreateProductions();
       ComputeNonTerminalsNullability(_grammarData);
       ComputeTailsNullability(_grammarData);
@@ -111,13 +110,6 @@ namespace Irony.Parsing.Construction {
               group.Terminals.Add(term); 
           return; 
         }
-    }
-
-    private void FindClosingBraces() {
-      foreach(var term in _grammar.KeyTerms.Values) {
-        if (term.Flags.IsSet(TermFlags.IsCloseBrace))
-          _grammarData.ClosingBraces.Add(term.Text);
-      }
     }
 
     private void AssignWhitespaceAndDelimiters() {

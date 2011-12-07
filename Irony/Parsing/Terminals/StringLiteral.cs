@@ -213,7 +213,7 @@ namespace Irony.Parsing {
         
         //Check if it is doubled end symbol
         source.PreviewPosition = endPos;
-        if (details.IsSet((short)StringOptions.AllowsDoubledQuote) && source.MatchSymbol(endQuoteDoubled, !CaseSensitive)) {
+        if (details.IsSet((short)StringOptions.AllowsDoubledQuote) && source.MatchSymbol(endQuoteDoubled)) {
           source.PreviewPosition = endPos + endQuoteDoubled.Length;
           continue;
         }//checking for doubled end symbol
@@ -271,7 +271,7 @@ namespace Irony.Parsing {
       if (_startSymbolsFirsts.IndexOf(source.PreviewChar) < 0)
         return false;
       foreach (StringSubType subType in _subtypes) {
-        if (!source.MatchSymbol(subType.Start, !CaseSensitive))
+        if (!source.MatchSymbol(subType.Start))
           continue; 
         //We found start symbol
         details.StartSymbol = subType.Start;

@@ -223,7 +223,7 @@ namespace Irony.Samples {
 
         void identifier_ValidateToken(object sender, ParsingEventArgs e) {
           if (e.Context.CurrentToken.ValueString.Length > 4)
-            e.Context.CurrentToken = e.Context.Source.CreateErrorToken("Identifier cannot be longer than 4 characters"); 
+            e.Context.CurrentToken = e.Context.CreateErrorToken("Identifier cannot be longer than 4 characters"); 
         }//constructor
 
     }//class

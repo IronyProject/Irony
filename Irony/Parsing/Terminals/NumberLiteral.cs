@@ -241,7 +241,7 @@ namespace Irony.Parsing {
       if (!IsSet(NumberOptions.AllowLetterAfter)) {
         var current = context.Source.PreviewChar;
         if(char.IsLetter(current) || current == '_') {
-          context.CurrentToken = context.Source.CreateErrorToken(Resources.ErrNoLetterAfterNum); // "Number cannot be followed by a letter." 
+          context.CurrentToken = context.CreateErrorToken(Resources.ErrNoLetterAfterNum); // "Number cannot be followed by a letter." 
         }
       }
       base.OnValidateToken(context);

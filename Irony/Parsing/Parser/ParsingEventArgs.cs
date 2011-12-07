@@ -31,7 +31,7 @@ namespace Irony.Parsing {
       Context.CurrentToken = token; 
     }
     public void SetError(string errorMessage, params object[] messageArgs) {
-      Context.CurrentToken = Context.Source.CreateErrorToken(errorMessage, messageArgs); 
+      Context.CurrentToken = Context.CreateErrorToken(errorMessage, messageArgs); 
     }
     //Rejects the token; use it when there's more than one terminal that can be used to scan the input and ValidateToken is used
     // to help Scanner make the decision. Once the token is rejected, the scanner will move to the next Terminal (with lower priority)

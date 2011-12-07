@@ -24,7 +24,7 @@ namespace Irony.Parsing {
     }
 
     public override Token TryMatch(ParsingContext context, ISourceStream source) {
-      if (!source.MatchSymbol(OpenTag, true)) return null;
+      if (!source.MatchSymbol(OpenTag)) return null;
       source.PreviewPosition += OpenTag.Length;
       var endPos = source.Text.IndexOf(CloseTag, source.PreviewPosition);
       string content; 

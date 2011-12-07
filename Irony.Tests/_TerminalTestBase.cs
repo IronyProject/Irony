@@ -37,8 +37,7 @@ namespace Irony.Tests {
     }
     //Utilities
     public void TryMatch(string input) {
-      SourceStream source = new SourceStream(_language.ScannerData, 0);
-      source.SetText(input, 0, false);
+      SourceStream source = new SourceStream(input, _grammar.CaseSensitive, _context.TabWidth);
       _token = _terminal.TryMatch(_context, source);
     }
     public void CheckType(Type type) {

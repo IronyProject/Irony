@@ -6,14 +6,17 @@ using System.Text;
 namespace Irony.Parsing {
   public static class ParsingEnumExtensions {
 
-    public static bool IsSet(this TermFlags enumValue, TermFlags flag) {
-      return (enumValue & flag) != 0;
+    public static bool IsSet(this TermFlags flags, TermFlags flag) {
+      return (flags & flag) != 0;
     }
-    public static bool IsSet(this LanguageFlags enumValue, LanguageFlags flag) {
-      return (enumValue & flag) != 0;
+    public static bool IsSet(this LanguageFlags flags, LanguageFlags flag) {
+      return (flags & flag) != 0;
     }
-    public static bool IsSet(this ParseOptions enumValue, ParseOptions flag) {
-      return (enumValue & flag) != 0;
+    public static bool IsSet(this ParseOptions flags, ParseOptions flag) {
+      return (flags & flag) != 0;
+    }
+    public static bool IsSet(this TermListOptions flags, TermListOptions flag) {
+      return (flags & flag) != 0;
     }
   }//class
 

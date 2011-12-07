@@ -72,6 +72,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Clarion.cs" />
     <Compile Include="CSharp\CSharpGrammar.cs" />
     <Compile Include="DataGrammars\SampleCsvGrammar.cs" />
     <Compile Include="FullTextSearchQueryConverter\SearchGrammar.cs" />

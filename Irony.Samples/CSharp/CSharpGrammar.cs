@@ -297,7 +297,6 @@ namespace Irony.Samples.CSharp {
       //B.2.11 Enums
       var enum_declaration = new NonTerminal("enum_declaration");
       var enum_base_opt = new NonTerminal("enum_base_opt");
-      var enum_body = new NonTerminal("enum_body");
       var enum_member_declaration = new NonTerminal("enum_member_declaration");
       var enum_member_declarations = new NonTerminal("enum_member_declarations");
 
@@ -735,11 +734,10 @@ namespace Irony.Samples.CSharp {
       new_opt.Rule = Empty | "new";
 
       //B.2.11 Enums
-      enum_declaration.Rule = member_header + "enum" + identifier + enum_base_opt + Lbr + enum_body + Rbr + semi_opt;
+      enum_declaration.Rule = member_header + "enum" + identifier + enum_base_opt + Lbr + enum_member_declarations + Rbr + semi_opt;
       enum_base_opt.Rule = Empty | colon + integral_type;
-      enum_body.Rule = Empty | enum_member_declarations + comma_opt;
       enum_member_declaration.Rule = attributes_opt + identifier | attributes_opt + identifier + "=" + expression;
-      enum_member_declarations.Rule = MakePlusRule(enum_member_declarations, comma, enum_member_declaration);
+      enum_member_declarations.Rule = MakePlusRule(enum_member_declarations, comma, enum_member_declaration, TermListOptions.AllowTrailingDelimiter);
 
       //B.2.12 Delegates
       delegate_declaration.Rule = member_header + "delegate" + type_ref + identifier +

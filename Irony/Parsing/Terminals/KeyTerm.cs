@@ -50,9 +50,9 @@ namespace Irony.Parsing {
       // Reserved words are the opposite - they have the highest priority
       #endregion
       if (Flags.IsSet(TermFlags.IsReservedWord)) 
-        base.Priority = ReservedWordsPriority + Text.Length;
+        base.Priority = TerminalPriority.ReservedWords + Text.Length; //the longer the word, the higher is the priority
       else 
-        base.Priority = LowestPriority + Text.Length;
+        base.Priority = TerminalPriority.Low + Text.Length;
       //Setup editor info      
       if (this.EditorInfo != null) return;
       TokenType tknType = TokenType.Identifier;
@@ -72,7 +72,7 @@ namespace Irony.Parsing {
     }
 
     public override Token TryMatch(ParsingContext context, ISourceStream source) {
-      if (!source.MatchSymbol(Text, !Grammar.CaseSensitive))
+      if (!source.MatchSymbol(Text))
         return null;
       source.PreviewPosition += Text.Length;
       //In case of keywords, check that it is not followed by letter or digit

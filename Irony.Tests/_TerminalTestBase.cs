@@ -37,8 +37,8 @@ namespace Irony.Tests {
     }
     //Utilities
     public void TryMatch(string input) {
-      SourceStream source = new SourceStream(input, _grammar.CaseSensitive, _context.TabWidth);
-      _token = _terminal.TryMatch(_context, source);
+      _context.Source = new SourceStream(input, _grammar.CaseSensitive, _context.TabWidth);
+      _token = _terminal.TryMatch(_context, _context.Source);
     }
     public void CheckType(Type type) {
       Assert.IsNotNull(_token, "TryMatch returned null, while token was expected.");

@@ -737,7 +737,7 @@ namespace Irony.Samples.CSharp {
       enum_declaration.Rule = member_header + "enum" + identifier + enum_base_opt + Lbr + enum_member_declarations + Rbr + semi_opt;
       enum_base_opt.Rule = Empty | colon + integral_type;
       enum_member_declaration.Rule = attributes_opt + identifier | attributes_opt + identifier + "=" + expression;
-      enum_member_declarations.Rule = MakePlusRule(enum_member_declarations, comma, enum_member_declaration, TermListOptions.AllowTrailingDelimiter);
+      enum_member_declarations.Rule = MakeListRule(enum_member_declarations, comma, enum_member_declaration, TermListOptions.StarList | TermListOptions.AllowTrailingDelimiter);
 
       //B.2.12 Delegates
       delegate_declaration.Rule = member_header + "delegate" + type_ref + identifier +

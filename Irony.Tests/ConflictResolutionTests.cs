@@ -194,5 +194,6 @@ namespace Irony.Tests {
       Assert.AreEqual("fieldDef", nodes[1].Term.Name);
       Assert.AreEqual("methodDef", nodes[2].Term.Name);
     }
+
   }
 }

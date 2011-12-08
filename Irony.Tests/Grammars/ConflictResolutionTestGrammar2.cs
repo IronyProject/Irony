@@ -19,7 +19,7 @@ namespace Irony.Tests.Grammars {
       definition.Rule = fieldDef | propDef;
       fieldDef.Rule = fieldModifier + name + name + ";";
       propDef.Rule = propModifier + name + name + "{" + "}";
-      fieldModifier.Rule = ToTerm("public") + ReduceIf(";").ComesBefore("{") | "private" + ReduceIf(";").ComesBefore("{") | "readonly";
+      fieldModifier.Rule = ToTerm("public") + ReduceIf(";", comesBefore: "{") | "private" + ReduceIf(";", comesBefore: "{") | "readonly";
       propModifier.Rule = ToTerm("public") | "private" | "override";
 
       Root = definition;

@@ -77,29 +77,27 @@ namespace Irony.Parsing {
 
     // Contributed by Alexey Yakovlev (yallie)
     #region custom grammar hints
-    //TODO: API needs some refinement
+    
+    // TokenPreviewHint set on NonTerminal specifies condition when Non-terminal should be reduced
     TokenPreviewHint TokenPreviewHint { get; set; }
     internal void InsertCustomHints() {
       if (TokenPreviewHint != null && Productions.Count > 0) {
         foreach (var production in Productions) {
-          foreach (var lr0item in production.LR0Items) {
-            lr0item.Hints.Add(TokenPreviewHint);
-          }
+          var items = production.LR0Items;
+          var reduceItem = items[items.Count - 1];
+          reduceItem.Hints.Add(TokenPreviewHint); 
         }
       }
     }
-    public TokenPreviewHint ReduceIf(string first) {
-      return TokenPreviewHint = new TokenPreviewHint(ParserActionType.Reduce, first);
+
+    public TokenPreviewHint ReduceIf(string thisSymbol, string[] comesBefore) {
+      return TokenPreviewHint = new TokenPreviewHint(ParserActionType.Reduce, thisSymbol, comesBefore);
     }
-    public TokenPreviewHint ReduceIf(Terminal first) {
-      return TokenPreviewHint = new TokenPreviewHint(ParserActionType.Reduce, first);
+    public TokenPreviewHint ReduceIf(Terminal thisSymbol, Terminal[] comesBefore) {
+      return TokenPreviewHint = new TokenPreviewHint(ParserActionType.Reduce, thisSymbol, comesBefore);
     }
-    public TokenPreviewHint ShiftIf(string first) {
-      return TokenPreviewHint = new TokenPreviewHint(ParserActionType.Shift, first);
-    }
-    public TokenPreviewHint ShiftIf(Terminal first) {
-      return TokenPreviewHint = new TokenPreviewHint(ParserActionType.Shift, first);
-    }
+
+
     #endregion
 
     #region NodeCaptionTemplate utilities

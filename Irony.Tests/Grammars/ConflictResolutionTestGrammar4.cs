@@ -33,16 +33,19 @@ namespace Irony.Tests.Grammars {
       propModifierList.Rule = MakeStarRule(propModifierList, propModifier);
       methodModifierList.Rule = MakeStarRule(methodModifierList, methodModifier);
 
-      // conflict resolution
-      fieldModifierList.ReduceIf(";").ComesBefore("(", "{");
-      propModifierList.ReduceIf("{").ComesBefore(";", "(");
-
       // That's the key of the problem: 3 modifiers have common members
       //   so parser automaton has hard time deciding which modifiers list to produce - 
       //   is it a field, prop or method we are beginning to parse?
       fieldModifier.Rule = ToTerm("public") | "private" | "readonly" | "volatile";
       propModifier.Rule = ToTerm("public") | "private" | "readonly" | "override";
       methodModifier.Rule = ToTerm("public") | "private" | "override";
+
+      // conflict resolution
+      fieldModifier.ReduceIf(thisSymbol: ";", comesBefore: new string[] { "(", "{"});
+      propModifier.ReduceIf(thisSymbol: "{", comesBefore: new string[] { ";", "(" });
+      fieldModifierList.ReduceIf(thisSymbol: ";", comesBefore: new string[] { "(", "{" });
+      propModifierList.ReduceIf(thisSymbol: "{", comesBefore: new string[] { ";", "(" });
+
 
       MarkReservedWords("public", "private", "readonly", "volatile", "override");
     } 

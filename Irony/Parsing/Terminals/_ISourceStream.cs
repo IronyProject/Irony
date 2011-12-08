@@ -66,9 +66,7 @@ namespace Irony.Parsing {
     /// <returns>New token.</returns>
     Token CreateToken(Terminal terminal, object value);
 
-    /// <summary>
-    /// Tries to match the symbol with the text at current preview position.
-    /// </summary>
+    /// <summary>Tries to match the symbol with the text at current preview position. </summary>
     /// <param name="symbol">A symbol to match</param>
     /// <returns>True if there is a match; otherwise, false.</returns>
     bool MatchSymbol(string symbol);

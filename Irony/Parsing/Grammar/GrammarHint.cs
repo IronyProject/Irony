@@ -80,49 +80,33 @@ namespace Irony.Parsing {
 
   // Semi-automatic conflict resolution hint
   public class TokenPreviewHint : CustomGrammarHint {
-    public int MaxPreviewTokens { get; set; } // preview limit
-    private string FirstString { get; set; }
-    private StringSet OtherStrings { get; set; }
-    private Terminal FirstTerminal { get; set; }
-    private HashSet<Terminal> OtherTerminals { get; set; }
+    public int MaxPreviewTokens = 200;
+    private string _firstString;
+    private StringSet _beforeStrings = new StringSet();
+    private Terminal _firstTerminal;
+    private TerminalSet _beforeTerminals = new TerminalSet();
 
     private TokenPreviewHint(ParserActionType action) : base(action) {
-      FirstString = String.Empty;
-      OtherStrings = new StringSet();
-      FirstTerminal = null;
-      OtherTerminals = new HashSet<Terminal>();
+      _firstString = String.Empty;
+      _firstTerminal = null;
       MaxPreviewTokens = 0;
     }
 
-    public TokenPreviewHint(ParserActionType action, string first) : this(action) {
-      FirstString = first;
+    public TokenPreviewHint(ParserActionType action, string first, string[] comesBefore) : this(action) {
+      _firstString = first;
+      _beforeStrings.AddRange(comesBefore); 
     }
 
-    public TokenPreviewHint(ParserActionType action, Terminal first) : this(action) {
-      FirstTerminal = first;
-    }
-
-    public TokenPreviewHint ComesBefore(params string[] others) {
-      OtherStrings.AddRange(others); 
-      return this;
-    }
-
-    public TokenPreviewHint ComesBefore(params Terminal[] others) {
-      OtherTerminals.UnionWith(others); 
-      return this;
-    }
-
-    public TokenPreviewHint SetMaxPreview(int max) {
-      MaxPreviewTokens = max;
-      return this;
+    public TokenPreviewHint(ParserActionType action, Terminal first, Terminal[] comesBefore) : this(action) {
+      _firstTerminal = first;
     }
 
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
       // convert strings to terminals, if needed
-      FirstTerminal = FirstTerminal ?? Grammar.ToTerm(FirstString);
-      if (OtherTerminals.Count == 0 && OtherStrings.Count > 0)
-        Array.ForEach(OtherStrings.Select(s => Grammar.ToTerm(s)).ToArray(), term => OtherTerminals.Add(term));
+      _firstTerminal = _firstTerminal ?? Grammar.ToTerm(_firstString);
+      if (_beforeStrings.Count > 0)
+        _beforeTerminals.UnionWith(_beforeStrings.Select(s => Grammar.ToTerm(s))); 
     }
 
     public override bool Match(ConflictResolutionArgs args) {
@@ -132,9 +116,9 @@ namespace Irony.Parsing {
         var count = 0;
         var token = args.Scanner.GetToken();
         while (token != null && token.Terminal != args.Context.Language.Grammar.Eof) {
-          if (token.Terminal == FirstTerminal)
+          if (token.Terminal == _firstTerminal)
             return true;
-          if (OtherTerminals.Contains(token.Terminal))
+          if (_beforeTerminals.Contains(token.Terminal))
             return false;
           if (++count > MaxPreviewTokens && MaxPreviewTokens > 0)
             return false;

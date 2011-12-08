@@ -262,8 +262,8 @@ namespace Irony.Parsing {
       return Context.CurrentToken;
     }
     public void VsSetSource(string text, int offset) {
-      var oldLoc = Context.Source.Location;
-      var newLoc = new SourceLocation(offset, oldLoc.Line + 1, 0);
+      var line = Context.Source==null ? 0 : Context.Source.Location.Line;
+      var newLoc = new SourceLocation(offset, line + 1, 0);
       Context.Source = new SourceStream(text, Context.Language.Grammar.CaseSensitive, Context.TabWidth, newLoc); 
     }
     #endregion

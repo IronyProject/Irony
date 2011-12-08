@@ -191,7 +191,9 @@ namespace Irony.Parsing {
       if (_prefixesFirsts.IndexOf(source.PreviewChar) < 0)
         return;
       foreach (string pfx in Prefixes) {
-        if (!source.MatchSymbol(pfx)) continue; 
+        // Prefixes are usually case insensitive, even if language is case-sensitive. So we cannot use source.MatchSymbol here,
+        // we need case-insensitive comparison
+        if (string.Compare(source.Text, source.PreviewPosition, pfx, 0, pfx.Length, ignoreCase: true) != 0) continue;
         //We found prefix
         details.Prefix = pfx;
         source.PreviewPosition += pfx.Length;
@@ -210,7 +212,9 @@ namespace Irony.Parsing {
     protected virtual void ReadSuffix(ISourceStream source, CompoundTokenDetails details) {
       if (_suffixesFirsts.IndexOf(source.PreviewChar) < 0) return;
       foreach (string sfx in Suffixes) {
-        if (!source.MatchSymbol(sfx)) continue;
+        //Suffixes are usually case insensitive, even if language is case-sensitive. So we cannot use source.MatchSymbol here,
+        // we need case-insensitive comparison
+        if (string.Compare(source.Text, source.PreviewPosition, sfx, 0, sfx.Length, ignoreCase: true) != 0) continue;
         //We found suffix
         details.Suffix = sfx;
         source.PreviewPosition += sfx.Length;

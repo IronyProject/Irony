@@ -399,8 +399,9 @@ namespace Irony.Samples.Java
 			variable_declarators.Rule = MakePlusRule(variable_declarators, COMMA, variable_declarator);
 			variable_declarator.Rule  = templated_qualified_name + dims;
 			variable_declarator.Rule |= templated_qualified_name + dims + ASSIGN + variable_initializer;
-			
-			variable_initializers.Rule = MakeStarRule(variable_initializers, COMMA, variable_initializer, TermListOptions.AllowTrailingDelimiter);
+
+      //variable_initializers.Rule = MakeStarRule(variable_initializers, COMMA, variable_initializer, TermListOptions.AllowTrailingDelimiter);
+      variable_initializers.Rule = MakeListRule(variable_initializers, COMMA, variable_initializer, TermListOptions.StarList | TermListOptions.AllowTrailingDelimiter);
 			variable_initializer.Rule = array_initializer;
 			variable_initializer.Rule |= expression;
 
@@ -549,11 +550,13 @@ namespace Irony.Samples.Java
 			#endregion
 
 			#region annotations
-			element_value_pairs.Rule = MakeStarRule(element_value_pairs, COMMA, element_value_pair, TermListOptions.AllowTrailingDelimiter);
-			element_value_pair.Rule = identifier + ASSIGN + element_value;
+      //element_value_pairs.Rule = MakeStarRule(element_value_pairs, COMMA, element_value_pair, TermListOptions.AllowTrailingDelimiter);
+      element_value_pairs.Rule = MakeListRule(element_value_pairs, COMMA, element_value_pair, TermListOptions.StarList | TermListOptions.AllowTrailingDelimiter);
+      element_value_pair.Rule = identifier + ASSIGN + element_value;
 			element_value_array_initializer.Rule = L_BRC + element_values + R_BRC;
-			element_values.Rule = MakeStarRule(element_values, COMMA, element_value, TermListOptions.AllowTrailingDelimiter);
-			element_value.Rule = annotation;
+			//element_values.Rule = MakeStarRule(element_values, COMMA, element_value, TermListOptions.AllowTrailingDelimiter);
+      element_values.Rule = MakeListRule(element_values, COMMA, element_value, TermListOptions.StarList | TermListOptions.AllowTrailingDelimiter);
+      element_value.Rule = annotation;
 			element_value.Rule |= element_value_array_initializer;
 			element_value.Rule |= expression;
 
@@ -579,8 +582,9 @@ namespace Irony.Samples.Java
 			#region enum
 			enum_body.Rule = enum_constants + enum_body_declarations_opt;
 			enum_body.Rule |= COMMA + enum_body_declarations_opt;
-			enum_constants.Rule = MakeStarRule(enum_constants, COMMA, enum_constant, TermListOptions.AllowTrailingDelimiter);
-			enum_constant.Rule  = annotations + identifier;
+      //enum_constants.Rule = MakeStarRule(enum_constants, COMMA, enum_constant, TermListOptions.AllowTrailingDelimiter);
+      enum_constants.Rule = MakeListRule(enum_constants, COMMA, enum_constant, TermListOptions.StarList | TermListOptions.AllowTrailingDelimiter);
+      enum_constant.Rule = annotations + identifier;
 			enum_constant.Rule |= annotations + identifier + arguments;
 			enum_constant.Rule |= annotations + identifier + arguments + L_BRC + class_body + R_BRC;
 			enum_constant.Rule |= annotations + identifier             + L_BRC + class_body + R_BRC;

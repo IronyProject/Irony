@@ -50,7 +50,7 @@ namespace Irony.Parsing {
   public enum Associativity {
     Left,
     Right,
-    Neutral  //don't know what that means 
+    Neutral  //honestly don't know what that means, but it is mentioned in literature 
   }
 
   [Flags]
@@ -58,8 +58,12 @@ namespace Irony.Parsing {
     None = 0,
     AllowEmpty = 0x01,
     AllowTrailingDelimiter = 0x02,
+
+    // In some cases this hint would help to resolve the conflicts that come up when you have two lists separated by a nullable term.
+    // This hint would resolve the conflict, telling the parser to include as many as possible elements in the first list, and the rest, if any, would go
+    // to the second list. By default, this flag is included in Star and Plus lists. 
     AddPreferShiftHint = 0x04,
-    //Combinations - use these
+    //Combinations - use these 
     PlusList = AddPreferShiftHint, 
     StarList = AllowEmpty | AddPreferShiftHint,
   }
@@ -329,12 +333,17 @@ namespace Irony.Parsing {
       return MakeListRule(listNonTerminal, delimiter, listMember, TermListOptions.StarList);
     }
 
-    [Obsolete("Method overload is obsolete - use MakeListRule instead. Notice different order of parameters!")]
+    //Note: Here and in other make-list methods with delimiter. More logical would be the parameters order (list, listMember, delimiter=null).
+    // But for historical reasons it's the way it is, and I think it's too late to change and to reverse the order of delimiter and listMember.
+    // Too many existing grammars would be broken. The big trouble is that these two parameters are of the same type, so compiler would not 
+    // detect that order had changed (if we change it) for existing grammars. The grammar would stop working at runtime, and it would 
+    // require some effort to debug and find the cause of the problem. For these reasons, we leave it as is. 
+    [Obsolete("Method overload is obsolete - use MakeListRule instead")]
     public BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember, TermListOptions options) {
       return MakeListRule(listNonTerminal, delimiter, listMember, options);
    }
 
-    [Obsolete("Method overload is obsolete - use MakeListRule instead. Notice different order of parameters!")]
+    [Obsolete("Method overload is obsolete - use MakeListRule instead")]
     public BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember, TermListOptions options) {
       return MakeListRule(listNonTerminal, delimiter, listMember, options | TermListOptions.StarList);
     }
@@ -379,11 +388,17 @@ namespace Irony.Parsing {
     protected GrammarHint ResolveInCode() {
       return new GrammarHint(HintType.ResolveInCode, null); 
     }
-    protected TokenPreviewHint ReduceIf(string symbol) {
-      return new TokenPreviewHint(ParserActionType.Reduce, symbol);
+    protected TokenPreviewHint ReduceIf(string thisSymbol, params string[] comesBefore) {
+      return new TokenPreviewHint(ParserActionType.Reduce, thisSymbol, comesBefore);
     }
-    protected TokenPreviewHint ShiftIf(string symbol) {
-      return new TokenPreviewHint(ParserActionType.Shift, symbol);
+    protected TokenPreviewHint ReduceIf(Terminal thisSymbol, params Terminal[] comesBefore) {
+      return new TokenPreviewHint(ParserActionType.Reduce, thisSymbol, comesBefore);
+    }
+    protected TokenPreviewHint ShiftIf(string thisSymbol, params string[] comesBefore) {
+      return new TokenPreviewHint(ParserActionType.Shift, thisSymbol, comesBefore);
+    }
+    protected TokenPreviewHint ShiftIf(Terminal thisSymbol, params Terminal[] comesBefore) {
+      return new TokenPreviewHint(ParserActionType.Shift, thisSymbol, comesBefore);
     }
     protected GrammarHint ImplyPrecedenceHere(int precedence) {
       return ImplyPrecedenceHere(precedence, Associativity.Left); 

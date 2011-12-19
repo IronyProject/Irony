@@ -220,7 +220,8 @@ namespace Irony.Parsing {
 
     private void MatchTerminals() {
       Token priorToken = null;
-      foreach (Terminal term in Context.CurrentTerminals) {
+      for (int i=0; i<Context.CurrentTerminals.Count; i++) {
+        var term = Context.CurrentTerminals[i];
         // If we have priorToken from prior term in the list, check if prior term has higher priority than this term; 
         //  if term.Priority is lower then we don't need to check anymore, higher priority (in prior token) wins
         // Note that terminals in the list are sorted in descending priority order

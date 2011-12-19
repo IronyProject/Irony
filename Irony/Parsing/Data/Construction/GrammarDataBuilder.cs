@@ -163,8 +163,6 @@ namespace Irony.Parsing.Construction {
           Production prod = CreateProduction(nt, prodOperands);
           nt.Productions.Add(prod);
         } //foreach prodOperands
-        // insert pending custom hints in all productions
-        nt.InsertCustomHints();
       }
     }
 
@@ -207,11 +205,6 @@ namespace Irony.Parsing.Construction {
         }
         if(rv.Flags.IsSet(TermFlags.IsPunctuation)) continue;
       }//foreach
-      var lvalue = production.LValue;
-      //Set IsListBuilder flag
-      if (production.RValues.Count > 0 && production.RValues[0] == production.LValue
-          && lvalue.Flags.IsSet(TermFlags.IsList))
-        production.Flags |= ProductionFlags.IsListBuilder;
     }//method
 
     private static void ComputeNonTerminalsNullability(GrammarData data) {
@@ -233,7 +226,7 @@ namespace Irony.Parsing.Construction {
           return true; //decided, Nullable
         }//if 
         //If production has terminals, it is not nullable and cannot contribute to nullability
-        if (prod.IsSet(ProductionFlags.HasTerminals)) continue;
+        if (prod.Flags.IsSet(ProductionFlags.HasTerminals)) continue;
         //Go thru all elements of production and check nullability
         bool allNullable = true;
         foreach (BnfTerm child in prod.RValues) {
@@ -281,7 +274,7 @@ namespace Irony.Parsing.Construction {
         }//if transient
         //Validate error productions
         foreach(var prod in nt.Productions)
-          if(prod.IsSet(ProductionFlags.IsError)) {
+          if(prod.Flags.IsSet(ProductionFlags.IsError)) {
             var lastTerm = prod.RValues[prod.RValues.Count -1];
             if (!(lastTerm is Terminal) || lastTerm == _grammar.SyntaxError)
               _language.Errors.Add(GrammarErrorLevel.Warning, null, Resources.ErrLastTermOfErrorProd, nt.Name);

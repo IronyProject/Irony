@@ -76,14 +76,8 @@ namespace Irony.Parsing {
       get { return Text == null ? 0 : Text.Length; }
     }
 
-    public Token OtherBrace {  //matching opening/closing brace
-      get { return _otherBrace; }
-    } Token _otherBrace;
-
-    public static void LinkMatchingBraces(Token openingBrace, Token closingBrace) {
-      openingBrace._otherBrace = closingBrace;
-      closingBrace._otherBrace = openingBrace;
-    }
+    //matching opening/closing brace
+    public Token OtherBrace;
 
     public short ScannerState; //Scanner state after producing token 
 

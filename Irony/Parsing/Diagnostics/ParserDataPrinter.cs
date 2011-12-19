@@ -50,9 +50,8 @@ namespace Irony.Parsing {
         sb.Append("  Transitions: ");
         bool atFirst = true; 
         foreach (BnfTerm key in state.Actions.Keys) {
-          ParserAction action = state.Actions[key];
-          var hasTransitions = action.ActionType == ParserActionType.Shift || action.ActionType == ParserActionType.Operator;
-          if (!hasTransitions)
+          var action = state.Actions[key] as ShiftParserAction;
+          if (action == null)
             continue;
           if (!atFirst) sb.Append(", ");
           atFirst = false; 

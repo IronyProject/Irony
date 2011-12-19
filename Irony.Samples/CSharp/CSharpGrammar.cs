@@ -811,9 +811,9 @@ State S188 (Inadequate)
           }
           //if we see ">", then it is type argument, not operator
           if (previewSym == ">")
-            args.Result = ParserActionType.Shift;
+            args.Result = PreferredActionType.Shift;
           else
-            args.Result = ParserActionType.Reduce;
+            args.Result = PreferredActionType.Reduce;
           args.Scanner.EndPreview(true); //keep previewed tokens; important to keep ">>" matched to two ">" symbols, not one combined symbol (see method below)
           return; 
       }

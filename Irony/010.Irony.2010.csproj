@@ -79,6 +79,18 @@
     <None Include="Ast\AstBuilder.cs" />
     <None Include="Ast\AstNodeConfig.cs" />
     <Compile Include="Interfaces.cs" />
+    <Compile Include="Parsing\ConflictResolution\ImpliedPrecedenceHint.cs" />
+    <Compile Include="Parsing\ConflictResolution\PrecedenceHint.cs" />
+    <Compile Include="Parsing\ConflictResolution\PreferredActionHint.cs" />
+    <Compile Include="Parsing\ConflictResolution\ResolveInCodeHint.cs" />
+    <Compile Include="Parsing\Parser\ParserActions\AcceptParserAction.cs" />
+    <Compile Include="Parsing\ConflictResolution\ConditionalParserAction.cs" />
+    <Compile Include="Parsing\Parser\ParserActions\ErrorRecoveryParserAction.cs" />
+    <Compile Include="Parsing\ConflictResolution\TokenPreviewParserAction.cs" />
+    <Compile Include="Parsing\Parser\ParserActions\ReduceParserActions.cs" />
+    <Compile Include="Parsing\ConflictResolution\PrecedenceBasedParserAction.cs" />
+    <Compile Include="Parsing\Parser\ParserActions\_ParserAction.cs" />
+    <Compile Include="Parsing\Parser\ParserActions\ShiftParserAction.cs" />
     <Compile Include="Parsing\Grammar\GrammarError.cs" />
     <Compile Include="Parsing\Grammar\OperatorInfo.cs" />
     <Compile Include="Parsing\Grammar\TermReportGroups.cs" />
@@ -87,7 +99,6 @@
     <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Utilities\OperatorUtility.cs" />
     <Compile Include="Utilities\StringUtils.cs" />
-    <Compile Include="Parsing\Parser\CoreParser_ErrorHandling.cs" />
     <Compile Include="Parsing\Diagnostics\ParserTrace.cs" />
     <Compile Include="Parsing\Terminals\DataLiteralBase.cs" />
     <Compile Include="Parsing\Terminals\DsvLiteral.cs" />

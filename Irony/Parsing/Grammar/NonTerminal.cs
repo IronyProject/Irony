@@ -70,33 +70,18 @@ namespace Irony.Parsing {
       base.Init(grammarData);
       if (!string.IsNullOrEmpty(NodeCaptionTemplate))
         ConvertNodeCaptionTemplate();
-      if (TokenPreviewHint != null)
-        TokenPreviewHint.Init(grammarData);
     }
     #endregion
 
     // Contributed by Alexey Yakovlev (yallie)
-    #region custom grammar hints
-    
-    // TokenPreviewHint set on NonTerminal specifies condition when Non-terminal should be reduced
-    TokenPreviewHint TokenPreviewHint { get; set; }
-    internal void InsertCustomHints() {
-      if (TokenPreviewHint != null && Productions.Count > 0) {
-        foreach (var production in Productions) {
-          var items = production.LR0Items;
-          var reduceItem = items[items.Count - 1];
-          reduceItem.Hints.Add(TokenPreviewHint); 
-        }
-      }
+    #region Grammar hints
+    // Adds a hint at the end of all productions
+    public void AddHintToAll(GrammarHint hint) {
+      if (this.Rule == null)
+        throw new Exception("Rule property must be set on non-terminal before calling AddHintToAll.");
+      foreach (var plusList in this.Rule.Data)
+        plusList.Add(hint);
     }
-
-    public TokenPreviewHint ReduceIf(string thisSymbol, string[] comesBefore) {
-      return TokenPreviewHint = new TokenPreviewHint(ParserActionType.Reduce, thisSymbol, comesBefore);
-    }
-    public TokenPreviewHint ReduceIf(Terminal thisSymbol, Terminal[] comesBefore) {
-      return TokenPreviewHint = new TokenPreviewHint(ParserActionType.Reduce, thisSymbol, comesBefore);
-    }
-
 
     #endregion
 

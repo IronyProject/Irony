@@ -28,6 +28,7 @@ namespace Irony.Parsing {
     public ParserState InitialState; //main initial state
     public ParserStateTable InitialStates = new ParserStateTable(); // Lookup table: AugmRoot => InitialState
     public readonly ParserStateList States = new ParserStateList();
+    public ParserAction ErrorAction; 
     public ParserData(LanguageData language) {
       Language = language;
     }
@@ -37,7 +38,7 @@ namespace Irony.Parsing {
     public readonly string Name;
     public readonly ParserActionTable Actions = new ParserActionTable();
     //Defined for states with a single reduce item; Parser.GetAction returns this action if it is not null.
-    public ParserAction DefaultAction;
+    public ParserAction DefaultReduceAction;
     //Expected terms contains terminals is to be used in 
     //Parser-advise-to-Scanner facility would use it to filter current terminals when Scanner has more than one terminal for current char,
     //   it can ask Parser to filter the list using the ExpectedTerminals in current Parser state. 
@@ -68,66 +69,12 @@ namespace Irony.Parsing {
   public class ParserStateHash : Dictionary<string, ParserState> { }
   public class ParserStateTable : Dictionary<NonTerminal, ParserState> { }
 
-  public enum ParserActionType {
-    Shift,
-    Reduce,
-    Operator,  //shift or reduce depending on operator associativity and precedence
-    Code, //conflict resolution made in resolution method in grammar or in custom grammar hint;
-    Accept,
-  }
-
-  public class ParserAction {
-    public ParserActionType ActionType {get;private set;}
-    public ParserState NewState {get;private set;}        // for Shift action
-    public Production ReduceProduction {get;private set;} // for Reduce action
-    private Action<ConflictResolutionArgs> ConflictResolver {get;set;}
-
-    internal ParserAction(ParserActionType actionType, ParserState newState, Production reduceProduction) {
-      this.ActionType = actionType;
-      this.NewState = newState;
-      this.ReduceProduction = reduceProduction;
-      this.ConflictResolver = null;
-    }
-
-    internal ParserAction(ParserState newState, Production reduceProduction, Action<ConflictResolutionArgs> conflictResolver)
-      : this(ParserActionType.Code, newState, reduceProduction) {
-      ConflictResolver = conflictResolver;
-    }
-
-    internal void ChangeToOperatorAction(Production reduceProduction) {
-      ActionType = ParserActionType.Operator; 
-      ReduceProduction = reduceProduction;
-    }
-
-    public virtual ConflictResolutionArgs ResolveConflict(Grammar grammar, ParsingContext context) {
-      var args = new ConflictResolutionArgs(context, this);
-      // custom conflict resolver such as custom grammar hint has a higher priority than OnResolvingConflict handler
-      var resolver = ConflictResolver ?? grammar.OnResolvingConflict;
-      resolver(args);
-      return args;
-    }
-
-    public override string ToString() {
-      switch (this.ActionType) {
-        case ParserActionType.Shift: return string.Format(Resources.LabelActionShift, NewState.Name);
-        case ParserActionType.Reduce: return string.Format(Resources.LabelActionReduce, ReduceProduction.ToStringQuoted());
-        case ParserActionType.Operator: return string.Format(Resources.LabelActionOp, NewState.Name, ReduceProduction.ToStringQuoted());
-        case ParserActionType.Accept: return Resources.LabelActionAccept;
-      }
-      return Resources.LabelActionUnknown; //should never happen
-    }
-  }//class ParserAction
-
-  public class ParserActionTable : Dictionary<BnfTerm, ParserAction> { }
-
   [Flags]
   public enum ProductionFlags {
     None = 0,
     HasTerminals = 0x02, //contains terminal
     IsError = 0x04,      //contains Error terminal
     IsEmpty = 0x08,
-    //Indicates that it is a main production for list formation, in the form: "list->list+delim?+elem"
-    IsListBuilder = 0x10,
   }
 
   public class Production {
@@ -139,10 +86,6 @@ namespace Irony.Parsing {
     public Production(NonTerminal lvalue) {
       LValue = lvalue;
     }//constructor
-
-    public bool IsSet(ProductionFlags flag) {
-      return (Flags & flag) != ProductionFlags.None;
-    }
 
     public string ToStringQuoted() {
       return "'" + ToString() + "'";
@@ -169,26 +112,6 @@ namespace Irony.Parsing {
   }//Production class
 
   public class ProductionList : List<Production> { }
-
-  /// <summary>
-  /// The class provides arguments for custom conflict resolution grammar method.
-  /// </summary>
-  public class ConflictResolutionArgs : EventArgs {
-    public readonly ParsingContext Context;
-    public readonly Scanner Scanner; 
-    public readonly ParserState NewShiftState;
-    //Results 
-    public ParserActionType Result; //shift, reduce or operator
-    public Production ReduceProduction; //defaulted to  
-    //constructor
-    internal ConflictResolutionArgs(ParsingContext context, ParserAction conflictAction) {
-      Context = context;
-      Scanner = context.Parser.Scanner;
-      NewShiftState = conflictAction.NewState;
-      ReduceProduction = conflictAction.ReduceProduction;
-      Result = ParserActionType.Shift; //make shift by default
-    }
-  }//class
 
 
 }//namespace

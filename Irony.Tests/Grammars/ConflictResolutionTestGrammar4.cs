@@ -41,10 +41,12 @@ namespace Irony.Tests.Grammars {
       methodModifier.Rule = ToTerm("public") | "private" | "override";
 
       // conflict resolution
-      fieldModifier.ReduceIf(thisSymbol: ";", comesBefore: new string[] { "(", "{"});
-      propModifier.ReduceIf(thisSymbol: "{", comesBefore: new string[] { ";", "(" });
-      fieldModifierList.ReduceIf(thisSymbol: ";", comesBefore: new string[] { "(", "{" });
-      propModifierList.ReduceIf(thisSymbol: "{", comesBefore: new string[] { ";", "(" });
+      var fieldHint = new TokenPreviewHint(PreferredActionType.Reduce, thisSymbol: ";", comesBefore: new string[] { "(", "{"});
+      fieldModifier.AddHintToAll(fieldHint);
+      fieldModifierList.AddHintToAll(fieldHint); 
+      var propHint = new TokenPreviewHint(PreferredActionType.Reduce, thisSymbol: "{", comesBefore: new string[] { ";", "(" });
+      propModifier.AddHintToAll(propHint);
+      propModifierList.AddHintToAll(propHint);
 
 
       MarkReservedWords("public", "private", "readonly", "volatile", "override");

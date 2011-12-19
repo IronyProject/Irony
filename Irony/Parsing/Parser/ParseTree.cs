@@ -34,7 +34,6 @@ namespace Irony.Parsing {
     public int Precedence;
     public Associativity Associativity;
     public SourceSpan Span;
-    public Production ReduceProduction;
     //Making ChildNodes property (not field) following request by Matt K, Bill H
     public ParseTreeNodeList ChildNodes {get; private set;}
     //A list of of child nodes passed thru mapping operation using AstPartsMap. By default, the same as ChildNodes
@@ -46,9 +45,6 @@ namespace Irony.Parsing {
 
     private ParseTreeNode(){
       ChildNodes = MappedChildNodes = new ParseTreeNodeList();
-    }
-    public ParseTreeNode(BnfTerm term) : this() {
-      Term = term;
     }
 
     public ParseTreeNode(Token token) : this()  {
@@ -64,21 +60,11 @@ namespace Irony.Parsing {
       State = initialState;
     }
 
-    public ParseTreeNode(Production reduceProduction, SourceSpan span)  : this(){
-      ReduceProduction = reduceProduction;
+    public ParseTreeNode(NonTerminal term, SourceSpan span)  : this(){
+      Term = term;
       Span = span; 
-      Term = ReduceProduction.LValue;
-      Precedence = Term.Precedence;
     }
     
-    public ParseTreeNode(object node, BnfTerm term, int precedence, Associativity associativity, SourceSpan span)
-        : this()  {
-      AstNode = node;
-      Term = term;
-      Precedence = precedence;
-      Associativity = associativity;
-    }
-
     public override string ToString() {
       if (Term == null) 
         return "(S0)"; //initial state node
@@ -106,6 +92,20 @@ namespace Irony.Parsing {
     }
     public ParseTreeNode LastChild {
       get { return MappedChildNodes[MappedChildNodes.Count - 1]; }
+    }
+
+    /// <summary>Returns true if the node is punctuation or it is transient with empty child list.</summary>
+    /// <returns>True if parser can safely ignore this node.</returns>
+    public bool CanIgnore() {
+      if (Term.Flags.IsSet(TermFlags.IsPunctuation))
+        return true;
+      if (Term.Flags.IsSet(TermFlags.IsTransient) && ChildNodes.Count == 0)
+        return true;
+      return false; 
+    }
+
+    public bool IsOperator() {
+      return Term.Flags.IsSet(TermFlags.IsOperator);
     }
 
   }//class

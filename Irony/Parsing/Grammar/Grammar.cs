@@ -67,6 +67,23 @@ namespace Irony.Parsing {
     PlusList = AddPreferShiftHint, 
     StarList = AllowEmpty | AddPreferShiftHint,
   }
+
+  /// <summary>
+  /// The class provides arguments for custom conflict resolution grammar method.
+  /// </summary>
+  public class ConflictResolutionArgs : EventArgs {
+    public readonly ParsingContext Context;
+    public readonly Scanner Scanner;
+    //Results 
+    public PreferredActionType Result; //shift, reduce or operator
+    //constructor
+    internal ConflictResolutionArgs(ParsingContext context, ParserAction conflictAction) {
+      Context = context;
+      Scanner = context.Parser.Scanner;
+    }
+  }//class
+
+
   #endregion
 
   public partial class Grammar {
@@ -380,31 +397,32 @@ namespace Irony.Parsing {
 
     #region Hint utilities
     protected GrammarHint PreferShiftHere() {
-      return new GrammarHint(HintType.ResolveToShift, null); 
+      return new PreferredActionHint(PreferredActionType.Shift); 
     }
     protected GrammarHint ReduceHere() {
-      return new GrammarHint(HintType.ResolveToReduce, null);
+      return new PreferredActionHint(PreferredActionType.Reduce); 
     }
     protected GrammarHint ResolveInCode() {
-      return new GrammarHint(HintType.ResolveInCode, null); 
+      throw new NotImplementedException("ResolveInCode not implemented.");
+      //return new GrammarHint(HintType.ResolveInCode, null); 
     }
     protected TokenPreviewHint ReduceIf(string thisSymbol, params string[] comesBefore) {
-      return new TokenPreviewHint(ParserActionType.Reduce, thisSymbol, comesBefore);
+      return new TokenPreviewHint(PreferredActionType.Reduce, thisSymbol, comesBefore);
     }
     protected TokenPreviewHint ReduceIf(Terminal thisSymbol, params Terminal[] comesBefore) {
-      return new TokenPreviewHint(ParserActionType.Reduce, thisSymbol, comesBefore);
+      return new TokenPreviewHint(PreferredActionType.Reduce, thisSymbol, comesBefore);
     }
     protected TokenPreviewHint ShiftIf(string thisSymbol, params string[] comesBefore) {
-      return new TokenPreviewHint(ParserActionType.Shift, thisSymbol, comesBefore);
+      return new TokenPreviewHint(PreferredActionType.Shift, thisSymbol, comesBefore);
     }
     protected TokenPreviewHint ShiftIf(Terminal thisSymbol, params Terminal[] comesBefore) {
-      return new TokenPreviewHint(ParserActionType.Shift, thisSymbol, comesBefore);
+      return new TokenPreviewHint(PreferredActionType.Shift, thisSymbol, comesBefore);
     }
     protected GrammarHint ImplyPrecedenceHere(int precedence) {
       return ImplyPrecedenceHere(precedence, Associativity.Left); 
     }
     protected GrammarHint ImplyPrecedenceHere(int precedence, Associativity associativity) {
-      var hint = new GrammarHint(HintType.Precedence, null);
+      var hint = new ImpliedPrecedenceHint(precedence, associativity);
       hint.Precedence = precedence;
       hint.Associativity = associativity;
       return hint; 

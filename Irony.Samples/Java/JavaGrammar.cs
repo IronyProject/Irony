@@ -40,7 +40,7 @@ namespace Irony.Samples.Java
 						args.Scanner.BeginPreview();
 						var preview = args.Scanner.GetToken();
 						string previewSym = preview.Terminal.Name;
-						args.Result = previewSym == "]" ? ParserActionType.Reduce : ParserActionType.Shift;
+						args.Result = previewSym == "]" ? PreferredActionType.Reduce : PreferredActionType.Shift;
 						args.Scanner.EndPreview(true);
 						return;
 					}
@@ -73,10 +73,10 @@ namespace Irony.Samples.Java
 							case "new":
 							case "super":
 							case "this":
-								args.Result = ParserActionType.Reduce;
+								args.Result = PreferredActionType.Reduce;
 								break;
 							default:
-								args.Result = ParserActionType.Shift;
+								args.Result = PreferredActionType.Shift;
 								break;
 						}
 						args.Scanner.EndPreview(true);
@@ -112,11 +112,11 @@ namespace Irony.Samples.Java
 						//if we see ">", then it is type argument, not operator
 						if ((previewSym == ">") || (previewSym == "gt"))
 						{
-							args.Result = ParserActionType.Shift;
+							args.Result = PreferredActionType.Shift;
 						}
 						else
 						{
-							args.Result = ParserActionType.Reduce;
+							args.Result = PreferredActionType.Reduce;
 						}
 						args.Scanner.EndPreview(true);
 						//keep previewed tokens; important to keep ">>" matched to two ">" symbols, not one combined symbol (see method below)

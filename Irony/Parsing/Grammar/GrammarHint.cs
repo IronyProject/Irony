@@ -38,7 +38,7 @@ namespace Irony.Parsing {
     /// The owner parameter represents the position in the grammar expression where the hint
     /// is found. The parser state is available through owner.State property. 
     /// </remarks>
-    public virtual void CheckParserState(LanguageData language, LRItem owner) {
+    public virtual void Apply(LanguageData language, LRItem owner) {
       // owner.State  -- the parser state
       // owner.State.BuilderData.Conflicts -- as set of conflict terminals
       // owner.State.Actions -- a dictionary of actions in the current state.

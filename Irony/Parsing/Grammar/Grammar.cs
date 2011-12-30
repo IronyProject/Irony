@@ -16,86 +16,19 @@ using System.Globalization;
 using System.Linq.Expressions;
 using System.Text;
 
+using Irony.Ast; 
+
 namespace Irony.Parsing {
 
-  #region enumerations: LanguageFlags, Associativity, TermListOptions
-  [Flags]
-  public enum LanguageFlags {
-    None = 0,
 
-    //Compilation options
-    //Be careful - use this flag ONLY if you use NewLine terminal in grammar explicitly!
-    // - it happens only in line-based languages like Basic.
-    NewLineBeforeEOF = 0x01,
-    //Emit LineStart token
-    EmitLineStartToken = 0x02,
-    DisableScannerParserLink = 0x04, //in grammars that define TokenFilters (like Python) this flag should be set
-    CreateAst = 0x08, //create AST nodes 
-
-    //Runtime
-    // CanRunSample = 0x0100, //DEPRECATED, Grammar Explorer uses ICanRunSample interface implementation as indicator/runner of samples
-    SupportsCommandLine = 0x0200,
-    TailRecursive = 0x0400, //Tail-recursive language - Scheme is one example
-    SupportsBigInt = 0x01000,
-    SupportsComplex = 0x02000,
-    SupportsRational = 0x04000,
-
-
-
-    //Default value
-    Default = None,
-  }
-
-  //Operator associativity types
-  public enum Associativity {
-    Left,
-    Right,
-    Neutral  //honestly don't know what that means, but it is mentioned in literature 
-  }
-
-  [Flags]
-  public enum TermListOptions {
-    None = 0,
-    AllowEmpty = 0x01,
-    AllowTrailingDelimiter = 0x02,
-
-    // In some cases this hint would help to resolve the conflicts that come up when you have two lists separated by a nullable term.
-    // This hint would resolve the conflict, telling the parser to include as many as possible elements in the first list, and the rest, if any, would go
-    // to the second list. By default, this flag is included in Star and Plus lists. 
-    AddPreferShiftHint = 0x04,
-    //Combinations - use these 
-    PlusList = AddPreferShiftHint, 
-    StarList = AllowEmpty | AddPreferShiftHint,
-  }
-
-  /// <summary>
-  /// The class provides arguments for custom conflict resolution grammar method.
-  /// </summary>
-  public class ConflictResolutionArgs : EventArgs {
-    public readonly ParsingContext Context;
-    public readonly Scanner Scanner;
-    //Results 
-    public PreferredActionType Result; //shift, reduce or operator
-    //constructor
-    internal ConflictResolutionArgs(ParsingContext context, ParserAction conflictAction) {
-      Context = context;
-      Scanner = context.Parser.Scanner;
-    }
-  }//class
-
-
-  #endregion
-
-  public partial class Grammar {
+  public class Grammar {
 
     #region properties
     /// <summary>
     /// Gets case sensitivity of the grammar. Read-only, true by default. 
     /// Can be set to false only through a parameter to grammar constructor.
     /// </summary>
-    public readonly bool CaseSensitive = true;
-    public readonly StringComparer LanguageStringComparer;
-    public readonly StringComparison StringComparisonMode; 
+    public readonly bool CaseSensitive;
     
     //List of chars that unambigously identify the start of new token. 
     //used in scanner error recovery, and in quick parse path in NumberLiterals, Identifiers 
@@ -106,10 +39,7 @@ namespace Irony.Parsing {
     //Used for line counting in source file
     public string LineTerminators = "\n\r\v";
 
-    #region Language Flags
     public LanguageFlags LanguageFlags = LanguageFlags.Default;
-
-    #endregion
 
     public TermReportGroupList TermReportGroups = new TermReportGroupList();
     
@@ -150,8 +80,6 @@ namespace Irony.Parsing {
     public string ConsoleGreeting;
     public string ConsolePrompt; //default prompt
     public string ConsolePromptMoreInput; //prompt to show when more input is expected
-
-    public readonly OperatorInfoDictionary OperatorMappings;
     #endregion 
 
     #region constructors
@@ -162,15 +90,13 @@ namespace Irony.Parsing {
       _currentGrammar = this;
       this.CaseSensitive = caseSensitive;
       bool ignoreCase =  !this.CaseSensitive;
-      LanguageStringComparer = StringComparer.Create(System.Globalization.CultureInfo.InvariantCulture, ignoreCase);
-      StringComparisonMode = CaseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase;
-      KeyTerms = new KeyTermTable(LanguageStringComparer);
+      var stringComparer = StringComparer.Create(System.Globalization.CultureInfo.InvariantCulture, ignoreCase);
+      KeyTerms = new KeyTermTable(stringComparer);
       //Initialize console attributes
       ConsoleTitle = Resources.MsgDefaultConsoleTitle;
       ConsoleGreeting = string.Format(Resources.MsgDefaultConsoleGreeting, this.GetType().Name);
       ConsolePrompt = ">"; 
       ConsolePromptMoreInput = ".";
-      OperatorMappings = OperatorUtility.GetDefaultOperatorMappings(caseSensitive); 
     }
     #endregion
     
@@ -276,12 +202,6 @@ namespace Irony.Parsing {
       return node.Term.Name; 
     }
 
-    //Gives a chance of custom AST node creation at Grammar level
-    // by default calls Term's method
-    public virtual void CreateAstNode(ParsingContext context, ParseTreeNode parseTreeNode) {
-      parseTreeNode.Term.CreateAstNode(context, parseTreeNode);
-    }
-
     /// <summary>
     /// Override this method to help scanner select a terminal to create token when there are more than one candidates
     /// for an input char. context.CurrentTerminals contains candidate terminals; leave a single terminal in this list
@@ -333,8 +253,6 @@ namespace Irony.Parsing {
         context.AddParserError(error);
     }//method
     #endregion
-
-
 
     #region MakePlusRule, MakeStarRule methods
     public BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm listMember) {
@@ -403,8 +321,7 @@ namespace Irony.Parsing {
       return new PreferredActionHint(PreferredActionType.Reduce); 
     }
     protected GrammarHint ResolveInCode() {
-      throw new NotImplementedException("ResolveInCode not implemented.");
-      //return new GrammarHint(HintType.ResolveInCode, null); 
+      return new ResolveInCodeHint();
     }
     protected TokenPreviewHint ReduceIf(string thisSymbol, params string[] comesBefore) {
       return new TokenPreviewHint(PreferredActionType.Reduce, thisSymbol, comesBefore);
@@ -422,10 +339,7 @@ namespace Irony.Parsing {
       return ImplyPrecedenceHere(precedence, Associativity.Left); 
     }
     protected GrammarHint ImplyPrecedenceHere(int precedence, Associativity associativity) {
-      var hint = new ImpliedPrecedenceHint(precedence, associativity);
-      hint.Precedence = precedence;
-      hint.Associativity = associativity;
-      return hint; 
+      return new ImpliedPrecedenceHint(precedence, associativity);
     }
 
     #endregion
@@ -569,6 +483,15 @@ namespace Irony.Parsing {
     }
     #endregion
 
+    #region AST construction
+    public virtual void BuildAst(LanguageData language, ParseTree parseTree) {
+      if (!LanguageFlags.IsSet(LanguageFlags.CreateAst))
+        return;
+      var astContext = new AstContext(language);
+      var astBuilder = new AstBuilder(astContext);
+      astBuilder.BuildAst(parseTree);
+    }
+    #endregion
   }//class
 
 }//namespace

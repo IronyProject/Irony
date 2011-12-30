@@ -14,79 +14,72 @@ namespace Irony.Tests {
 #endif
 
   [TestClass]
-  public class IdentifierTerminalTests : TerminalTestsBase {
+  public class IdentifierTerminalTests {
 
     [TestMethod]
     public void TestCSharpIdentifier() {
-      SetTerminal(TerminalFactory.CreateCSharpIdentifier("Identifier"));
-      TryMatch("x ");
-      Assert.IsTrue(_token.Terminal.Name == "Identifier", "Failed to parse identifier");
-      Assert.IsTrue((string)_token.Value == "x", "Failed to parse identifier");
-      TryMatch("_a01 ");
-      Assert.IsTrue(_token.Terminal.Name == "Identifier", "Failed to parse identifier starting with _");
-      Assert.IsTrue((string)_token.Value == "_a01", "Failed to parse identifier starting with _");
+      Parser parser; Token token;
 
-      TryMatch("0abc ");
-      Assert.IsTrue(_token == null, "Erroneously recognized an identifier.");
+      parser = TestHelper.CreateParser(TerminalFactory.CreateCSharpIdentifier("Identifier"));
+      token = parser.ParseInput("x ");
+      Assert.IsTrue(token.Terminal.Name == "Identifier", "Failed to parse identifier");
+      Assert.IsTrue((string)token.Value == "x", "Failed to parse identifier");
+      token = parser.ParseInput("_a01 ");
+      Assert.IsTrue(token.Terminal.Name == "Identifier", "Failed to parse identifier starting with _");
+      Assert.IsTrue((string)token.Value == "_a01", "Failed to parse identifier starting with _");
 
-      TryMatch(@"_\u0061bc ");
-      Assert.IsTrue(_token.Terminal.Name == "Identifier", "Failed to parse identifier starting with _");
-      Assert.IsTrue((string)_token.Value == "_abc", "Failed to parse identifier containing escape sequence \\u");
+      token = parser.ParseInput("0abc ");
+      Assert.IsTrue(token.IsError(), "Erroneously recognized an identifier.");
 
-      TryMatch(@"a\U00000062c_ ");
-      Assert.IsTrue(_token.Terminal.Name == "Identifier", "Failed to parse identifier starting with _");
-      Assert.IsTrue((string)_token.Value == "abc_", "Failed to parse identifier containing escape sequence \\U");
+      token = parser.ParseInput(@"_\u0061bc ");
+      Assert.IsTrue(token.Terminal.Name == "Identifier", "Failed to parse identifier starting with _");
+      Assert.IsTrue((string)token.Value == "_abc", "Failed to parse identifier containing escape sequence \\u");
+
+      token = parser.ParseInput(@"a\U00000062c_ ");
+      Assert.IsTrue(token.Terminal.Name == "Identifier", "Failed to parse identifier starting with _");
+      Assert.IsTrue((string)token.Value == "abc_", "Failed to parse identifier containing escape sequence \\U");
     }//method
 
     [TestMethod]
     public void TestIdentifierCaseRestrictions() {
+      Parser parser; Token token;
+
       var id = new IdentifierTerminal("identifier"); 
       id.CaseRestriction = CaseRestriction.None;
-      SetTerminal(id);
+      parser = TestHelper.CreateParser(id);
 
-      TryMatch("aAbB");
-      Assert.IsTrue(_token != null, "Failed to scan an identifier aAbB.");
+      token = parser.ParseInput("aAbB");
+      Assert.IsTrue(token != null, "Failed to scan an identifier aAbB.");
 
       id.CaseRestriction = CaseRestriction.FirstLower;
-      SetTerminal(id);
-      TryMatch("BCD");
-      Assert.IsTrue(_token == null, "Erroneously recognized an identifier BCD with FirstLower restriction.");
-      TryMatch("bCd ");
-      Assert.IsTrue(_token != null && _token.ValueString == "bCd", "Failed to scan identifier bCd with FirstLower restriction.");
+      parser = TestHelper.CreateParser(id);
+      token = parser.ParseInput("BCD");
+      Assert.IsTrue(token.IsError(), "Erroneously recognized an identifier BCD with FirstLower restriction.");
+      token = parser.ParseInput("bCd ");
+      Assert.IsTrue(token != null && token.ValueString == "bCd", "Failed to scan identifier bCd with FirstLower restriction.");
 
       id.CaseRestriction = CaseRestriction.FirstUpper;
-      SetTerminal(id);
-      TryMatch("cDE");
-      Assert.IsTrue(_token == null, "Erroneously recognized an identifier cDE with FirstUpper restriction.");
-      TryMatch("CdE");
-      Assert.IsTrue(_token != null && _token.ValueString == "CdE", "Failed to scan identifier CdE with FirstUpper restriction.");
+      parser = TestHelper.CreateParser(id);
+      token = parser.ParseInput("cDE");
+      Assert.AreEqual(TokenCategory.Error,  token.Category, "Erroneously recognized an identifier cDE with FirstUpper restriction.");
+      token = parser.ParseInput("CdE");
+      Assert.IsTrue(token != null && token.ValueString == "CdE", "Failed to scan identifier CdE with FirstUpper restriction.");
 
       id.CaseRestriction = CaseRestriction.AllLower;
-      SetTerminal(id);
-      TryMatch("DeF");
-      Assert.IsTrue(_token == null, "Erroneously recognized an identifier DeF with AllLower restriction.");
-      TryMatch("def");
-      Assert.IsTrue(_token != null && _token.ValueString == "def", "Failed to scan identifier def with AllLower restriction.");
+      parser = TestHelper.CreateParser(id);
+      token = parser.ParseInput("DeF");
+      Assert.IsTrue(token.IsError(), "Erroneously recognized an identifier DeF with AllLower restriction.");
+      token = parser.ParseInput("def");
+      Assert.IsTrue(token != null && token.ValueString == "def", "Failed to scan identifier def with AllLower restriction.");
 
       id.CaseRestriction = CaseRestriction.AllUpper;
-      SetTerminal(id);
-      TryMatch("EFg ");
-      Assert.IsTrue(_token == null, "Erroneously recognized an identifier EFg with AllUpper restriction.");
-      TryMatch("EFG");
-      Assert.IsTrue(_token != null && _token.ValueString == "EFG", "Failed to scan identifier EFG with AllUpper restriction.");
+      parser = TestHelper.CreateParser(id);
+      token = parser.ParseInput("EFg ");
+      Assert.IsTrue(token.IsError(), "Erroneously recognized an identifier EFg with AllUpper restriction.");
+      token = parser.ParseInput("EFG");
+      Assert.IsTrue(token != null && token.ValueString == "EFG", "Failed to scan identifier EFG with AllUpper restriction.");
     }//method
 
-    /*
-    [TestMethod]
-    public void TestSqlIdentifier() {
-      var id = TerminalFactory.CreateSqlExtIdentifier(_grammar, "identifier");
-      SetTerminal(id.OutputTerminal);
-      TryMatch(@"[a b c]  ");
-      Assert.IsTrue((string)_token.Value == "a b c", "Failed to process bracketted identifier [a b c]");
-      TryMatch("\"a b c\"  "); //"a b c"
-      Assert.IsTrue((string)_token.Value == "a b c", "Failed to process double-quoted identifier \"a b c\"");
-    }
-    */
 
   }//class
 }//namespace

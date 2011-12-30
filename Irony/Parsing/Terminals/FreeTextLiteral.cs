@@ -81,13 +81,20 @@ namespace Irony.Parsing {
     }
 
     private Token TryMatchContentSimple(ParsingContext context, ISourceStream source) {
-      var startPos = source.PreviewPosition; 
-      int p = source.Text.IndexOf(_singleTerminator, startPos, Grammar.StringComparisonMode);
-      if (p < 0 && IsSet(FreeTextOptions.AllowEof))
-        p = source.Text.Length;
-      if (p < 0)
+      var startPos = source.PreviewPosition;
+      var termLen = _singleTerminator.Length;
+      var stringComp = Grammar.CaseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase;
+      int termPos = source.Text.IndexOf(_singleTerminator, startPos, stringComp);
+      if (termPos < 0 && IsSet(FreeTextOptions.AllowEof))
+        termPos = source.Text.Length;
+      if (termPos < 0)
         return context.CreateErrorToken(Resources.ErrFreeTextNoEndTag, _singleTerminator);
-      var tokenText = source.Text.Substring(startPos, p - startPos);
+      var textEnd = termPos;
+      if (IsSet(FreeTextOptions.IncludeTerminator))
+        textEnd += termLen;
+      var tokenText = source.Text.Substring(startPos, textEnd - startPos);
+      // The following line is a fix submitted by user rmcase
+      source.PreviewPosition = IsSet(FreeTextOptions.ConsumeTerminator) ? termPos + termLen : termPos; 
       return source.CreateToken(this.OutputTerminal, tokenText); 
     }
 

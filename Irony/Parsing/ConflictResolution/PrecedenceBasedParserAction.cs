@@ -1,4 +1,16 @@
-﻿using System;
+﻿#region License
+/* **********************************************************************************
+ * Copyright (c) Roman Ivantsov
+ * This source code is subject to terms and conditions of the MIT License
+ * for Irony. A copy of the license can be found in the License.txt file
+ * at the root of this distribution. 
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * MIT License.
+ * You must not remove this notice from this software.
+ * **********************************************************************************/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,16 +18,17 @@ using System.Text;
 namespace Irony.Parsing {
 
   public class PrecedenceBasedParserAction : ConditionalParserAction {
-    ShiftParserAction _shift;
-    ReduceParserAction _reduce; 
+    ShiftParserAction _shiftAction;
+    ReduceParserAction _reduceAction; 
 
     public PrecedenceBasedParserAction(ParserState newShiftState, Production reduceProduction)  {
-      _reduce = new ReduceParserAction(reduceProduction);
-      var v = new ConditionBoundAction() { Condition = MustReduce, Action = _reduce };
-      base.DefaultAction = _shift = new ShiftParserAction(newShiftState);
+      _reduceAction = new ReduceParserAction(reduceProduction);
+      var reduceEntry = new ConditionalEntry(CheckMustReduce, _reduceAction, "(Precedence comparison)");
+      base.ConditionalEntries.Add(reduceEntry);
+      base.DefaultAction = _shiftAction = new ShiftParserAction(newShiftState);
     }
 
-    private static bool MustReduce(ParsingContext context) {
+    private static bool CheckMustReduce(ParsingContext context) {
       var input = context.CurrentParserInput;
       for (int i = context.ParserStack.Count - 1; i >= 0; i--) {
         var prevNode = context.ParserStack[i];
@@ -32,7 +45,7 @@ namespace Irony.Parsing {
     }
 
     public override string ToString() {
-      return string.Format(Resources.LabelActionOp, _shift.NewState.Name, _reduce.Production.ToStringQuoted());
+      return string.Format(Resources.LabelActionOp, _shiftAction.NewState.Name, _reduceAction.Production.ToStringQuoted());
     }
 
   }//class

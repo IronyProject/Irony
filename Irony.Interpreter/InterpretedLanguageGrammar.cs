@@ -14,6 +14,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+using Irony.Ast; 
 using Irony.Parsing;
 using Irony.Interpreter.Ast;
 
@@ -50,7 +52,15 @@ namespace Irony.Interpreter {
 
     public virtual LanguageRuntime CreateRuntime(LanguageData language) {
       return new LanguageRuntime(language); 
-    }  
+    }
+
+    public override void BuildAst(LanguageData language, ParseTree parseTree) {
+      var opHandler = new OperatorHandler(language.Grammar.CaseSensitive);
+      Util.Check(!parseTree.HasErrors(), "ParseTree has errors, cannot build AST.");
+      var astContext = new InterpreterAstContext(language, opHandler);
+      var astBuilder = new AstBuilder(astContext);
+      astBuilder.BuildAst(parseTree);
+    }
   } //grammar class
 
 }

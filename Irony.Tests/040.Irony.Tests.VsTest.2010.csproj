@@ -71,14 +71,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommentTerminalTests.cs" />
-    <Compile Include="ConflictResolutionTests.cs" />
+    <Compile Include="TestHelper.cs" />
+    <Compile Include="TokenPreviewResolution\ConflictResolutionTests.cs" />
     <Compile Include="DataLiteralsTests.cs" />
     <Compile Include="EvaluatorTests.cs" />
-    <Compile Include="Grammars\ConflictResolutionTestGrammar1.cs" />
-    <Compile Include="Grammars\ConflictResolutionTestGrammar2.cs" />
-    <Compile Include="Grammars\ConflictResolutionTestGrammar3.cs" />
-    <Compile Include="Grammars\ConflictResolutionTestGrammar4.cs" />
-    <Compile Include="Grammars\TestGrammar.cs" />
+    <Compile Include="TokenPreviewResolution\ConflictGrammars.cs" />
     <None Include="HeredocTerminalTests.cs" />
     <Compile Include="LineContinuationTests.cs" />
     <Compile Include="RegexLiteralTests.cs" />
@@ -88,7 +85,6 @@
     <Compile Include="NumberLiteralTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringLiteralTests.cs" />
-    <Compile Include="_TerminalTestBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Irony.Interpreter\015.Irony.Interpreter.2010.csproj">
@@ -103,9 +99,6 @@
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
       <Name>010.Irony.2010</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="_ Tests - read me.txt" />

@@ -9,8 +9,8 @@
     <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>_101.IronySilverlight._2010</RootNamespace>
-    <AssemblyName>101.IronySilverlight.2010</AssemblyName>
+    <RootNamespace>Irony</RootNamespace>
+    <AssemblyName>IronySilverlight</AssemblyName>
     <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
@@ -56,7 +56,18 @@
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Interfaces.cs" />
+    <Compile Include="Ast\AstBuilder.cs" />
+    <Compile Include="Ast\AstContext.cs" />
+    <Compile Include="Ast\AstInterfaces.cs" />
+    <Compile Include="Ast\AstNodeConfig.cs" />
+    <Compile Include="Parsing\ConflictResolution\ConditionalParserAction.cs" />
+    <Compile Include="Parsing\ConflictResolution\ConflictResolutionArgs.cs" />
+    <Compile Include="Parsing\ConflictResolution\ImpliedPrecedenceHint.cs" />
+    <Compile Include="Parsing\ConflictResolution\PrecedenceBasedParserAction.cs" />
+    <Compile Include="Parsing\ConflictResolution\PrecedenceHint.cs" />
+    <Compile Include="Parsing\ConflictResolution\PreferredActionHint.cs" />
+    <Compile Include="Parsing\ConflictResolution\ResolveInCodeHintAction.cs" />
+    <Compile Include="Parsing\ConflictResolution\TokenPreviewHint.cs" />
     <Compile Include="Parsing\Data\Construction\GrammarDataBuilder.cs" />
     <Compile Include="Parsing\Data\Construction\LanguageDataBuilder.cs" />
     <Compile Include="Parsing\Data\Construction\ParserDataBuilder.cs" />
@@ -66,24 +77,28 @@
     <Compile Include="Parsing\Data\LanguageData.cs" />
     <Compile Include="Parsing\Data\ParserData.cs" />
     <Compile Include="Parsing\Data\ScannerData.cs" />
-    <Compile Include="Parsing\Diagnostics\ParserDataPrinter.cs" />
-    <Compile Include="Parsing\Diagnostics\ParserMessage.cs" />
-    <Compile Include="Parsing\Diagnostics\ParserTrace.cs" />
-    <Compile Include="Parsing\Diagnostics\ParseTreeExtensions.cs" />
     <Compile Include="Parsing\Grammar\BnfExpression.cs" />
     <Compile Include="Parsing\Grammar\BnfTerm.cs" />
     <Compile Include="Parsing\Grammar\Grammar.cs" />
+    <Compile Include="Parsing\Grammar\GrammarEnums.cs" />
     <Compile Include="Parsing\Grammar\GrammarError.cs" />
     <Compile Include="Parsing\Grammar\GrammarHint.cs" />
+    <Compile Include="Parsing\Grammar\ICanRunSample.cs" />
     <Compile Include="Parsing\Grammar\LanguageAttribute.cs" />
     <Compile Include="Parsing\Grammar\NonTerminal.cs" />
-    <Compile Include="Parsing\Grammar\OperatorInfo.cs" />
     <Compile Include="Parsing\Grammar\TermReportGroups.cs" />
     <Compile Include="Parsing\Parser\CoreParser.cs" />
-    <Compile Include="Parsing\Parser\CoreParser_ErrorHandling.cs" />
     <Compile Include="Parsing\Parser\Parser.cs" />
+    <Compile Include="Parsing\Parser\ParserActions\AcceptParserAction.cs" />
+    <Compile Include="Parsing\Parser\ParserActions\ErrorRecoveryParserAction.cs" />
+    <Compile Include="Parsing\Parser\ParserActions\ReduceParserActions.cs" />
+    <Compile Include="Parsing\Parser\ParserActions\ShiftParserAction.cs" />
+    <Compile Include="Parsing\Parser\ParserActions\_ParserAction.cs" />
+    <Compile Include="Parsing\Parser\ParserDataPrinter.cs" />
     <Compile Include="Parsing\Parser\ParserStack.cs" />
+    <Compile Include="Parsing\Parser\ParserTrace.cs" />
     <Compile Include="Parsing\Parser\ParseTree.cs" />
+    <Compile Include="Parsing\Parser\ParseTreeExtensions.cs" />
     <Compile Include="Parsing\Parser\ParsingContext.cs" />
     <Compile Include="Parsing\Parser\ParsingEventArgs.cs" />
     <Compile Include="Parsing\Parser\SyntaxError.cs" />
@@ -122,13 +137,14 @@
     <Compile Include="Resources.Designer.cs" />
     <Compile Include="SilverlightOnly\Stopwatch.cs" />
     <Compile Include="Utilities\Extensions.cs" />
-    <Compile Include="Utilities\OperatorUtility.cs" />
+    <Compile Include="Utilities\LogMessage.cs" />
     <Compile Include="Utilities\StringUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Ast\_about.txt" />
     <Content Include="Parsing\Data\Construction\_about_parser_construction.txt" />
   </ItemGroup>
   <ItemGroup>

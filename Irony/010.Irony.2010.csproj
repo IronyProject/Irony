@@ -41,8 +41,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -76,30 +75,32 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Ast\AstBuilder.cs" />
+    <Compile Include="Ast\AstBuilder.cs" />
     <None Include="Ast\AstNodeConfig.cs" />
-    <Compile Include="Interfaces.cs" />
+    <Compile Include="Ast\AstContext.cs" />
+    <Compile Include="Ast\AstInterfaces.cs" />
+    <Compile Include="Parsing\ConflictResolution\ConflictResolutionArgs.cs" />
     <Compile Include="Parsing\ConflictResolution\ImpliedPrecedenceHint.cs" />
     <Compile Include="Parsing\ConflictResolution\PrecedenceHint.cs" />
     <Compile Include="Parsing\ConflictResolution\PreferredActionHint.cs" />
-    <Compile Include="Parsing\ConflictResolution\ResolveInCodeHint.cs" />
+    <Compile Include="Parsing\ConflictResolution\ResolveInCodeHintAction.cs" />
+    <Compile Include="Parsing\Grammar\GrammarEnums.cs" />
+    <Compile Include="Parsing\Grammar\ICanRunSample.cs" />
     <Compile Include="Parsing\Parser\ParserActions\AcceptParserAction.cs" />
     <Compile Include="Parsing\ConflictResolution\ConditionalParserAction.cs" />
     <Compile Include="Parsing\Parser\ParserActions\ErrorRecoveryParserAction.cs" />
-    <Compile Include="Parsing\ConflictResolution\TokenPreviewParserAction.cs" />
+    <Compile Include="Parsing\ConflictResolution\TokenPreviewHint.cs" />
     <Compile Include="Parsing\Parser\ParserActions\ReduceParserActions.cs" />
     <Compile Include="Parsing\ConflictResolution\PrecedenceBasedParserAction.cs" />
     <Compile Include="Parsing\Parser\ParserActions\_ParserAction.cs" />
     <Compile Include="Parsing\Parser\ParserActions\ShiftParserAction.cs" />
     <Compile Include="Parsing\Grammar\GrammarError.cs" />
-    <Compile Include="Parsing\Grammar\OperatorInfo.cs" />
     <Compile Include="Parsing\Grammar\TermReportGroups.cs" />
-    <Compile Include="Parsing\Diagnostics\ParseTreeExtensions.cs" />
+    <Compile Include="Parsing\Parser\ParseTreeExtensions.cs" />
     <Compile Include="Parsing\Parser\ParsingEventArgs.cs" />
     <Compile Include="Utilities\Extensions.cs" />
-    <Compile Include="Utilities\OperatorUtility.cs" />
     <Compile Include="Utilities\StringUtils.cs" />
-    <Compile Include="Parsing\Diagnostics\ParserTrace.cs" />
+    <Compile Include="Parsing\Parser\ParserTrace.cs" />
     <Compile Include="Parsing\Terminals\DataLiteralBase.cs" />
     <Compile Include="Parsing\Terminals\DsvLiteral.cs" />
     <Compile Include="Parsing\Terminals\FixedLengthLiteral.cs" />
@@ -127,7 +128,7 @@
     <Compile Include="Parsing\Parser\ParseTree.cs" />
     <Compile Include="Parsing\Parser\CoreParser.cs" />
     <Compile Include="Parsing\Scanner\SourceLocation.cs" />
-    <Compile Include="Parsing\Diagnostics\ParserDataPrinter.cs" />
+    <Compile Include="Parsing\Parser\ParserDataPrinter.cs" />
     <Compile Include="Parsing\Scanner\TokenEditorInfo.cs" />
     <Compile Include="Parsing\Parser\ParsingContext.cs" />
     <Compile Include="Parsing\Grammar\GrammarHint.cs" />
@@ -135,7 +136,7 @@
     <Compile Include="Parsing\Scanner\SourceStream.cs" />
     <Compile Include="Parsing\Grammar\NonTerminal.cs" />
     <Compile Include="Parsing\Grammar\BnfExpression.cs" />
-    <Compile Include="Parsing\Diagnostics\ParserMessage.cs" />
+    <Compile Include="Utilities\LogMessage.cs" />
     <Compile Include="Parsing\Terminals\CommentTerminal.cs" />
     <Compile Include="Parsing\Terminals\ConstantTerminal.cs" />
     <Compile Include="Parsing\Terminals\CompoundTerminalBase.cs" />
@@ -172,7 +173,6 @@
     <None Include="irony.snk" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Ast\_about.txt" />
     <Content Include="Parsing\Data\Construction\_about_parser_construction.txt" />
   </ItemGroup>
   <ItemGroup />

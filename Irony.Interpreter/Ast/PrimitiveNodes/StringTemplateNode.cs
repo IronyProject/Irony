@@ -14,8 +14,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+using Irony.Ast; 
 using Irony.Parsing;
-using Irony.Interpreter;
 
 namespace Irony.Interpreter.Ast {
 
@@ -61,10 +62,10 @@ namespace Irony.Interpreter.Ast {
     string _template; 
     string _tokenText; //used for locating error 
     StringTemplateSettings _templateSettings; //copied from Terminal.AstNodeConfig 
-    SegmentList _segments = new SegmentList(); 
+    SegmentList _segments = new SegmentList();
 
-    public override void Init(ParsingContext context, ParseTreeNode treeNode) {
-      base.Init(context, treeNode); 
+    public override void Init(AstContext context, ParseTreeNode treeNode) {
+      base.Init(context, treeNode);
       _template = treeNode.Token.ValueString;
       _tokenText = treeNode.Token.Text;
       _templateSettings = treeNode.Term.AstData as StringTemplateSettings; 
@@ -79,7 +80,7 @@ namespace Irony.Interpreter.Ast {
       return value; 
     }
 
-    private void ParseSegments(ParsingContext context) {
+    private void ParseSegments(AstContext context) {
       var exprParser = new Parser(context.Language, _templateSettings.ExpressionRoot);
       // As we go along the "value text" (that has all escapes done), we track the position in raw token text  in the variable exprPosInTokenText.
       // This position is position in original text in source code, including original escaping sequences and open/close quotes. 
@@ -96,8 +97,9 @@ namespace Irony.Interpreter.Ast {
         //We have a real start tag, grab the expression
         currentPos = startTagPos + _templateSettings.StartTag.Length;
         var endTagPos = _template.IndexOf(_templateSettings.EndTag, currentPos);
-        if (endTagPos < 0) { 
-          context.AddParserError(Resources.ErrNoEndTagInEmbExpr, _templateSettings.EndTag);//"No ending tag '{0}' found in embedded expression."
+        if (endTagPos < 0) {
+          //"No ending tag '{0}' found in embedded expression."
+          context.AddMessage(ErrorLevel.Error, this.Location, Resources.ErrNoEndTagInEmbExpr, _templateSettings.EndTag);
           return;
         }
         var exprText = _template.Substring(currentPos, endTagPos - currentPos);
@@ -109,7 +111,7 @@ namespace Irony.Interpreter.Ast {
           if(exprTree.HasErrors()) {
             //we use original search in token text instead of currentPos in template to avoid distortions caused by opening quote and escaped sequences
             var baseLocation = this.Location + _tokenText.IndexOf(exprText); 
-            context.CurrentParseTree.CopyMessages(exprTree.ParserMessages, baseLocation, Resources.ErrInvalidEmbeddedPrefix);
+            CopyMessages(exprTree.ParserMessages, context.Messages, baseLocation, Resources.ErrInvalidEmbeddedPrefix);
             return; 
           }
           //add the expression segment
@@ -124,6 +126,12 @@ namespace Irony.Interpreter.Ast {
         currentPos = endTagPos + _templateSettings.EndTag.Length;
       }//while
     }
+
+    private void CopyMessages(LogMessageList fromList, LogMessageList toList, SourceLocation baseLocation, string messagePrefix) {
+      foreach (var other in fromList)
+        toList.Add(new LogMessage(other.Level, baseLocation + other.Location, messagePrefix + other.Message, other.ParserState));
+    }//
+
 
     private object BuildString(ScriptThread thread) {
       string[] values = new string[_segments.Count];

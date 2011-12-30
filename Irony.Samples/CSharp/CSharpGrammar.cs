@@ -79,6 +79,7 @@ namespace Irony.Samples.CSharp {
       var type_ref = new NonTerminal("type_ref");
       var new_type_ref = new NonTerminal("new_type_ref");
       var type_argument_list = new NonTerminal("type_argument_list");
+      var typearg_or_gendimspec_list = new NonTerminal("typearg_or_gendimspec_list");
       var type_argument_list_opt = new NonTerminal("type_argument_list_opt");
       var integral_type = new NonTerminal("integral_type");
 
@@ -352,11 +353,30 @@ namespace Irony.Samples.CSharp {
       // 2. Add support for multiple line terminators to LineComment
       this.LineTerminators = "\r\n\u2085\u2028\u2029"; //CR, linefeed, nextLine, LineSeparator, paragraphSeparator
       this.WhitespaceChars = " \t\r\n\v\u2085\u2028\u2029"; //add extra line terminators
+
+      this.AddTermsReportGroup("assignment", "=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=");
+      this.AddTermsReportGroup("typename", "bool", "decimal", "float", "double", "string", "object", 
+        "sbyte", "byte", "short", "ushort", "int", "uint", "long", "ulong", "char");
+      this.AddTermsReportGroup("statement", "if", "switch", "do", "while", "for", "foreach", "continue", "goto", "return", "try", "yield", 
+                                            "break", "throw", "unchecked", "using");
+      this.AddTermsReportGroup("type declaration", "public", "private", "protected", "static", "internal", "sealed", "abstract", "partial", 
+                                                   "class", "struct", "delegate", "interface", "enum");
+      this.AddTermsReportGroup("member declaration", "virtual", "override", "readonly", "volatile", "extern");
+      this.AddTermsReportGroup("constant", Number, StringLiteral, CharLiteral);
+      this.AddTermsReportGroup("constant", "true", "false", "null");
+
+      this.AddTermsReportGroup("unary operator", "+", "-", "!", "~");
+      
+      this.AddToNoReportGroup(comma, semi);
+      this.AddToNoReportGroup("var", "const", "new", "++", "--", "this", "base", "checked", "lock", "typeof", "default",
+                               "{", "}", "[");
+     
+      //
       #endregion
 
       #region "<" conflict resolution
-      var lt = new NonTerminal("_<_");
-      lt.Rule = ResolveInCode() + "<";
+      var gen_lt = new NonTerminal("gen_lt");
+      gen_lt.Rule = "<" + ResolveInCode();
       #endregion
       /*
       #region Keywords
@@ -376,7 +396,7 @@ namespace Irony.Samples.CSharp {
       //B.2.1. Basic concepts
       //qual_name_with_targs is an alias for namespace-name, namespace-or-type-name, type-name,
 
-      generic_dimension_specifier.Rule = lt + commas_opt + ">";
+      generic_dimension_specifier.Rule = gen_lt + commas_opt + ">";
       qual_name_segments_opt.Rule = MakeStarRule(qual_name_segments_opt, null, qual_name_segment);
       identifier_or_builtin.Rule = identifier | builtin_type;
       identifier_ext.Rule = identifier_or_builtin | "this" | "base";
@@ -384,17 +404,18 @@ namespace Irony.Samples.CSharp {
                               | "::" + identifier
                               | type_argument_list;
       //generic_dimension_specifier.Rule = lt + commas_opt + ">";
-      generic_dimension_specifier.Rule = lt + commas_opt + ">";
+      generic_dimension_specifier.Rule = gen_lt + commas_opt + ">";
       qual_name_with_targs.Rule = identifier_or_builtin + qual_name_segments_opt;
 
-      type_argument_list.Rule = lt + type_ref_list + ">";
+      type_argument_list.Rule = gen_lt + type_ref_list + ">";
       type_argument_list_opt.Rule = Empty | type_argument_list;
+      typearg_or_gendimspec_list.Rule = type_argument_list | generic_dimension_specifier_opt;
 
       //B.2.2. Types
       type_or_void.Rule = qual_name_with_targs | "void";
       builtin_type.Rule = integral_type | "bool" | "decimal" | "float" | "double" | "string" | "object";
 
-      type_ref.Rule = type_or_void + qmark_opt + rank_specifiers_opt + generic_dimension_specifier_opt;
+      type_ref.Rule = type_or_void + qmark_opt + rank_specifiers_opt + typearg_or_gendimspec_list;
       type_ref_list.Rule = MakePlusRule(type_ref_list, comma, type_ref);
 
       var comma_list_opt = new NonTerminal("comma_list_opt");
@@ -480,7 +501,7 @@ namespace Irony.Samples.CSharp {
       member_declarator_list.Rule = MakePlusRule(member_declarator_list, comma, member_declarator);
       //typeof
       typeof_expression.Rule = "typeof" + Lpar + type_ref + Rpar;
-      generic_dimension_specifier_opt.Rule = Empty | lt + commas_opt + ">";
+      generic_dimension_specifier_opt.Rule = Empty | gen_lt + commas_opt + ">";
       //checked, unchecked
       checked_expression.Rule = "checked" + parenthesized_expression;
       unchecked_expression.Rule = "unchecked" + parenthesized_expression;
@@ -508,7 +529,7 @@ namespace Irony.Samples.CSharp {
       //I think it's a mistake; there must be additional entry here for arithm expressions, so we put them here. 
       // We also have to add "is" and "as" expressions here, as we don't build entire hierarchy of elements for expressing
       // precedence (where they appear in original spec); so we put them here 
-      bin_op.Rule = lt       
+      bin_op.Rule = ToTerm("<")       
                   | "||" | "&&" | "|" | "^" | "&" | "==" | "!=" | ">" | "<=" | ">=" | "<<" | ">>" | "+" | "-" | "*" | "/" | "%"
                   | "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "<<=" | ">>="
                   | "is" | "as" | "??";
@@ -624,7 +645,7 @@ namespace Irony.Samples.CSharp {
       //Type parameters
       type_parameter.Rule = attributes_opt + identifier;
       type_parameters.Rule = MakePlusRule(type_parameters, comma, type_parameter);
-      type_parameter_list_opt.Rule = Empty | lt + type_parameters + ">";
+      type_parameter_list_opt.Rule = Empty | gen_lt + type_parameters + ">";
       type_parameter_constraints_clause.Rule = "where" + type_parameter + colon + type_parameter_constraints;
       type_parameter_constraints.Rule = MakePlusRule(type_parameter_constraints, comma, type_parameter_constraint);
       type_parameter_constraints_clauses_opt.Rule = MakeStarRule(type_parameter_constraints_clauses_opt, null, type_parameter_constraints_clause);
@@ -737,7 +758,7 @@ namespace Irony.Samples.CSharp {
       enum_declaration.Rule = member_header + "enum" + identifier + enum_base_opt + Lbr + enum_member_declarations + Rbr + semi_opt;
       enum_base_opt.Rule = Empty | colon + integral_type;
       enum_member_declaration.Rule = attributes_opt + identifier | attributes_opt + identifier + "=" + expression;
-      enum_member_declarations.Rule = MakeListRule(enum_member_declarations, comma, enum_member_declaration, TermListOptions.StarList | TermListOptions.AllowTrailingDelimiter);
+      enum_member_declarations.Rule = MakeListRule(enum_member_declarations, comma, enum_member_declaration, TermListOptions.PlusList | TermListOptions.AllowTrailingDelimiter);
 
       //B.2.12 Delegates
       delegate_declaration.Rule = member_header + "delegate" + type_ref + identifier +
@@ -765,7 +786,7 @@ namespace Irony.Samples.CSharp {
     #region conflict resolution for "<"
 /* The shift-reduce conflict for "<" symbol is the problem of deciding what is "<" symbol in the input - is it 
  * opening brace for generic reference, or logical operator. The following is a printout of parser state that has a conflict
- * The handling code need to run ahead and decide a proper action: if we see ">", then it is a generic bracket and we do shift; 
+ * The handling code needs to run ahead and decide a proper action: if we see ">", then it is a generic bracket and we do shift; 
  * otherwise, it is an operator and we make Reduce
  * 
 State S188 (Inadequate)

@@ -15,8 +15,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+
+using Irony.Ast; 
 using Irony.Parsing;
-using Irony.Interpreter;
 
 namespace Irony.Interpreter.Ast {
 
@@ -28,13 +29,14 @@ namespace Irony.Interpreter.Ast {
     public AstNode Argument;
     private OperatorImplementation _lastUsed;
 
-    public override void Init(ParsingContext context, ParseTreeNode treeNode) {
+    public override void Init(AstContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
       FindOpAndDetectPostfix(treeNode); 
       int argIndex = IsPostfix? 0 : 1;
       Argument = AddChild(NodeUseType.ValueReadWrite, "Arg", treeNode.MappedChildNodes[argIndex]);
       BinaryOpSymbol = OpSymbol[0].ToString(); //take a single char out of ++ or --
-      BinaryOp = context.GetOperatorExpressionType(BinaryOpSymbol); 
+      var interpContext = (InterpreterAstContext)context; 
+      BinaryOp = interpContext.OperatorHandler.GetOperatorExpressionType(BinaryOpSymbol); 
       base.AsString = OpSymbol + (IsPostfix ? "(postfix)" : "(prefix)");
     }
 

@@ -61,6 +61,7 @@ namespace Irony.Parsing {
       if (token.Terminal.Flags.IsSet(TermFlags.IsBrace))
         token = CheckBraceToken(token);
       Context.CurrentParserInput = new ParseTreeNode(token);
+      token.Terminal.OnParseNodeCreated(Context);
       //attach comments if any accumulated to content token
       if (Context.CurrentCommentBlock != null && token.Terminal.Category == TokenCategory.Content) { 
         Context.CurrentParserInput.Comments = Context.CurrentCommentBlock;
@@ -106,20 +107,24 @@ namespace Irony.Parsing {
         ReadInput();
       //Check scanner error
       if (Context.CurrentParserInput != null && Context.CurrentParserInput.IsError) {
-        this.Data.ErrorAction.Execute(Context);
+        Recover(); 
         return;
       }
       //Try getting action
       var action = GetCurrentAction();
       if (action == null) {
         if (CheckPartialInputCompleted()) return;
-        this.Data.ErrorAction.Execute(Context);
+        Recover();
         return;
       }    
       //We have action. Write trace and execute it
       if (Context.TracingEnabled) 
         Context.AddTrace(action.ToString());
       action.Execute(Context);
+    }
+
+    public void Recover() {
+      this.Data.ErrorAction.Execute(Context);
     }
 
     private bool CheckPartialInputCompleted() {

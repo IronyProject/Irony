@@ -27,7 +27,7 @@ namespace Irony.Parsing {
     public KeyTerm(string text, string name)  : base(name) {
       Text = text;
       base.ErrorAlias = name;
-
+      this.Flags |= TermFlags.NoAstNode;
     }
 
     public string Text {get; private set;}

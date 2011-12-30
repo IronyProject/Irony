@@ -20,7 +20,8 @@ using System.Diagnostics;
 
 namespace Irony.Parsing {
   using BigInteger = System.Numerics.BigInteger; //Microsoft.Scripting.Math.BigInteger;
-  using Complex64 = System.Numerics.Complex; // Microsoft.Scripting.Math.Complex64;
+  using Complex64 = System.Numerics.Complex;
+  using Irony.Ast; // Microsoft.Scripting.Math.Complex64;
 
   [Flags]
   public enum NumberOptions {

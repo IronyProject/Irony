@@ -14,15 +14,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Irony.Interpreter;
+
+using Irony.Ast; 
 using Irony.Parsing;
 
 namespace Irony.Interpreter.Ast {
 
   public class StatementListNode : AstNode {
     AstNode _singleChild; //stores a single child when child count == 1, for fast access
-     
-    public override void Init(ParsingContext context, ParseTreeNode treeNode) {
+
+    public override void Init(AstContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
       foreach (var child in treeNode.MappedChildNodes) {
         //don't add if it is null; it can happen that "statement" is a comment line and statement's node is null.

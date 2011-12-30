@@ -43,7 +43,7 @@ namespace Irony.Parsing.Construction {
       ComputeConflicts();
       ApplyHints(); 
       HandleUnresolvedConflicts(); 
-      CreateDefaultReduceActions(); 
+      CreateRemainingReduceActions(); 
       ComputeStatesExpectedTerminals();
       //Create error action - if it is not created yet by some hint or custom code
       if (_data.ErrorAction == null)
@@ -263,7 +263,7 @@ namespace Irony.Parsing.Construction {
         // Apply (activate) hints - these should resolve conflicts as well
         foreach (var item in state.BuilderData.AllItems)
           foreach (var hint in item.Core.Hints)
-            hint.CheckParserState(_language, item);
+            hint.Apply(_language, item);
 
       }//foreach
     }//method
@@ -297,13 +297,22 @@ namespace Irony.Parsing.Construction {
 
     #region final actions: creating remaining reduce actions, computing expected terminals, cleaning up state data
     //Create reduce actions for states with a single reduce item (and no shifts)
-    private void CreateDefaultReduceActions() {
+    private void CreateRemainingReduceActions() {
       foreach (var state in _data.States) {
         var stateData = state.BuilderData;
         if (stateData.ShiftItems.Count == 0 && stateData.ReduceItems.Count == 1) {
-          state.DefaultReduceAction = new ReduceParserAction(stateData.ReduceItems.First().Core.Production);
-          continue; 
-        } 
+          state.DefaultReduceAction = ReduceParserAction.Create(stateData.ReduceItems.First().Core.Production);
+          continue; //next state; if we have default reduce action, we don't need to fill actions dictionary for lookaheads
+        }
+        //create actions
+        foreach (var item in state.BuilderData.ReduceItems) {
+          var action = ReduceParserAction.Create(item.Core.Production);
+          foreach (var lkh in item.Lookaheads) {
+            if (state.Actions.ContainsKey(lkh)) continue;
+            state.Actions[lkh] = action;
+          }
+        }//foreach item
+
       }//foreach state
     }
 

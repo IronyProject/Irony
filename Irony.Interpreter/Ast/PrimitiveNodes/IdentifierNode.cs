@@ -15,8 +15,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml;
+
 using Irony.Parsing;
-using Irony.Interpreter;
+using Irony.Ast;
 
 namespace Irony.Interpreter.Ast {
 
@@ -26,7 +27,7 @@ namespace Irony.Interpreter.Ast {
 
     public IdentifierNode() { }
 
-    public override void Init(ParsingContext context, ParseTreeNode treeNode) {
+    public override void Init(AstContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
       Symbol = treeNode.Token.ValueString;
       AsString = Symbol; 

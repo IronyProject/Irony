@@ -190,7 +190,14 @@ namespace Irony.Parsing.Construction {
     public override int GetHashCode() {
       return _hashCode; 
     }
-    
+
+    public TerminalSet GetLookaheadsInConflict() {
+      var lkhc = new TerminalSet();
+      lkhc.UnionWith(Lookaheads);
+      lkhc.IntersectWith(State.BuilderData.Conflicts);
+      return lkhc; 
+    }
+
   }//LRItem class
 
   public class LRItemList : List<LRItem> {}

@@ -21,12 +21,15 @@ using System.IO;
 using System.Configuration;
 using System.Text.RegularExpressions;
 using System.Xml;
+
+using Irony.Ast;
 using Irony.Parsing;
-using Irony.Interpreter.Ast; 
-using Irony.Interpreter;
+
 using Irony.GrammarExplorer.Properties;
 
 namespace Irony.GrammarExplorer {
+  using ScriptException = Irony.Interpreter.ScriptException; //that's the only place we use stuff from Irony.Interpreter
+
   public partial class fmGrammarExplorer : Form {
     public fmGrammarExplorer() {
       InitializeComponent();
@@ -590,7 +593,7 @@ namespace Irony.GrammarExplorer {
 
     private void gridCompileErrors_CellDoubleClick(object sender, DataGridViewCellEventArgs e) {
       if (e.RowIndex < 0 || e.RowIndex >= gridCompileErrors.Rows.Count) return;
-      var err = gridCompileErrors.Rows[e.RowIndex].Cells[1].Value as ParserMessage;
+      var err = gridCompileErrors.Rows[e.RowIndex].Cells[1].Value as LogMessage;
       switch (e.ColumnIndex) {
         case 0: //state
         case 1: //stack top

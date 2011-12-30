@@ -33,6 +33,7 @@ namespace Irony.Interpreter {
   // details here: http://www.codeproject.com/KB/dotnet/JITOptimizations.aspx
   public partial class LanguageRuntime {
     public readonly LanguageData Language;
+    public OperatorHandler OperatorHandler; 
     //Converter of the result for comparison operation; converts bool value to values
     // specific for the language
     public UnaryOperatorMethod BoolResultConverter = null;

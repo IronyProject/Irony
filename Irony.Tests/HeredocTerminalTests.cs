@@ -18,7 +18,7 @@ namespace Irony.Tests {
     /// Summary description for HeredocTerminalTests
     /// </summary>
     [TestClass]
-    public class HeredocTerminalTests : TerminalTestsBase {
+    public class HeredocTerminalTests {
         private TestContext testContextInstance;
         private Parser _p;
 
@@ -95,56 +95,56 @@ namespace Irony.Tests {
         [TestMethod]
         public void TestHereDocLiteral() {
             var term = new HereDocTerminal("Heredoc","<<",HereDocOptions.None);
-            SetTerminal(term);
-            TryMatch(@"<<BEGIN
+            parser = TestHelper.CreateParser(term);
+            token = parser.ParseToken(@"<<BEGIN
 test
 BEGIN");
             Assert.IsNotNull(_token, "Failed to produce a token on valid string.");
-            Assert.IsNotNull(_token.Value, "Token Value field is null - should be string.");
-            Assert.IsTrue((string)_token.Value == "test", "Token Value is wrong, got {0} of type {1}", _token.Value, _token.Value.GetType().ToString());
+            Assert.IsNotNull(token.Value, "Token Value field is null - should be string.");
+            Assert.IsTrue((string)token.Value == "test", "Token Value is wrong, got {0} of type {1}", token.Value, token.Value.GetType().ToString());
         }
 
         [TestMethod]
         public void TestHereDocIndentedLiteral() {
             var term = new HereDocTerminal("Heredoc", "<<-", HereDocOptions.AllowIndentedEndToken);
-            SetTerminal(term);
-            TryMatch(@"<<-BEGIN
+            parser = TestHelper.CreateParser(term);
+            token = parser.ParseToken(@"<<-BEGIN
 test
                         BEGIN");
             Assert.IsNotNull(_token, "Failed to produce a token on valid string.");
-            Assert.IsNotNull(_token.Value, "Token Value field is null - should be string.");
-            Assert.IsTrue((string)_token.Value == "test", "Token Value is wrong, got {0} of type {1}", _token.Value, _token.Value.GetType().ToString());
+            Assert.IsNotNull(token.Value, "Token Value field is null - should be string.");
+            Assert.IsTrue((string)token.Value == "test", "Token Value is wrong, got {0} of type {1}", token.Value, token.Value.GetType().ToString());
         }
 
         [TestMethod]
         public void TestHereDocLiteralError() {
             var term = new HereDocTerminal("Heredoc","<<",HereDocOptions.None);
-            SetTerminal(term);
-            TryMatch(@"<<BEGIN
+            parser = TestHelper.CreateParser(term);
+            token = parser.ParseToken(@"<<BEGIN
 test");
             Assert.IsNotNull(_token, "Failed to produce a token on valid string.");
-            Assert.IsTrue(_token.IsError(), "Failed to detect error on invalid heredoc.");
+            Assert.IsTrue(token.IsError(), "Failed to detect error on invalid heredoc.");
         }
 
         [TestMethod]
         public void TestHereDocIndentedLiteralError() {
             var term = new HereDocTerminal("Heredoc", "<<-", HereDocOptions.AllowIndentedEndToken);
-            SetTerminal(term);
-            TryMatch(@"<<-BEGIN
+            parser = TestHelper.CreateParser(term);
+            token = parser.ParseToken(@"<<-BEGIN
 test");
             Assert.IsNotNull(_token, "Failed to produce a token on valid string.");
-            Assert.IsTrue(_token.IsError(), "Failed to detect error on invalid heredoc.");
+            Assert.IsTrue(token.IsError(), "Failed to detect error on invalid heredoc.");
         }
 
         [TestMethod]
         public void TestHereDocLiteralErrorIndented() {
             var term = new HereDocTerminal("Heredoc", "<<", HereDocOptions.None);
-            SetTerminal(term);
-            TryMatch(@"<<BEGIN
+            parser = TestHelper.CreateParser(term);
+            token = parser.ParseToken(@"<<BEGIN
 test
      BEGIN");
             Assert.IsNotNull(_token, "Failed to produce a token on valid string.");
-            Assert.IsTrue(_token.IsError(), "Failed to detect error on invalid heredoc.");
+            Assert.IsTrue(token.IsError(), "Failed to detect error on invalid heredoc.");
         }
 
         [TestMethod]

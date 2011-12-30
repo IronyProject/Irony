@@ -12,11 +12,14 @@ namespace Irony.Parsing {
     public ReduceParserAction(Production production) {
       Production = production; 
     }
+    public override string ToString() {
+      return string.Format(Resources.LabelActionReduce, Production.ToStringQuoted());
+    }
 
     /// <summary>Factory method for creating a proper type of reduce parser action. </summary>
     /// <param name="production">A Production to reduce.</param>
     /// <returns>Reduce action.</returns>
-    public static ReduceParserAction CreateReduceParserAction(Production production) {
+    public static ReduceParserAction Create(Production production) {
       var nonTerm = production.LValue;
       //List builder (non-empty production for list non-terminal) is a special case 
       var isList = nonTerm.Flags.IsSet(TermFlags.IsList);
@@ -29,7 +32,6 @@ namespace Irony.Parsing {
         return new ReduceTransientParserAction(production);
       else
         return new ReduceParserAction(production);
-
     }
 
     public override void Execute(ParsingContext context) {
@@ -44,7 +46,7 @@ namespace Irony.Parsing {
       var newNode = new ParseTreeNode(Production.LValue, span);
       for (int i = 0; i < childCount; i++) {
         var childNode = context.ParserStack[firstChildIndex + i];
-        if (childNode.CanIgnore()) continue; //skip punctuation or empty transient nodes
+        if (childNode.IsPunctuationOrEmptyTransient()) continue; //skip punctuation or empty transient nodes
         newNode.ChildNodes.Add(childNode);
       }//for i
       return newNode;
@@ -70,10 +72,10 @@ namespace Irony.Parsing {
       if (context.TracingEnabled) 
         context.AddTrace(Resources.MsgTracePoppedState, Production.LValue.Name);
       // Shift to new state - execute shift over the non-terminal of the production. 
-      // First put this non-terminal (it's node) into parser input field.
-      context.CurrentParserInput = resultNode;
-      var shift = context.CurrentParserState.Actions[Production.LValue];
-      shift.Execute(context);
+      var shift = (ShiftParserAction) context.CurrentParserState.Actions[Production.LValue];
+      // Execute shift to new state
+      context.ParserStack.Push(resultNode, shift.NewState);
+      context.CurrentParserState = shift.NewState;
       //Copy comment block from first child; if comments precede child node, they precede the parent as well. 
       if (resultNode.ChildNodes.Count > 0)
         resultNode.Comments = resultNode.ChildNodes[0].Comments;
@@ -82,9 +84,6 @@ namespace Irony.Parsing {
 
     }
   
-    public override string ToString() {
-      return string.Format(Resources.LabelActionReduce, Production.ToStringQuoted());
-    }
   }//class
 
   /// <summary>Reduces non-terminal marked as Transient by MarkTransient method. </summary>
@@ -96,7 +95,7 @@ namespace Irony.Parsing {
       var childCount = Production.RValues.Count;
       for (int i = 0; i < childCount; i++) {
         var child = context.ParserStack[topIndex - i];
-        if (child.CanIgnore()) continue;
+        if (child.IsPunctuationOrEmptyTransient()) continue;
         return child;
       }
       //Otherwise return an empty transient node; if it is part of the list, the list will skip it
@@ -117,7 +116,7 @@ namespace Irony.Parsing {
       var listNode = context.ParserStack[firstChildIndex]; //get the list already created - it is the first child node
       listNode.Span = context.ComputeStackRangeSpan(childCount);
       var listMember = context.ParserStack.Top; //next list member is the last child - at the top of the stack
-      if (listMember.CanIgnore())
+      if (listMember.IsPunctuationOrEmptyTransient())
         return listNode;
       listNode.ChildNodes.Add(listMember);
       return listNode; 

@@ -129,14 +129,14 @@ namespace Irony.Parsing {
     public void AddParserError(string message, params object[] args) {
       var location = CurrentParserInput == null? Source.Location : CurrentParserInput.Span.Location;
       HasErrors = true; 
-      AddParserMessage(ParserErrorLevel.Error, location, message, args);
+      AddParserMessage(ErrorLevel.Error, location, message, args);
     }
-    public void AddParserMessage(ParserErrorLevel level, SourceLocation location, string message, params object[] args) {
+    public void AddParserMessage(ErrorLevel level, SourceLocation location, string message, params object[] args) {
       if (CurrentParseTree == null) return; 
       if (CurrentParseTree.ParserMessages.Count >= MaxErrors) return;
       if (args != null && args.Length > 0)
         message = string.Format(message, args);
-      CurrentParseTree.ParserMessages.Add(new ParserMessage(level, location, message, CurrentParserState));
+      CurrentParseTree.ParserMessages.Add(new LogMessage(level, location, message, CurrentParserState));
       if (TracingEnabled)
         AddTrace(true, message);
     }
@@ -266,27 +266,6 @@ namespace Irony.Parsing {
 
     #endregion
 
-    #region Operators handling
-    public ExpressionType GetOperatorExpressionType(string symbol) {
-      OperatorInfo opInfo;
-      if (Language.Grammar.OperatorMappings.TryGetValue(symbol, out opInfo))
-        return opInfo.ExpressionType;
-      return CustomExpressionTypes.NotAnExpression;
-    }
-
-    public ExpressionType GetUnaryOperatorExpressionType(string symbol) {
-      switch (symbol.ToLowerInvariant()) {
-        case "+":   return ExpressionType.UnaryPlus;
-        case "-":   return ExpressionType.Negate;
-        case "!":
-        case "not":
-        case "~" :
-          return ExpressionType.Not;
-        default:
-          return CustomExpressionTypes.NotAnExpression; 
-      }
-    }
-    #endregion
 
   }//class
 

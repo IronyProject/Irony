@@ -14,61 +14,53 @@ namespace Irony.Tests {
 #endif
     
   [TestClass]
-  public class FreeTextLiteralTests: TerminalTestsBase  {
-
-    //Helper method - replaces single quote with double quote and then calls TryMatch, just to make it easier to write
-    // strings with quotes for tests
-    private void TryMatchDoubles(string input) {
-      input = input.Replace("'", "\"");
-      TryMatch(input);
-    }
+  public class FreeTextLiteralTests  {
 
     //The following test method and a fix are contributed by ashmind codeplex user
     [TestMethod]
     public void FreeTextLiteralTestEscapes() {
+      Parser parser; Token token;
+
+      //Escapes test
       var term = new FreeTextLiteral("FreeText", ",", ")");
       term.Escapes.Add(@"\\", @"\");
       term.Escapes.Add(@"\,", @",");
       term.Escapes.Add(@"\)", @")"); 
 
-      SetTerminal(term);
-      TryMatch(@"abc\\de\,\)fg,");
-      Assert.IsNotNull(_token, "Failed to produce a token on valid string.");
-      Assert.AreEqual(term, _token.Terminal, "Failed to scan a string - invalid Terminal in the returned token.");
-      Assert.AreEqual(_token.Value.ToString(), @"abc\de,)fg", "Failed to scan a string");
+      parser = TestHelper.CreateParser(term, null);
+      token = parser.ParseInput(@"abc\\de\,\)fg,");
+      Assert.IsNotNull(token, "Failed to produce a token on valid string.");
+      Assert.AreEqual(term, token.Terminal, "Failed to scan a string - invalid Terminal in the returned token.");
+      Assert.AreEqual(token.Value.ToString(), @"abc\de,)fg", "Failed to scan a string");
 
       term = new FreeTextLiteral("FreeText", FreeTextOptions.AllowEof, ";");
-      SetTerminal(term);
-      TryMatch(@"abcdefg");
-      Assert.IsNotNull(_token, "Failed to produce a token for free text ending at EOF.");
-      Assert.AreEqual(term, _token.Terminal, "Failed to scan a free text ending at EOF - invalid Terminal in the returned token.");
-      Assert.AreEqual(_token.Value.ToString(), @"abcdefg", "Failed to scan a free text ending at EOF");
+      parser = TestHelper.CreateParser(term, null);
+      token = parser.ParseInput(@"abcdefg");
+      Assert.IsNotNull(token, "Failed to produce a token for free text ending at EOF.");
+      Assert.AreEqual(term, token.Terminal, "Failed to scan a free text ending at EOF - invalid Terminal in the returned token.");
+      Assert.AreEqual(token.Value.ToString(), @"abcdefg", "Failed to scan a free text ending at EOF");
 
+      //The following test method and a fix are contributed by ashmind codeplex user
       //VAR
       //MESSAGE:STRING80;
       //(*_ORError Message*)
       //END_VAR
       term = new FreeTextLiteral("varContent", "END_VAR");
       term.Firsts.Add("VAR"); 
-      SetTerminal(term);
-      TryMatch("VAR\r\nMESSAGE:STRING80;\r\n(*_ORError Message*)\r\nEND_VAR");
-      Assert.IsNotNull(_token, "Failed to produce a token on valid string.");
-      Assert.AreEqual(term, _token.Terminal, "Failed to scan a string - invalid Terminal in the returned token.");
-      Assert.AreEqual(_token.ValueString, "\r\nMESSAGE:STRING80;\r\n(*_ORError Message*)\r\n", "Failed to scan a string");
+      parser = TestHelper.CreateParser(term, null);
+      token = parser.ParseInput("VAR\r\nMESSAGE:STRING80;\r\n(*_ORError Message*)\r\nEND_VAR");
+      Assert.IsNotNull(token, "Failed to produce a token on valid string.");
+      Assert.AreEqual(term, token.Terminal, "Failed to scan a string - invalid Terminal in the returned token.");
+      Assert.AreEqual(token.ValueString, "\r\nMESSAGE:STRING80;\r\n(*_ORError Message*)\r\n", "Failed to scan a string");
 
       term = new FreeTextLiteral("blank_test", FreeTextOptions.AllowEof);
-      SetTerminal(term);
-      TryMatch(string.Empty);
-      Assert.IsNotNull(_token, "Failed to produce a token on valid string.");
-      Assert.AreEqual(term, _token.Terminal, "Failed to scan a string - invalid Terminal in the returned token.");
-      Assert.AreEqual(_token.ValueString, string.Empty, "Failed to scan a string");
-    }
+      parser = TestHelper.CreateParser(term, terminator: null, noWhitespace: true);
+      token = parser.ParseInput(" ");
+      Assert.IsNotNull(token, "Failed to produce a token on valid string.");
+      Assert.AreEqual(term, token.Terminal, "Failed to scan a string - invalid Terminal in the returned token.");
+      Assert.AreEqual(token.ValueString, " ", "Failed to scan a string");
 
-    //The following test method and a fix are contributed by ashmind codeplex user
-    [TestMethod]
-    public void TestFreeTextLiteralTestVar() {
     }
-
 
   }//class
 }//namespace

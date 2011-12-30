@@ -70,22 +70,25 @@ namespace Irony.Parsing {
       var sw = new Stopwatch();
       sw.Start(); 
       CoreParser.Parse();
-      sw.Stop();
-      Context.CurrentParseTree.ParseTimeMilliseconds = sw.ElapsedMilliseconds;
-      UpdateParseTreeStatus(); 
-      return Context.CurrentParseTree;
-    }
-
-    private void UpdateParseTreeStatus() {
+      //Set Parse status
       var parseTree = Context.CurrentParseTree;
-      if (parseTree.ParserMessages.Count > 0)
-        parseTree.ParserMessages.Sort(ParserMessageList.ByLocation);
-      if (parseTree.HasErrors())
+      bool hasErrors = parseTree.HasErrors();
+      if (hasErrors)
         parseTree.Status = ParseTreeStatus.Error;
       else if (Context.Status == ParserStatus.AcceptedPartial)
         parseTree.Status = ParseTreeStatus.Partial;
       else
         parseTree.Status = ParseTreeStatus.Parsed;
+      //Build AST if no errors and AST flag is set
+      bool createAst = Language.Grammar.LanguageFlags.IsSet(LanguageFlags.CreateAst);
+      if (createAst && !hasErrors)
+        Language.Grammar.BuildAst(Language, parseTree);
+      //Done; record the time
+      sw.Stop();
+      parseTree.ParseTimeMilliseconds = sw.ElapsedMilliseconds;
+      if (parseTree.ParserMessages.Count > 0)
+        parseTree.ParserMessages.Sort(LogMessageList.ByLocation);
+      return parseTree;
     }
 
     public ParseTree ScanOnly(string sourceText, string fileName) {

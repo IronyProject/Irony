@@ -36,15 +36,13 @@ namespace Irony.Parsing {
     public SourceSpan Span;
     //Making ChildNodes property (not field) following request by Matt K, Bill H
     public ParseTreeNodeList ChildNodes {get; private set;}
-    //A list of of child nodes passed thru mapping operation using AstPartsMap. By default, the same as ChildNodes
-    public ParseTreeNodeList MappedChildNodes { get; internal set; }
     public bool IsError;
     internal ParserState State;      //used by parser to store current state when node is pushed into the parser stack
     public object Tag; //for use by custom parsers, Irony does not use it
     public CommentBlock Comments; //Comments preceding this node
 
     private ParseTreeNode(){
-      ChildNodes = MappedChildNodes = new ParseTreeNodeList();
+      ChildNodes = new ParseTreeNodeList();
     }
 
     public ParseTreeNode(Token token) : this()  {
@@ -72,6 +70,30 @@ namespace Irony.Parsing {
         return Term.GetParseNodeCaption(this); 
     }//method
 
+    //A list of of child nodes based on AstPartsMap. By default, the same as ChildNodes
+    private ParseTreeNodeList _mappedChildNodes; 
+    public ParseTreeNodeList MappedChildNodes {
+      get {
+        if (_mappedChildNodes == null)
+          _mappedChildNodes = GetMappedChildNodes();
+        return _mappedChildNodes; 
+      }
+    }
+    private ParseTreeNodeList GetMappedChildNodes() {
+      var map = Term.AstPartsMap;
+      //If no map then mapped list is the same as original 
+      if (map == null)
+        return ChildNodes; 
+      //Create mapped list
+      var nodes = new ParseTreeNodeList();
+      for (int i = 0; i < map.Length; i++) {
+        var index = map[i];
+        nodes.Add(ChildNodes[index]);
+      }
+      return nodes; 
+    }
+
+
     public string FindTokenAndGetText() {
       var tkn = FindToken();
       return tkn == null ? null : tkn.Text;       
@@ -96,7 +118,7 @@ namespace Irony.Parsing {
 
     /// <summary>Returns true if the node is punctuation or it is transient with empty child list.</summary>
     /// <returns>True if parser can safely ignore this node.</returns>
-    public bool CanIgnore() {
+    public bool IsPunctuationOrEmptyTransient() {
       if (Term.Flags.IsSet(TermFlags.IsPunctuation))
         return true;
       if (Term.Flags.IsSet(TermFlags.IsTransient) && ChildNodes.Count == 0)
@@ -133,7 +155,7 @@ namespace Irony.Parsing {
     public readonly TokenList Tokens = new TokenList();
     public readonly TokenList OpenBraces = new TokenList(); 
     public ParseTreeNode Root;
-    public readonly ParserMessageList ParserMessages = new ParserMessageList();
+    public readonly LogMessageList ParserMessages = new LogMessageList();
     public long ParseTimeMilliseconds;
     public object Tag; //custom data object, use it anyway you want
 
@@ -146,14 +168,9 @@ namespace Irony.Parsing {
     public bool HasErrors() {
       if (ParserMessages.Count == 0) return false;
       foreach (var err in ParserMessages)
-        if (err.Level == ParserErrorLevel.Error) return true;
+        if (err.Level == ErrorLevel.Error) return true;
       return false; 
     }//method
-
-    public void CopyMessages(ParserMessageList others, SourceLocation baseLocation, string messagePrefix) {
-      foreach(var other in others) 
-        this.ParserMessages.Add(new ParserMessage(other.Level, baseLocation + other.Location, messagePrefix + other.Message, other.ParserState)); 
-    }//
 
   }//class
 

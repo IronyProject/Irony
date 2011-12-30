@@ -18,7 +18,7 @@ using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 
 namespace Irony.Interpreter.Evaluator {
-  // An ready-to-use evaluator implementation.
+  // A ready-to-use evaluator implementation.
 
   // This grammar describes programs that consist of simple expressions and assignments
   // for ex:

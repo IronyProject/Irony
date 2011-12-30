@@ -17,10 +17,16 @@ using System.Text;
 using System.CodeDom;
 using System.Xml;
 using System.IO;
+
+using Irony.Ast;
 using Irony.Parsing;
 using Irony.Interpreter;
 
 namespace Irony.Interpreter.Ast {
+
+  public static class CustomExpressionTypes {
+    public const ExpressionType NotAnExpression =(ExpressionType) (-1);
+  }
 
   public class AstNodeList : List<AstNode> { }
 
@@ -59,7 +65,7 @@ namespace Irony.Interpreter.Ast {
     }
 
     #region IAstNodeInit Members
-    public virtual void Init(ParsingContext context, ParseTreeNode treeNode) {
+    public virtual void Init(AstContext context, ParseTreeNode treeNode) {
       this.Term = treeNode.Term;
       Span = treeNode.Span;
       ErrorAnchor = this.Location;

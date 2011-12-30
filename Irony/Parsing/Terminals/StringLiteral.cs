@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using Irony.Ast;
 
 namespace Irony.Parsing {
 

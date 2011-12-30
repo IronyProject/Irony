@@ -16,7 +16,8 @@ using System.Linq;
 using System.Linq.Expressions; 
 using System.Text;
 using System.Reflection;
-using Irony.Interpreter;
+
+using Irony.Ast;
 using Irony.Parsing;
 
 namespace Irony.Interpreter.Ast {
@@ -30,13 +31,14 @@ namespace Irony.Interpreter.Ast {
 
     public BinaryOperationNode() { }
 
-    public override void Init(ParsingContext context, ParseTreeNode treeNode) {
+    public override void Init(AstContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
       Left = AddChild("Arg", treeNode.MappedChildNodes[0]);
       Right = AddChild("Arg", treeNode.MappedChildNodes[2]);
       var opToken = treeNode.MappedChildNodes[1].FindToken();
       OpSymbol = opToken.Text;
-      Op = context.GetOperatorExpressionType(OpSymbol);
+      var ictxt = context as InterpreterAstContext;
+      Op = ictxt.OperatorHandler.GetOperatorExpressionType(OpSymbol);
       // Set error anchor to operator, so on error (Division by zero) the explorer will point to 
       // operator node as location, not to the very beginning of the first operand.
       ErrorAnchor = opToken.Location;

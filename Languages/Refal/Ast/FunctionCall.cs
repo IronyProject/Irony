@@ -7,6 +7,7 @@ using System.Linq;
 using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
+using Irony.Ast;
 
 namespace Refal
 {
@@ -21,7 +22,7 @@ namespace Refal
 
 		private SourceSpan? NameSpan { get; set; }
 
-		public override void Init(ParsingContext context, ParseTreeNode parseNode)
+    public override void Init(AstContext context, ParseTreeNode parseNode)
 		{
 			base.Init(context, parseNode);
 

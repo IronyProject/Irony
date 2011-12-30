@@ -12,6 +12,7 @@
     <AssemblyName>Irony.Interpreter</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -50,6 +51,7 @@
     <Compile Include="Ast\Base\AstNode.cs" />
     <Compile Include="Ast\Expressions\IndexedAccessNode.cs" />
     <Compile Include="Ast\Expressions\MemberAccessNode.cs" />
+    <Compile Include="Ast\AstContext\InterpreterAstContext.cs" />
     <Compile Include="LanguageRuntime\SpecialFormsLibrary.cs" />
     <Compile Include="Ast\Expressions\BinaryOperationNode.cs" />
     <Compile Include="Ast\Expressions\ExpressionListNode.cs" />
@@ -85,11 +87,12 @@
     <Compile Include="Bindings\SpecialFormBinding.cs" />
     <Compile Include="Bindings\ModuleExport.cs" />
     <Compile Include="SriptApplication\ConsoleAdaptor.cs" />
+    <Compile Include="Ast\AstContext\OperatorHandler.cs" />
+    <Compile Include="Utilities\Util.cs" />
     <Compile Include="_Evaluator\ExpressionEvaluator.cs" />
     <Compile Include="_Evaluator\ExpressionEvaluatorGrammar.cs" />
     <Compile Include="_Evaluator\ExpressionEvaluatorRuntime.cs" />
     <None Include="irony.snk" />
-    <None Include="Utilities\HotSwapDictionary.cs" />
     <Compile Include="Bindings\Binding.cs" />
     <Compile Include="Bindings\ClrInteropBindings.cs" />
     <Compile Include="Bindings\SlotBinding.cs" />

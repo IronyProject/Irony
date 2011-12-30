@@ -14,7 +14,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
-using Irony.Interpreter;
+
+using Irony.Ast;
 using Irony.Parsing;
 
 namespace Irony.Interpreter.Ast {
@@ -25,11 +26,9 @@ namespace Irony.Interpreter.Ast {
     public ExpressionType BinaryExpressionType; 
     public AstNode Expression;
     private OperatorImplementation _lastUsed;
-    private int _failureCount; 
+    private int _failureCount;
 
-    public AssignmentNode() {}
-
-    public override void Init(ParsingContext context, ParseTreeNode treeNode) {
+    public override void Init(AstContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
       Target = AddChild(NodeUseType.ValueWrite, "To", treeNode.MappedChildNodes[0]);
       //Get Op and baseOp if it is combined assignment
@@ -43,9 +42,10 @@ namespace Irony.Interpreter.Ast {
       // TODO: this is not always correct: in Pascal the assignment operator is :=.
       IsAugmented = AssignmentOp.Length > 1;
       if (IsAugmented) {
-        //it is combined op
-        base.ExpressionType = context.GetOperatorExpressionType(AssignmentOp);
-        BinaryExpressionType = OperatorUtility.GetBinaryOperatorForAugmented(this.ExpressionType);
+
+        var ictxt = context as InterpreterAstContext;
+        base.ExpressionType = ictxt.OperatorHandler.GetOperatorExpressionType(AssignmentOp);
+        BinaryExpressionType = ictxt.OperatorHandler.GetBinaryOperatorForAugmented(this.ExpressionType);
         Target.UseType = NodeUseType.ValueReadWrite;
       }
     }

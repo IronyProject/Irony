@@ -2,6 +2,7 @@
 // Written by Alexey Yakovlev <yallie@yandex.ru>
 // http://refal.codeplex.com
 
+using Irony.Ast;
 using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
@@ -16,7 +17,7 @@ namespace Refal
 	{
 		public AstNode InnerExpression { get; private set; }
 
-		public override void Init(ParsingContext context, ParseTreeNode parseNode)
+		public override void Init(AstContext context, ParseTreeNode parseNode)
 		{
 			base.Init(context, parseNode);
 

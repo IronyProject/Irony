@@ -88,11 +88,19 @@ namespace Irony.Parsing {
 
     #endregion
 
-    #region Events: ValidateToken
+    #region Events: ValidateToken, ParseNodeCreated
     public event EventHandler<ValidateTokenEventArgs> ValidateToken;
     protected internal virtual void OnValidateToken(ParsingContext context) {
       if (ValidateToken != null)
         ValidateToken(this,  context.SharedValidateTokenEventArgs);
+    }
+
+    //Invoked when ParseTreeNode is created from the token. This is parser-preview event, when parser
+    // just received the token, wrapped it into ParseTreeNode and is about to look at it.
+    public event EventHandler<ParsingEventArgs> ParseNodeCreated;
+    protected internal virtual void OnParseNodeCreated(ParsingContext context) {
+      if (ParseNodeCreated != null)
+        ParseNodeCreated(this, context.SharedParsingEventArgs);
     }
     #endregion
 

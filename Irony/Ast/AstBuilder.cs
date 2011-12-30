@@ -2,21 +2,70 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 using Irony.Parsing;
+using System.Reflection.Emit;
 
 namespace Irony.Ast {
 
-  public class AstBuilder<TAstNode> {
+  public class AstBuilder {
+    public AstContext Context; 
 
-    public Type DefaultNodeType;
-    public Type DefaultLiteralNodeType; //default node type for literals
-    public Type DefaultIdentifierNodeType; //default node type for identifiers
-
-    public AstBuilder(LanguageData language) {
+    public AstBuilder(AstContext context) {
+      Context = context; 
     }
 
-    public TAstNode BuildAstBottomUp(ParseTree parseTree) {
+    public virtual void BuildAst(ParseTree parseTree) {
+      Context.Messages = parseTree.ParserMessages; 
+      BuildAst(parseTree.Root);
     }
+
+    public virtual void BuildAst(ParseTreeNode parseNode) {
+      var term = parseNode.Term;
+      if (term.Flags.IsSet(TermFlags.NoAstNode) || parseNode.AstNode != null) return; 
+      //children first
+      var processChildren = !parseNode.Term.Flags.IsSet(TermFlags.AstDelayChildren) && parseNode.ChildNodes.Count > 0;
+      if (processChildren) {
+        var mappedChildNodes = parseNode.MappedChildNodes;
+        for (int i = 0; i < mappedChildNodes.Count; i++)
+          BuildAst(mappedChildNodes[i]);
+      }
+      //create the node
+      //First check the custom creator delegate
+      if (term.AstNodeCreator != null) {
+        term.AstNodeCreator(Context, parseNode);
+        // We assume that Node creator method creates node and initializes it, so parser does not need to call 
+        // IAstNodeInit.Init() method on node object. But we do call AstNodeCreated custom event on term.
+        term.OnAstNodeCreated(parseNode);
+        return; 
+      }
+      //No custom creator. We create node from AstNodeType. We use compiled delegate for this which we create on the fly.
+      if (term.DefaultAstNodeCreator == null) {
+        var nodeType = term.AstNodeType ?? Context.Language.Grammar.DefaultNodeType;
+        term.DefaultAstNodeCreator = CompileDefaultNodeCreator(nodeType);
+      }
+      //Invoke the creator
+      parseNode.AstNode = term.DefaultAstNodeCreator();
+      //Initialize node
+      var iInit = parseNode.AstNode as IAstNodeInit;
+      if (iInit != null)
+        iInit.Init(Context, parseNode);
+      //Invoke the event on term
+      term.OnAstNodeCreated(parseNode);
+    }//method
+
+    //Contributed by William Horner (wmh)
+    private DefaultAstNodeCreator CompileDefaultNodeCreator(Type nodeType) {
+      ConstructorInfo constr = nodeType.GetConstructor(Type.EmptyTypes);
+      DynamicMethod method = new DynamicMethod("CreateAstNode", nodeType, Type.EmptyTypes);
+      ILGenerator il = method.GetILGenerator();
+      il.Emit(OpCodes.Newobj, constr);
+      il.Emit(OpCodes.Ret);
+      var result  = (DefaultAstNodeCreator) method.CreateDelegate(typeof(DefaultAstNodeCreator));
+      return result; 
+    }
+
+
   }//class
 
   /* OLD code from CoreParser
@@ -43,15 +92,6 @@ namespace Irony.Ast {
         } catch (Exception ex) {
           Context.AddParserMessage(ParserErrorLevel.Error, parseNode.Span.Location, Resources.ErrFailedCreateNode, parseNode.Term.Name, ex.Message); 
         }
-      }
-
-      private bool CheckCreateMappedChildNodeList(ParseTreeNode parseTreeNode) {
-        var term = parseTreeNode.Term;
-        if (term.AstPartsMap == null) return false; 
-        parseTreeNode.MappedChildNodes = new ParseTreeNodeList();
-        foreach (var index in term.AstPartsMap)
-          parseTreeNode.MappedChildNodes.Add(parseTreeNode.ChildNodes[index]);
-        return true; 
       }
 
   

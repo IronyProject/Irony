@@ -30,7 +30,6 @@ namespace Irony.Parsing.Construction {
 
     internal void Build() {
       _data = _language.ScannerData;
-      _data.LineTerminatorsArray = _grammar.LineTerminators.ToCharArray();
       InitMultilineTerminalsList();
       ProcessNonGrammarTerminals(); 
       BuildTerminalsLookupTable();
@@ -69,22 +68,29 @@ namespace Irony.Parsing.Construction {
         if (term.Flags.IsSet(TermFlags.IsNonScanner | TermFlags.IsNonGrammar)) continue; 
         var firsts = term.GetFirsts();
         if (firsts == null || firsts.Count == 0) {
-          _grammar.FallbackTerminals.Add(term);
+          _grammarData.NoPrefixTerminals.Add(term);
           continue; //foreach term
         }
         AddTerminalToLookup(_data.TerminalsLookup, term, firsts); 
       }//foreach term
 
-      _data.FallbackTerminals.AddRange(_grammar.FallbackTerminals); 
-      // Sort the FallbackTerminals in reverse priority order
-      _data.FallbackTerminals.Sort(Terminal.ByPriorityReverse);      
-      //Now add Fallback terminals to every list, then sort lists by reverse priority
-      // so that terminal with higher priority comes first in the list
-      foreach(TerminalList list in _data.TerminalsLookup.Values) {
-        list.AddRange(_grammar.FallbackTerminals);
+      if (_grammarData.NoPrefixTerminals.Count > 0) {
+        //copy them to Scanner data
+        _data.NoPrefixTerminals.AddRange(_grammarData.NoPrefixTerminals);
+        // Sort in reverse priority order
+        _data.NoPrefixTerminals.Sort(Terminal.ByPriorityReverse);
+        //Now add Fallback terminals to every list, then sort lists by reverse priority
+        // so that terminal with higher priority comes first in the list
+        foreach (TerminalList list in _data.TerminalsLookup.Values) 
+          foreach (var ft in _data.NoPrefixTerminals)
+            if (!list.Contains(ft))
+              list.Add(ft);
+      }//if count > 0
+
+      //Finally sort every list in terminals lookup table
+      foreach (TerminalList list in _data.TerminalsLookup.Values) 
         if(list.Count > 1)
           list.Sort(Terminal.ByPriorityReverse);
-      }//foreach list
  
     }//method
 

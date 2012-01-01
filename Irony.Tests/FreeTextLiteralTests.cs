@@ -18,7 +18,7 @@ namespace Irony.Tests {
 
     //The following test method and a fix are contributed by ashmind codeplex user
     [TestMethod]
-    public void FreeTextLiteralTestEscapes() {
+    public void TestFreeTextLiteral_Escapes() {
       Parser parser; Token token;
 
       //Escapes test
@@ -53,8 +53,8 @@ namespace Irony.Tests {
       Assert.AreEqual(term, token.Terminal, "Failed to scan a string - invalid Terminal in the returned token.");
       Assert.AreEqual(token.ValueString, "\r\nMESSAGE:STRING80;\r\n(*_ORError Message*)\r\n", "Failed to scan a string");
 
-      term = new FreeTextLiteral("blank_test", FreeTextOptions.AllowEof);
-      parser = TestHelper.CreateParser(term, terminator: null, noWhitespace: true);
+      term = new FreeTextLiteral("freeText", FreeTextOptions.AllowEof);
+      parser = TestHelper.CreateParser(term, terminator: null, suppressWhitespace: true);
       token = parser.ParseInput(" ");
       Assert.IsNotNull(token, "Failed to produce a token on valid string.");
       Assert.AreEqual(term, token.Terminal, "Failed to scan a string - invalid Terminal in the returned token.");

@@ -97,17 +97,14 @@ namespace Irony.Parsing {
 
     //Invoked when ParseTreeNode is created from the token. This is parser-preview event, when parser
     // just received the token, wrapped it into ParseTreeNode and is about to look at it.
-    public event EventHandler<ParsingEventArgs> ParseNodeCreated;
-    protected internal virtual void OnParseNodeCreated(ParsingContext context) {
-      if (ParseNodeCreated != null)
-        ParseNodeCreated(this, context.SharedParsingEventArgs);
+    public event EventHandler<ParsingEventArgs> ParserInputPreview;
+    protected internal virtual void OnParserInputPreview(ParsingContext context) {
+      if (ParserInputPreview != null)
+        ParserInputPreview(this, context.SharedParsingEventArgs);
     }
     #endregion
 
     #region static comparison methods
-    public static int ByName(Terminal x, Terminal y) {
-      return string.Compare(x.ToString(), y.ToString());
-    }
     public static int ByPriorityReverse(Terminal x, Terminal y) {
       if (x.Priority > y.Priority)
         return -1;
@@ -132,35 +129,21 @@ namespace Irony.Parsing {
     [Obsolete("Deprecated: use constants in TerminalPriority class instead")]
     public const int ReservedWordsPriority = 900; //almost top one
  
-    public static string TerminalsToString(IEnumerable<Terminal> terminals, string separator) {
-      var sb = new StringBuilder();
-      foreach (var term in terminals) {
-        sb.Append(term.ToString());
-        sb.Append(separator);
-      }
-      return sb.ToString().Trim();
+    public static string TerminalsToString(IEnumerable<Terminal> terminals) {
+      return string.Join(" ", terminals);
     }
   
   }//class
 
   public class TerminalSet : HashSet<Terminal> {
     public override string ToString() {
-      return Terminal.TerminalsToString(this, " "); 
+      return Terminal.TerminalsToString(this); 
     }
   }
 
-  //No-duplicates list of terminals
   public class TerminalList : List<Terminal> {
-    public new void Add(Terminal terminal) {
-      if (!Contains(terminal))
-        base.Add(terminal); 
-    }
-    public new void AddRange(IEnumerable<Terminal> terminals) {
-      foreach(var terminal in terminals)
-        Add(terminal); 
-    }
     public override string ToString() {
-      return Terminal.TerminalsToString(this, " "); 
+      return Terminal.TerminalsToString(this); 
     }
   }
 

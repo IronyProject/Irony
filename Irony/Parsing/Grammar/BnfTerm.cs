@@ -62,15 +62,16 @@ namespace Irony.Parsing {
   public abstract class BnfTerm {
     #region consructors
     public BnfTerm(string name) : this(name, name) { }
-    public BnfTerm(string name, string errorAlias) {
-      Name = name;
-      ErrorAlias = errorAlias;
-    }
     public BnfTerm(string name, string errorAlias, Type nodeType) : this(name, errorAlias) {
       AstNodeType = nodeType;
     }
     public BnfTerm(string name, string errorAlias, AstNodeCreator nodeCreator) : this(name, errorAlias) {
       AstNodeCreator = nodeCreator;  
+    }
+    public BnfTerm(string name, string errorAlias) {
+      Name = name;
+      ErrorAlias = errorAlias;
+      _hashCode = (_hashCounter++).GetHashCode(); 
     }
     #endregion
 
@@ -90,9 +91,11 @@ namespace Irony.Parsing {
       return Name;
     }
 
+    //Hash code - we use static counter to generate hash codes
+    private static int _hashCounter;
+    private int _hashCode;
     public override int GetHashCode() {
-      if (Name == null) return 0;
-      return Name.GetHashCode();
+      return _hashCode; 
     }
     #endregion 
 
@@ -221,6 +224,10 @@ namespace Irony.Parsing {
 
 
     #endregion
+
+    public static int ByName(BnfTerm x, BnfTerm y) {
+      return string.Compare(x.Name, y.Name);
+    }
 
   }//class
 

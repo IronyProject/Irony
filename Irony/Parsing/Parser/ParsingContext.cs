@@ -65,10 +65,10 @@ namespace Irony.Parsing {
     public ParserState CurrentParserState { get; internal set; }
     public ParseTreeNode CurrentParserInput { get; internal set; }
     public Token CurrentToken; //The token just scanned by Scanner
+    public TokenList CurrentCommentTokens = new TokenList(); //accumulated comment tokens
     public Token PreviousToken;
     public SourceLocation PreviousLineStart; //Location of last line start
 
-    public CommentBlock CurrentCommentBlock; 
     //list for terminals - for current parser state and current input char
     public TerminalList CurrentTerminals = new TerminalList();
 
@@ -195,6 +195,7 @@ namespace Irony.Parsing {
     internal void Reset() {
       CurrentParserState = Parser.InitialState; 
       CurrentParserInput = null;
+      CurrentCommentTokens = new TokenList(); 
       ParserStack.Clear();
       HasErrors = false; 
       ParserStack.Push(new ParseTreeNode(CurrentParserState));

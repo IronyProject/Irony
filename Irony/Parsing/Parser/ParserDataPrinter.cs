@@ -66,17 +66,17 @@ namespace Irony.Parsing {
     }
 
     public static string PrintTerminals(LanguageData language) {
-      StringBuilder sb = new StringBuilder();
-      foreach (Terminal term in language.GrammarData.Terminals) {
-        sb.Append(term.ToString());
-        sb.AppendLine();
-      }
-      return sb.ToString();
+      var termList = language.GrammarData.Terminals.ToList();
+      termList.Sort(BnfTerm.ByName);
+      var result = string.Join(Environment.NewLine, termList);
+      return result; 
     }
 
     public static string PrintNonTerminals(LanguageData language) {
       StringBuilder sb = new StringBuilder();
-      foreach (NonTerminal nt in language.GrammarData.NonTerminals) {
+      var ntList = language.GrammarData.NonTerminals.ToList();
+      ntList.Sort(BnfTerm.ByName);
+      foreach (var nt in ntList) {
         sb.Append(nt.Name);
         sb.Append(nt.Flags.IsSet(TermFlags.IsNullable) ? "  (Nullable) " : string.Empty);
         sb.AppendLine();

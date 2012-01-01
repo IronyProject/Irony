@@ -19,7 +19,7 @@ namespace Irony.Tests {
   public class NumberLiteralTests {
 
     [TestMethod]
-    public void GeneralTest() {
+    public void TestNumber_General() {
       Parser parser; Token token;
 
       NumberLiteral number = new NumberLiteral("Number");
@@ -38,7 +38,7 @@ namespace Irony.Tests {
 
     //The following "sign" test methods and a fix are contributed by ashmind codeplex user
      [TestMethod]
-    public void TestSignedDoesNotMatchSingleMinus() {
+    public void TestNumber_SignedDoesNotMatchSingleMinus() {
       Parser parser; Token token;
 
       var number = new NumberLiteral("number", NumberOptions.AllowSign);
@@ -48,7 +48,7 @@ namespace Irony.Tests {
     }
 
     [TestMethod]
-    public void TestSignedDoesNotMatchSinglePlus() {
+     public void TestNumber_SignedDoesNotMatchSinglePlus() {
        Parser parser; Token token;
 
        var number = new NumberLiteral("number", NumberOptions.AllowSign);
@@ -58,7 +58,7 @@ namespace Irony.Tests {
      }
     
     [TestMethod]
-    public void TestSignedMatchesNegativeCorrectly() {
+    public void TestNumber_SignedMatchesNegativeCorrectly() {
       Parser parser; Token token;
 
       var number = new NumberLiteral("number", NumberOptions.AllowSign);
@@ -68,7 +68,7 @@ namespace Irony.Tests {
     }
 
     [TestMethod]
-    public void TestCSharpNumber() {
+    public void TestNumber_CSharp() {
       Parser parser; Token token;
 
       double eps = 0.0001;
@@ -155,7 +155,7 @@ namespace Irony.Tests {
     }
 
     [TestMethod]
-    public void TestVBNumber() {
+    public void TestNumber_VB() {
       Parser parser; Token token;
 
       double eps = 0.0001;
@@ -268,7 +268,7 @@ namespace Irony.Tests {
 
 
     [TestMethod]
-    public void TestPythonNumber() {
+    public void TestNumber_Python() {
       Parser parser; Token token;
 
       double eps = 0.0001;
@@ -332,7 +332,7 @@ namespace Irony.Tests {
     }
 
     [TestMethod]
-    public void TestSchemeNumber() {
+    public void TestNumber_Scheme() {
       Parser parser; Token token;
 
       double eps = 0.0001;
@@ -358,7 +358,7 @@ namespace Irony.Tests {
     }//method
 
     [TestMethod]
-    public void TestNumberWithUnderscore() {
+    public void TestNumber_WithUnderscore() {
       Parser parser; Token token;
 
       var number = new NumberLiteral("number", NumberOptions.AllowUnderscore);
@@ -374,7 +374,7 @@ namespace Irony.Tests {
     //There was a bug discovered in NumberLiteral - it cannot parse appropriately the int.MinValue value.
     // This test ensures that the issue is fixed.
     [TestMethod]
-    public void TestMinMaxValues() {
+    public void TestNumber_MinMaxValues() {
       Parser parser; Token token;
 
       var number = new NumberLiteral("number", NumberOptions.AllowSign);

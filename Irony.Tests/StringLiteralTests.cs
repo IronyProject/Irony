@@ -19,7 +19,7 @@ namespace Irony.Tests {
 
     //The following test method and a fix are contributed by ashmind codeplex user
     [TestMethod]
-    public void TestStringQuoteJustBeforeEofIsHandledCorrectly() {
+    public void TestString_QuoteJustBeforeEof() {
       Parser parser; Token token;
 
       parser = TestHelper.CreateParser(new StringLiteral("String", "'"));
@@ -29,7 +29,7 @@ namespace Irony.Tests {
 
 
     [TestMethod]
-    public void TestPythonString() {
+    public void TestString_Python() {
       Parser parser; Token token;
 
       parser = TestHelper.CreateParser(TerminalFactory.CreatePythonString("String"));
@@ -59,7 +59,7 @@ namespace Irony.Tests {
     }//method
 
     [TestMethod]
-    public void TestCSharpString() {
+    public void TestString_CSharp() {
       Parser parser; Token token;
 
       parser = TestHelper.CreateParser(TerminalFactory.CreateCSharpString("String"));
@@ -103,7 +103,7 @@ namespace Irony.Tests {
     }
 
     [TestMethod]
-    public void TestCSharpChar() {
+    public void TestString_CSharpChar() {
       Parser parser; Token token;
 
       parser = TestHelper.CreateParser(TerminalFactory.CreateCSharpChar("Char"));
@@ -119,7 +119,7 @@ namespace Irony.Tests {
     }
 
     [TestMethod]
-    public void TestVbString() {
+    public void TestString_VB() {
       Parser parser; Token token;
 
       parser = TestHelper.CreateParser(TerminalFactory.CreateVbString("String"));

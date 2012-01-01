@@ -18,8 +18,7 @@ using System.Text;
 namespace Irony.Parsing {
 
   public class ImpliedPrecedenceHint : GrammarHint {
-    public readonly int Precedence;
-    public readonly Associativity Associativity;
+    //GrammarHint inherits Precedence and Associativity members from BnfTerm; we'll use them to store implied values for this hint
 
     public ImpliedPrecedenceHint(int precedence, Associativity associativity) {
       Precedence = precedence;
@@ -30,7 +29,7 @@ namespace Irony.Parsing {
       var curr = owner.Core.Current;
       var currTerm = curr as Terminal;
       if (currTerm != null) {
-        currTerm.ParseNodeCreated += Terminal_ParseNodeCreated; 
+        currTerm.ParserInputPreview += Terminal_ParseNodeCreated; 
         return; 
       }
       var currNonTerm = curr as NonTerminal;

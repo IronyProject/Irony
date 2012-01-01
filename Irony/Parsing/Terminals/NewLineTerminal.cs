@@ -29,9 +29,7 @@ namespace Irony.Parsing {
     #region overrides: Init, GetFirsts, TryMatch
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
-      //Remove new line chars from whitespace
-      foreach(char t in LineTerminators)
-        grammarData.Grammar.WhitespaceChars = grammarData.Grammar.WhitespaceChars.Replace(t.ToString(), string.Empty);
+      Grammar.UsesNewLine = true; //That will prevent SkipWhitespace method from skipping new-line chars
     }
     public override IList<string> GetFirsts() {
       StringList firsts = new StringList();

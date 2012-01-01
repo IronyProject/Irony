@@ -8,7 +8,7 @@ namespace Irony.Ast {
   // Grammar Explorer uses this interface to discover and display the AST tree after parsing the input
   // (Grammar Explorer additionally uses ToString method of the node to get the text representation of the node)
   public interface IBrowsableAstNode {
-    SourceLocation Location { get; }
+    SourceSpan Span { get; }
     IEnumerable GetChildNodes();
   }
 

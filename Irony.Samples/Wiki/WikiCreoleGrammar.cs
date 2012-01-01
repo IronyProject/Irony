@@ -76,13 +76,17 @@ http://www.wikicreole.org/";
       wikiText.Rule = MakeStarRule(wikiText, wikiElement); 
 
       this.Root =  wikiText; 
-      this.WhitespaceChars = string.Empty;
       MarkTransient(wikiElement); 
       //We need to clear punctuation flag on NewLine, so it is not removed from parse tree
       NewLine.SetFlag(TermFlags.IsPunctuation, false); 
       this.LanguageFlags |= LanguageFlags.DisableScannerParserLink | LanguageFlags.NewLineBeforeEOF;
  
     }
+
+    public override void SkipWhitespace(ISourceStream source) {
+      return; //no whitespaces at all
+    }
+
 
     public string RunSample(RunSampleArgs args) {
       var converter = new WikiHtmlConverter();

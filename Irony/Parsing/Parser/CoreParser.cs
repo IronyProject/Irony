@@ -57,46 +57,47 @@ namespace Irony.Parsing {
 
     #region reading input
     public void ReadInput() {
-      var token = GetScannerToken();
-      if (token.Terminal.Flags.IsSet(TermFlags.IsBrace))
-        token = CheckBraceToken(token);
-      Context.CurrentParserInput = new ParseTreeNode(token);
-      token.Terminal.OnParseNodeCreated(Context);
-      //attach comments if any accumulated to content token
-      if (Context.CurrentCommentBlock != null && token.Terminal.Category == TokenCategory.Content) { 
-        Context.CurrentParserInput.Comments = Context.CurrentCommentBlock;
-        Context.CurrentCommentBlock = null;
-      }
-    }
-
-    // Reads token from scanner, skips all non-grammar tokens but accumulates comment tokens in CurrentCommentBlock
-    private Token GetScannerToken() {
       Token token;
       Terminal term;
+      //Get token from scanner while skipping all comment tokens (but accumulating them in comment block)
       do {
         token = Parser.Scanner.GetToken();
-        term = token.Terminal; 
-        if (term.Category == TokenCategory.Comment) {
-          if (Context.CurrentCommentBlock == null) 
-            Context.CurrentCommentBlock = new CommentBlock();
-          Context.CurrentCommentBlock.Tokens.Add(token);
-        }
+        term = token.Terminal;
+        if (term.Category == TokenCategory.Comment)
+          Context.CurrentCommentTokens.Add(token);
       } while (term.Flags.IsSet(TermFlags.IsNonGrammar) && term != _grammar.Eof);
-      return token; 
-    }
-
-    private void CheckNewToken(Token token) {
-      switch (token.Category) {
-        case TokenCategory.Comment:
-          if (Context.CurrentCommentBlock == null) 
-            Context.CurrentCommentBlock = new CommentBlock();
-          Context.CurrentCommentBlock.Tokens.Add(token);
-          break; 
-        case TokenCategory.Content:
-          break; 
+      //Check brace token      
+      if (term.Flags.IsSet(TermFlags.IsBrace) && !CheckBraceToken(token))
+        token = new Token(_grammar.SyntaxError, token.Location, token.Text,
+           string.Format(Resources.ErrUnmatchedCloseBrace, token.Text));
+      //Create parser input node
+      Context.CurrentParserInput = new ParseTreeNode(token);
+      //attach comments if any accumulated to content token
+      if (token.Terminal.Category == TokenCategory.Content) { 
+        Context.CurrentParserInput.Comments = Context.CurrentCommentTokens;
+        Context.CurrentCommentTokens = new TokenList();
       }
-
+      //Fire event on Terminal
+      token.Terminal.OnParserInputPreview(Context);
     }
+
+    // We assume here that the token is a brace (opening or closing)
+    private bool CheckBraceToken(Token token) {
+      if (token.Terminal.Flags.IsSet(TermFlags.IsOpenBrace)) {
+        Context.OpenBraces.Push(token);
+        return true;
+      }
+      //it is closing brace; check if we have opening brace in the stack
+      var braces = Context.OpenBraces;
+      var match = (braces.Count > 0 && braces.Peek().Terminal.IsPairFor == token.Terminal);
+      if (!match) return false;
+      //Link both tokens, pop the stack and return true
+      var openingBrace = braces.Pop();
+      openingBrace.OtherBrace = token;
+      token.OtherBrace = openingBrace;
+      return true;
+    }
+
     #endregion
 
     #region execute actions
@@ -185,27 +186,6 @@ namespace Irony.Parsing {
       return null;
     }
 
-    #endregion
-
-    #region Braces handling
-    private Token CheckBraceToken(Token token) {
-      if (token.Terminal.Flags.IsSet(TermFlags.IsOpenBrace)) {
-        Context.OpenBraces.Push(token);
-        return token;
-      }
-      //it is closing brace; check if we have opening brace
-      var braces = Context.OpenBraces; 
-      var mismatch = (braces.Count == 0 || braces.Peek().Terminal.IsPairFor != token.Terminal);
-      if (mismatch)
-        return new Token(_grammar.SyntaxError, token.Location, token.Text,
-            string.Format(Resources.ErrUnmatchedCloseBrace, token.Text));
-
-      //Link both tokens, pop the stack and return true
-      var openingBrace = braces.Pop();
-      openingBrace.OtherBrace = token;
-      token.OtherBrace = openingBrace; 
-      return token;
-    }
     #endregion
 
   }//class

@@ -105,7 +105,7 @@ namespace Irony.Parsing {
       }
       //if there are "first" chars defined by categories, add the terminal to FallbackTerminals
       if (this.StartCharCategories.Count > 0)
-        Grammar.FallbackTerminals.Add(this);
+        grammarData.NoPrefixTerminals.Add(this);
       if (this.EditorInfo == null) 
         this.EditorInfo = new TokenEditorInfo(TokenType.Identifier, TokenColor.Identifier, TokenTriggers.None);
     }
@@ -175,7 +175,8 @@ namespace Irony.Parsing {
       while (AllChars.IndexOf(source.PreviewChar) >= 0 && !source.EOF())
         source.PreviewPosition++;
       //if it is not a terminator then cancel; we need to go through full algorithm
-      if (GrammarData.WhitespaceAndDelimiters.IndexOf(source.PreviewChar) < 0) return null;
+      if (!this.Grammar.IsWhitespaceOrDelimiter(source.PreviewChar)) 
+        return null;
       var token = source.CreateToken(this.OutputTerminal);
       if(CaseRestriction != CaseRestriction.None && !CheckCaseRestriction(token.ValueString))
         return null; 
@@ -193,7 +194,8 @@ namespace Irony.Parsing {
       CharList outputChars = new CharList();
       while (!source.EOF()) {
         char current = source.PreviewChar;
-        if (GrammarData.WhitespaceAndDelimiters.IndexOf(current) >= 0) break;
+        if (Grammar.IsWhitespaceOrDelimiter(current)) 
+          break;
         if (allowEscapes && current == this.EscapeChar) {
           current = ReadUnicodeEscape(source, details);
           //We  need to back off the position. ReadUnicodeEscape sets the position to symbol right after escape digits.  

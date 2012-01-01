@@ -34,11 +34,10 @@ namespace Irony.Parsing {
     //used in scanner error recovery, and in quick parse path in NumberLiterals, Identifiers 
     public string Delimiters = null; 
 
+    [Obsolete("Override Grammar.SkipWhitespace method instead.")]
+    // Not used anymore
     public string WhitespaceChars = " \t\r\n\v";
     
-    //Used for line counting in source file
-    public string LineTerminators = "\n\r\v";
-
     public LanguageFlags LanguageFlags = LanguageFlags.Default;
 
     public TermReportGroupList TermReportGroups = new TermReportGroupList();
@@ -48,18 +47,9 @@ namespace Irony.Parsing {
     // Tokens produced by these terminals will be ignored by parser input. 
     public readonly TerminalSet NonGrammarTerminals = new TerminalSet();
 
-    //Terminals that either don't have explicitly declared Firsts symbols, or can start with chars not covered by these Firsts 
-    // For ex., identifier in c# can start with a Unicode char in one of several Unicode classes, not necessarily latin letter.
-    //  Whenever terminals with explicit Firsts() cannot produce a token, the Scanner would call terminals from this fallback 
-    // collection to see if they can produce it. 
-    // Note that IdentifierTerminal automatically add itself to this collection if its StartCharCategories list is not empty, 
-    // so programmer does not need to do this explicitly
-    public readonly TerminalSet FallbackTerminals = new TerminalSet();
-
     public Type DefaultNodeType;
     public Type DefaultLiteralNodeType; //default node type for literals
     public Type DefaultIdentifierNodeType; //default node type for identifiers
-
 
     /// <summary>
     /// The main root entry for the grammar. 
@@ -208,6 +198,40 @@ namespace Irony.Parsing {
     /// as the one to use.
     /// </summary>
     public virtual void OnScannerSelectTerminal(ParsingContext context) { }
+
+    /// <summary>Skips whitespace characters in the input stream. </summary>
+    /// <remarks>Override this method if your language has non-standard whitespace characters.</remarks>
+    /// <param name="source">Source stream.</param>
+    public virtual void SkipWhitespace(ISourceStream source) {
+      while (!source.EOF()) {
+        switch (source.PreviewChar) {
+          case ' ':  case '\t':
+            break;
+          case '\r':   case '\n':  case '\v':
+            if (UsesNewLine) return; //do not treat as whitespace if language is line-based
+            break;
+          default:
+            return;
+        }//switch
+        source.PreviewPosition++; 
+      }//while
+    }//method
+
+    /// <summary>Returns true if a character is whitespace or delimiter. Used in quick-scanning versions of some terminals. </summary>
+    /// <param name="ch">The character to check.</param>
+    /// <returns>True if a character is whitespace or delimiter; otherwise, false.</returns>
+    /// <remarks>Does not have to be completely accurate, should recognize most common characters that are special chars by themselves
+    /// and may never be part of other multi-character tokens. </remarks>
+    public virtual bool IsWhitespaceOrDelimiter(char ch) {
+      switch (ch) {
+        case ' ':   case '\t': case '\r': case '\n': case '\v': //whitespaces
+        case '(': case ')': case ',': case ';': case '[': case ']': case '{': case '}':
+          return true;
+        default:
+          return false;
+      }//switch
+    }//method
+
 
     /// <summary>
     /// Override this method to provide custom conflict resolution; for example, custom code may decide proper shift or reduce
@@ -397,9 +421,11 @@ namespace Irony.Parsing {
     // Empty object is used to identify optional element: 
     //    term.Rule = term1 | Empty;
     public readonly Terminal Empty = new Terminal("EMPTY");
+    public readonly NewLineTerminal NewLine = new NewLineTerminal("LF");
+    //set to true automatically by NewLine terminal; prevents treating new-line characters as whitespaces
+    public bool UsesNewLine; 
     // The following terminals are used in indent-sensitive languages like Python;
     // they are not produced by scanner but are produced by CodeOutlineFilter after scanning
-    public readonly NewLineTerminal NewLine = new NewLineTerminal("LF");
     public readonly Terminal Indent = new Terminal("INDENT", TokenCategory.Outline, TermFlags.IsNonScanner);
     public readonly Terminal Dedent = new Terminal("DEDENT", TokenCategory.Outline, TermFlags.IsNonScanner);
     //End-of-Statement terminal - used in indentation-sensitive language to signal end-of-statement;

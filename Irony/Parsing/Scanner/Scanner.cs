@@ -82,9 +82,8 @@ namespace Irony.Parsing {
         Context.CurrentToken = Context.BufferedTokens.Pop();
         return; 
       }
-      //2. Skip whitespace. We don't need to check for EOF: at EOF we start getting 0-char, so we'll get out automatically
-      while (_grammar.WhitespaceChars.IndexOf(Context.Source.PreviewChar) >= 0)
-        Context.Source.PreviewPosition++;
+      //2. Skip whitespace.
+      _grammar.SkipWhitespace(Context.Source);
       //3. That's the token start, calc location (line and column)
       Context.Source.Position = Context.Source.PreviewPosition;
       //4. Check for EOF
@@ -199,7 +198,7 @@ namespace Irony.Parsing {
       Context.CurrentTerminals.Clear(); 
       TerminalList termsForCurrentChar;
       if(!Data.TerminalsLookup.TryGetValue(Context.Source.PreviewChar, out termsForCurrentChar))
-        termsForCurrentChar = Data.FallbackTerminals; 
+        termsForCurrentChar = Data.NoPrefixTerminals; 
       //if we are recovering, previewing or there's no parser state, then return list as is
       if(Context.Status == ParserStatus.Recovering || Context.Status == ParserStatus.Previewing
           || Context.CurrentParserState == null || _grammar.LanguageFlags.IsSet(LanguageFlags.DisableScannerParserLink)
@@ -270,15 +269,16 @@ namespace Irony.Parsing {
     #endregion
 
     #region Error recovery
+    //Simply skip until whitespace or delimiter character
     private bool Recover() {
-      Context.Source.PreviewPosition++;
-      var wsd = Data.Language.GrammarData.WhitespaceAndDelimiters;
+      var src = Context.Source; 
+      src.PreviewPosition++;
       while (!Context.Source.EOF()) {
-        if(wsd.IndexOf(Context.Source.PreviewChar) >= 0) {
-          Context.Source.Position = Context.Source.PreviewPosition;
+        if(_grammar.IsWhitespaceOrDelimiter(src.PreviewChar)) {
+          src.Position = src.PreviewPosition;
           return true;
         }
-        Context.Source.PreviewPosition++;
+        src.PreviewPosition++;
       }
       return false; 
     }

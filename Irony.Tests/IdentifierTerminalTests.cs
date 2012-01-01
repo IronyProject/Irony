@@ -17,7 +17,7 @@ namespace Irony.Tests {
   public class IdentifierTerminalTests {
 
     [TestMethod]
-    public void TestCSharpIdentifier() {
+    public void TestIdentifier_CSharp() {
       Parser parser; Token token;
 
       parser = TestHelper.CreateParser(TerminalFactory.CreateCSharpIdentifier("Identifier"));
@@ -41,7 +41,7 @@ namespace Irony.Tests {
     }//method
 
     [TestMethod]
-    public void TestIdentifierCaseRestrictions() {
+    public void TestIdentifier_CaseRestrictions() {
       Parser parser; Token token;
 
       var id = new IdentifierTerminal("identifier"); 
@@ -85,21 +85,3 @@ namespace Irony.Tests {
 }//namespace
 
 
-/* example for c# from 3.0 spec:
-class @class
-{
-	public static void @static(bool @bool) {
-		if (@bool)
-			System.Console.WriteLine("true");
-		else
-			System.Console.WriteLine("false");
-	}	
-}
-class Class1
-{
-	static void M() {
-		cl\u0061ss.st\u0061tic(true);
-	}
-}
-
-*/

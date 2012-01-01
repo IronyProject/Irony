@@ -44,6 +44,7 @@ namespace Irony.GrammarExplorer {
     ScriptException _runtimeError;
     GrammarLoader _grammarLoader = new GrammarLoader();
     bool _loaded;
+    bool _treeClickDisabled; //to temporarily disable tree click when we locate the node programmatically
 
     #region Form load/unload events
     private void fmExploreGrammar_Load(object sender, EventArgs e) {
@@ -392,6 +393,7 @@ namespace Irony.GrammarExplorer {
         txtSource.Text = null;  //to clear any old formatting
         txtSource.Text = reader.ReadToEnd();
         txtSource.Select(0, 0);
+        
       } catch (Exception e) {
         MessageBox.Show(e.Message);
       } finally {
@@ -488,6 +490,8 @@ namespace Irony.GrammarExplorer {
     }
 
     private void tvParseTree_AfterSelect(object sender, TreeViewEventArgs e) {
+      if (_treeClickDisabled) 
+        return; 
       var vtreeNode = tvParseTree.SelectedNode;
       if (vtreeNode == null) return;
       var parseNode = vtreeNode.Tag as ParseTreeNode;
@@ -496,11 +500,13 @@ namespace Irony.GrammarExplorer {
     }
 
     private void tvAst_AfterSelect(object sender, TreeViewEventArgs e) {
+      if (_treeClickDisabled)
+        return;
       var treeNode = tvAst.SelectedNode;
       if (treeNode == null) return;
       var iBrowsable = treeNode.Tag as IBrowsableAstNode;
       if (iBrowsable == null) return;
-      ShowSourceLocation(iBrowsable.Location, 1);
+      ShowSourceLocation(iBrowsable.Span.Location, 1);
     }
 
     bool _changingGrammar;
@@ -537,6 +543,7 @@ namespace Irony.GrammarExplorer {
 
     private void btnFileOpen_Click(object sender, EventArgs e) {
       if (dlgOpenFile.ShowDialog() != DialogResult.OK) return;
+      ClearParserOutput();
       LoadSourceFile(dlgOpenFile.FileName);
     }
 
@@ -634,6 +641,62 @@ namespace Irony.GrammarExplorer {
       else
         fmShowException.ShowException(_runtimeError); 
     }
+
+    private void btnLocate_Click(object sender, EventArgs e) {
+      if (_parseTree == null)
+        ParseSample();
+      var p = txtSource.SelectionStart;
+      LocateParseNode(p);
+      LocateAstNode(p);
+      txtSource.Focus(); //set focus back to source
+    }
+
+    private void LocateParseNode(int position) {
+      if (tvParseTree.Nodes.Count == 0) return;
+      try {
+        _treeClickDisabled = true;
+        SelectParseNode(tvParseTree.Nodes, position);
+        if (tvParseTree.SelectedNode != null)
+          tvParseTree.SelectedNode.EnsureVisible();
+      } finally {
+        _treeClickDisabled = false;
+      }
+    }
+
+    private void SelectParseNode(TreeNodeCollection nodes, int position) {
+      foreach (TreeNode node in nodes) {
+        var pNode = node.Tag as ParseTreeNode;
+        if (pNode != null && pNode.Span.InRange(position)) {
+          tvParseTree.SelectedNode = node;
+          if (node.Nodes.Count > 0)
+            SelectParseNode(node.Nodes, position);
+        }
+      }
+    }
+
+    private void LocateAstNode(int position) {
+      if (tvAst.Nodes.Count == 0) return;
+      try {
+        _treeClickDisabled = true;
+        SelectAstNode(tvAst.Nodes, position);
+        if (tvAst.SelectedNode != null)
+          tvAst.SelectedNode.EnsureVisible();
+      } finally {
+        _treeClickDisabled = false;
+      }
+    }
+
+    private void SelectAstNode(TreeNodeCollection nodes, int position) {
+      foreach (TreeNode node in nodes) {
+        var astNode = node.Tag as IBrowsableAstNode;
+        if (astNode != null && astNode.Span.InRange(position)) {
+          tvAst.SelectedNode = node;
+          if (node.Nodes.Count > 0)
+            SelectAstNode(node.Nodes, position);
+        }
+      }
+    }
+
 
     #endregion
 

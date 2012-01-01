@@ -34,7 +34,6 @@ namespace Irony.Interpreter.Ast {
   public partial class AstNode : IAstNodeInit, IBrowsableAstNode, IVisitableNode {
     public AstNode Parent;
     public BnfTerm Term;
-    public SourceSpan Span;
     public AstNodeFlags Flags;
     protected ExpressionType ExpressionType = CustomExpressionTypes.NotAnExpression;
     protected object LockObject = new object();
@@ -53,7 +52,7 @@ namespace Irony.Interpreter.Ast {
     // Default AstNode.ToString() returns 'Role: AsString', which is used for showing node in AST tree. 
     public string AsString { get; protected set; }
     public readonly AstNodeList ChildNodes = new AstNodeList();  //List of child nodes
-    
+
     //Reference to Evaluate method implementation. Initially set to DoEvaluate virtual method. 
     public EvaluateMethod Evaluate;
     public ValueSetterMethod SetValue; 
@@ -63,6 +62,7 @@ namespace Irony.Interpreter.Ast {
       this.Evaluate = DoEvaluate;
       this.SetValue = DoSetValue;
     }
+    public SourceLocation Location { get { return Span.Location; } }
 
     #region IAstNodeInit Members
     public virtual void Init(AstContext context, ParseTreeNode treeNode) {
@@ -132,9 +132,8 @@ namespace Irony.Interpreter.Ast {
     public virtual System.Collections.IEnumerable GetChildNodes() {
       return ChildNodes;
     }
-    public SourceLocation Location {
-      get { return Span.Location; }
-    }
+    public SourceSpan Span { get; set; }
+
     #endregion
 
     #region Visitors, Iterators

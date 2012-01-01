@@ -21,7 +21,7 @@ namespace Irony.Tests {
   public class EvaluatorTests {
 
     [TestMethod]
-    public void EvaluatorTestOps() {
+    public void TestEvaluator_Ops() {
       var eval = new ExpressionEvaluator();
       string script; 
       object result; 
@@ -97,7 +97,7 @@ z -= y             # = 3
     }
 
     [TestMethod]
-    public void EvaluatorTestBuiltIns() {
+    public void TestEvaluator_BuiltIns() {
       var eval = new ExpressionEvaluator();
       string script;
       object result;
@@ -134,7 +134,7 @@ z -= y             # = 3
     }
 
     [TestMethod]
-    public void EvaluatorTestIif() {
+    public void TestEvaluator_Iif() {
       var eval = new ExpressionEvaluator();
       string script;
       object result;
@@ -151,7 +151,7 @@ z -= y             # = 3
     }
 
     [TestMethod]
-    public void EvaluatorTestMemberAccess() {
+    public void TestEvaluator_MemberAccess() {
       var eval = new ExpressionEvaluator();
       eval.Globals["foo"] = new Foo(); 
       string script;
@@ -206,7 +206,7 @@ R = foo.Field + foo.Prop ";
     }
 
     [TestMethod]
-    public void EvaluatorTestArrayDictDataRow() {
+    public void TestEvaluator_ArrayDictDataRow() {
       var eval = new ExpressionEvaluator();
       //Create an array, a dictionary and a data row and add them to Globals
       eval.Globals["primes"] = new int[] { 3, 5, 7, 11, 13 };

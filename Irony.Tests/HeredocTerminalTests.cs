@@ -14,6 +14,8 @@ namespace Irony.Tests {
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 #endif
 
+  //Currently not used, HereDocTerminal needs to be finished
+
     /// <summary>
     /// Summary description for HeredocTerminalTests
     /// </summary>

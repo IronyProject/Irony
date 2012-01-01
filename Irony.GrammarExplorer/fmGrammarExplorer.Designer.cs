@@ -26,14 +26,14 @@ namespace Irony.GrammarExplorer {
     private void InitializeComponent() {
       this.components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(fmGrammarExplorer));
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle19 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle20 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle21 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle22 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle23 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle24 = new System.Windows.Forms.DataGridViewCellStyle();
       this.tabGrammar = new System.Windows.Forms.TabControl();
       this.pageTerminals = new System.Windows.Forms.TabPage();
       this.txtTerms = new System.Windows.Forms.TextBox();
@@ -94,6 +94,9 @@ namespace Irony.GrammarExplorer {
       this.pageParserOutput = new System.Windows.Forms.TabPage();
       this.groupBox1 = new System.Windows.Forms.GroupBox();
       this.gridCompileErrors = new System.Windows.Forms.DataGridView();
+      this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.grpCompileInfo = new System.Windows.Forms.GroupBox();
       this.label12 = new System.Windows.Forms.Label();
       this.lblParseErrorCount = new System.Windows.Forms.Label();
@@ -106,6 +109,10 @@ namespace Irony.GrammarExplorer {
       this.pageParserTrace = new System.Windows.Forms.TabPage();
       this.grpParserActions = new System.Windows.Forms.GroupBox();
       this.gridParserTrace = new System.Windows.Forms.DataGridView();
+      this.State = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.Stack = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.Input = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.Action = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.splitter1 = new System.Windows.Forms.Splitter();
       this.grpTokens = new System.Windows.Forms.GroupBox();
       this.lstTokens = new System.Windows.Forms.ListBox();
@@ -123,13 +130,7 @@ namespace Irony.GrammarExplorer {
       this.label5 = new System.Windows.Forms.Label();
       this.lblRunTime = new System.Windows.Forms.Label();
       this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-      this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.State = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.Stack = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.Input = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.Action = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.btnLocate = new System.Windows.Forms.Button();
       this.tabGrammar.SuspendLayout();
       this.pageTerminals.SuspendLayout();
       this.pageNonTerms.SuspendLayout();
@@ -281,6 +282,7 @@ namespace Irony.GrammarExplorer {
       // 
       // panel1
       // 
+      this.panel1.Controls.Add(this.btnLocate);
       this.panel1.Controls.Add(this.chkDisableHili);
       this.panel1.Controls.Add(this.btnToXml);
       this.panel1.Controls.Add(this.btnRun);
@@ -308,48 +310,52 @@ namespace Irony.GrammarExplorer {
       // btnToXml
       // 
       this.btnToXml.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnToXml.Location = new System.Drawing.Point(875, 4);
+      this.btnToXml.Location = new System.Drawing.Point(756, 4);
       this.btnToXml.Margin = new System.Windows.Forms.Padding(4);
       this.btnToXml.Name = "btnToXml";
       this.btnToXml.Size = new System.Drawing.Size(87, 28);
       this.btnToXml.TabIndex = 8;
-      this.btnToXml.Text = "->XML";
+      this.btnToXml.Text = "To XML";
+      this.toolTip.SetToolTip(this.btnToXml, "Print out Xml representation of the parse tree");
       this.btnToXml.UseVisualStyleBackColor = true;
       this.btnToXml.Click += new System.EventHandler(this.btnToXml_Click);
       // 
       // btnRun
       // 
       this.btnRun.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnRun.Location = new System.Drawing.Point(781, 4);
+      this.btnRun.Location = new System.Drawing.Point(662, 4);
       this.btnRun.Margin = new System.Windows.Forms.Padding(4);
       this.btnRun.Name = "btnRun";
       this.btnRun.Size = new System.Drawing.Size(87, 28);
       this.btnRun.TabIndex = 7;
       this.btnRun.Text = "Run";
+      this.toolTip.SetToolTip(this.btnRun, "Run the source sample");
       this.btnRun.UseVisualStyleBackColor = true;
       this.btnRun.Click += new System.EventHandler(this.btnRun_Click);
       // 
       // btnFileOpen
       // 
       this.btnFileOpen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnFileOpen.Location = new System.Drawing.Point(589, 4);
+      this.btnFileOpen.Location = new System.Drawing.Point(470, 4);
       this.btnFileOpen.Margin = new System.Windows.Forms.Padding(4);
       this.btnFileOpen.Name = "btnFileOpen";
       this.btnFileOpen.Size = new System.Drawing.Size(87, 28);
       this.btnFileOpen.TabIndex = 6;
       this.btnFileOpen.Text = "Load ...";
+      this.toolTip.SetToolTip(this.btnFileOpen, "Load a source sample...");
       this.btnFileOpen.UseVisualStyleBackColor = true;
       this.btnFileOpen.Click += new System.EventHandler(this.btnFileOpen_Click);
       // 
       // btnParse
       // 
       this.btnParse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnParse.Location = new System.Drawing.Point(683, 4);
+      this.btnParse.Location = new System.Drawing.Point(564, 4);
       this.btnParse.Margin = new System.Windows.Forms.Padding(4);
       this.btnParse.Name = "btnParse";
       this.btnParse.Size = new System.Drawing.Size(89, 28);
       this.btnParse.TabIndex = 1;
       this.btnParse.Text = "Parse";
+      this.toolTip.SetToolTip(this.btnParse, "Parse source sample");
       this.btnParse.UseVisualStyleBackColor = true;
       this.btnParse.Click += new System.EventHandler(this.btnParse_Click);
       // 
@@ -392,6 +398,7 @@ namespace Irony.GrammarExplorer {
       // 
       this.tvParseTree.Dock = System.Windows.Forms.DockStyle.Fill;
       this.tvParseTree.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.tvParseTree.HideSelection = false;
       this.tvParseTree.Indent = 16;
       this.tvParseTree.Location = new System.Drawing.Point(4, 4);
       this.tvParseTree.Margin = new System.Windows.Forms.Padding(4);
@@ -416,11 +423,12 @@ namespace Irony.GrammarExplorer {
       // 
       this.tvAst.Dock = System.Windows.Forms.DockStyle.Fill;
       this.tvAst.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.tvAst.HideSelection = false;
       this.tvAst.Indent = 16;
       this.tvAst.Location = new System.Drawing.Point(4, 4);
       this.tvAst.Margin = new System.Windows.Forms.Padding(4);
       this.tvAst.Name = "tvAst";
-      this.tvAst.Size = new System.Drawing.Size(451, 497);
+      this.tvAst.Size = new System.Drawing.Size(451, 498);
       this.tvAst.TabIndex = 1;
       this.tvAst.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tvAst_AfterSelect);
       // 
@@ -786,8 +794,8 @@ namespace Irony.GrammarExplorer {
       // 
       // dataGridViewTextBoxColumn2
       // 
-      dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn2.DefaultCellStyle = dataGridViewCellStyle1;
+      dataGridViewCellStyle17.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      this.dataGridViewTextBoxColumn2.DefaultCellStyle = dataGridViewCellStyle17;
       this.dataGridViewTextBoxColumn2.HeaderText = "Error Level";
       this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
       this.dataGridViewTextBoxColumn2.ReadOnly = true;
@@ -796,8 +804,8 @@ namespace Irony.GrammarExplorer {
       // 
       // dataGridViewTextBoxColumn5
       // 
-      dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-      this.dataGridViewTextBoxColumn5.DefaultCellStyle = dataGridViewCellStyle2;
+      dataGridViewCellStyle18.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+      this.dataGridViewTextBoxColumn5.DefaultCellStyle = dataGridViewCellStyle18;
       this.dataGridViewTextBoxColumn5.HeaderText = "Description";
       this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
       this.dataGridViewTextBoxColumn5.ReadOnly = true;
@@ -808,8 +816,8 @@ namespace Irony.GrammarExplorer {
       // 
       this.dataGridViewTextBoxColumn6.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
       this.dataGridViewTextBoxColumn6.DataPropertyName = "State";
-      dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn6.DefaultCellStyle = dataGridViewCellStyle3;
+      dataGridViewCellStyle19.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      this.dataGridViewTextBoxColumn6.DefaultCellStyle = dataGridViewCellStyle19;
       this.dataGridViewTextBoxColumn6.HeaderText = "Parser State";
       this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
       this.dataGridViewTextBoxColumn6.ReadOnly = true;
@@ -866,6 +874,41 @@ namespace Irony.GrammarExplorer {
       this.gridCompileErrors.Size = new System.Drawing.Size(1241, 170);
       this.gridCompileErrors.TabIndex = 2;
       this.gridCompileErrors.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridCompileErrors_CellDoubleClick);
+      // 
+      // dataGridViewTextBoxColumn3
+      // 
+      dataGridViewCellStyle20.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      this.dataGridViewTextBoxColumn3.DefaultCellStyle = dataGridViewCellStyle20;
+      this.dataGridViewTextBoxColumn3.HeaderText = "L, C";
+      this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
+      this.dataGridViewTextBoxColumn3.ReadOnly = true;
+      this.dataGridViewTextBoxColumn3.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      this.dataGridViewTextBoxColumn3.ToolTipText = "Double-click grid cell to locate in source code";
+      this.dataGridViewTextBoxColumn3.Width = 50;
+      // 
+      // dataGridViewTextBoxColumn4
+      // 
+      dataGridViewCellStyle21.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+      this.dataGridViewTextBoxColumn4.DefaultCellStyle = dataGridViewCellStyle21;
+      this.dataGridViewTextBoxColumn4.HeaderText = "Error Message";
+      this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
+      this.dataGridViewTextBoxColumn4.ReadOnly = true;
+      this.dataGridViewTextBoxColumn4.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      this.dataGridViewTextBoxColumn4.Width = 1000;
+      // 
+      // dataGridViewTextBoxColumn1
+      // 
+      this.dataGridViewTextBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+      this.dataGridViewTextBoxColumn1.DataPropertyName = "State";
+      dataGridViewCellStyle22.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle22;
+      this.dataGridViewTextBoxColumn1.HeaderText = "Parser State";
+      this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+      this.dataGridViewTextBoxColumn1.ReadOnly = true;
+      this.dataGridViewTextBoxColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+      this.dataGridViewTextBoxColumn1.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      this.dataGridViewTextBoxColumn1.ToolTipText = "Double-click grid cell to navigate to state details";
+      this.dataGridViewTextBoxColumn1.Width = 93;
       // 
       // grpCompileInfo
       // 
@@ -1019,6 +1062,51 @@ namespace Irony.GrammarExplorer {
       this.gridParserTrace.Size = new System.Drawing.Size(1093, 138);
       this.gridParserTrace.TabIndex = 0;
       this.gridParserTrace.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridParserTrace_CellDoubleClick);
+      // 
+      // State
+      // 
+      this.State.DataPropertyName = "State";
+      dataGridViewCellStyle23.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      this.State.DefaultCellStyle = dataGridViewCellStyle23;
+      this.State.HeaderText = "State";
+      this.State.Name = "State";
+      this.State.ReadOnly = true;
+      this.State.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+      this.State.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      this.State.ToolTipText = "Double-click grid cell to navigate to state details";
+      this.State.Width = 60;
+      // 
+      // Stack
+      // 
+      this.Stack.DataPropertyName = "StackTop";
+      dataGridViewCellStyle24.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+      this.Stack.DefaultCellStyle = dataGridViewCellStyle24;
+      this.Stack.HeaderText = "Stack Top";
+      this.Stack.Name = "Stack";
+      this.Stack.ReadOnly = true;
+      this.Stack.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+      this.Stack.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      this.Stack.ToolTipText = "Double-click grid cell to locate node in source code";
+      this.Stack.Width = 200;
+      // 
+      // Input
+      // 
+      this.Input.DataPropertyName = "Input";
+      this.Input.HeaderText = "Input";
+      this.Input.Name = "Input";
+      this.Input.ReadOnly = true;
+      this.Input.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      this.Input.ToolTipText = "Double-click grid cell to locate in source code";
+      this.Input.Width = 200;
+      // 
+      // Action
+      // 
+      this.Action.DataPropertyName = "Action";
+      this.Action.HeaderText = "Action";
+      this.Action.Name = "Action";
+      this.Action.ReadOnly = true;
+      this.Action.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      this.Action.Width = 600;
       // 
       // splitter1
       // 
@@ -1215,85 +1303,18 @@ namespace Irony.GrammarExplorer {
       this.lblRunTime.TabIndex = 18;
       this.lblRunTime.Text = "0";
       // 
-      // dataGridViewTextBoxColumn3
+      // btnLocate
       // 
-      dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn3.DefaultCellStyle = dataGridViewCellStyle4;
-      this.dataGridViewTextBoxColumn3.HeaderText = "L, C";
-      this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
-      this.dataGridViewTextBoxColumn3.ReadOnly = true;
-      this.dataGridViewTextBoxColumn3.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.dataGridViewTextBoxColumn3.ToolTipText = "Double-click grid cell to locate in source code";
-      this.dataGridViewTextBoxColumn3.Width = 50;
-      // 
-      // dataGridViewTextBoxColumn4
-      // 
-      dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-      this.dataGridViewTextBoxColumn4.DefaultCellStyle = dataGridViewCellStyle5;
-      this.dataGridViewTextBoxColumn4.HeaderText = "Error Message";
-      this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
-      this.dataGridViewTextBoxColumn4.ReadOnly = true;
-      this.dataGridViewTextBoxColumn4.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.dataGridViewTextBoxColumn4.Width = 1000;
-      // 
-      // dataGridViewTextBoxColumn1
-      // 
-      this.dataGridViewTextBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-      this.dataGridViewTextBoxColumn1.DataPropertyName = "State";
-      dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle6;
-      this.dataGridViewTextBoxColumn1.HeaderText = "Parser State";
-      this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-      this.dataGridViewTextBoxColumn1.ReadOnly = true;
-      this.dataGridViewTextBoxColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-      this.dataGridViewTextBoxColumn1.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.dataGridViewTextBoxColumn1.ToolTipText = "Double-click grid cell to navigate to state details";
-      this.dataGridViewTextBoxColumn1.Width = 93;
-      // 
-      // State
-      // 
-      this.State.DataPropertyName = "State";
-      dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.State.DefaultCellStyle = dataGridViewCellStyle7;
-      this.State.HeaderText = "State";
-      this.State.Name = "State";
-      this.State.ReadOnly = true;
-      this.State.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-      this.State.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.State.ToolTipText = "Double-click grid cell to navigate to state details";
-      this.State.Width = 60;
-      // 
-      // Stack
-      // 
-      this.Stack.DataPropertyName = "StackTop";
-      dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-      this.Stack.DefaultCellStyle = dataGridViewCellStyle8;
-      this.Stack.HeaderText = "Stack Top";
-      this.Stack.Name = "Stack";
-      this.Stack.ReadOnly = true;
-      this.Stack.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-      this.Stack.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.Stack.ToolTipText = "Double-click grid cell to locate node in source code";
-      this.Stack.Width = 200;
-      // 
-      // Input
-      // 
-      this.Input.DataPropertyName = "Input";
-      this.Input.HeaderText = "Input";
-      this.Input.Name = "Input";
-      this.Input.ReadOnly = true;
-      this.Input.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.Input.ToolTipText = "Double-click grid cell to locate in source code";
-      this.Input.Width = 200;
-      // 
-      // Action
-      // 
-      this.Action.DataPropertyName = "Action";
-      this.Action.HeaderText = "Action";
-      this.Action.Name = "Action";
-      this.Action.ReadOnly = true;
-      this.Action.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.Action.Width = 600;
+      this.btnLocate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.btnLocate.Location = new System.Drawing.Point(851, 4);
+      this.btnLocate.Margin = new System.Windows.Forms.Padding(4);
+      this.btnLocate.Name = "btnLocate";
+      this.btnLocate.Size = new System.Drawing.Size(87, 28);
+      this.btnLocate.TabIndex = 10;
+      this.btnLocate.Text = "Locate >>";
+      this.toolTip.SetToolTip(this.btnLocate, "Locate the source position in parse/Ast tree. ");
+      this.btnLocate.UseVisualStyleBackColor = true;
+      this.btnLocate.Click += new System.EventHandler(this.btnLocate_Click);
       // 
       // fmGrammarExplorer
       // 
@@ -1449,6 +1470,7 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.DataGridViewTextBoxColumn Stack;
     private System.Windows.Forms.DataGridViewTextBoxColumn Input;
     private System.Windows.Forms.DataGridViewTextBoxColumn Action;
+    private System.Windows.Forms.Button btnLocate;
 
   }
 }

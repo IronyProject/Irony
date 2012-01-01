@@ -137,8 +137,9 @@ namespace Irony.Parsing {
     protected override Token QuickParse(ParsingContext context, ISourceStream source) {
       if (IsSet(NumberOptions.DisableQuickParse)) return null;
       char current = source.PreviewChar;
-      //it must be a digit followed by a terminator
-      if (!char.IsDigit(current) || GrammarData.WhitespaceAndDelimiters.IndexOf(source.NextPreviewChar) < 0)
+      //it must be a digit followed by a whitespace or delimiter
+      if (!char.IsDigit(current))  return null;
+      if (!Grammar.IsWhitespaceOrDelimiter(source.NextPreviewChar))
         return null; 
       int iValue = current - '0';
       object value = null;

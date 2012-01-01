@@ -20,12 +20,14 @@ namespace Irony.Parsing {
     StringComparison _stringComparison;
     int _tabWidth;
     char[] _chars;
+    int _textLength;
 
     public SourceStream(string text, bool caseSensitive, int tabWidth) : this(text, caseSensitive, tabWidth, new SourceLocation()) {
     }
     
     public SourceStream(string text, bool caseSensitive, int tabWidth, SourceLocation initialLocation) {
-      Text = text;
+      _text = text;
+      _textLength = _text.Length; 
       _chars = Text.ToCharArray(); 
       _stringComparison = caseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase;
       _tabWidth = tabWidth; 
@@ -35,7 +37,9 @@ namespace Irony.Parsing {
     }
 
     #region ISourceStream Members
-    public string Text { get; private set; }
+    public string Text {
+      get { return _text; } 
+    } string _text;
 
     public int Position {
       get { return _location.Position; }
@@ -51,27 +55,31 @@ namespace Irony.Parsing {
       set { _location = value; }
     } SourceLocation _location;
 
-    public int PreviewPosition {get; set; }
+    public int PreviewPosition {
+      get { return _previewPosition; }
+      set { _previewPosition = value; } 
+    } int _previewPosition;
 
     public char PreviewChar {
       [System.Diagnostics.DebuggerStepThrough]
       get {
-        if (PreviewPosition >= Text.Length) return '\0';
-        return Text[PreviewPosition];
+        if (_previewPosition >= _textLength) 
+          return '\0';
+        return _chars[_previewPosition];
       }
     }
 
     public char NextPreviewChar {
       [System.Diagnostics.DebuggerStepThrough]
       get {
-        if (PreviewPosition + 1 >= Text.Length) return '\0';
-        return Text[PreviewPosition + 1];
+        if (_previewPosition + 1 >= _textLength) return '\0';
+        return _chars[_previewPosition + 1];
       }
     }
 
     public bool MatchSymbol(string symbol) {
       try {
-        int cmp = string.Compare(Text, PreviewPosition, symbol, 0, symbol.Length, _stringComparison);
+        int cmp = string.Compare(_text, PreviewPosition, symbol, 0, symbol.Length, _stringComparison);
         return cmp == 0;
       } catch { 
         //exception may be thrown if Position + symbol.length > text.Length; 
@@ -93,27 +101,28 @@ namespace Irony.Parsing {
 
     [System.Diagnostics.DebuggerStepThrough]
     public bool EOF() {
-      return PreviewPosition >= Text.Length;
+      return _previewPosition >= _textLength;
     }
     #endregion
 
     //returns substring from Location.Position till (PreviewPosition - 1)
     private string GetPreviewText() {
-      var until = PreviewPosition;
-
-      if (until > Text.Length) until = Text.Length;
-      string text = Text.Substring(_location.Position, until - _location.Position);
+      var until = _previewPosition;
+      if (until > _textLength) until = _textLength;
+      var p = _location.Position;
+      string text = Text.Substring(p, until - p);
       return text;
     }
 
+    // To make debugging easier: show 20 chars from current position
     public override string ToString() {
       string result;
       try {
-        //show just 20 chars from current position
-        if (Location.Position + 20 < Text.Length)
-          result = Text.Substring(Location.Position, 20) + Resources.LabelSrcHaveMore;// " ..."
+        var p = Location.Position;
+        if (p + 20 < _textLength)
+          result = _text.Substring(p, 20) + Resources.LabelSrcHaveMore;// " ..."
         else
-          result = Text.Substring(Location.Position) + Resources.LabelEofMark; //"(EOF)"
+          result = _text.Substring(p) + Resources.LabelEofMark; //"(EOF)"
       } catch (Exception) {
         result = PreviewChar + Resources.LabelSrcHaveMore;
       }

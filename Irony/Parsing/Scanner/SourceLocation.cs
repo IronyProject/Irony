@@ -63,6 +63,10 @@ namespace Irony.Parsing {
     public int EndPosition {
       get { return Location.Position + Length; }
     }
+    public bool InRange(int position) {
+      return (position >= Location.Position && position <= EndPosition);
+    }
+
   }
 
 

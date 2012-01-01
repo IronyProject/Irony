@@ -39,7 +39,7 @@ namespace Irony.Parsing {
     public bool IsError;
     internal ParserState State;      //used by parser to store current state when node is pushed into the parser stack
     public object Tag; //for use by custom parsers, Irony does not use it
-    public CommentBlock Comments; //Comments preceding this node
+    public TokenList Comments; //Comments preceding this node
 
     private ParseTreeNode(){
       ChildNodes = new ParseTreeNodeList();
@@ -133,13 +133,6 @@ namespace Irony.Parsing {
   }//class
 
   public class ParseTreeNodeList : List<ParseTreeNode> { }
-
-  public class CommentBlock {
-    public TokenList Tokens = new TokenList();
-    public override string ToString() {
-      return string.Join(Environment.NewLine, Tokens); 
-    }
-  }
 
   public enum ParseTreeStatus {
     Parsing,

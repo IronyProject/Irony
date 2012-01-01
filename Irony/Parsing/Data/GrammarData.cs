@@ -25,9 +25,9 @@ namespace Irony.Parsing {
     public NonTerminal AugmentedRoot;
     public NonTerminalSet AugmentedSnippetRoots = new NonTerminalSet(); 
     public readonly BnfTermSet AllTerms = new BnfTermSet();
-    public readonly TerminalList Terminals = new TerminalList();
-    public readonly NonTerminalList NonTerminals = new NonTerminalList();
-    public string WhitespaceAndDelimiters { get; internal set; }
+    public readonly TerminalSet Terminals = new TerminalSet();
+    public readonly NonTerminalSet NonTerminals = new NonTerminalSet();
+    public TerminalSet NoPrefixTerminals = new TerminalSet(); //Terminals that have no limited set of prefixes
 
     public GrammarData(LanguageData language) {
       Language = language;

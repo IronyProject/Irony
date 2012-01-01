@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Irony.Parsing;
+using System.Globalization;
 
 namespace Irony.Samples.CSharp {
 
@@ -96,6 +97,7 @@ namespace Irony.Samples.CSharp {
       var unary_operator = new NonTerminal("unary_operator");
       var assignment_operator = new NonTerminal("assignment_operator");
       var primary_expression = new NonTerminal("primary_expression");
+      var unary_expression = new NonTerminal("unary_expression");
       var pre_incr_decr_expression = new NonTerminal("pre_incr_decr_expression");
       var post_incr_decr_expression = new NonTerminal("post_incr_decr_expression");
       var primary_no_array_creation_expression = new NonTerminal("primary_no_array_creation_expression");
@@ -345,14 +347,8 @@ namespace Irony.Samples.CSharp {
 
       this.Delimiters = "{}[](),:;+-*/%&|^!~<>=";
       this.MarkPunctuation(";", ",", "(", ")", "{", "}", "[", "]", ":");
-      this.MarkTransient(namespace_member_declaration, member_declaration, type_declaration, statement, embedded_statement, expression);
-      //Whitespace and NewLine characters
-      //TODO: 
-      // 1. In addition to "normal" whitespace chars, the spec mentions "any char of unicode class Z" -
-      //   need to create special comment-based terminal that simply eats these category-based whitechars and produces comment token. 
-      // 2. Add support for multiple line terminators to LineComment
-      this.LineTerminators = "\r\n\u2085\u2028\u2029"; //CR, linefeed, nextLine, LineSeparator, paragraphSeparator
-      this.WhitespaceChars = " \t\r\n\v\u2085\u2028\u2029"; //add extra line terminators
+      this.MarkTransient(namespace_member_declaration, member_declaration, type_declaration, statement, embedded_statement, expression, 
+        literal, bin_op, primary_expression, expression);
 
       this.AddTermsReportGroup("assignment", "=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=");
       this.AddTermsReportGroup("typename", "bool", "decimal", "float", "double", "string", "object", 
@@ -451,7 +447,7 @@ namespace Irony.Samples.CSharp {
       typecast_expression.Rule = parenthesized_expression + primary_expression;
       primary_expression.Rule =
         literal
-        | unary_operator + primary_expression
+        | unary_expression
         | parenthesized_expression
         | member_access
         | pre_incr_decr_expression
@@ -463,6 +459,7 @@ namespace Irony.Samples.CSharp {
         | unchecked_expression
         | default_value_expression
         | anonymous_method_expression;
+      unary_expression.Rule = unary_operator + primary_expression;
       dim_specifier.Rule = "[" + expression_list + "]";
       dim_specifier_opt.Rule = dim_specifier.Q();
       literal.Rule = Number | StringLiteral | CharLiteral | "true" | "false" | "null";
@@ -853,7 +850,30 @@ State S188 (Inadequate)
     }
     #endregion
 
-
+    // See    http://www.jaggersoft.com/csharp_standard/9.3.3.htm
+    public override void SkipWhitespace(ISourceStream source) {
+      while (!source.EOF()) {
+        var ch = source.PreviewChar;
+        switch (ch) {
+          case ' ':
+          case '\t':
+          case '\n':
+          case '\v':
+          case '\u2085':
+          case '\u2028':
+          case '\u2029':
+            source.PreviewPosition++;
+            break;
+          default:
+            //Check unicode class Zs
+            UnicodeCategory chCat = char.GetUnicodeCategory(ch);
+            if (chCat == UnicodeCategory.SpaceSeparator) //it is whitespace, continue moving
+              continue;//while loop 
+            //Otherwize return
+            return;
+        }//switch
+      }//while
+    }
   }//class
 }//namespace
 

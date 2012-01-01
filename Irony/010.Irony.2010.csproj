@@ -113,7 +113,7 @@
     <Compile Include="Parsing\Terminals\WikiTerminals\WikiTagTerminal.cs" />
     <Compile Include="Parsing\Terminals\WikiTerminals\_WikiTerminalBase.cs" />
     <Compile Include="Parsing\Terminals\WikiTerminals\WikiTextTerminal.cs" />
-    <Compile Include="Parsing\Terminals\_ISourceStream.cs" />
+    <Compile Include="Parsing\Scanner\_ISourceStream.cs" />
     <Compile Include="Parsing\Data\GrammarData.cs" />
     <Compile Include="Parsing\Grammar\LanguageAttribute.cs" />
     <Compile Include="Parsing\Data\LanguageData.cs" />

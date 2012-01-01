@@ -82,7 +82,7 @@ namespace Irony.Parsing {
         }
 
         // Eat up whitespace
-        if (GrammarData.Grammar.WhitespaceChars.IndexOf(lookAhead) >= 0)
+        if (this.Grammar.IsWhitespaceOrDelimiter(lookAhead))
         {
           source.PreviewPosition++;
           continue;

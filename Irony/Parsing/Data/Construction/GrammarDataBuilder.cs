@@ -33,7 +33,6 @@ namespace Irony.Parsing.Construction {
       _grammarData = _language.GrammarData;
       CreateAugmentedRoots(); 
       CollectTermsFromGrammar();
-      AssignWhitespaceAndDelimiters(); 
       InitTermLists();
       FillOperatorReportGroup(); 
       CreateProductions();
@@ -112,29 +111,12 @@ namespace Irony.Parsing.Construction {
         }
     }
 
-    private void AssignWhitespaceAndDelimiters() {
-      var delims = _grammar.Delimiters;
-        //if it was not assigned by language creator, let's guess them
-      if(delims == null) {
-        delims = string.Empty;
-        var commonDelims = ",;[](){}";  //chars usually used as delimiters in programming languages
-        foreach(var delim in commonDelims) 
-          if (_grammar.KeyTerms.ContainsKey(delim.ToString()))  //if language uses this char as a Term, then include it
-            delims += delim; 
-      }//if 
-      _grammarData.WhitespaceAndDelimiters = _grammar.WhitespaceChars + delims 
-           + "\n"  //in case if it is removed from whitespace chars by NewLineTerminal 
-           + "\0"; //EOF: SourceStream returns this char when we reach end of file
-    }
-
-
     private void InitTermLists() {
       //Collect terminals and NonTerminals
       foreach (BnfTerm term in _grammarData.AllTerms) {  //remember - we may have hints, so it's not only terminals and non-terminals
         if (term is NonTerminal) _grammarData.NonTerminals.Add((NonTerminal)term);
         if (term is Terminal) _grammarData.Terminals.Add((Terminal)term);
       }
-      _grammarData.Terminals.Sort(Terminal.ByName);
       //Mark keywords - any "word" symbol directly mentioned in the grammar
       foreach (var term in _grammarData.Terminals) {
         var symTerm = term as KeyTerm;
@@ -150,8 +132,7 @@ namespace Irony.Parsing.Construction {
     private void CreateProductions() {
       _lastItemId = 0;
       //CheckWrapTailHints() method may add non-terminals on the fly, so we have to use for loop here (not foreach)
-      for (int i = 0; i < _grammarData.NonTerminals.Count; i++) {
-        var nt = _grammarData.NonTerminals[i];
+      foreach (var nt in _grammarData.NonTerminals) {
         nt.Productions.Clear();
         //Get data (sequences) from both Rule and ErrorRule
         BnfExpressionData allData = new BnfExpressionData();
@@ -208,9 +189,9 @@ namespace Irony.Parsing.Construction {
     }//method
 
     private static void ComputeNonTerminalsNullability(GrammarData data) {
-      NonTerminalList undecided = data.NonTerminals;
+      var undecided = data.NonTerminals;
       while (undecided.Count > 0) {
-        NonTerminalList newUndecided = new NonTerminalList();
+        var newUndecided = new NonTerminalSet();
         foreach (NonTerminal nt in undecided)
           if (!ComputeNullability(nt))
             newUndecided.Add(nt);

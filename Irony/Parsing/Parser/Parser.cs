@@ -17,6 +17,7 @@ using System.Linq;
 using System.Text;
 
 namespace Irony.Parsing {
+
   //Parser class represents combination of scanner and LALR parser (CoreParser)
   public class Parser {
     public readonly LanguageData Language; 

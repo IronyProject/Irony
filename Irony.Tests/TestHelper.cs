@@ -19,6 +19,7 @@ namespace Irony.Tests {
     //A skeleton for a grammar with a single terminal, followed by optional terminator
     class TerminalTestGrammar : Grammar {
       public string Terminator;
+      public bool SuppressWhitespace; // used in FreeTextLiteral test to suppress skipping whitespace chars
       public TerminalTestGrammar(Terminal terminal, string terminator = null) : base(caseSensitive: true) {
         Terminator = terminator; 
         var rule = new BnfExpression(terminal);
@@ -28,14 +29,18 @@ namespace Irony.Tests {
         }
         base.Root = new NonTerminal("Root");
         Root.Rule = rule;
-        this.FallbackTerminals.Add(terminal); //just in case it does not have Firsts() prefixes
+      }
+
+      public override void SkipWhitespace(ISourceStream source) {
+        if (SuppressWhitespace)
+          return; 
+        base.SkipWhitespace(source);
       }
     }//class
 
-    public static Parser CreateParser(Terminal terminal, string terminator = "end", bool noWhitespace = false) {
+    public static Parser CreateParser(Terminal terminal, string terminator = "end", bool suppressWhitespace = false) {
       var grammar = new TerminalTestGrammar(terminal, terminator);
-      if (noWhitespace)
-        grammar.WhitespaceChars = string.Empty; 
+      grammar.SuppressWhitespace = suppressWhitespace;
       var parser = new Parser(grammar);
       return parser; 
     }

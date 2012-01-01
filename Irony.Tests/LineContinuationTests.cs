@@ -17,7 +17,7 @@ namespace Irony.Tests {
   public class LineContinuationTests {
 
     [TestMethod]
-    public void TestSimpleContinuationTerminal() {
+    public void TestContinuationTerminal_Simple() {
       Parser parser; Token token;
 
       parser = TestHelper.CreateParser(new LineContinuationTerminal("LineContinuation", "\\"));
@@ -26,7 +26,7 @@ namespace Irony.Tests {
     }
 
     [TestMethod]
-    public void TestDefaultContinuationTerminal() {
+    public void TestContinuationTerminal_Default() {
       Parser parser; Token token;
 
       parser = TestHelper.CreateParser(new LineContinuationTerminal("LineContinuation"));
@@ -38,7 +38,7 @@ namespace Irony.Tests {
     }
 
     [TestMethod]
-    public void TestComplexContinuationTerminal() {
+    public void TestContinuationTerminal_Complex() {
       Parser parser; Token token;
 
       parser = TestHelper.CreateParser(new LineContinuationTerminal("LineContinuation", @"\continue", @"\cont", "++CONTINUE++"));
@@ -50,7 +50,7 @@ namespace Irony.Tests {
     }
 
     [TestMethod]
-    public void TestIncompleteContinuationTerminal() {
+    public void TestContinuationTerminal_Incomplete() {
       Parser parser; Token token;
 
       parser = TestHelper.CreateParser(new LineContinuationTerminal("LineContinuation"));

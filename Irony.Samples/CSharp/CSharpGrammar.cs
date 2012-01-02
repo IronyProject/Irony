@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Irony.Parsing;
@@ -372,7 +373,7 @@ namespace Irony.Samples.CSharp {
 
       #region "<" conflict resolution
       var gen_lt = new NonTerminal("gen_lt");
-      gen_lt.Rule = "<" + ResolveInCode();
+      gen_lt.Rule = CustomActionHere(this.ResolveLessThanConflict) + "<";
       #endregion
       /*
       #region Keywords
@@ -805,36 +806,38 @@ State S188 (Inadequate)
     //Here is an elaborate generic declaration which can be used as a good test. Perfectly legal, uncomment it to check that c#
     // accepts it:
     // List<Dictionary<string, object[,]>> genericVar; 
-    public override void OnResolvingConflict(ConflictResolutionArgs args) {
-      switch(args.Context.CurrentParserInput.Term.Name) {
-        case "<":
-          args.Scanner.BeginPreview(); 
-          int ltCount = 0;
-          string previewSym;
-          while(true) {
-            //Find first token ahead (using preview mode) that is either end of generic parameter (">") or something else
-            Token preview;
-            do {
-              preview = args.Scanner.GetToken();
-            } while (_skipTokensInPreview.Contains(preview.Terminal) && preview.Terminal != base.Eof);
-            //See what did we find
-            previewSym = preview.Terminal.Name; 
-            if (previewSym == "<")
-              ltCount++;
-            else if (previewSym == ">" && ltCount > 0) {
-              ltCount--;
-              continue;               
-            } else 
-              break; 
-          }
-          //if we see ">", then it is type argument, not operator
-          if (previewSym == ">")
-            args.Result = PreferredActionType.Shift;
-          else
-            args.Result = PreferredActionType.Reduce;
-          args.Scanner.EndPreview(true); //keep previewed tokens; important to keep ">>" matched to two ">" symbols, not one combined symbol (see method below)
-          return; 
-      }
+    private void ResolveLessThanConflict(ParsingContext context, CustomParserAction customAction) {
+      var scanner = context.Parser.Scanner;
+      string previewSym = null;
+      if (context.CurrentParserInput.Term.Name == "<") {
+        scanner.BeginPreview(); 
+        int ltCount = 0;
+        while(true) {
+          //Find first token ahead (using preview mode) that is either end of generic parameter (">") or something else
+          Token preview;
+          do {
+            preview = scanner.GetToken();
+          } while (_skipTokensInPreview.Contains(preview.Terminal) && preview.Terminal != base.Eof);
+          //See what did we find
+          previewSym = preview.Terminal.Name; 
+          if (previewSym == "<")
+            ltCount++;
+          else if (previewSym == ">" && ltCount > 0) {
+            ltCount--;
+            continue;               
+          } else 
+            break; 
+        }
+        scanner.EndPreview(true); //keep previewed tokens; important to keep ">>" matched to two ">" symbols, not one combined symbol (see method below)
+      }//if
+      //if we see ">", then it is type argument, not operator
+      ParserAction action;
+      if (previewSym == ">")
+        action = customAction.ShiftActions.First(a => a.Term.Name == "<");
+      else
+        action = customAction.ReduceActions.First();
+      // Actually execute action
+      action.Execute(context);
     }
 
     //In preview, we may run into combination '>>' which is a comletion of nested generic parameters.

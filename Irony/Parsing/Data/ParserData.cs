@@ -38,7 +38,7 @@ namespace Irony.Parsing {
     public readonly string Name;
     public readonly ParserActionTable Actions = new ParserActionTable();
     //Defined for states with a single reduce item; Parser.GetAction returns this action if it is not null.
-    public ParserAction DefaultReduceAction;
+    public ParserAction DefaultAction;
     //Expected terms contains terminals is to be used in 
     //Parser-advise-to-Scanner facility would use it to filter current terminals when Scanner has more than one terminal for current char,
     //   it can ask Parser to filter the list using the ExpectedTerminals in current Parser state. 
@@ -48,6 +48,10 @@ namespace Irony.Parsing {
     //   to make message shorter and cleaner. It is computed on-demand in CoreParser
     public StringSet ReportedExpectedSet;
     internal ParserStateData BuilderData; //transient, used only during automaton construction and may be cleared after that
+
+    //Custom flags available for use by language/parser authors, to "mark" states in some way
+    // Irony reserves the highest order byte for internal use
+    public int CustomFlags;
 
     public ParserState(string name) {
       Name = name;
@@ -62,6 +66,9 @@ namespace Irony.Parsing {
       return Name.GetHashCode();
     }
 
+    public bool CustomFlagIsSet(int flag) {
+      return (CustomFlags & flag) != 0;
+    }
   }//class
 
   public class ParserStateList : List<ParserState> { }

@@ -33,7 +33,7 @@ namespace Irony.Parsing {
           if (currTerm == null || !conflicts.Contains(currTerm)) return; //nothing to do
           //Current term for shift item (hint owner) is a conflict - resolve it with shift action
           var newState = owner.ShiftedItem.State;
-          var shiftAction = new ShiftParserAction(newState);
+          var shiftAction = new ShiftParserAction(owner);
           state.Actions[currTerm] = shiftAction;
           conflicts.Remove(currTerm);
           return;

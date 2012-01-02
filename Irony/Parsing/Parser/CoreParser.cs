@@ -104,7 +104,7 @@ namespace Irony.Parsing {
     private void ExecuteAction() {
       //Read input only if DefaultReduceAction is null - in this case the state does not contain ExpectedSet,
       // so parser cannot assist scanner when it needs to select terminal and therefore can fail
-      if (Context.CurrentParserInput == null && Context.CurrentParserState.DefaultReduceAction == null)
+      if (Context.CurrentParserInput == null && Context.CurrentParserState.DefaultAction == null)
         ReadInput();
       //Check scanner error
       if (Context.CurrentParserInput != null && Context.CurrentParserInput.IsError) {
@@ -142,8 +142,8 @@ namespace Irony.Parsing {
       var currState = Context.CurrentParserState;
       var currInput = Context.CurrentParserInput;
 
-      if (currState.DefaultReduceAction != null)
-        return currState.DefaultReduceAction;
+      if (currState.DefaultAction != null)
+        return currState.DefaultAction;
       ParserAction action;
       //First try as keyterm/key symbol; for example if token text = "while", then first try it as a keyword "while";
       // if this does not work, try as an identifier that happens to match a keyword but is in fact identifier

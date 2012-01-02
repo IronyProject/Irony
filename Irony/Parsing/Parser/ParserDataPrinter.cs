@@ -67,7 +67,7 @@ namespace Irony.Parsing {
 
     public static string PrintTerminals(LanguageData language) {
       var termList = language.GrammarData.Terminals.ToList();
-      termList.Sort(BnfTerm.ByName);
+      termList.Sort((x, y) => string.Compare(x.Name, y.Name));
       var result = string.Join(Environment.NewLine, termList);
       return result; 
     }
@@ -75,7 +75,7 @@ namespace Irony.Parsing {
     public static string PrintNonTerminals(LanguageData language) {
       StringBuilder sb = new StringBuilder();
       var ntList = language.GrammarData.NonTerminals.ToList();
-      ntList.Sort(BnfTerm.ByName);
+      ntList.Sort((x, y) => string.Compare(x.Name, y.Name));
       foreach (var nt in ntList) {
         sb.Append(nt.Name);
         sb.Append(nt.Flags.IsSet(TermFlags.IsNullable) ? "  (Nullable) " : string.Empty);

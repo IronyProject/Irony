@@ -21,11 +21,11 @@ namespace Irony.Parsing {
     ShiftParserAction _shiftAction;
     ReduceParserAction _reduceAction; 
 
-    public PrecedenceBasedParserAction(ParserState newShiftState, Production reduceProduction)  {
+    public PrecedenceBasedParserAction(BnfTerm shiftTerm, ParserState newShiftState, Production reduceProduction)  {
       _reduceAction = new ReduceParserAction(reduceProduction);
       var reduceEntry = new ConditionalEntry(CheckMustReduce, _reduceAction, "(Precedence comparison)");
       base.ConditionalEntries.Add(reduceEntry);
-      base.DefaultAction = _shiftAction = new ShiftParserAction(newShiftState);
+      base.DefaultAction = _shiftAction = new ShiftParserAction(shiftTerm, newShiftState);
     }
 
     private static bool CheckMustReduce(ParsingContext context) {

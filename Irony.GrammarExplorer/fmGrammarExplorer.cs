@@ -205,9 +205,9 @@ namespace Irony.GrammarExplorer {
         tabBottom.SelectedTab = pageGrammarErrors;
     }
 
-    private void ShowSourceLocation(SourceLocation location, int length) {
-      if (location.Position < 0) return;
-      txtSource.SelectionStart = location.Position;
+    private void ShowSourcePosition(int position, int length) {
+      if (position < 0) return;
+      txtSource.SelectionStart = position;
       txtSource.SelectionLength = length;
       //txtSource.Select(location.Position, length);
       txtSource.ScrollToCaret();
@@ -216,12 +216,12 @@ namespace Irony.GrammarExplorer {
       txtSource.Focus();
       //lblLoc.Text = location.ToString();
     }
-    private void ShowSourceLocationAndTraceToken(SourceLocation location, int length) {
-      ShowSourceLocation(location, length);
+    private void ShowSourcePositionAndTraceToken(int position, int length) {
+      ShowSourcePosition(position, length);
       //find token in trace
       for (int i = 0; i < lstTokens.Items.Count; i++) {
         var tkn = lstTokens.Items[i] as Token;
-        if (tkn.Location.Position == location.Position) {
+        if (tkn.Location.Position == position) {
           lstTokens.SelectedIndex = i;
           return;
         }//if
@@ -244,7 +244,7 @@ namespace Irony.GrammarExplorer {
       if (_runtimeError != null) {
         //the exception was caught and processed by Interpreter
         WriteOutput("Error: " + error.Message + " At " + _runtimeError.Location.ToUiString() + ".");
-        ShowSourceLocation(_runtimeError.Location, 1); 
+        ShowSourcePosition(_runtimeError.Location.Position, 1); 
       } else {
         //the exception was not caught by interpreter/AST node. Show full exception info
         WriteOutput("Error: " + error.Message);
@@ -253,6 +253,16 @@ namespace Irony.GrammarExplorer {
       }
       tabBottom.SelectedTab = pageOutput; 
     }
+
+    private void SelectTreeNode(TreeView tree, TreeNode node) {
+      _treeClickDisabled = true;
+      tree.SelectedNode = node;
+      if (node != null)
+        node.EnsureVisible();
+      _treeClickDisabled = false;
+    }
+
+
 
     private void ClearRuntimeInfo() {
       lnkShowErrLocation.Enabled = false;
@@ -496,7 +506,7 @@ namespace Irony.GrammarExplorer {
       if (vtreeNode == null) return;
       var parseNode = vtreeNode.Tag as ParseTreeNode;
       if (parseNode == null) return;
-      ShowSourceLocation(parseNode.Span.Location, 1);
+      ShowSourcePosition(parseNode.Span.Location.Position, 1);
     }
 
     private void tvAst_AfterSelect(object sender, TreeViewEventArgs e) {
@@ -506,7 +516,7 @@ namespace Irony.GrammarExplorer {
       if (treeNode == null) return;
       var iBrowsable = treeNode.Tag as IBrowsableAstNode;
       if (iBrowsable == null) return;
-      ShowSourceLocation(iBrowsable.Span.Location, 1);
+      ShowSourcePosition(iBrowsable.Position, 1);
     }
 
     bool _changingGrammar;
@@ -555,16 +565,6 @@ namespace Irony.GrammarExplorer {
       menuGrammars.Show(btnManageGrammars, 0, btnManageGrammars.Height);
     }
 
-    private void btnToXml_Click(object sender, EventArgs e) {
-      txtOutput.Text = string.Empty;
-      if (_parseTree == null)
-        ParseSample(); 
-      if (_parseTree == null)  return;
-      txtOutput.Text += _parseTree.ToXml();
-      txtOutput.Select(0, 0);
-      tabBottom.SelectedTab = pageOutput;
-    }
-
     private void cboParseMethod_SelectedIndexChanged(object sender, EventArgs e) {
       //changing grammar causes setting of parse method combo, so to prevent double-call to ConstructParser
       // we don't do it here if _changingGrammar is set
@@ -582,11 +582,11 @@ namespace Irony.GrammarExplorer {
           break;
         case 1: //stack top
           if (entry.StackTop != null)
-            ShowSourceLocationAndTraceToken(entry.StackTop.Span.Location, entry.StackTop.Span.Length);
+            ShowSourcePositionAndTraceToken(entry.StackTop.Span.Location.Position, entry.StackTop.Span.Length);
           break;
         case 2: //input
           if (entry.Input != null)
-            ShowSourceLocationAndTraceToken(entry.Input.Span.Location, entry.Input.Span.Length);
+            ShowSourcePositionAndTraceToken(entry.Input.Span.Location.Position, entry.Input.Span.Length);
           break;
       }//switch
     }
@@ -595,7 +595,7 @@ namespace Irony.GrammarExplorer {
       if (lstTokens.SelectedIndex < 0)
         return;
       Token token = (Token)lstTokens.SelectedItem;
-      ShowSourceLocation(token.Location, token.Length);
+      ShowSourcePosition(token.Location.Position, token.Length);
     }
 
     private void gridCompileErrors_CellDoubleClick(object sender, DataGridViewCellEventArgs e) {
@@ -604,7 +604,7 @@ namespace Irony.GrammarExplorer {
       switch (e.ColumnIndex) {
         case 0: //state
         case 1: //stack top
-          ShowSourceLocation(err.Location, 1);
+          ShowSourcePosition(err.Location.Position, 1);
           break;
         case 2: //input
           if (err.ParserState != null)
@@ -631,7 +631,7 @@ namespace Irony.GrammarExplorer {
 
     private void lnkShowErrLocation_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
       if (_runtimeError != null)
-        ShowSourceLocation(_runtimeError.Location, 1); 
+        ShowSourcePosition(_runtimeError.Location.Position, 1); 
     }
 
     private void lnkShowErrStack_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
@@ -646,64 +646,32 @@ namespace Irony.GrammarExplorer {
       if (_parseTree == null)
         ParseSample();
       var p = txtSource.SelectionStart;
-      LocateParseNode(p);
-      LocateAstNode(p);
+      tvParseTree.SelectedNode = null; //just in case we won't find
+      tvAst.SelectedNode = null; 
+      SelectTreeNode(tvParseTree, LocateTreeNode(tvParseTree.Nodes, p, node => (node.Tag as ParseTreeNode).Span.Location.Position));
+      SelectTreeNode(tvAst, LocateTreeNode(tvAst.Nodes, p, node => (node.Tag as IBrowsableAstNode).Position));
       txtSource.Focus(); //set focus back to source
     }
 
-    private void LocateParseNode(int position) {
-      if (tvParseTree.Nodes.Count == 0) return;
-      try {
-        _treeClickDisabled = true;
-        SelectParseNode(tvParseTree.Nodes, position);
-        if (tvParseTree.SelectedNode != null)
-          tvParseTree.SelectedNode.EnsureVisible();
-      } finally {
-        _treeClickDisabled = false;
-      }
-    }
-
-    private void SelectParseNode(TreeNodeCollection nodes, int position) {
+    private TreeNode LocateTreeNode(TreeNodeCollection nodes, int position, Func<TreeNode, int> positionFunction) {
+      TreeNode current = null;
+      //Find the last node in the list that is "before or at" the position 
       foreach (TreeNode node in nodes) {
-        var pNode = node.Tag as ParseTreeNode;
-        if (pNode != null && pNode.Span.InRange(position)) {
-          tvParseTree.SelectedNode = node;
-          if (node.Nodes.Count > 0)
-            SelectParseNode(node.Nodes, position);
-        }
+        if (positionFunction(node) > position) break; //from loop
+        current = node;
       }
+      //if current has children, search them
+      if (current != null && current.Nodes.Count > 0) 
+        current = LocateTreeNode(current.Nodes, position, positionFunction) ?? current; 
+      return current;
     }
-
-    private void LocateAstNode(int position) {
-      if (tvAst.Nodes.Count == 0) return;
-      try {
-        _treeClickDisabled = true;
-        SelectAstNode(tvAst.Nodes, position);
-        if (tvAst.SelectedNode != null)
-          tvAst.SelectedNode.EnsureVisible();
-      } finally {
-        _treeClickDisabled = false;
-      }
-    }
-
-    private void SelectAstNode(TreeNodeCollection nodes, int position) {
-      foreach (TreeNode node in nodes) {
-        var astNode = node.Tag as IBrowsableAstNode;
-        if (astNode != null && astNode.Span.InRange(position)) {
-          tvAst.SelectedNode = node;
-          if (node.Nodes.Count > 0)
-            SelectAstNode(node.Nodes, position);
-        }
-      }
-    }
-
-
-    #endregion
 
     private void chkDisableHili_CheckedChanged(object sender, EventArgs e) {
-      if (!_loaded) return; 
-      EnableHighlighter(!chkDisableHili.Checked); 
+      if (!_loaded) return;
+      EnableHighlighter(!chkDisableHili.Checked);
     }
+
+    #endregion
 
   }//class
 }

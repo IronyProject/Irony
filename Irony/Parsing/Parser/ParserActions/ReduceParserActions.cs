@@ -35,8 +35,10 @@ namespace Irony.Parsing {
     }
 
     public override void Execute(ParsingContext context) {
-      var resultNode = GetResultNode(context);
-      PopStackAndPushResultNode(context, resultNode);
+      var savedParserInput = context.CurrentParserInput; 
+      context.CurrentParserInput = GetResultNode(context);
+      CompleteReduce(context);
+      context.CurrentParserInput = savedParserInput;
     }
 
     protected virtual ParseTreeNode GetResultNode(ParsingContext context) {
@@ -52,8 +54,14 @@ namespace Irony.Parsing {
       return newNode;
     }
     //Completes reduce: pops child nodes from the stack and pushes result node into the stack
-    protected void PopStackAndPushResultNode(ParsingContext context, ParseTreeNode resultNode) {
-      var childCount = Production.RValues.Count; 
+    protected void CompleteReduce(ParsingContext context) {
+      var resultNode = context.CurrentParserInput; 
+      var childCount = Production.RValues.Count;
+      //Pop stack
+      context.ParserStack.Pop(childCount);
+      //Copy comment block from first child; if comments precede child node, they precede the parent as well. 
+      if (resultNode.ChildNodes.Count > 0)
+        resultNode.Comments = resultNode.ChildNodes[0].Comments;
       //Inherit precedence and associativity, to cover a standard case: BinOp->+|-|*|/; 
       // BinOp node should inherit precedence from underlying operator symbol. 
       //TODO: this special case will be handled differently. A ToTerm method should be expanded to allow "combined" terms like "NOT LIKE".
@@ -64,21 +72,24 @@ namespace Irony.Parsing {
             resultNode.Associativity = child.Associativity;
             break; //from foreach
           }
-      //Pop stack
-      context.ParserStack.Pop(childCount);
       //Push new node into stack and move to new state
       //First read the state from top of the stack 
       context.CurrentParserState = context.ParserStack.Top.State;
       if (context.TracingEnabled) 
         context.AddTrace(Resources.MsgTracePoppedState, Production.LValue.Name);
+      #region comments on special case
+      //Special case: if a non-terminal is Transient (ex: BinOp), then result node is not this NonTermina, but its its child (ex: symbol). 
+      // Shift action will invoke OnShifting on actual term being shifted (symbol); we need to invoke Shifting even on NonTerminal itself
+      // - this would be more expected behavior in general. ImpliedPrecHint relies on this
+      #endregion
+      if (resultNode.Term != Production.LValue) //special case
+        Production.LValue.OnShifting(context.SharedParsingEventArgs);
       // Shift to new state - execute shift over the non-terminal of the production. 
-      var shift = (ShiftParserAction) context.CurrentParserState.Actions[Production.LValue];
+      var shift = context.CurrentParserState.Actions[Production.LValue];
       // Execute shift to new state
-      context.ParserStack.Push(resultNode, shift.NewState);
-      context.CurrentParserState = shift.NewState;
-      //Copy comment block from first child; if comments precede child node, they precede the parent as well. 
-      if (resultNode.ChildNodes.Count > 0)
-        resultNode.Comments = resultNode.ChildNodes[0].Comments;
+      shift.Execute(context);
+//      context.ParserStack.Push(resultNode, shift.NewState);
+//      context.CurrentParserState = shift.NewState;
       //Invoke event
       Production.LValue.OnReduced(context, Production, resultNode);
 

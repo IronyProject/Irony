@@ -89,7 +89,7 @@ namespace Irony.Parsing {
         case PreferredActionType.Shift:
           var curr = owner.Core.Current as Terminal;
           if (curr == null) return; //it is either reduce item, or curr is a NonTerminal - we cannot shift it
-          var shiftAction = new ShiftParserAction(owner.ShiftedItem.State);
+          var shiftAction = new ShiftParserAction(owner);
           var shiftCondEntry = new ConditionalEntry(CheckCondition, shiftAction, _description);
           AddConditionalEntry(state, curr, shiftCondEntry);
           if (conflicts.Contains(curr))
@@ -142,17 +142,19 @@ namespace Irony.Parsing {
         condAction.DefaultAction = entry.Action; 
     }
 
-    //Find an LR item without hints compatible with term (either shift on term or reduce with term as lookahead), 
+    //Find an LR item without hints compatible with term (either shift on term or reduce with term as lookahead); 
     // this item without hints would become our default. We assume that other items have hints, and when conditions
     // on all these hints fail, we chose this remaining item without hints.
     private ParserAction FindDefaultAction(ParserState state, BnfTerm term) {
+      //First check reduce items
       var reduceItems = state.BuilderData.ReduceItems.SelectByLookahead(term as Terminal);
       foreach (var item in reduceItems)
         if (item.Core.Hints.Count == 0)
-          if (item.Core.IsFinal)
             return ReduceParserAction.Create(item.Core.Production);
-          else
-            return new ShiftParserAction(item.ShiftedItem.State);
+      var shiftItem = state.BuilderData.ShiftItems.SelectByCurrent(term).FirstOrDefault();
+      if (shiftItem != null)
+        return new ShiftParserAction(shiftItem); 
+      //if everything failed, returned first reduce item
       return null; 
     }
 

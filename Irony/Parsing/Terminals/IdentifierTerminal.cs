@@ -51,9 +51,6 @@ namespace Irony.Parsing {
     }
 
 
-    //Note that extraChars, extraFirstChars are used to form AllFirstChars and AllChars fields, which in turn 
-    // are used in QuickParse. Only if QuickParse fails, the process switches to full version with checking every
-    // char's category
     #region constructors and initialization
     public IdentifierTerminal(string name) : this(name, IdOptions.None) {
     }
@@ -71,9 +68,11 @@ namespace Irony.Parsing {
     #endregion
 
     #region properties: AllChars, AllFirstChars
-    //Used in QuickParse only!
-    public string AllChars;
+    CharHashSet _allCharsSet;
+    CharHashSet _allFirstCharsSet;
+
     public string AllFirstChars;
+    public string AllChars; 
     public TokenEditorInfo KeywordEditorInfo = new TokenEditorInfo(TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
     public IdOptions Options; //flags for the case when there are no prefixes
     public CaseRestriction CaseRestriction;
@@ -89,19 +88,26 @@ namespace Irony.Parsing {
       if (this.AstNodeType == null && this.AstNodeCreator == null)
         this.AstNodeType = grammarData.Grammar.DefaultIdentifierNodeType;
 
-      AllChars = AllChars?? String.Empty;
-      AllFirstChars = AllFirstChars ?? string.Empty;
+      _allCharsSet = new CharHashSet(Grammar.CaseSensitive);
+      _allCharsSet.UnionWith(AllChars.ToCharArray());
+
       //Adjust case restriction. We adjust only first chars; if first char is ok, we will scan the rest without restriction 
       // and then check casing for entire identifier
       switch(CaseRestriction) {
         case CaseRestriction.AllLower:
         case CaseRestriction.FirstLower:
-          AllFirstChars = AllFirstChars.ToLower();
+          _allFirstCharsSet = new CharHashSet(true);
+          _allFirstCharsSet.UnionWith(AllFirstChars.ToLowerInvariant().ToCharArray());
           break;
         case CaseRestriction.AllUpper:
         case CaseRestriction.FirstUpper:
-          AllFirstChars = AllFirstChars.ToUpper();
+          _allFirstCharsSet = new CharHashSet(true);
+          _allFirstCharsSet.UnionWith(AllFirstChars.ToUpperInvariant().ToCharArray());
           break;
+        default: //None
+          _allFirstCharsSet = new CharHashSet(Grammar.CaseSensitive);
+          _allFirstCharsSet.UnionWith(AllFirstChars.ToCharArray());
+          break; 
       }
       //if there are "first" chars defined by categories, add the terminal to FallbackTerminals
       if (this.StartCharCategories.Count > 0)
@@ -112,37 +118,14 @@ namespace Irony.Parsing {
 
     //TODO: put into account non-Ascii aplhabets specified by means of Unicode categories!
     public override IList<string> GetFirsts() {
-      StringList list = new StringList();
+      var list = new StringList();
       list.AddRange(Prefixes);
-      if (string.IsNullOrEmpty(AllFirstChars))
-        return list;
-      char[] chars = AllFirstChars.ToCharArray();
-      foreach (char ch in chars)
+      foreach (char ch in _allFirstCharsSet)
         list.Add(ch.ToString());
       if ((Options & IdOptions.CanStartWithEscape) != 0)
         list.Add(this.EscapeChar.ToString());
       return list;
     }
-
-    private void AdjustCasing() {
-      switch(CaseRestriction) {
-        case CaseRestriction.None: break; 
-        case CaseRestriction.FirstLower:
-          AllFirstChars = AllFirstChars.ToLower();
-          break; 
-        case CaseRestriction.FirstUpper:
-          AllFirstChars = AllFirstChars.ToUpper();
-          break; 
-        case CaseRestriction.AllLower:
-          AllFirstChars = AllFirstChars.ToLower();
-          AllChars = AllChars.ToLower(); 
-          break; 
-        case CaseRestriction.AllUpper:
-          AllFirstChars = AllFirstChars.ToUpper();
-          AllChars = AllChars.ToUpper(); 
-          break; 
-      }//switch
-    }//method
 
     protected override void InitDetails(ParsingContext context, CompoundTokenDetails details) {
       base.InitDetails(context, details);
@@ -169,10 +152,10 @@ namespace Irony.Parsing {
     }
 
     protected override Token QuickParse(ParsingContext context, ISourceStream source) {
-      if (AllFirstChars.IndexOf(source.PreviewChar) < 0) 
+      if (!_allFirstCharsSet.Contains(source.PreviewChar)) 
         return null;
       source.PreviewPosition++;
-      while (AllChars.IndexOf(source.PreviewChar) >= 0 && !source.EOF())
+      while (_allCharsSet.Contains(source.PreviewChar) && !source.EOF())
         source.PreviewPosition++;
       //if it is not a terminator then cancel; we need to go through full algorithm
       if (!this.Grammar.IsWhitespaceOrDelimiter(source.PreviewChar)) 
@@ -225,12 +208,14 @@ namespace Irony.Parsing {
 
     private bool CharOk(char ch, bool first) {
       //first check char lists, then categories
-      string all = first? AllFirstChars : AllChars;
-      if(all.IndexOf(ch) >= 0) return true;
+      var charSet = first? _allFirstCharsSet : _allCharsSet;
+      if(charSet.Contains(ch)) return true;
       //check categories
-      UnicodeCategory chCat = char.GetUnicodeCategory(ch);
-      UnicodeCategoryList catList = first ? StartCharCategories : CharCategories;
-      if (catList.Contains(chCat)) return true;
+      if (CharCategories.Count > 0) {
+        UnicodeCategory chCat = char.GetUnicodeCategory(ch);
+        UnicodeCategoryList catList = first ? StartCharCategories : CharCategories;
+        if (catList.Contains(chCat)) return true;
+      }
       return false; 
     }
 

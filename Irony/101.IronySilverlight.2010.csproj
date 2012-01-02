@@ -61,12 +61,11 @@
     <Compile Include="Ast\AstInterfaces.cs" />
     <Compile Include="Ast\AstNodeConfig.cs" />
     <Compile Include="Parsing\ConflictResolution\ConditionalParserAction.cs" />
-    <Compile Include="Parsing\ConflictResolution\ConflictResolutionArgs.cs" />
+    <Compile Include="Parsing\ConflictResolution\CustomActionHintAction.cs" />
     <Compile Include="Parsing\ConflictResolution\ImpliedPrecedenceHint.cs" />
     <Compile Include="Parsing\ConflictResolution\PrecedenceBasedParserAction.cs" />
     <Compile Include="Parsing\ConflictResolution\PrecedenceHint.cs" />
     <Compile Include="Parsing\ConflictResolution\PreferredActionHint.cs" />
-    <Compile Include="Parsing\ConflictResolution\ResolveInCodeHintAction.cs" />
     <Compile Include="Parsing\ConflictResolution\TokenPreviewHint.cs" />
     <Compile Include="Parsing\Data\Construction\GrammarDataBuilder.cs" />
     <Compile Include="Parsing\Data\Construction\LanguageDataBuilder.cs" />
@@ -107,6 +106,7 @@
     <Compile Include="Parsing\Scanner\SourceStream.cs" />
     <Compile Include="Parsing\Scanner\Token.cs" />
     <Compile Include="Parsing\Scanner\TokenEditorInfo.cs" />
+    <Compile Include="Parsing\Scanner\_ISourceStream.cs" />
     <Compile Include="Parsing\Terminals\CommentTerminal.cs" />
     <Compile Include="Parsing\Terminals\CompoundTerminalBase.cs" />
     <Compile Include="Parsing\Terminals\ConstantTerminal.cs" />
@@ -118,6 +118,7 @@
     <Compile Include="Parsing\Terminals\IdentifierTerminal.cs" />
     <Compile Include="Parsing\Terminals\ImpliedSymbolTerminal.cs" />
     <Compile Include="Parsing\Terminals\KeyTerm.cs" />
+    <Compile Include="Parsing\Terminals\LineContinuationTerminal.cs" />
     <Compile Include="Parsing\Terminals\NewLineTerminal.cs" />
     <Compile Include="Parsing\Terminals\NumberLiteral.cs" />
     <Compile Include="Parsing\Terminals\QuotedValueLiteral.cs" />
@@ -129,7 +130,6 @@
     <Compile Include="Parsing\Terminals\WikiTerminals\WikiTagTerminal.cs" />
     <Compile Include="Parsing\Terminals\WikiTerminals\WikiTextTerminal.cs" />
     <Compile Include="Parsing\Terminals\WikiTerminals\_WikiTerminalBase.cs" />
-    <Compile Include="Parsing\Terminals\_ISourceStream.cs" />
     <Compile Include="Parsing\Terminals\_Terminal.cs" />
     <Compile Include="Parsing\TokenFilters\CodeOutlineFilter.cs" />
     <Compile Include="Parsing\TokenFilters\TokenFilter.cs" />

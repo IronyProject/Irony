@@ -151,7 +151,7 @@ namespace Irony.Samples.Java
 			var LT_RAW = ToTerm("<", "lt");
 			var LT = new NonTerminal("_<_")
 			         	{
-			         		Rule = ResolveInCode() + LT_RAW
+                  Rule = CustomActionHere(ResolveConflicts) + LT_RAW
 			         	};
 			
 			var L_PAR_RAW = ToTerm("(", "l_par");
@@ -173,12 +173,12 @@ namespace Irony.Samples.Java
 			var DOT_RAW = ToTerm(".", "dot");
 			var DOT = new NonTerminal("_._")
 			{
-				Rule = ResolveInCode() + DOT_RAW
+        Rule = CustomActionHere(ResolveConflicts) + DOT_RAW
 			};
 			var SUPER_TOKEN_RAW = ToTerm("super", "super_token");
 			var SUPER_TOKEN = new NonTerminal("_super_")
 			{
-				Rule = ResolveInCode() + SUPER_TOKEN_RAW
+        Rule = CustomActionHere(ResolveConflicts) + SUPER_TOKEN_RAW
 			};
 			
 			// ReSharper restore ConditionIsAlwaysTrueOrFalse

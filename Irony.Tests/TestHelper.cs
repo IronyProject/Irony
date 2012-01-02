@@ -42,7 +42,18 @@ namespace Irony.Tests {
       var grammar = new TerminalTestGrammar(terminal, terminator);
       grammar.SuppressWhitespace = suppressWhitespace;
       var parser = new Parser(grammar);
+      CheckGrammarErrors(parser);
       return parser; 
+    }
+
+    public static void CheckGrammarErrors(Parser parser) {
+      var errors = parser.Language.Errors;
+      if (errors.Count > 0)
+        throw new Exception("Unexpected grammar contains error(s): " + string.Join("\n",  errors));
+    }
+    public static void CheckParseErrors(ParseTree parseTree) {
+      if (parseTree.HasErrors())
+        throw new Exception("Unexpected parse error(s): " + string.Join("\n", parseTree.ParserMessages));
     }
 
     //handy option for stringLiteral tests: we use single quotes in test strings, and they are replaced by double quotes here 

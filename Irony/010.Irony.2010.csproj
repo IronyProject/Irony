@@ -79,11 +79,10 @@
     <None Include="Ast\AstNodeConfig.cs" />
     <Compile Include="Ast\AstContext.cs" />
     <Compile Include="Ast\AstInterfaces.cs" />
-    <Compile Include="Parsing\ConflictResolution\ConflictResolutionArgs.cs" />
     <Compile Include="Parsing\ConflictResolution\ImpliedPrecedenceHint.cs" />
     <Compile Include="Parsing\ConflictResolution\PrecedenceHint.cs" />
     <Compile Include="Parsing\ConflictResolution\PreferredActionHint.cs" />
-    <Compile Include="Parsing\ConflictResolution\ResolveInCodeHintAction.cs" />
+    <Compile Include="Parsing\ConflictResolution\CustomActionHintAction.cs" />
     <Compile Include="Parsing\Grammar\GrammarEnums.cs" />
     <Compile Include="Parsing\Grammar\ICanRunSample.cs" />
     <Compile Include="Parsing\Parser\ParserActions\AcceptParserAction.cs" />

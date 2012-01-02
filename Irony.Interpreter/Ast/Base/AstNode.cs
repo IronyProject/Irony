@@ -34,6 +34,7 @@ namespace Irony.Interpreter.Ast {
   public partial class AstNode : IAstNodeInit, IBrowsableAstNode, IVisitableNode {
     public AstNode Parent;
     public BnfTerm Term;
+    public SourceSpan Span { get; set; }
     public AstNodeFlags Flags;
     protected ExpressionType ExpressionType = CustomExpressionTypes.NotAnExpression;
     protected object LockObject = new object();
@@ -132,8 +133,9 @@ namespace Irony.Interpreter.Ast {
     public virtual System.Collections.IEnumerable GetChildNodes() {
       return ChildNodes;
     }
-    public SourceSpan Span { get; set; }
-
+    public int Position { 
+      get { return Span.Location.Position; } 
+    }
     #endregion
 
     #region Visitors, Iterators

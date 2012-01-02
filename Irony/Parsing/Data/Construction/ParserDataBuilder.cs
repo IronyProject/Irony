@@ -40,11 +40,11 @@ namespace Irony.Parsing.Construction {
       var itemsNeedLookaheads = GetReduceItemsInInadequateState();
       ComputeTransitions(itemsNeedLookaheads);
       ComputeLookaheads(itemsNeedLookaheads);
+      ComputeStatesExpectedTerminals();
       ComputeConflicts();
       ApplyHints(); 
       HandleUnresolvedConflicts(); 
       CreateRemainingReduceActions(); 
-      ComputeStatesExpectedTerminals();
       //Create error action - if it is not created yet by some hint or custom code
       if (_data.ErrorAction == null)
         _data.ErrorAction = new ErrorRecoveryParserAction();
@@ -96,7 +96,7 @@ namespace Irony.Parsing.Construction {
           var shiftedCoreItems = shiftItems.GetShiftedCores(); 
           var newState = FindOrCreateState(shiftedCoreItems);
           //Create shift action
-          var newAction = new ShiftParserAction(newState);
+          var newAction = new ShiftParserAction(term, newState);
           state.Actions[term] = newAction;
           //Link items in old/new states
           foreach (var shiftItem in shiftItems) {
@@ -299,9 +299,10 @@ namespace Irony.Parsing.Construction {
     //Create reduce actions for states with a single reduce item (and no shifts)
     private void CreateRemainingReduceActions() {
       foreach (var state in _data.States) {
+        if (state.DefaultAction != null) continue; 
         var stateData = state.BuilderData;
         if (stateData.ShiftItems.Count == 0 && stateData.ReduceItems.Count == 1) {
-          state.DefaultReduceAction = ReduceParserAction.Create(stateData.ReduceItems.First().Core.Production);
+          state.DefaultAction = ReduceParserAction.Create(stateData.ReduceItems.First().Core.Production);
           continue; //next state; if we have default reduce action, we don't need to fill actions dictionary for lookaheads
         }
         //create actions

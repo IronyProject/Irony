@@ -126,6 +126,14 @@ namespace Irony.Parsing {
 
     #endregion
 
+    #region event: Shifting
+    public event EventHandler<ParsingEventArgs> Shifting;
+    protected internal void OnShifting(ParsingEventArgs args) {
+      if (Shifting != null)
+        Shifting(this, args);
+    }
+    #endregion
+
     #region AST node creations: AstNodeType, AstNodeCreator, AstNodeCreated
 
     /* -- new stuff
@@ -225,9 +233,6 @@ namespace Irony.Parsing {
 
     #endregion
 
-    public static int ByName(BnfTerm x, BnfTerm y) {
-      return string.Compare(x.Name, y.Name);
-    }
 
   }//class
 

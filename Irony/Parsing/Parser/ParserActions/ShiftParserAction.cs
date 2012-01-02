@@ -5,14 +5,20 @@ using System.Text;
 
 namespace Irony.Parsing {
   public class ShiftParserAction: ParserAction {
+    public readonly BnfTerm Term; 
     public readonly ParserState NewState;
+
+    public ShiftParserAction(Construction.LRItem item) : this(item.Core.Current, item.ShiftedItem.State) {  }
     
-    public ShiftParserAction(ParserState newState) {
+    public ShiftParserAction(BnfTerm term, ParserState newState) {
+      Term = term; 
       NewState = newState;
     }
 
     public override void Execute(ParsingContext context) {
-      context.ParserStack.Push(context.CurrentParserInput, NewState);
+      var currInput = context.CurrentParserInput;
+      currInput.Term.OnShifting(context.SharedParsingEventArgs);
+      context.ParserStack.Push(currInput, NewState);
       context.CurrentParserState = NewState;
       context.CurrentParserInput = null;
     }

@@ -33,7 +33,7 @@ namespace Irony.Parsing {
       if (allConflicts.Count == 0)
         return; 
       //Find all conflicts that can be resolved by operator precedence
-      // SL does not support Find, so we do it with explicit loop
+      // SL does not support Find extension, so we do it with explicit loop
       var operConflicts = new List<Terminal>(); 
       foreach(var c in allConflicts)
         if (c.Flags.IsSet(TermFlags.IsOperator))
@@ -41,26 +41,11 @@ namespace Irony.Parsing {
       foreach (var conflict in operConflicts) {
         var newState = state.BuilderData.GetNextState(conflict);
         var reduceItem = state.BuilderData.ReduceItems.SelectByLookahead(conflict).First(); //should be only one
-        state.Actions[conflict] = new PrecedenceBasedParserAction(newState, reduceItem.Core.Production);
+        state.Actions[conflict] = new PrecedenceBasedParserAction(conflict, newState, reduceItem.Core.Production);
         allConflicts.Remove(conflict);
       }//foreach conflict
     }
 
-    private void ResolveConflictByPrecedence(ParserState state, Terminal conflict) {
-      if (!conflict.Flags.IsSet(TermFlags.IsOperator)) return;
-      var stateData = state.BuilderData;
-      if (!stateData.ShiftTerminals.Contains(conflict))
-        return; //it is not shift-reduce
-      var reduceItems = stateData.ReduceItems.SelectByLookahead(conflict);
-      if (reduceItems.Count != 1)
-        return; // if it is reduce-reduce conflict, we cannot fix it by precedence
-      var reduceItem = reduceItems.First();
-      var newShiftState = stateData.GetNextState(conflict);
-      var precAction = new PrecedenceBasedParserAction(newShiftState, reduceItem.Core.Production);
-      state.Actions[conflict] = precAction;
-      stateData.Conflicts.Remove(conflict);
-
-    }//method
   }//class
 
 

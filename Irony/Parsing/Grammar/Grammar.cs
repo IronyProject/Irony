@@ -169,7 +169,7 @@ namespace Irony.Parsing {
 
     #endregion
 
-    #region virtual methods: TryMatch, CreateNode, CreateRuntime, RunSample
+    #region virtual methods: CreateTokenFilters, TryMatch
     public virtual void CreateTokenFilters(LanguageData language, TokenFilterList filters) {
     }
 
@@ -232,14 +232,6 @@ namespace Irony.Parsing {
       }//switch
     }//method
 
-
-    /// <summary>
-    /// Override this method to provide custom conflict resolution; for example, custom code may decide proper shift or reduce
-    /// action based on preview of tokens ahead. 
-    /// </summary>
-    public virtual void OnResolvingConflict(ConflictResolutionArgs args) {
-      //args.Result is Shift by default
-    }
 
     //The method is called after GrammarData is constructed 
     public virtual void OnGrammarDataConstructed(LanguageData language) {
@@ -344,9 +336,6 @@ namespace Irony.Parsing {
     protected GrammarHint ReduceHere() {
       return new PreferredActionHint(PreferredActionType.Reduce); 
     }
-    protected GrammarHint ResolveInCode() {
-      return new ResolveInCodeHint();
-    }
     protected TokenPreviewHint ReduceIf(string thisSymbol, params string[] comesBefore) {
       return new TokenPreviewHint(PreferredActionType.Reduce, thisSymbol, comesBefore);
     }
@@ -364,6 +353,9 @@ namespace Irony.Parsing {
     }
     protected GrammarHint ImplyPrecedenceHere(int precedence, Associativity associativity) {
       return new ImpliedPrecedenceHint(precedence, associativity);
+    }
+    protected CustomActionHint CustomActionHere(ExecuteActionMethod executeMethod, PreviewActionMethod previewMethod = null) {
+      return new CustomActionHint(executeMethod, previewMethod);
     }
 
     #endregion

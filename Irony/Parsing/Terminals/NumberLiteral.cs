@@ -92,7 +92,6 @@ namespace Irony.Parsing {
     public TypeCode[] DefaultIntTypes = new TypeCode[] { TypeCode.Int32 };
     public TypeCode DefaultFloatType = TypeCode.Double;
     private ExponentsTable _exponentsTable = new ExponentsTable(); 
-    private string _allExponentSymbols; 
 
     public bool IsSet(NumberOptions option) {
       return (Options & option) != 0;
@@ -110,11 +109,6 @@ namespace Irony.Parsing {
         _exponentsTable['e'] = DefaultFloatType;
         _exponentsTable['E'] = DefaultFloatType;
       }
-      // collect all exponent symbols
-      _allExponentSymbols = string.Empty;
-      foreach(var exp in _exponentsTable.Keys)
-        _allExponentSymbols += exp; 
-
       if (this.EditorInfo == null) 
         this.EditorInfo = new TokenEditorInfo(TokenType.Literal, TokenColor.Number, TokenTriggers.None);
     }
@@ -205,7 +199,7 @@ namespace Irony.Parsing {
           continue;
         }
         //3. Check if it is int number followed by dot or exp symbol
-        bool isExpSymbol = (details.ExponentSymbol == null) && _allExponentSymbols.IndexOf(current) >= 0;
+        bool isExpSymbol = (details.ExponentSymbol == null) && _exponentsTable.ContainsKey(current);
         if (!allowFloat && foundDigits && (isDot || isExpSymbol)) {
           //If no partial float allowed then return false - it is not integer, let float terminal recognize it as float
           if (IsSet(NumberOptions.NoDotAfterInt)) return false;  

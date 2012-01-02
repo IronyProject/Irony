@@ -134,7 +134,7 @@ namespace Irony.Parsing {
         _startSymbolsFirsts += subType.Start[0].ToString();
         if ((subType.Flags & StringOptions.IsTemplate) != 0) isTemplate = true; 
       }
-      if (!CaseSensitive) 
+      if (!CaseSensitivePrefixesSuffixes) 
         _startSymbolsFirsts = _startSymbolsFirsts.ToLower() + _startSymbolsFirsts.ToUpper();
       //Set multiline flag
       foreach (StringSubType info in _subtypes) {

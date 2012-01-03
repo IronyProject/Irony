@@ -212,7 +212,7 @@
     <value>{0} State {1} on inputs: {2}</value>
   </data>
   <data name="ErrNodeTypeNotSetOn" xml:space="preserve">
-    <value>Warning: AstNodeType or AstNodeCreator is not set on non-terminals: {0}.</value>
+    <value>AstNodeType or AstNodeCreator is not set on non-terminals: {0}. Either set Term.AstConfig.NodeType, or provide default values in AstContext.</value>
   </data>
   <data name="ErrNoLkhds" xml:space="preserve">
     <value>ParserDataBuilder error: inadequate state {0}, reduce item '{1}' has no lookaheads.</value>
@@ -392,7 +392,7 @@
     <value>Invalid arguments for IncDecNode AST node: either first or second argument should be '--' or '++'.</value>
   </data>
   <data name="ErrAssignLiteralValue" xml:space="preserve">
-    <value>Invalide operation, attempt to assign constant or literal value.</value>
+    <value>Invalid operation, attempt to assign to a constant or literal value.</value>
   </data>
   <data name="ErrTemplNoSettings" xml:space="preserve">
     <value>Error in string literal [{0}]: IsTemplate flag is set, but TemplateSettings is not provided in AstNodeConfig property.</value>
@@ -441,5 +441,14 @@
   </data>
   <data name="ErrNewLineExpected" xml:space="preserve">
     <value>Expected new line symbol.</value>
+  </data>
+  <data name="MsgErrorCustomActionDidNotAdvance" xml:space="preserve">
+    <value>Custom action did not execute: parser state or input did not change.</value>
+  </data>
+  <data name="MsgTraceExecCustomAction" xml:space="preserve">
+    <value>Executing custom action</value>
+  </data>
+  <data name="ErrCannotMoveBackInSource" xml:space="preserve">
+    <value>Fatal error in parser: attempt to move back in the source.</value>
   </data>
 </root>

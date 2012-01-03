@@ -113,9 +113,10 @@ namespace Irony.Parsing.Construction {
 
     private void InitTermLists() {
       //Collect terminals and NonTerminals
+      var empty = _grammar.Empty; 
       foreach (BnfTerm term in _grammarData.AllTerms) {  //remember - we may have hints, so it's not only terminals and non-terminals
         if (term is NonTerminal) _grammarData.NonTerminals.Add((NonTerminal)term);
-        if (term is Terminal) _grammarData.Terminals.Add((Terminal)term);
+        if (term is Terminal && term != empty) _grammarData.Terminals.Add((Terminal)term);
       }
       //Mark keywords - any "word" symbol directly mentioned in the grammar
       foreach (var term in _grammarData.Terminals) {
@@ -239,12 +240,8 @@ namespace Irony.Parsing.Construction {
     #region Grammar Validation
     private void ValidateGrammar() {
       var createAst = _grammar.LanguageFlags.IsSet(LanguageFlags.CreateAst); 
-      var missingAstTypeSet = new NonTerminalSet();
       var invalidTransSet = new NonTerminalSet();
       foreach(var nt in _grammarData.NonTerminals) {
-        //Check that if CreateAst flag is set then AstNodeType or AstNodeCreator is assigned on all non-transient nodes.
-        if(createAst && nt.AstNodeCreator == null && nt.AstNodeType == null && !nt.Flags.IsSet(TermFlags.NoAstNode))
-          missingAstTypeSet.Add(nt);
         if(nt.Flags.IsSet(TermFlags.IsTransient)) {
           //List non-terminals cannot be marked transient - otherwise there may be some ambiguities and inconsistencies
           if (nt.Flags.IsSet(TermFlags.IsList))
@@ -263,8 +260,6 @@ namespace Irony.Parsing.Construction {
           }//foreach prod
       }//foreac nt
 
-      if (missingAstTypeSet.Count > 0)
-        _language.Errors.Add(GrammarErrorLevel.Warning, null, Resources.ErrNodeTypeNotSetOn, missingAstTypeSet.ToString());
       if (invalidTransSet.Count > 0)
         _language.Errors.Add(GrammarErrorLevel.Error, null, Resources.ErrTransientNtMustHaveOneTerm,invalidTransSet.ToString());
     }//method

@@ -68,7 +68,7 @@ namespace Irony.Interpreter.Ast {
       base.Init(context, treeNode);
       _template = treeNode.Token.ValueString;
       _tokenText = treeNode.Token.Text;
-      _templateSettings = treeNode.Term.AstData as StringTemplateSettings; 
+      _templateSettings = treeNode.Term.AstConfig.Data as StringTemplateSettings; 
       ParseSegments(context); 
       AsString = "\"" + _template + "\" (templated string)"; 
     }

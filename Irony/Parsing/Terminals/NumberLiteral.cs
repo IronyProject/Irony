@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Diagnostics;
+using Irony.Ast;
 
 namespace Irony.Parsing {
   using BigInteger = System.Numerics.BigInteger; //Microsoft.Scripting.Math.BigInteger;
@@ -65,10 +66,10 @@ namespace Irony.Parsing {
     public NumberLiteral(string name) : this(name, NumberOptions.Default) {
     }
     public NumberLiteral(string name, NumberOptions options, Type astNodeType)  : this(name, options) {
-      base.AstNodeType = astNodeType;
+      base.AstConfig.NodeType = astNodeType;
     }
     public NumberLiteral(string name, NumberOptions options, AstNodeCreator astNodeCreator)  : this(name, options) {
-      base.AstNodeCreator = astNodeCreator;
+      base.AstConfig.NodeCreator = astNodeCreator;
     }
     public NumberLiteral(string name, NumberOptions options) : base(name) {
       Options = options;

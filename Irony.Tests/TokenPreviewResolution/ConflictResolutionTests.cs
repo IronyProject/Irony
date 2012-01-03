@@ -60,8 +60,8 @@ namespace Irony.Tests.TokenPreviewResolution {
       Assert.AreEqual("definition", term.Name);
 
       Assert.AreEqual(1, tree.Root.ChildNodes.Count);
-      var nodes = tree.Root.ChildNodes.Select(t => t.FirstChild).ToArray();
-      Assert.AreEqual("fieldModifier", nodes[0].Term.Name);
+      var modNode = tree.Root.ChildNodes[0].ChildNodes[0];
+      Assert.AreEqual("fieldModifier", modNode.Term.Name);
 
       //Property 
       sample = PropertySample;
@@ -75,8 +75,8 @@ namespace Irony.Tests.TokenPreviewResolution {
       Assert.AreEqual("definition", term.Name);
 
       Assert.AreEqual(1, tree.Root.ChildNodes.Count);
-      nodes = tree.Root.ChildNodes.Select(t => t.FirstChild).ToArray();
-      Assert.AreEqual("propModifier", nodes[0].Term.Name);
+      modNode = tree.Root.ChildNodes[0].ChildNodes[0];
+      Assert.AreEqual("propModifier", modNode.Term.Name);
     }
 
     //Hints on terms ---------------------------------------------------------------------
@@ -98,7 +98,7 @@ namespace Irony.Tests.TokenPreviewResolution {
       Assert.AreEqual("StatementList", term.Name);
 
       Assert.AreEqual(2, tree.Root.ChildNodes.Count);
-      var nodes = tree.Root.ChildNodes.Select(t => t.FirstChild).ToArray();
+      var nodes = tree.Root.ChildNodes.Select(t => t.ChildNodes[0]).ToArray();
       Assert.AreEqual("fieldDef", nodes[0].Term.Name);
       Assert.AreEqual("fieldDef", nodes[1].Term.Name);
 
@@ -114,7 +114,7 @@ namespace Irony.Tests.TokenPreviewResolution {
       Assert.AreEqual("StatementList", term.Name);
 
       Assert.AreEqual(3, tree.Root.ChildNodes.Count);
-      nodes = tree.Root.ChildNodes.Select(t => t.FirstChild).ToArray();
+      nodes = tree.Root.ChildNodes.Select(t => t.ChildNodes[0]).ToArray();
       Assert.AreEqual("propDef", nodes[0].Term.Name);
       Assert.AreEqual("fieldDef", nodes[1].Term.Name);
       Assert.AreEqual("methodDef", nodes[2].Term.Name);

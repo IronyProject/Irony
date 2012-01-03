@@ -25,7 +25,8 @@ namespace Irony.Interpreter.Ast {
 
     public override void Init(AstContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      foreach (var child in treeNode.MappedChildNodes) {
+      var nodes = treeNode.GetMappedChildNodes();
+      foreach (var child in nodes) {
         //don't add if it is null; it can happen that "statement" is a comment line and statement's node is null.
         // So to make life easier for language creator, we just skip if it is null
         if (child.AstNode != null) 

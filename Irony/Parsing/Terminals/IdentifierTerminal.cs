@@ -85,9 +85,6 @@ namespace Irony.Parsing {
     #region overrides
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
-      if (this.AstNodeType == null && this.AstNodeCreator == null)
-        this.AstNodeType = grammarData.Grammar.DefaultIdentifierNodeType;
-
       _allCharsSet = new CharHashSet(Grammar.CaseSensitive);
       _allCharsSet.UnionWith(AllChars.ToCharArray());
 

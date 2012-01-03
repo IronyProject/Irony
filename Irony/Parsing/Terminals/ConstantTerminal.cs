@@ -23,7 +23,7 @@ namespace Irony.Parsing {
     public readonly ConstantsTable Constants = new ConstantsTable();
     public ConstantTerminal(string name, Type nodeType) : base(name) {
       base.SetFlag(TermFlags.IsConstant);
-      AstNodeType = nodeType;
+      base.AstConfig.NodeType = nodeType;
     }
 
     public void Add(string lexeme, object value) {

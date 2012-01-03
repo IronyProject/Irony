@@ -30,14 +30,15 @@ namespace Irony.Interpreter.Ast {
 
     public override void Init(AstContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      Target = AddChild(NodeUseType.ValueWrite, "To", treeNode.MappedChildNodes[0]);
+      var nodes = treeNode.GetMappedChildNodes();
+      Target = AddChild(NodeUseType.ValueWrite, "To", nodes[0]);
       //Get Op and baseOp if it is combined assignment
-      AssignmentOp = treeNode.MappedChildNodes[1].FindTokenAndGetText();
+      AssignmentOp = nodes[1].FindTokenAndGetText();
       if (string.IsNullOrEmpty(AssignmentOp))
         AssignmentOp = "=";
       BinaryExpressionType = CustomExpressionTypes.NotAnExpression;
       //There maybe an "=" sign in the middle, or not - if it is marked as punctuation; so we just take the last node in child list
-      Expression = AddChild(NodeUseType.ValueRead, "Expr", treeNode.LastChild);
+      Expression = AddChild(NodeUseType.ValueRead, "Expr", nodes[nodes.Count - 1]);
       AsString = AssignmentOp + " (assignment)";
       // TODO: this is not always correct: in Pascal the assignment operator is :=.
       IsAugmented = AssignmentOp.Length > 1;

@@ -70,29 +70,6 @@ namespace Irony.Parsing {
         return Term.GetParseNodeCaption(this); 
     }//method
 
-    //A list of of child nodes based on AstPartsMap. By default, the same as ChildNodes
-    private ParseTreeNodeList _mappedChildNodes; 
-    public ParseTreeNodeList MappedChildNodes {
-      get {
-        if (_mappedChildNodes == null)
-          _mappedChildNodes = GetMappedChildNodes();
-        return _mappedChildNodes; 
-      }
-    }
-    private ParseTreeNodeList GetMappedChildNodes() {
-      var map = Term.AstPartsMap;
-      //If no map then mapped list is the same as original 
-      if (map == null)
-        return ChildNodes; 
-      //Create mapped list
-      var nodes = new ParseTreeNodeList();
-      for (int i = 0; i < map.Length; i++) {
-        var index = map[i];
-        nodes.Add(ChildNodes[index]);
-      }
-      return nodes; 
-    }
-
 
     public string FindTokenAndGetText() {
       var tkn = FindToken();
@@ -103,17 +80,11 @@ namespace Irony.Parsing {
     }
     private static Token FindFirstChildTokenRec(ParseTreeNode node) {
       if (node.Token != null) return node.Token;
-      foreach (var child in node.MappedChildNodes) {
+      foreach (var child in node.ChildNodes) {
         var tkn = FindFirstChildTokenRec(child);
         if (tkn != null) return tkn; 
       }
       return null; 
-    }
-    public ParseTreeNode FirstChild {
-      get { return MappedChildNodes[0]; }
-    }
-    public ParseTreeNode LastChild {
-      get { return MappedChildNodes[MappedChildNodes.Count - 1]; }
     }
 
     /// <summary>Returns true if the node is punctuation or it is transient with empty child list.</summary>

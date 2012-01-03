@@ -76,7 +76,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Ast\AstBuilder.cs" />
-    <None Include="Ast\AstNodeConfig.cs" />
+    <Compile Include="Ast\AstExtensions.cs" />
+    <Compile Include="Ast\AstNodeConfig.cs" />
     <Compile Include="Ast\AstContext.cs" />
     <Compile Include="Ast\AstInterfaces.cs" />
     <Compile Include="Parsing\ConflictResolution\ImpliedPrecedenceHint.cs" />
@@ -125,7 +126,6 @@
     <Compile Include="Parsing\Data\ParserData.cs" />
     <Compile Include="Parsing\Parser\ParserStack.cs" />
     <Compile Include="Parsing\Parser\ParseTree.cs" />
-    <Compile Include="Parsing\Parser\CoreParser.cs" />
     <Compile Include="Parsing\Scanner\SourceLocation.cs" />
     <Compile Include="Parsing\Parser\ParserDataPrinter.cs" />
     <Compile Include="Parsing\Scanner\TokenEditorInfo.cs" />

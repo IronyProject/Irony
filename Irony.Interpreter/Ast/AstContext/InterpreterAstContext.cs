@@ -12,7 +12,10 @@ namespace Irony.Interpreter.Ast {
     public readonly OperatorHandler OperatorHandler; 
 
     public InterpreterAstContext(LanguageData language, OperatorHandler operatorHandler = null) : base(language) {
-      OperatorHandler = operatorHandler ?? new OperatorHandler(language.Grammar.CaseSensitive); 
+      OperatorHandler = operatorHandler ?? new OperatorHandler(language.Grammar.CaseSensitive);
+      base.DefaultIdentifierNodeType = typeof(IdentifierNode);
+      base.DefaultLiteralNodeType = typeof(LiteralValueNode);
+      base.DefaultNodeType = null; 
     }
 
   }//class

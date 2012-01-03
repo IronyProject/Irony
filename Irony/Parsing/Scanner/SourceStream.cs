@@ -132,7 +132,7 @@ namespace Irony.Parsing {
     //Computes the Location info (line, col) for a new source position.
     private void SetNewPosition(int newPosition) {
       if (newPosition < Position)
-        throw new Exception("Cannot move back in the source."); 
+        throw new Exception(Resources.ErrCannotMoveBackInSource); 
       int p = Position; 
       int col = Location.Column;
       int line = Location.Line; 

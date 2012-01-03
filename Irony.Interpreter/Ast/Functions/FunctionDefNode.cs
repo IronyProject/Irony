@@ -30,9 +30,10 @@ namespace Irony.Interpreter.Ast {
     public override void Init(AstContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
       //child #0 is usually a keyword like "def"
-      NameNode = AddChild("Name", treeNode.MappedChildNodes[1]);
-      Parameters = AddChild("Parameters", treeNode.MappedChildNodes[2]);
-      Body = AddChild("Body", treeNode.MappedChildNodes[3]);
+      var nodes = treeNode.GetMappedChildNodes();
+      NameNode = AddChild("Name", nodes[1]);
+      Parameters = AddChild("Parameters", nodes[2]);
+      Body = AddChild("Body", nodes[3]);
       AsString = "<Function " + NameNode.AsString + ">";
       Body.SetIsTail(); //this will be propagated to the last statement
     }

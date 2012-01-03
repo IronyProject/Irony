@@ -47,10 +47,6 @@ namespace Irony.Parsing {
     // Tokens produced by these terminals will be ignored by parser input. 
     public readonly TerminalSet NonGrammarTerminals = new TerminalSet();
 
-    public Type DefaultNodeType;
-    public Type DefaultLiteralNodeType; //default node type for literals
-    public Type DefaultIdentifierNodeType; //default node type for identifiers
-
     /// <summary>
     /// The main root entry for the grammar. 
     /// </summary>

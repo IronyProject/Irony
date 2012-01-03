@@ -25,7 +25,7 @@ namespace Irony.Interpreter.Ast {
 
     public override void Init(AstContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      foreach (var child in treeNode.MappedChildNodes) {
+      foreach (var child in treeNode.ChildNodes) {
           AddChild(NodeUseType.Parameter, "expr", child); 
       }
       AsString = "Expression list";

@@ -61,11 +61,6 @@ namespace Irony.Parsing {
     #region virtual methods: GetFirsts(), TryMatch, Init, TokenToString
     public override void Init(GrammarData grammarData) {
       base.Init(grammarData);
-      //By default for Literal terminals assign node type in Grammar.DefaultLiteralNodeType
-      bool assignLiteralType = (AstNodeType == null && AstNodeCreator == null &&
-          Flags.IsSet(TermFlags.IsLiteral) &&  Grammar.LanguageFlags.IsSet(LanguageFlags.CreateAst));
-      if (assignLiteralType)
-        AstNodeType = this.Grammar.DefaultLiteralNodeType;
     }
 
     //"Firsts" (chars) collections are used for quick search for possible matching terminal(s) using current character in the input stream.

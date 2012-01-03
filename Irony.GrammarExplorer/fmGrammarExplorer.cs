@@ -188,10 +188,10 @@ namespace Irony.GrammarExplorer {
       txtNonTerms.Text = string.Empty;
       txtParserStates.Text = string.Empty;
       tabBottom.SelectedTab = pageLanguage;
-      if (_parser == null) return;
-      txtTerms.Text = ParserDataPrinter.PrintTerminals(_parser.Language);
-      txtNonTerms.Text = ParserDataPrinter.PrintNonTerminals(_parser.Language);
-      txtParserStates.Text = ParserDataPrinter.PrintStateList(_parser.Language);
+      if (_parser == null) return; 
+      txtTerms.Text = ParserDataPrinter.PrintTerminals(_language);
+      txtNonTerms.Text = ParserDataPrinter.PrintNonTerminals(_language);
+      txtParserStates.Text = ParserDataPrinter.PrintStateList(_language);
       ShowGrammarErrors();
     }//method
 

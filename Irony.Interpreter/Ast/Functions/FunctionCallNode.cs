@@ -30,10 +30,11 @@ namespace Irony.Interpreter.Ast {
 
     public override void Init(AstContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      TargetRef = AddChild("Target", treeNode.MappedChildNodes[0]);
+      var nodes = treeNode.GetMappedChildNodes();
+      TargetRef = AddChild("Target", nodes[0]);
       TargetRef.UseType = NodeUseType.CallTarget;
-      _targetName = treeNode.MappedChildNodes[0].FindTokenAndGetText();
-      Arguments = AddChild("Args", treeNode.MappedChildNodes[1]);
+      _targetName = nodes[0].FindTokenAndGetText();
+      Arguments = AddChild("Args", nodes[1]);
       AsString = "Call " + _targetName;
     }
 

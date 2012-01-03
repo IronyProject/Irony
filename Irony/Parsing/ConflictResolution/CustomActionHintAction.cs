@@ -74,10 +74,20 @@ namespace Irony.Parsing {
     }
 
     public override void Execute(ParsingContext context) {
-      //States with DefaultAction do NOT read input
+      if (context.TracingEnabled)
+        context.AddTrace(Resources.MsgTraceExecCustomAction);
+      //States with DefaultAction do NOT read input, so we read it here
       if (context.CurrentParserInput == null)
-        context.Parser.CoreParser.ReadInput();
+        context.Parser.ReadInput();
+      // Remember old state and input; if they don't change after custom action - it is error, we may fall into an endless loop
+      var oldState = context.CurrentParserState;
+      var oldInput = context.CurrentParserInput;
       ExecuteRef(context, this);
+      //Prevent from falling into an infinite loop 
+      if (context.CurrentParserState == oldState && context.CurrentParserInput == oldInput) {
+        context.AddParserError(Resources.MsgErrorCustomActionDidNotAdvance);
+        context.Parser.RecoverFromError(); 
+      }
     }//method
 
     public override string ToString() {

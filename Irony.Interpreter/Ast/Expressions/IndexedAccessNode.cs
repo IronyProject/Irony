@@ -15,8 +15,9 @@ namespace Irony.Interpreter.Ast {
 
     public override void Init(AstContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      _target = AddChild("Target", treeNode.FirstChild);
-      _index = AddChild("Index", treeNode.LastChild); 
+      var nodes = treeNode.GetMappedChildNodes();
+      _target = AddChild("Target", nodes.First());
+      _index = AddChild("Index", nodes.Last()); 
       AsString = "[" + _index + "]";
     }
 

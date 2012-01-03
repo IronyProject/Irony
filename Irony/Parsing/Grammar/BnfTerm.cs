@@ -15,6 +15,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+
 using Irony.Ast;
 
 namespace Irony.Parsing { 
@@ -63,10 +64,10 @@ namespace Irony.Parsing {
     #region consructors
     public BnfTerm(string name) : this(name, name) { }
     public BnfTerm(string name, string errorAlias, Type nodeType) : this(name, errorAlias) {
-      AstNodeType = nodeType;
+      AstConfig.NodeType = nodeType;
     }
     public BnfTerm(string name, string errorAlias, AstNodeCreator nodeCreator) : this(name, errorAlias) {
-      AstNodeCreator = nodeCreator;  
+      AstConfig.NodeCreator = nodeCreator;  
     }
     public BnfTerm(string name, string errorAlias) {
       Name = name;
@@ -126,49 +127,38 @@ namespace Irony.Parsing {
 
     #endregion
 
-    #region event: Shifting
+    #region events: Shifting
     public event EventHandler<ParsingEventArgs> Shifting;
+    public event EventHandler<AstNodeEventArgs> AstNodeCreated; //an event fired after AST node is created. 
+
     protected internal void OnShifting(ParsingEventArgs args) {
       if (Shifting != null)
         Shifting(this, args);
     }
-    #endregion
-
-    #region AST node creations: AstNodeType, AstNodeCreator, AstNodeCreated
-
-    /* -- new stuff
-    public Ast.AstNodeConfig AstConfig {
-      get {
-       if (_astConfig == null) 
-         _astConfig = new Ast.AstNodeConfig(); 
-        return _astConfig; 
-      }
-      set {_astConfig = value; }
-    } Ast.AstNodeConfig _astConfig;
- */ 
-    
-    public Type AstNodeType;
-    public object AstData; //config data passed to AstNode
-    public AstNodeCreator AstNodeCreator; // a custom method for creating AST nodes
-    public DefaultAstNodeCreator DefaultAstNodeCreator; //default method for creating AST nodes; compiled dynamic method, wrapper around "new nodeType();"
-    public event EventHandler<AstNodeEventArgs> AstNodeCreated; //an event signalling that AST node is created. 
-
-    // An optional map (selector, filter) of child AST nodes. This facility provides a way to adjust the "map" of child nodes in various languages to 
-    // the structure of a standard AST nodes (that can be shared betweeen languages). 
-    // ParseTreeNode object has two properties containing list nodes: ChildNodes and MappedChildNodes.
-    //  If term.AstPartsMap is null, these two child node lists are identical and contain all child nodes. 
-    // If AstParts is not null, then MappedChildNodes will contain child nodes identified by indexes in the map. 
-    // For example, if we set  
-    //           term.AstPartsMap = new int[] {1, 4, 2}; 
-    // then MappedChildNodes will contain 3 child nodes, which are under indexes 1, 4, 2 in ChildNodes list.
-    // The mapping is performed in CoreParser.cs, method CheckCreateMappedChildNodeList.
-    public int[] AstPartsMap; 
 
     protected internal void OnAstNodeCreated(ParseTreeNode parseNode) {
       if (this.AstNodeCreated == null || parseNode.AstNode == null) return;
       AstNodeEventArgs args = new AstNodeEventArgs(parseNode);
       AstNodeCreated(this, args);
     }
+
+    #endregion
+
+    #region AST node creations: AstNodeType, AstNodeCreator, AstNodeCreated
+    //We autocreate AST config on first GET;
+    public AstNodeConfig AstConfig {
+      get {
+       if (_astConfig == null) 
+         _astConfig = new Ast.AstNodeConfig(); 
+        return _astConfig; 
+      }
+      set {_astConfig = value; }
+    } AstNodeConfig _astConfig;
+
+    public bool HasAstConfig() {
+      return _astConfig != null; 
+    }
+    
     #endregion
 
 
@@ -238,16 +228,6 @@ namespace Irony.Parsing {
 
   public class BnfTermList : List<BnfTerm> { }
   public class BnfTermSet : HashSet<BnfTerm> {  }
-
-  public class AstNodeEventArgs : EventArgs {
-    public AstNodeEventArgs(ParseTreeNode parseTreeNode) {
-      ParseTreeNode = parseTreeNode;
-    }
-    public readonly ParseTreeNode ParseTreeNode;
-    public object AstNode {
-      get { return ParseTreeNode.AstNode; }
-    }
-  }
 
 
 

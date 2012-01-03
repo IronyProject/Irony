@@ -1,4 +1,16 @@
-﻿using System;
+﻿#region License
+/* **********************************************************************************
+ * Copyright (c) Roman Ivantsov
+ * This source code is subject to terms and conditions of the MIT License
+ * for Irony. A copy of the license can be found in the License.txt file
+ * at the root of this distribution. 
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * MIT License.
+ * You must not remove this notice from this software.
+ * **********************************************************************************/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,8 +28,50 @@ namespace Irony.Ast {
     }
 
     public virtual void BuildAst(ParseTree parseTree) {
-      Context.Messages = parseTree.ParserMessages; 
+      if (parseTree.Root == null)
+        return; 
+      Context.Messages = parseTree.ParserMessages;
+      if (!Context.Language.AstDataVerified)
+        VerifyLanguageData();
+      if (Context.Language.ErrorLevel == GrammarErrorLevel.Error)
+        return; 
       BuildAst(parseTree.Root);
+    }
+
+    public virtual void VerifyLanguageData() {
+      var gd = Context.Language.GrammarData; 
+      //Collect all terminals and non-terminals
+      var terms = new BnfTermSet(); 
+      //SL does not understand co/contravariance, so doing merge one-by-one
+      foreach (var t in gd.Terminals) terms.Add(t);
+      foreach (var t in gd.NonTerminals) terms.Add(t);
+      var missingList = new BnfTermList();
+      foreach (var term in terms) {
+        var terminal = term as Terminal;
+        if (terminal != null && terminal.Category != TokenCategory.Content) continue; //only content terminals
+        if (term.Flags.IsSet(TermFlags.NoAstNode)) continue;
+        var config = term.AstConfig; 
+        if (config.NodeCreator != null || config.DefaultNodeCreator != null) continue; 
+        //We must check NodeType
+        if (config.NodeType == null)
+          config.NodeType = GetDefaultNodeType(term);
+        if (config.NodeType == null)
+          missingList.Add(term);
+        else 
+          config.DefaultNodeCreator = CompileDefaultNodeCreator(config.NodeType);        
+      }
+      if (missingList.Count > 0)
+        Context.AddMessage(ErrorLevel.Error, SourceLocation.Empty, Resources.ErrNodeTypeNotSetOn, missingList.ToString());
+      Context.Language.AstDataVerified = true; 
+    }
+   // AST node type is not specified for term {0}. Either assign Term.AstConfig.NodeType, or specify default type(s) in AstBuilder.  
+    protected virtual Type GetDefaultNodeType(BnfTerm term) {
+      if (term is NumberLiteral || term is StringLiteral)
+        return Context.DefaultLiteralNodeType;
+      else if (term is IdentifierTerminal)
+        return Context.DefaultIdentifierNodeType;
+      else
+        return Context.DefaultNodeType; 
     }
 
     public virtual void BuildAst(ParseTreeNode parseNode) {
@@ -26,30 +80,25 @@ namespace Irony.Ast {
       //children first
       var processChildren = !parseNode.Term.Flags.IsSet(TermFlags.AstDelayChildren) && parseNode.ChildNodes.Count > 0;
       if (processChildren) {
-        var mappedChildNodes = parseNode.MappedChildNodes;
+        var mappedChildNodes = parseNode.GetMappedChildNodes();
         for (int i = 0; i < mappedChildNodes.Count; i++)
           BuildAst(mappedChildNodes[i]);
       }
       //create the node
-      //First check the custom creator delegate
-      if (term.AstNodeCreator != null) {
-        term.AstNodeCreator(Context, parseNode);
+      //We know that either NodeCreator or DefaultNodeCreator is set; VerifyAstData create the DefaultNodeCreator
+      var config = term.AstConfig;
+      if (config.NodeCreator != null) {
+        config.NodeCreator(Context, parseNode);
         // We assume that Node creator method creates node and initializes it, so parser does not need to call 
         // IAstNodeInit.Init() method on node object. But we do call AstNodeCreated custom event on term.
-        term.OnAstNodeCreated(parseNode);
-        return; 
+      } else {
+        //Invoke the default creator compiled when we verified the data
+        parseNode.AstNode = config.DefaultNodeCreator();
+        //Initialize node
+        var iInit = parseNode.AstNode as IAstNodeInit;
+        if (iInit != null)
+          iInit.Init(Context, parseNode);
       }
-      //No custom creator. We create node from AstNodeType. We use compiled delegate for this which we create on the fly.
-      if (term.DefaultAstNodeCreator == null) {
-        var nodeType = term.AstNodeType ?? Context.Language.Grammar.DefaultNodeType;
-        term.DefaultAstNodeCreator = CompileDefaultNodeCreator(nodeType);
-      }
-      //Invoke the creator
-      parseNode.AstNode = term.DefaultAstNodeCreator();
-      //Initialize node
-      var iInit = parseNode.AstNode as IAstNodeInit;
-      if (iInit != null)
-        iInit.Init(Context, parseNode);
       //Invoke the event on term
       term.OnAstNodeCreated(parseNode);
     }//method
@@ -65,36 +114,22 @@ namespace Irony.Ast {
       return result; 
     }
 
+/*
+    //A list of of child nodes based on AstPartsMap. By default, the same as ChildNodes
+    private ParseTreeNodeList _mappedChildNodes;
+    public ParseTreeNodeList MappedChildNodes {
+      get {
+        if (_mappedChildNodes == null)
+          _mappedChildNodes = GetMappedChildNodes();
+        return _mappedChildNodes;
+      }
+    }
+*/
+
+
+
 
   }//class
 
-  /* OLD code from CoreParser
-      //Note that we create AST objects for parse nodes only when we pop the node from the stack (when it is a child being added to to its parent). 
-      // So only when we form a parent node, we run thru children in the stack top and check/create their AST nodes.
-      // This is done to provide correct initialization of List nodes (created with Plus or Star operation). 
-      // We create a parse tree node for a list non-terminal very early, when we encounter its first element. We push the newly created list node into
-      // the stack. At this moment it is too early to create the AST node for the list. We should wait until all child nodes are parsed and accumulated
-      // in the stack. Only then, when list construction is finished, we can create AST node and provide it with all list elements.  
-      private void CheckCreateAstNode(ParseTreeNode parseNode) {
-        try {
-          //Check preconditions
-          if (!_grammar.LanguageFlags.IsSet(LanguageFlags.CreateAst))
-            return; 
-          if (parseNode.AstNode != null || parseNode.Term.Flags.IsSet(TermFlags.IsTransient) 
-              || parseNode.Term.Flags.IsSet(TermFlags.NoAstNode)) return;  
-          if (Context.Status != ParserStatus.Parsing || Context.HasErrors) return; 
-          //Prepare mapped child node list
-          CheckCreateMappedChildNodeList(parseNode); 
-          //Actually create node
-          _grammar.CreateAstNode(Context, parseNode);
-          if (parseNode.AstNode != null)
-            parseNode.Term.OnAstNodeCreated(parseNode);
-        } catch (Exception ex) {
-          Context.AddParserMessage(ParserErrorLevel.Error, parseNode.Span.Location, Resources.ErrFailedCreateNode, parseNode.Term.Name, ex.Message); 
-        }
-      }
-
-  
-   */
 
 }

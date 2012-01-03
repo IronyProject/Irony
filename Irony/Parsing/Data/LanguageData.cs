@@ -25,6 +25,7 @@ namespace Irony.Parsing {
     public readonly GrammarErrorList Errors = new GrammarErrorList(); 
     public GrammarErrorLevel ErrorLevel = GrammarErrorLevel.NoError;
     public long ConstructionTime;
+    public bool AstDataVerified;
 
     public LanguageData(Grammar grammar) {
       Grammar = grammar;

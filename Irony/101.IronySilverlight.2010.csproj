@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="Ast\AstBuilder.cs" />
     <Compile Include="Ast\AstContext.cs" />
+    <Compile Include="Ast\AstExtensions.cs" />
     <Compile Include="Ast\AstInterfaces.cs" />
     <Compile Include="Ast\AstNodeConfig.cs" />
     <Compile Include="Parsing\ConflictResolution\ConditionalParserAction.cs" />
@@ -86,7 +87,6 @@
     <Compile Include="Parsing\Grammar\LanguageAttribute.cs" />
     <Compile Include="Parsing\Grammar\NonTerminal.cs" />
     <Compile Include="Parsing\Grammar\TermReportGroups.cs" />
-    <Compile Include="Parsing\Parser\CoreParser.cs" />
     <Compile Include="Parsing\Parser\Parser.cs" />
     <Compile Include="Parsing\Parser\ParserActions\AcceptParserAction.cs" />
     <Compile Include="Parsing\Parser\ParserActions\ErrorRecoveryParserAction.cs" />
@@ -144,7 +144,6 @@
     <EmbeddedResource Include="Resources.resx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Ast\_about.txt" />
     <Content Include="Parsing\Data\Construction\_about_parser_construction.txt" />
   </ItemGroup>
   <ItemGroup>

@@ -31,21 +31,22 @@ namespace Irony.Interpreter.Ast {
 
     public override void Init(AstContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      FindOpAndDetectPostfix(treeNode); 
+      var nodes = treeNode.GetMappedChildNodes();
+      FindOpAndDetectPostfix(nodes); 
       int argIndex = IsPostfix? 0 : 1;
-      Argument = AddChild(NodeUseType.ValueReadWrite, "Arg", treeNode.MappedChildNodes[argIndex]);
+      Argument = AddChild(NodeUseType.ValueReadWrite, "Arg", nodes[argIndex]);
       BinaryOpSymbol = OpSymbol[0].ToString(); //take a single char out of ++ or --
       var interpContext = (InterpreterAstContext)context; 
       BinaryOp = interpContext.OperatorHandler.GetOperatorExpressionType(BinaryOpSymbol); 
       base.AsString = OpSymbol + (IsPostfix ? "(postfix)" : "(prefix)");
     }
 
-    private void FindOpAndDetectPostfix(ParseTreeNode treeNode) {
+    private void FindOpAndDetectPostfix(ParseTreeNodeList mappedNodes) {
       IsPostfix = false; //assume it 
-      OpSymbol = treeNode.MappedChildNodes[0].FindTokenAndGetText();
+      OpSymbol = mappedNodes[0].FindTokenAndGetText();
       if (OpSymbol == "--" || OpSymbol == "++") return;
       IsPostfix = true;
-      OpSymbol = treeNode.MappedChildNodes[1].FindTokenAndGetText();
+      OpSymbol = mappedNodes[1].FindTokenAndGetText();
     }
 
     protected override object DoEvaluate(ScriptThread thread) {

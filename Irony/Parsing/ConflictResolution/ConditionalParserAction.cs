@@ -63,7 +63,7 @@ namespace Irony.Parsing {
       if (DefaultAction == null) {
         context.AddParserError("Fatal parser error: no conditions matched in conditional parser action, and default action is null." +
             " State: {0}", context.CurrentParserState.Name);
-        context.Parser.CoreParser.Recover();
+        context.Parser.RecoverFromError();
         return; 
       }
       if (traceEnabled) context.AddTrace("  All conditions failed, executing default action: " + DefaultAction.ToString());

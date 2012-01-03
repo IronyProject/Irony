@@ -4,15 +4,9 @@ using System.Linq;
 using System.Text;
 
 namespace Irony.Parsing {
+  //TODO: Improve recovery by adding automatic injection of missing tokens.
+  // Make sure we ALWAYS have output parse tree, even if it is messed up
   public class ErrorRecoveryParserAction : ParserAction {
-
-    /* -- OLD CODE
-        public void ResetLocationAndClearInput(SourceLocation location, int position) {
-          context.CurrentParserInput = null;
-          context.ParserInputStack.Clear();
-          context.SetSourceLocation(location);
-        }
-    */
 
     public override void Execute(ParsingContext context) {
       context.Status = ParserStatus.Error;
@@ -36,7 +30,7 @@ namespace Irony.Parsing {
 
     protected bool TryRecoverFromError(ParsingContext context) {
       var grammar = context.Language.Grammar;
-      var coreParser = context.Parser.CoreParser; 
+      var parser = context.Parser; 
       //1. We need to find a state in the stack that has a shift item based on error production (with error token), 
       // and error terminal is current. This state would have a shift action on error token. 
       ParserAction errorShiftAction = FindErrorShiftActionInStack(context);
@@ -50,20 +44,19 @@ namespace Irony.Parsing {
       context.AddTrace(Resources.MsgTraceRecoverShiftTillEnd);
       while (true) {
         if (context.CurrentParserInput == null) 
-          coreParser.ReadInput(); 
+          parser.ReadInput(); 
         if (context.CurrentParserInput.Term == grammar.Eof)
           return false; 
         //Check if we can reduce
-        var nextAction = coreParser.GetCurrentAction();
+        var nextAction = parser.GetNextAction();
         if (nextAction == null) {
-          coreParser.ReadInput();
+          parser.ReadInput();
           continue; 
         }
         if (nextAction is ReduceParserAction) {
           //We are reducing a fragment containing error - this is the end of recovery
           //Clear all input token queues and buffered input, reset location back to input position token queues; 
           context.SetSourceLocation(context.CurrentParserInput.Span.Location);
-          context.CurrentParserInput = null;
        
           //Reduce error production - it creates parent non-terminal that "hides" error inside
           context.AddTrace(Resources.MsgTraceRecoverReducing);
@@ -72,6 +65,7 @@ namespace Irony.Parsing {
           return true; //we recovered 
         }
         // If it is not reduce, simply execute it (it is most likely shift)
+        context.AddTrace(Resources.MsgTraceRecoverAction, nextAction);
         nextAction.Execute(context); //shift input token
       }
     }//method

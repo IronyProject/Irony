@@ -33,9 +33,10 @@ namespace Irony.Interpreter.Ast {
 
     public override void Init(AstContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      Left = AddChild("Arg", treeNode.MappedChildNodes[0]);
-      Right = AddChild("Arg", treeNode.MappedChildNodes[2]);
-      var opToken = treeNode.MappedChildNodes[1].FindToken();
+      var nodes = treeNode.GetMappedChildNodes();
+      Left = AddChild("Arg", nodes[0]);
+      Right = AddChild("Arg", nodes[2]);
+      var opToken = nodes[1].FindToken();
       OpSymbol = opToken.Text;
       var ictxt = context as InterpreterAstContext;
       Op = ictxt.OperatorHandler.GetOperatorExpressionType(OpSymbol);

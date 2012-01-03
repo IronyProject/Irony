@@ -25,10 +25,11 @@ namespace Irony.Interpreter.Ast {
 
     public override void Init(AstContext context, ParseTreeNode treeNode) {
       base.Init(context, treeNode);
-      Test = AddChild("Test", treeNode.MappedChildNodes[0]);
-      IfTrue = AddChild("IfTrue", treeNode.MappedChildNodes[1]);
-      if (treeNode.MappedChildNodes.Count > 2)
-        IfFalse = AddChild("IfFalse", treeNode.MappedChildNodes[2]);
+      var nodes = treeNode.GetMappedChildNodes();
+      Test = AddChild("Test", nodes[0]);
+      IfTrue = AddChild("IfTrue", nodes[1]);
+      if (nodes.Count > 2)
+        IfFalse = AddChild("IfFalse", nodes[2]);
     }
 
     protected override object DoEvaluate(ScriptThread thread) {

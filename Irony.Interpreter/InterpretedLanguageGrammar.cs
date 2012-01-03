@@ -25,8 +25,6 @@ namespace Irony.Interpreter {
        // making the class abstract so it won't load into Grammar Explorer
     public InterpretedLanguageGrammar(bool caseSensitive)
       : base(caseSensitive) {
-      this.DefaultLiteralNodeType = typeof(LiteralValueNode);  //default node type for literals
-      this.DefaultIdentifierNodeType = typeof(IdentifierNode); 
       this.LanguageFlags = LanguageFlags.CreateAst;
     }
 

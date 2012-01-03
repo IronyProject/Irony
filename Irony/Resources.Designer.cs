@@ -106,7 +106,7 @@ namespace Irony {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalide operation, attempt to assign constant or literal value..
+        ///   Looks up a localized string similar to Invalid operation, attempt to assign to a constant or literal value..
         /// </summary>
         public static string ErrAssignLiteralValue {
             get {
@@ -165,6 +165,15 @@ namespace Irony {
         public static string ErrCannotConvertValueToType {
             get {
                 return ResourceManager.GetString("ErrCannotConvertValueToType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fatal error in parser: attempt to move back in the source..
+        /// </summary>
+        public static string ErrCannotMoveBackInSource {
+            get {
+                return ResourceManager.GetString("ErrCannotMoveBackInSource", resourceCulture);
             }
         }
         
@@ -403,7 +412,7 @@ namespace Irony {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Warning: AstNodeType or AstNodeCreator is not set on non-terminals: {0}..
+        ///   Looks up a localized string similar to AstNodeType or AstNodeCreator is not set on non-terminals: {0}. Either set Term.AstConfig.NodeType, or provide default values in AstContext..
         /// </summary>
         public static string ErrNodeTypeNotSetOn {
             get {
@@ -898,6 +907,15 @@ namespace Irony {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Custom action did not execute: parser state or input did not change..
+        /// </summary>
+        public static string MsgErrorCustomActionDidNotAdvance {
+            get {
+                return ResourceManager.GetString("MsgErrorCustomActionDidNotAdvance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Exit console (y/n)?.
         /// </summary>
         public static string MsgExitConsoleYN {
@@ -939,6 +957,15 @@ namespace Irony {
         public static string MsgTraceConflictResolved {
             get {
                 return ResourceManager.GetString("MsgTraceConflictResolved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Executing custom action.
+        /// </summary>
+        public static string MsgTraceExecCustomAction {
+            get {
+                return ResourceManager.GetString("MsgTraceExecCustomAction", resourceCulture);
             }
         }
         

@@ -60,13 +60,13 @@ namespace Irony.Parsing {
     }
 
     public ParseTree Parse(string sourceText, string fileName) {
-      SourceLocation loc = default(SourceLocation); 
-      if (Context.Status == ParserStatus.AcceptedPartial){
+      SourceLocation loc = default(SourceLocation);
+      Reset();
+/*      if (Context.Status == ParserStatus.AcceptedPartial) {
         var oldLoc = Context.Source.Location;
         loc = new SourceLocation(oldLoc.Position, oldLoc.Line + 1, 0);
       } else {
-        Reset();
-      }
+      }*/
       Context.Source = new SourceStream(sourceText, this.Language.Grammar.CaseSensitive, Context.TabWidth, loc); 
       Context.CurrentParseTree = new ParseTree(sourceText, fileName);
       Context.Status = ParserStatus.Parsing;

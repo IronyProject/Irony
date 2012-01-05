@@ -61,13 +61,6 @@
     <Compile Include="Ast\AstExtensions.cs" />
     <Compile Include="Ast\AstInterfaces.cs" />
     <Compile Include="Ast\AstNodeConfig.cs" />
-    <Compile Include="Parsing\ConflictResolution\ConditionalParserAction.cs" />
-    <Compile Include="Parsing\ConflictResolution\CustomActionHintAction.cs" />
-    <Compile Include="Parsing\ConflictResolution\ImpliedPrecedenceHint.cs" />
-    <Compile Include="Parsing\ConflictResolution\PrecedenceBasedParserAction.cs" />
-    <Compile Include="Parsing\ConflictResolution\PrecedenceHint.cs" />
-    <Compile Include="Parsing\ConflictResolution\PreferredActionHint.cs" />
-    <Compile Include="Parsing\ConflictResolution\TokenPreviewHint.cs" />
     <Compile Include="Parsing\Data\Construction\GrammarDataBuilder.cs" />
     <Compile Include="Parsing\Data\Construction\LanguageDataBuilder.cs" />
     <Compile Include="Parsing\Data\Construction\ParserDataBuilder.cs" />
@@ -100,6 +93,13 @@
     <Compile Include="Parsing\Parser\ParseTreeExtensions.cs" />
     <Compile Include="Parsing\Parser\ParsingContext.cs" />
     <Compile Include="Parsing\Parser\ParsingEventArgs.cs" />
+    <Compile Include="Parsing\Parser\SpecialActionsHints\ConditionalParserAction.cs" />
+    <Compile Include="Parsing\Parser\SpecialActionsHints\CustomActionHintAction.cs" />
+    <Compile Include="Parsing\Parser\SpecialActionsHints\ImpliedPrecedenceHint.cs" />
+    <Compile Include="Parsing\Parser\SpecialActionsHints\PrecedenceBasedParserAction.cs" />
+    <Compile Include="Parsing\Parser\SpecialActionsHints\PrecedenceHint.cs" />
+    <Compile Include="Parsing\Parser\SpecialActionsHints\PreferredActionHint.cs" />
+    <Compile Include="Parsing\Parser\SpecialActionsHints\TokenPreviewHint.cs" />
     <Compile Include="Parsing\Parser\SyntaxError.cs" />
     <Compile Include="Parsing\Scanner\Scanner.cs" />
     <Compile Include="Parsing\Scanner\SourceLocation.cs" />

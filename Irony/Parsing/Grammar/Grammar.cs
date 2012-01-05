@@ -240,7 +240,10 @@ namespace Irony.Parsing {
     //Constructs the error message in situation when parser has no available action for current input.
     // override this method if you want to change this message
     public virtual string ConstructParserErrorMessage(ParsingContext context, StringSet expectedTerms) {
-      return string.Format(Resources.ErrParserUnexpInput, expectedTerms.ToString(", "));
+      if(expectedTerms.Count > 0)
+        return string.Format(Resources.ErrSyntaxErrorExpected, expectedTerms.ToString(", "));
+      else 
+        return Resources.ErrParserUnexpectedInput;
     }
 
     // Override this method to perform custom error processing
@@ -251,16 +254,15 @@ namespace Irony.Parsing {
         else if (context.CurrentParserInput.Term == this.Indent)
             error = Resources.ErrUnexpIndent;
         else if (context.CurrentParserInput.Term == this.Eof && context.OpenBraces.Count > 0) {
+          if (context.OpenBraces.Count > 0) {
             //report unclosed braces/parenthesis
             var openBrace = context.OpenBraces.Peek();
             error = string.Format(Resources.ErrNoClosingBrace, openBrace.Text);
-        } else {
-            var expectedTerms = context.GetExpectedTermSet(); 
-            if (expectedTerms.Count > 0) 
-              error = ConstructParserErrorMessage(context, expectedTerms); 
-              //error = string.Format(Resources.ErrParserUnexpInput, expectedTerms.ToString(" ")
-            else 
+          } else 
               error = Resources.ErrUnexpEof;
+        }else {
+            var expectedTerms = context.GetExpectedTermSet(); 
+            error = ConstructParserErrorMessage(context, expectedTerms); 
         }
         context.AddParserError(error);
     }//method

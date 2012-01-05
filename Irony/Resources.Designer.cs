@@ -529,11 +529,11 @@ namespace Irony {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Syntax error, expected: {0}.
+        ///   Looks up a localized string similar to Syntax error, unexpected input..
         /// </summary>
-        public static string ErrParserUnexpInput {
+        public static string ErrParserUnexpectedInput {
             get {
-                return ResourceManager.GetString("ErrParserUnexpInput", resourceCulture);
+                return ResourceManager.GetString("ErrParserUnexpectedInput", resourceCulture);
             }
         }
         
@@ -615,6 +615,15 @@ namespace Irony {
         public static string ErrSRConflict {
             get {
                 return ResourceManager.GetString("ErrSRConflict", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Syntax error, expected: {0}.
+        /// </summary>
+        public static string ErrSyntaxErrorExpected {
+            get {
+                return ResourceManager.GetString("ErrSyntaxErrorExpected", resourceCulture);
             }
         }
         

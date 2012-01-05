@@ -330,8 +330,7 @@ namespace Irony.Samples.CSharp {
       RegisterOperators(8, "<<", ">>");
       RegisterOperators(9, "+", "-");
       RegisterOperators(10, "*", "/", "%");
-      RegisterOperators(11, ".");
-      //RestrictPrecedence(bin_op, unary_operator); 
+      //RegisterOperators(11, ".");
       // RegisterOperators(12, "++", "--");
       #region comments
       //The following makes sense, if you think about "?" in context of operator precedence. 

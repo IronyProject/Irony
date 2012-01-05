@@ -26,6 +26,7 @@ namespace Irony.Interpreter {
     WaitingMoreInput, //command line only
     SyntaxError,
     RuntimeError,
+    Crash, //interpreter crash
     Aborted
   }
 
@@ -103,21 +104,29 @@ namespace Irony.Interpreter {
 
     #region Evaluation
     public object Evaluate(string script) {
-      var parsedScript = Parser.Parse(script);
-      if (parsedScript.HasErrors()) {
-        Status = AppStatus.SyntaxError;
-        if (RethrowExceptions)
-          throw new ScriptException("Syntax errors found.");
+      try {
+        var parsedScript = Parser.Parse(script);
+        if (parsedScript.HasErrors()) {
+          Status = AppStatus.SyntaxError;
+          if (RethrowExceptions)
+            throw new ScriptException("Syntax errors found.");
+          return null;
+        }
+
+        if (ParserMode == ParseMode.CommandLine && Parser.Context.Status == ParserStatus.AcceptedPartial) {
+          Status = AppStatus.WaitingMoreInput;
+          return null;
+        }
+        LastScript = parsedScript;
+        var result = EvaluateParsedScript();
+        return result;
+      } catch (ScriptException) {
+        throw;
+      } catch (Exception ex) {
+        this.LastException = ex;
+        this.Status = AppStatus.Crash;
         return null; 
       }
- 
-      if (ParserMode == ParseMode.CommandLine && Parser.Context.Status == ParserStatus.AcceptedPartial) {
-        Status = AppStatus.WaitingMoreInput;
-        return null; 
-      }
-      LastScript = parsedScript;
-      var result = EvaluateParsedScript(); 
-      return result;
     }
 
     // Irony interpreter requires that once a script is executed in a ScriptApp, it is bound to AppDataMap object, 

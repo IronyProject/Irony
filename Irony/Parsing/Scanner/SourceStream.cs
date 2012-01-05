@@ -32,6 +32,7 @@ namespace Irony.Parsing {
       _stringComparison = caseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase;
       _tabWidth = tabWidth; 
       _location = initialLocation;
+      _previewPosition = _location.Position;
       if (_tabWidth <= 1) 
         _tabWidth = 8;
     }

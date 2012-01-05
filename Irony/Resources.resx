@@ -235,7 +235,7 @@
   <data name="MsgNLALRAdvice" xml:space="preserve">
     <value>NLALR transform: Add WrapTail() in '.' position to [{0}].</value>
   </data>
-  <data name="ErrParserUnexpInput" xml:space="preserve">
+  <data name="ErrSyntaxErrorExpected" xml:space="preserve">
     <value>Syntax error, expected: {0}</value>
   </data>
   <data name="LabelEosLabel" xml:space="preserve">
@@ -450,5 +450,8 @@
   </data>
   <data name="ErrCannotMoveBackInSource" xml:space="preserve">
     <value>Fatal error in parser: attempt to move back in the source.</value>
+  </data>
+  <data name="ErrParserUnexpectedInput" xml:space="preserve">
+    <value>Syntax error, unexpected input.</value>
   </data>
 </root>

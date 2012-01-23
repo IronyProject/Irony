@@ -25,20 +25,23 @@ namespace Irony.Interpreter.Ast {
     public AstNode Parameters;
     public AstNode Body;
 
+    public LambdaNode() { }
+
+    //Used by FunctionDefNode
     public LambdaNode(AstContext context, ParseTreeNode node, ParseTreeNode parameters, ParseTreeNode body) {
-      base.Init(context, node);
-      Parameters = AddChild("Parameters", parameters);
-      Body = AddChild("Body", body);
-      AsString = "Lambda[" + Parameters.ChildNodes.Count + "]";
-      Body.SetIsTail(); //this will be propagated to the last statement
+      InitImpl(context, node, parameters, body);
     }
 
-    public override void Init(AstContext context, ParseTreeNode treeNode) {
-      base.Init(context, treeNode);
-      var nodes = treeNode.GetMappedChildNodes();
-      Parameters = AddChild("Parameters", nodes[0]);
-      Body = AddChild("Body", nodes[1]);
-      AsString = "Lambda[" + Parameters.ChildNodes.Count+ "]";
+    public override void Init(AstContext context, ParseTreeNode parseNode) {
+      var mappedNodes = parseNode.GetMappedChildNodes();
+      InitImpl(context, parseNode, mappedNodes[0], mappedNodes[1]);
+    }
+
+    private void InitImpl(AstContext context, ParseTreeNode parseNode, ParseTreeNode parametersNode, ParseTreeNode bodyNode) {
+      base.Init(context, parseNode);
+      Parameters = AddChild("Parameters", parametersNode);
+      Body = AddChild("Body", bodyNode);
+      AsString = "Lambda[" + Parameters.ChildNodes.Count + "]";
       Body.SetIsTail(); //this will be propagated to the last statement
     }
 

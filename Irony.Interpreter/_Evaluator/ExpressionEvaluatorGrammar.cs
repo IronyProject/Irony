@@ -113,6 +113,10 @@ bool operations &,&&, |, ||; ternary '?:' operator." ;
       RegisterOperators(30, "+", "-");
       RegisterOperators(40, "*", "/");
       RegisterOperators(50, Associativity.Right, "**");
+      // For precedence to work, we need to take care of one more thing: BinOp. 
+      //For BinOp which is or-combination of binary operators, we need to either 
+      // 1) mark it transient or 2) set flag TermFlags.InheritPrecedence
+      // We use first option, making it Transient.  
 
       // 5. Punctuation and transient terms
       MarkPunctuation("(", ")", "?", ":", "[", "]");

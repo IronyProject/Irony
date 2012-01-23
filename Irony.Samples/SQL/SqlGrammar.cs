@@ -236,10 +236,10 @@ namespace Irony.Samples.SQL {
       MarkPunctuation(asOpt, semiOpt);
       //Note: we cannot declare binOp as transient because it includes operators "NOT LIKE", "NOT IN" consisting of two tokens. 
       // Transient non-terminals cannot have more than one non-punctuation child nodes.
-      // Instead, we mark binOp as Operator, so that it inherits precedence value from it's children, and this precedence is used
+      // Instead, we set flag InheritPrecedence on binOp , so that it inherits precedence value from it's children, and this precedence is used
       // in conflict resolution when binOp node is sitting on the stack
       base.MarkTransient(stmt, term, asOpt, aliasOpt, stmtLine, expression, unOp, tuple);
-      binOp.SetFlag(TermFlags.IsOperator); 
+      binOp.SetFlag(TermFlags.InheritPrecedence); 
 
     }//constructor
 

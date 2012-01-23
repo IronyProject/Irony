@@ -91,6 +91,11 @@ z -= y             # = 3
       result = eval.Evaluate(script);
       Assert.AreEqual(true, result, "Unexpected computation result");
 
+      //Operator precedence test
+      script = @"2+3*3*3";
+      result = eval.Evaluate(script);
+      Assert.AreEqual(29, result, "Operator precedence test failed.");
+
       script = @"x = (1 < 0) && (1/0)";
       result = eval.Evaluate(script);
       Assert.AreEqual(false, result, "Unexpected computation result"); 

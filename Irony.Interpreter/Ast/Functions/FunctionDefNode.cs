@@ -31,6 +31,7 @@ namespace Irony.Interpreter.Ast {
       var nodes = treeNode.GetMappedChildNodes();
       NameNode = AddChild("Name", nodes[1]);
       Lambda = new LambdaNode(context, treeNode, nodes[2], nodes[3]);
+      Lambda.Parent = this; 
       AsString = "<Function " + NameNode.AsString + ">";
       //Lamda will set treeNode.AstNode to itself, we need to set it back to "this" here
       treeNode.AstNode = this; //

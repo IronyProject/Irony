@@ -32,7 +32,9 @@ namespace Irony.Parsing {
     IsPunctuation =      0x20,
     IsDelimiter =        0x40,
     IsReservedWord =    0x080,
-    IsMemberSelect =    0x100,    
+    IsMemberSelect =    0x100,
+    InheritPrecedence = 0x200, // Signals that non-terminal must inherit precedence and assoc values from its children. 
+                               // Typically set for BinOp nonterminal (where BinOp.Rule = '+' | '-' | ...) 
 
     IsNonScanner =    0x01000,  // indicates that tokens for this terminal are NOT produced by scanner 
     IsNonGrammar =    0x02000,  // if set, parser would eliminate the token from the input stream; terms in Grammar.NonGrammarTerminals have this flag set

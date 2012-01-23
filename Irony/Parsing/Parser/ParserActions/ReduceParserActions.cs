@@ -66,19 +66,15 @@ namespace Irony.Parsing {
       // BinOp node should inherit precedence from underlying operator symbol. 
       //TODO: this special case will be handled differently. A ToTerm method should be expanded to allow "combined" terms like "NOT LIKE".
       // OLD COMMENT: A special case is SQL operator "NOT LIKE" which consists of 2 tokens. We therefore inherit "max" precedence from any children
-        foreach(var child in resultNode.ChildNodes)
-          if (child.Precedence != Terminal.NoPrecedence) {
-            resultNode.Precedence = child.Precedence;
-            resultNode.Associativity = child.Associativity;
-            break; //from foreach
-          }
+      if (Production.LValue.Flags.IsSet(TermFlags.InheritPrecedence))
+        InheritPrecedence(resultNode);
       //Push new node into stack and move to new state
       //First read the state from top of the stack 
       context.CurrentParserState = context.ParserStack.Top.State;
       if (context.TracingEnabled) 
         context.AddTrace(Resources.MsgTracePoppedState, Production.LValue.Name);
       #region comments on special case
-      //Special case: if a non-terminal is Transient (ex: BinOp), then result node is not this NonTermina, but its its child (ex: symbol). 
+      //Special case: if a non-terminal is Transient (ex: BinOp), then result node is not this NonTerminal, but its its child (ex: symbol). 
       // Shift action will invoke OnShifting on actual term being shifted (symbol); we need to invoke Shifting even on NonTerminal itself
       // - this would be more expected behavior in general. ImpliedPrecHint relies on this
       #endregion
@@ -88,11 +84,22 @@ namespace Irony.Parsing {
       var shift = context.CurrentParserState.Actions[Production.LValue];
       // Execute shift to new state
       shift.Execute(context);
-//      context.ParserStack.Push(resultNode, shift.NewState);
-//      context.CurrentParserState = shift.NewState;
-      //Invoke event
+      //Invoke Reduce event
       Production.LValue.OnReduced(context, Production, resultNode);
+    }
 
+    //This operation helps in situation when Bin expression is declared as BinExpr.Rule = expr + BinOp + expr; 
+    // where BinOp is an OR-combination of operators. 
+    // During parsing, when 'expr, BinOp, expr' is on the top of the stack, 
+    // and incoming symbol is operator, we need to use precedence rule for deciding on the action. 
+    private void InheritPrecedence(ParseTreeNode node) {
+      for (int i = 0; i < node.ChildNodes.Count; i++) {
+        var child = node.ChildNodes[i];
+        if (child.Precedence == Terminal.NoPrecedence) continue;
+        node.Precedence = child.Precedence;
+        node.Associativity = child.Associativity;
+        return; 
+      }
     }
   
   }//class

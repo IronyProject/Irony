@@ -24,11 +24,6 @@ namespace Irony.Tests {
       token = parser.ParseInput("/* abc  */");
       Assert.IsTrue(token.Category == TokenCategory.Comment, "Failed to read comment");
 
-      
-      parser = TestHelper.CreateParser(new CommentTerminal("Comment", "/*", "*/"));
-      token = parser.ParseInput("/* abc  */");
-      Assert.IsTrue(token.Category == TokenCategory.Comment, "Failed to read comment");
-
       parser = TestHelper.CreateParser(new CommentTerminal("Comment", "//", "\n"));
       token = parser.ParseInput("// abc  \n   ");
       Assert.IsTrue(token.Category == TokenCategory.Comment, "Failed to read line comment");

@@ -95,18 +95,18 @@ namespace Irony.Samples.Scheme {
       var LibraryVersion = new NonTerminal("LibraryVersion");
       var VersionListOpt = new NonTerminal("VersionListOpt");
 
-      var FunctionCall = new NonTerminal("FunctionCall");
-      var FunctionRef = new NonTerminal("FunctionRef");
-      var SpecialForm = new NonTerminal("SpecialForm");
-      var DefineVarForm = new NonTerminal("DefineVarForm");
-      var DefineFunForm = new NonTerminal("DefineFunForm");
-      var LambdaForm = new NonTerminal("LambdaForm");
-      var IfForm = new NonTerminal("IfForm");
+      var FunctionCall = new NonTerminal("FunctionCall", typeof(FunctionCallNode));
+      var FunctionRef = new NonTerminal("FunctionRef"); //transient
+      var SpecialForm = new NonTerminal("SpecialForm"); //transient
+      var DefineVarForm = new NonTerminal("DefineVarForm", typeof(AssignmentNode));
+      var DefineFunForm = new NonTerminal("DefineFunForm", typeof(FunctionDefNode));
+      var LambdaForm = new NonTerminal("LambdaForm", typeof(LambdaNode));
+      var IfForm = new NonTerminal("IfForm", typeof(IfNode));
       var CondForm = new NonTerminal("CondForm");
       var CondClause = new NonTerminal("CondClause");
       var CondClauseList = new NonTerminal("CondClauseList");
       var CondElseOpt = new NonTerminal("CondElseOpt");
-      var BeginForm = new NonTerminal("BeginForm");
+      var BeginForm = new NonTerminal("BeginForm", typeof(StatementListNode));
       var LetForm = new NonTerminal("LetForm"); //not implemented
       var LetRecForm = new NonTerminal("LetRecForm"); //not implemented
       var LetPair = new NonTerminal("LetPair");
@@ -172,6 +172,8 @@ namespace Irony.Samples.Scheme {
 
       SpecialForm.Rule = DefineVarForm | DefineFunForm | LambdaForm | IfForm | CondForm | BeginForm | LetForm | LetRecForm;
       DefineVarForm.Rule = LP + "define" + Identifier + Datum + RP;
+      DefineVarForm.AstConfig.PartsMap = new int[] { 1, 2 };
+
       DefineFunForm.Rule = LP + "define" + LP + Identifier + IdentifierListOpt + RP + DatumList + RP;
       LambdaForm.Rule = LP + "lambda" + LP + IdentifierListOpt + RP + DatumList + RP;
       IfForm.Rule = LP + "if" + Datum + Datum + DatumOpt + RP;
@@ -192,10 +194,10 @@ namespace Irony.Samples.Scheme {
       RegisterBracePair("[", "]");
 
       MarkPunctuation(LP, RP);
-      MarkTransient(Datum, CompoundDatum, Statement, SpecialForm, Atom); 
+      MarkTransient(Datum, CompoundDatum, Statement, SpecialForm, Atom, FunctionRef); 
 
       //Scheme is tail-recursive language
-      base.LanguageFlags |= LanguageFlags.TailRecursive; 
+      base.LanguageFlags |= LanguageFlags.TailRecursive;// | LanguageFlags.CreateAst; 
 
     }//constructor
 

@@ -19,28 +19,21 @@ namespace Irony.Tests {
     //A skeleton for a grammar with a single terminal, followed by optional terminator
     class TerminalTestGrammar : Grammar {
       public string Terminator;
-      public bool SuppressWhitespace; // used in FreeTextLiteral test to suppress skipping whitespace chars
       public TerminalTestGrammar(Terminal terminal, string terminator = null) : base(caseSensitive: true) {
         Terminator = terminator; 
         var rule = new BnfExpression(terminal);
-        if (terminator != null) {
-          MarkReservedWords(terminator);
-          rule += terminator; 
+        if (Terminator != null) {
+          MarkReservedWords(Terminator);
+          rule += Terminator; 
         }
         base.Root = new NonTerminal("Root");
         Root.Rule = rule;
       }
 
-      public override void SkipWhitespace(ISourceStream source) {
-        if (SuppressWhitespace)
-          return; 
-        base.SkipWhitespace(source);
-      }
     }//class
 
-    public static Parser CreateParser(Terminal terminal, string terminator = "end", bool suppressWhitespace = false) {
+    public static Parser CreateParser(Terminal terminal, string terminator = "end") {
       var grammar = new TerminalTestGrammar(terminal, terminator);
-      grammar.SuppressWhitespace = suppressWhitespace;
       var parser = new Parser(grammar);
       CheckGrammarErrors(parser);
       return parser; 
@@ -54,11 +47,6 @@ namespace Irony.Tests {
     public static void CheckParseErrors(ParseTree parseTree) {
       if (parseTree.HasErrors())
         throw new Exception("Unexpected parse error(s): " + string.Join("\n", parseTree.ParserMessages));
-    }
-
-    //handy option for stringLiteral tests: we use single quotes in test strings, and they are replaced by double quotes here 
-    public static Token ParseInputQ(this Parser parser, string input) {
-      return ParseInput(parser, input.Replace("'", "\""));
     }
 
     public static Token ParseInput(this Parser parser, string input, bool useTerminator = true) {

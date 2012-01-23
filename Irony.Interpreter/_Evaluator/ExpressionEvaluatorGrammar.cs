@@ -154,8 +154,13 @@ Press Ctrl-C to exit the program at any time.
     #region Running in Grammar Explorer
     private static ExpressionEvaluator _evaluator;
     public override string RunSample(RunSampleArgs args) {
-      if (_evaluator == null)
+      if (_evaluator == null) {
         _evaluator = new ExpressionEvaluator(this);
+        _evaluator.Globals.Add("null", _evaluator.Runtime.NoneValue);
+        _evaluator.Globals.Add("true", true);
+        _evaluator.Globals.Add("false", false);
+
+      }
       _evaluator.ClearOutput();
       //for (int i = 0; i < 1000; i++)  //for perf measurements, to execute 1000 times
       _evaluator.Evaluate(args.ParsedSample);

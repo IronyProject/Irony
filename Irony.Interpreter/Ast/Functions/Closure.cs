@@ -7,25 +7,18 @@ namespace Irony.Interpreter.Ast {
   public class Closure : ICallTarget {
     //The scope that created closure - used as Creator property of new scope, and will be used to find Parents (enclosing scopes) 
     public Scope CreatorScope; 
-    public FunctionDefNode TargetNode;
-    public Closure(Scope parentScope, FunctionDefNode targetNode) {
+    public LambdaNode Lamda;
+    public Closure(Scope parentScope, LambdaNode targetNode) {
       CreatorScope = parentScope;
-      TargetNode = targetNode;
+      Lamda = targetNode;
     }
 
     public object Call(ScriptThread thread, object[] parameters) {
-      var save = thread.CurrentNode; //prolog, not standard - the caller is NOT target node's parent
-      thread.CurrentNode = TargetNode;
-      thread.PushClosureScope(TargetNode.DependentScopeInfo, CreatorScope, parameters);
-      TargetNode.Parameters.Evaluate(thread); // pre-process parameters
-      var result = TargetNode.Body.Evaluate(thread);
-      thread.PopScope();
-      thread.CurrentNode = save; //epilog, restoring caller 
-      return result; 
+      return Lamda.Call(CreatorScope, thread, parameters);
     }
 
     public override string ToString() {
-      return TargetNode.ToString(); //returns nice string like "<function add>"
+      return Lamda.ToString(); //returns nice string like "<function add>"
     }
 
   } //class

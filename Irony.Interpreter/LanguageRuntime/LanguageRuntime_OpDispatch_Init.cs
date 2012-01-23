@@ -101,9 +101,10 @@ namespace Irony.Interpreter {
 
     #region Initializing type converters
     public virtual void InitTypeConverters() {
+      Type targetType; 
 
       //->string
-      Type targetType = typeof(string);
+      targetType = typeof(string);
       AddConverter(typeof(char), targetType, ConvertAnyToString);
       AddConverter(typeof(sbyte), targetType, ConvertAnyToString);
       AddConverter(typeof(byte), targetType, ConvertAnyToString);
@@ -594,7 +595,12 @@ namespace Irony.Interpreter {
     protected virtual Type GetCommonTypeForOperator(ExpressionType op, Type argType1, Type argType2) {
       if (argType1 == argType2)
         return argType1;
-      //First check for unsigned types and convert to signed versions
+
+      //TODO: see how to handle properly null/NoneValue in expressions
+      // var noneType = typeof(NoneClass);
+      // if (argType1 == noneType || argType2 == noneType) return noneType; 
+      
+      // Check for unsigned types and convert to signed versions
       var t1 = GetSignedTypeForUnsigned(argType1);
       var t2 = GetSignedTypeForUnsigned(argType2);
       // The type with higher index in _typesSequence is the commont type 

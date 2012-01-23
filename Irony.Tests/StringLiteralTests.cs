@@ -17,6 +17,11 @@ namespace Irony.Tests {
   public class StringLiteralTests  {
 
 
+    //handy option for stringLiteral tests: we use single quotes in test strings, and they are replaced by double quotes here 
+    private static string ReplaceQuotes(string input) {
+      return input.Replace("'", "\"");
+    }
+
     //The following test method and a fix are contributed by ashmind codeplex user
     [TestMethod]
     public void TestString_QuoteJustBeforeEof() {
@@ -46,15 +51,15 @@ namespace Irony.Tests {
       Assert.IsTrue((string)token.Value == @"00\a\b\t\n\v\f\r00", "Failed to process string with disabled escapes.");
       
       //2. Double quotes - we use TryMatchDoubles which replaces single quotes with doubles and then calls TryMatch
-      token = parser.ParseInputQ(@"'00\a\b\t\n\v\f\r\'\\00'  ");
+      token = parser.ParseInput(ReplaceQuotes(@"'00\a\b\t\n\v\f\r\'\\00'  "));
       Assert.IsTrue((string)token.Value == "00\a\b\t\n\v\f\r\"\\00", "Failed to process escaped characters.");
-      token = parser.ParseInputQ("'abcd\nefg'  ");
+      token = parser.ParseInput(ReplaceQuotes("'abcd\nefg'  "));
       Assert.IsTrue(token.IsError(), "Failed to detect erroneous multi-line string. (Double quotes)");
-      token = parser.ParseInputQ("'''abcd\nefg'''  ");
+      token = parser.ParseInput(ReplaceQuotes("'''abcd\nefg'''  "));
       Assert.IsTrue((string)token.Value == "abcd\nefg", "Failed to process line break in triple-quote string. (Double quotes)");
-      token = parser.ParseInputQ(@"'''abcd\" + "\n" + "efg'''  ");
+      token = parser.ParseInput(ReplaceQuotes(@"'''abcd\" + "\n" + "efg'''  "));
       Assert.IsTrue((string)token.Value == "abcd\nefg", "Failed to process escaped line-break char. (Double quotes)");
-      token = parser.ParseInputQ(@"r'00\a\b\t\n\v\f\r00'  ");
+      token = parser.ParseInput(ReplaceQuotes(@"r'00\a\b\t\n\v\f\r00'  "));
       Assert.IsTrue((string)token.Value == @"00\a\b\t\n\v\f\r00", "Failed to process string with disabled escapes. (Double quotes)");
     }//method
 
@@ -71,34 +76,34 @@ namespace Irony.Tests {
       Assert.IsTrue((string)token.Value == @"abcd\" + '"' + "efg" , @"Failed to process '\\\ + double-quote' inside the string.");
 
       //with Escapes
-      token = parser.ParseInputQ(@"'00\a\b\t\n\v\f\r\'\\00'  ");
+      token = parser.ParseInput(ReplaceQuotes(@"'00\a\b\t\n\v\f\r\'\\00'  "));
       Assert.IsTrue((string)token.Value == "00\a\b\t\n\v\f\r\"\\00", "Failed to process escaped characters.");
-      token = parser.ParseInputQ("'abcd\nefg'  ");
+      token = parser.ParseInput(ReplaceQuotes("'abcd\nefg'  "));
       Assert.IsTrue(token.IsError(), "Failed to detect erroneous multi-line string.");
       //with disabled escapes
-      token = parser.ParseInputQ(@"@'00\a\b\t\n\v\f\r00'  ");
+      token = parser.ParseInput(ReplaceQuotes(@"@'00\a\b\t\n\v\f\r00'  "));
       Assert.IsTrue((string)token.Value == @"00\a\b\t\n\v\f\r00", "Failed to process @-string with disabled escapes.");
-      token = parser.ParseInputQ("@'abc\ndef'  ");
+      token = parser.ParseInput(ReplaceQuotes("@'abc\ndef'  "));
       Assert.IsTrue((string)token.Value == "abc\ndef", "Failed to process @-string with linebreak.");
       //Unicode and hex
-      token = parser.ParseInputQ(@"'abc\u0040def'  ");
+      token = parser.ParseInput(ReplaceQuotes(@"'abc\u0040def'  "));
       Assert.IsTrue((string)token.Value == "abc@def", "Failed to process unicode escape \\u.");
-      token = parser.ParseInputQ(@"'abc\U00000040def'  ");
+      token = parser.ParseInput(ReplaceQuotes(@"'abc\U00000040def'  "));
       Assert.IsTrue((string)token.Value == "abc@def", "Failed to process unicode escape \\u.");
-      token = parser.ParseInputQ(@"'abc\x0040xyz'  ");
+      token = parser.ParseInput(ReplaceQuotes(@"'abc\x0040xyz'  "));
       Assert.IsTrue((string)token.Value == "abc@xyz", "Failed to process hex escape (4 digits).");
-      token = parser.ParseInputQ(@"'abc\x040xyz'  ");
+      token = parser.ParseInput(ReplaceQuotes(@"'abc\x040xyz'  "));
       Assert.IsTrue((string)token.Value == "abc@xyz", "Failed to process hex escape (3 digits).");
-      token = parser.ParseInputQ(@"'abc\x40xyz'  ");
+      token = parser.ParseInput(ReplaceQuotes(@"'abc\x40xyz'  "));
       Assert.IsTrue((string)token.Value == "abc@xyz", "Failed to process hex escape (2 digits).");
       //octals
-      token = parser.ParseInputQ(@"'abc\0601xyz'  "); //the last digit "1" should not be included in octal number
+      token = parser.ParseInput(ReplaceQuotes(@"'abc\0601xyz'  ")); //the last digit "1" should not be included in octal number
       Assert.IsTrue((string)token.Value == "abc01xyz", "Failed to process octal escape (3 + 1 digits).");
-      token = parser.ParseInputQ(@"'abc\060xyz'  ");
+      token = parser.ParseInput(ReplaceQuotes(@"'abc\060xyz'  "));
       Assert.IsTrue((string)token.Value == "abc0xyz", "Failed to process octal escape (3 digits).");
-      token = parser.ParseInputQ(@"'abc\60xyz'  ");
+      token = parser.ParseInput(ReplaceQuotes(@"'abc\60xyz'  "));
       Assert.IsTrue((string)token.Value == "abc0xyz", "Failed to process octal escape (2 digits).");
-      token = parser.ParseInputQ(@"'abc\0xyz'  ");
+      token = parser.ParseInput(ReplaceQuotes(@"'abc\0xyz'  "));
       Assert.IsTrue((string)token.Value == "abc\0xyz", "Failed to process octal escape (1 digit).");
     }
 
@@ -124,18 +129,18 @@ namespace Irony.Tests {
 
       parser = TestHelper.CreateParser(TerminalFactory.CreateVbString("String"));
       //VB has no escapes - so make sure term doesn't catch any escapes
-      token = parser.ParseInputQ(@"'00\a\b\t\n\v\f\r\\00'  ");
+      token = parser.ParseInput(ReplaceQuotes(@"'00\a\b\t\n\v\f\r\\00'  "));
       Assert.IsTrue((string)token.Value == @"00\a\b\t\n\v\f\r\\00", "Failed to process string with \\ characters.");
-      token = parser.ParseInputQ("'abcd\nefg'  ");
+      token = parser.ParseInput(ReplaceQuotes("'abcd\nefg'  "));
       Assert.IsTrue(token.IsError(), "Failed to detect erroneous multi-line string.");
-      token = parser.ParseInputQ("'abcd''efg'  "); // doubled quote should change to single
+      token = parser.ParseInput(ReplaceQuotes("'abcd''efg'  ")); 
       Assert.IsTrue((string)token.Value == "abcd\"efg", "Failed to process a string with doubled double-quote char.");
       //Test char suffix "c"
-      token = parser.ParseInputQ("'A'c  "); 
+      token = parser.ParseInput(ReplaceQuotes("'A'c  ")); 
       Assert.IsTrue((char)token.Value == 'A', "Failed to process a character");
-      token = parser.ParseInputQ("''c  ");
+      token = parser.ParseInput(ReplaceQuotes("''c  "));
       Assert.IsTrue(token.IsError(), "Failed to detect an error for an empty char.");
-      token = parser.ParseInputQ("'ab'C  ");
+      token = parser.ParseInput(ReplaceQuotes("'ab'C  "));
       Assert.IsTrue(token.IsError(), "Failed to detect error in multi-char sequence.");
     }
 

@@ -45,6 +45,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{44A7
 		Languages\Refal\UnitTests\Sources\order-v1.ref = Languages\Refal\UnitTests\Sources\order-v1.ref
 		Languages\Refal\UnitTests\Sources\order-v2.ref = Languages\Refal\UnitTests\Sources\order-v2.ref
 		Languages\Refal\UnitTests\Sources\palyndrome.ref = Languages\Refal\UnitTests\Sources\palyndrome.ref
+		Languages\Refal\UnitTests\Sources\pretty.ref = Languages\Refal\UnitTests\Sources\pretty.ref
 		Languages\Refal\UnitTests\Sources\quine-plain.ref = Languages\Refal\UnitTests\Sources\quine-plain.ref
 		Languages\Refal\UnitTests\Sources\quine-simple.ref = Languages\Refal\UnitTests\Sources\quine-simple.ref
 		Languages\Refal\UnitTests\Sources\quine-xplained.ref = Languages\Refal\UnitTests\Sources\quine-xplained.ref

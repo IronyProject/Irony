@@ -27,10 +27,10 @@ namespace Irony.GrammarExplorer {
   /// </summary>
   class GrammarLoader {
     private TimeSpan _autoRefreshDelay = TimeSpan.FromMilliseconds(1000);
-    private Dictionary<string, CachedAssembly> _cachedGrammarAssemblies = new Dictionary<string, CachedAssembly>();
     private static HashSet<string> _probingPaths = new HashSet<string>();
-    private static Dictionary<string, Assembly> _loadedAssembliesByLocation = new Dictionary<string, Assembly>();
+    private Dictionary<string, CachedAssembly> _cachedGrammarAssemblies = new Dictionary<string, CachedAssembly>();
     private static Dictionary<string, Assembly> _loadedAssembliesByNames = new Dictionary<string, Assembly>();
+    private static Dictionary<string, Assembly> _loadedAssembliesByLocation = new Dictionary<string, Assembly>();
     private static bool _enableBrowsingForAssemblyResolution = false;
 
     static GrammarLoader() {
@@ -191,10 +191,12 @@ namespace Irony.GrammarExplorer {
       var assembly = Assembly.LoadFrom(fileName);
       // if the standard policy returned the old version, force reload
       Assembly oldVersion;
-      if (_loadedAssembliesByLocation.TryGetValue(fileName, out oldVersion) && assembly == oldVersion)
-        assembly = Assembly.Load(File.ReadAllBytes(fileName));
-      // cache the loaded assembly by its location
-      _loadedAssembliesByLocation[fileName] = assembly;
+      if (_loadedAssembliesByLocation.TryGetValue(fileName, out oldVersion)) {
+        if (assembly == oldVersion)
+          assembly = Assembly.Load(File.ReadAllBytes(fileName));
+      }
+      else // cache the loaded assembly by its location
+        _loadedAssembliesByLocation[fileName] = assembly;
       return assembly;
     }
   }

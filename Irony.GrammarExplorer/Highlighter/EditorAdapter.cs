@@ -3,8 +3,8 @@
  * Copyright (c) Roman Ivantsov
  * This source code is subject to terms and conditions of the MIT License
  * for Irony. A copy of the license can be found in the License.txt file
- * at the root of this distribution. 
- * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * at the root of this distribution.
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the
  * MIT License.
  * You must not remove this notice from this software.
  * **********************************************************************************/
@@ -18,7 +18,6 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Irony.Parsing;
-
 
 namespace Irony.GrammarExplorer {
 
@@ -34,7 +33,7 @@ namespace Irony.GrammarExplorer {
     bool _stopped;
 
     public EditorAdapter(LanguageData language) {
-      _parser = new Parser(language); 
+      _parser = new Parser(language);
       _scanner = _parser.Scanner;
       _colorizerThread = new Thread(ColorizerLoop);
       _colorizerThread.IsBackground = true;
@@ -58,7 +57,7 @@ namespace Irony.GrammarExplorer {
         if(_colorizerThread.IsAlive)
           _colorizerThread.Abort();
       } catch (Exception ex) {
-        System.Diagnostics.Debug.WriteLine("Error when stopping EditorAdapter: " + ex.Message); 
+        System.Diagnostics.Debug.WriteLine("Error when stopping EditorAdapter: " + ex.Message);
       }
     }
 
@@ -71,7 +70,7 @@ namespace Irony.GrammarExplorer {
       get { return _parseTree; }
     }
 
-    //Note: we don't actually parse in current version, only scan. Will implement full parsing in the future, 
+    //Note: we don't actually parse in current version, only scan. Will implement full parsing in the future,
     // to support all intellisense operations
     private  void ParseSource(string newText) {
       //Explicitly catch the case when new text is empty
@@ -95,7 +94,7 @@ namespace Irony.GrammarExplorer {
     public void RemoveView(EditorViewAdapter view) {
       lock (this) {
         _views.Remove(view);
-        _viewsCopy = null; 
+        _viewsCopy = null;
       }
     }
     private EditorViewAdapterList GetViews() {
@@ -121,8 +120,8 @@ namespace Irony.GrammarExplorer {
           Thread.Sleep(10);
         } catch(Exception ex) {
           fmShowException.ShowException(ex);
-          System.Windows.Forms.MessageBox.Show("Fatal error in code colorizer. Colorizing had been disabled."); 
-          _stopped = true; 
+          System.Windows.Forms.MessageBox.Show("Fatal error in code colorizer. Colorizing had been disabled.");
+          _stopped = true;
         }
       }//while
     }
@@ -133,7 +132,7 @@ namespace Irony.GrammarExplorer {
         //Go through views and invoke refresh
         foreach (EditorViewAdapter view in views) {
           if (_stopped) break;
-          if (view.WantsColorize) 
+          if (view.WantsColorize)
             view.TryInvokeColorize();
         }//foreach
         Thread.Sleep(10);

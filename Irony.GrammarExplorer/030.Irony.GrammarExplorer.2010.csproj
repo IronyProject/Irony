@@ -61,6 +61,9 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FastColoredTextBox">
+      <HintPath>..\Libraries\FastColoredTextBox\FastColoredTextBox.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -88,6 +91,7 @@
     <Compile Include="GrammarLoader.cs" />
     <Compile Include="Highlighter\EditorAdapter.cs" />
     <Compile Include="Highlighter\EditorViewAdapter.cs" />
+    <Compile Include="Highlighter\FastColoredTextBoxHighlighter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="fmGrammarExplorer.resx">

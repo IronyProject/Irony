@@ -21,6 +21,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Threading;
 using System.Runtime.InteropServices;
 using Irony.Parsing;
@@ -35,6 +36,7 @@ namespace Irony.GrammarExplorer {
     private readonly Style DefaultTokenStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
     public readonly EditorAdapter Adapter;
     public readonly EditorViewAdapter ViewAdapter;
+    public readonly LanguageData Language;
 
     private IntPtr _savedEventMask = IntPtr.Zero;
     bool _colorizing;
@@ -45,16 +47,19 @@ namespace Irony.GrammarExplorer {
       TextBox = textBox;
       Adapter = new EditorAdapter(language);
       ViewAdapter = new EditorViewAdapter(Adapter, this);
+      Language = language;
       InitStyles();
+      InitBraces();
       Connect();
       UpdateViewRange();
       ViewAdapter.SetNewText(TextBox.Text);
     }
+
     private void Connect() {
       TextBox.MouseMove += TextBox_MouseMove;
       TextBox.TextChanged += TextBox_TextChanged;
       TextBox.KeyDown += TextBox_KeyDown;
-      TextBox.Scroll += TextBox_ScrollResize;
+      TextBox.VisibleRangeChanged += TextBox_ScrollResize;
       TextBox.SizeChanged += TextBox_ScrollResize;
       TextBox.Disposed += TextBox_Disposed;
       ViewAdapter.ColorizeTokens += Adapter_ColorizeTokens;
@@ -67,7 +72,7 @@ namespace Irony.GrammarExplorer {
         TextBox.TextChanged -= TextBox_TextChanged;
         TextBox.KeyDown -= TextBox_KeyDown;
         TextBox.Disposed -= TextBox_Disposed;
-        TextBox.Scroll -= TextBox_ScrollResize;
+        TextBox.VisibleRangeChanged -= TextBox_ScrollResize;
         TextBox.SizeChanged -= TextBox_ScrollResize;
       }
       TextBox = null;
@@ -98,7 +103,33 @@ namespace Irony.GrammarExplorer {
       TextBox.AddStyle(commentStyle);
       TextBox.AddStyle(keywordStyle);
       TextBox.AddStyle(literalStyle);
+      TextBox.BracketsStyle = new MarkerStyle(new SolidBrush(Color.FromArgb(50, Color.Blue)));
+      TextBox.BracketsStyle2 = new MarkerStyle(new SolidBrush(Color.FromArgb(50, Color.Green)));
     }
+
+    private void InitBraces() {
+      // select the first two pair of braces with the length of exactly one char (FCTB restrictions)
+      var braces = Language.Grammar.KeyTerms
+        .Select(pair => pair.Value)
+        .Where(term => term.Flags.IsSet(TermFlags.IsOpenBrace))
+        .Where(term => term.IsPairFor != null && term.IsPairFor is KeyTerm)
+        .Where(term => term.Text.Length == 1)
+        .Where(term => ((KeyTerm)term.IsPairFor).Text.Length == 1)
+        .Take(2);
+      if (braces.Any()) {
+        // first pair
+        var brace = braces.First();
+        TextBox.LeftBracket = brace.Text.First();
+        TextBox.RightBracket = ((KeyTerm)brace.IsPairFor).Text.First();
+        // second pair
+        if (braces.Count() > 1) {
+          brace = braces.Last();
+          TextBox.LeftBracket2 = brace.Text.First();
+          TextBox.RightBracket2 = ((KeyTerm)brace.IsPairFor).Text.First();
+        }
+      }
+    }
+
     #endregion
 
     #region TextBox event handlers
@@ -205,10 +236,10 @@ namespace Irony.GrammarExplorer {
       TextBox.BeginUpdate();
       try {
         foreach (Token tkn in args.Tokens) {
-          //Color color = GetTokenColor(tkn);
           var tokenRange = TextBox.GetRange(tkn.Location.Position, tkn.Location.Position + tkn.Length);
           var tokenStyle = GetTokenStyle(tkn);
           tokenRange.SetStyle(tokenStyle);
+
         }
       } finally {
         TextBox.EndUpdate();

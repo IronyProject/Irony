@@ -8,7 +8,7 @@
  * MIT License.
  * You must not remove this notice from this software.
  * **********************************************************************************/
-//with contributions by Andrew Bradnan
+//with contributions by Andrew Bradnan and Alexey Yakovlev
 #endregion
 using System;
 using System.Collections.Generic;
@@ -21,11 +21,10 @@ using System.IO;
 using System.Configuration;
 using System.Text.RegularExpressions;
 using System.Xml;
-
 using Irony.Ast;
 using Irony.Parsing;
-
 using Irony.GrammarExplorer.Properties;
+using Irony.GrammarExplorer.Highlighter;
 
 namespace Irony.GrammarExplorer {
   using ScriptException = Irony.Interpreter.ScriptException; //that's the only place we use stuff from Irony.Interpreter

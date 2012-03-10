@@ -92,6 +92,7 @@
     <Compile Include="Highlighter\EditorAdapter.cs" />
     <Compile Include="Highlighter\EditorViewAdapter.cs" />
     <Compile Include="Highlighter\FastColoredTextBoxHighlighter.cs" />
+    <Compile Include="Highlighter\WavyLineStyle.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="fmGrammarExplorer.resx">

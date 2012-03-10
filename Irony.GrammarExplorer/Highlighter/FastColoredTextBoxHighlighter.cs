@@ -14,6 +14,7 @@
 // This module borrows code and ideas from TinyPG framework by Herre Kuijpers,
 // specifically TextMarker.cs and TextHighlighter.cs classes.
 // http://www.codeproject.com/KB/recipes/TinyPG.aspx
+// Written by Alexey Yakovlev <yallie@yandex.ru>, based on RichTextBoxHighlighter
 //
 using System;
 using System.Collections.Generic;
@@ -28,12 +29,16 @@ using Irony.Parsing;
 using System.Diagnostics;
 using FastColoredTextBoxNS;
 
-namespace Irony.GrammarExplorer {
+namespace Irony.GrammarExplorer.Highlighter {
 
+  /// <summary>
+  /// Highlights text inside FastColoredTextBox control.
+  /// </summary>
   public class FastColoredTextBoxHighlighter : NativeWindow, IDisposable, IUIThreadInvoker {
     public FastColoredTextBox TextBox;
-    public readonly Dictionary<TokenColor, Style> TokenStyles = new Dictionary<TokenColor, Style>();
+    private readonly Dictionary<TokenColor, Style> TokenStyles = new Dictionary<TokenColor, Style>();
     private readonly Style DefaultTokenStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
+    private readonly Style ErrorTokenStyle = new WavyLineStyle(240, Color.Red);
     public readonly EditorAdapter Adapter;
     public readonly EditorViewAdapter ViewAdapter;
     public readonly LanguageData Language;
@@ -100,6 +105,7 @@ namespace Irony.GrammarExplorer {
 
       TextBox.ClearStylesBuffer();
       TextBox.AddStyle(DefaultTokenStyle);
+      TextBox.AddStyle(ErrorTokenStyle);
       TextBox.AddStyle(commentStyle);
       TextBox.AddStyle(keywordStyle);
       TextBox.AddStyle(literalStyle);
@@ -249,6 +255,7 @@ namespace Irony.GrammarExplorer {
     }
 
     private Style GetTokenStyle(Token token) {
+      if (token.IsError()) return ErrorTokenStyle;
       if (token.EditorInfo == null) return DefaultTokenStyle;
       //Right now we scan source, not parse; initially all keywords are recognized as Identifiers; then they are "backpatched"
       // by parser when it detects that it is in fact keyword from Grammar. So now this backpatching does not happen,

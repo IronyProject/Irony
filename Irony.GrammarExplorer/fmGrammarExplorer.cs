@@ -405,9 +405,11 @@ namespace Irony.GrammarExplorer {
       try {
         reader = new StreamReader(path);
         txtSource.Text = null;  //to clear any old formatting
+        txtSource.ClearUndo();
+        txtSource.ClearStylesBuffer();
         txtSource.Text = reader.ReadToEnd();
-        txtSource.SelectionStart = 0;
-        txtSource.SelectionLength = 0;
+        txtSource.SetVisibleState(0, FastColoredTextBoxNS.VisibleState.Visible);
+        txtSource.Selection = txtSource.GetRange(0, 0);
       } catch (Exception e) {
         MessageBox.Show(e.Message);
       } finally {
@@ -433,9 +435,16 @@ namespace Irony.GrammarExplorer {
       ClearHighlighting();
     }
     private void ClearHighlighting() {
+      var selectedRange = txtSource.Selection;
+      var visibleRange = txtSource.VisibleRange;
+      var firstVisibleLine = Math.Min(visibleRange.Start.iLine, visibleRange.End.iLine);
+
       var txt = txtSource.Text;
       txtSource.Clear();
       txtSource.Text = txt; //remove all old highlighting
+
+      txtSource.SetVisibleState(firstVisibleLine, FastColoredTextBoxNS.VisibleState.Visible);
+      txtSource.Selection = selectedRange;
     }
     private void EnableHighlighter(bool enable) {
       if (_highlighter != null)

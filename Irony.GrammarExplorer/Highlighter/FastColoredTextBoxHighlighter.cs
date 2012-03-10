@@ -110,7 +110,7 @@ namespace Irony.GrammarExplorer.Highlighter {
       TextBox.AddStyle(keywordStyle);
       TextBox.AddStyle(literalStyle);
       TextBox.BracketsStyle = new MarkerStyle(new SolidBrush(Color.FromArgb(50, Color.Blue)));
-      TextBox.BracketsStyle2 = new MarkerStyle(new SolidBrush(Color.FromArgb(50, Color.Green)));
+      TextBox.BracketsStyle2 = new MarkerStyle(new SolidBrush(Color.FromArgb(70, Color.Green)));
     }
 
     private void InitBraces() {

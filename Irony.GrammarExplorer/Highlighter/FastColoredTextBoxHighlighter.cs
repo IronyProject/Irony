@@ -217,7 +217,7 @@ namespace Irony.GrammarExplorer {
       //SendMessage(TextBox.Handle, WM_SETREDRAW, 0, IntPtr.Zero);
       // Stop sending of events:
       _savedEventMask = SendMessage(TextBox.Handle, EM_GETEVENTMASK, 0, IntPtr.Zero);
-      //SendMessage(TextBox.Handle, EM_SETEVENTMASK, 0, IntPtr.Zero);
+      SendMessage(TextBox.Handle, EM_SETEVENTMASK, 0, IntPtr.Zero);
     }
 
     public void UnlockTextBox() {
@@ -239,7 +239,6 @@ namespace Irony.GrammarExplorer {
           var tokenRange = TextBox.GetRange(tkn.Location.Position, tkn.Location.Position + tkn.Length);
           var tokenStyle = GetTokenStyle(tkn);
           tokenRange.SetStyle(tokenStyle);
-
         }
       } finally {
         TextBox.EndUpdate();

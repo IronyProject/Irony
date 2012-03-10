@@ -220,7 +220,7 @@ namespace Irony.GrammarExplorer.Highlighter {
     public void LockTextBox() {
       // Stop redrawing:
       TextBox.BeginUpdate();
-      //SendMessage(TextBox.Handle, WM_SETREDRAW, 0, IntPtr.Zero);
+      SendMessage(TextBox.Handle, WM_SETREDRAW, 0, IntPtr.Zero);
       // Stop sending of events:
       _savedEventMask = SendMessage(TextBox.Handle, EM_GETEVENTMASK, 0, IntPtr.Zero);
       SendMessage(TextBox.Handle, EM_SETEVENTMASK, 0, IntPtr.Zero);
@@ -230,28 +230,25 @@ namespace Irony.GrammarExplorer.Highlighter {
       // turn on events
       SendMessage(TextBox.Handle, EM_SETEVENTMASK, 0, _savedEventMask);
       // turn on redrawing
-      //SendMessage(TextBox.Handle, WM_SETREDRAW, 1, IntPtr.Zero);
+      SendMessage(TextBox.Handle, WM_SETREDRAW, 1, IntPtr.Zero);
       TextBox.EndUpdate();
     }
 
     void Adapter_ColorizeTokens(object sender, ColorizeEventArgs args) {
       if (_disposed) return;
-      //Debug.WriteLine("Coloring " + args.Tokens.Count + " tokens.");
-
       _colorizing = true;
       TextBox.BeginUpdate();
       try {
         foreach (Token tkn in args.Tokens) {
           var tokenRange = TextBox.GetRange(tkn.Location.Position, tkn.Location.Position + tkn.Length);
           var tokenStyle = GetTokenStyle(tkn);
+          tokenRange.ClearStyle(StyleIndex.All);
           tokenRange.SetStyle(tokenStyle);
         }
       } finally {
         TextBox.EndUpdate();
         _colorizing = false;
       }
-
-      TextBox.Refresh();
     }
 
     private Style GetTokenStyle(Token token) {

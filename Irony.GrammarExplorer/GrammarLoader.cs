@@ -30,7 +30,7 @@ namespace Irony.GrammarExplorer {
     private static HashSet<string> _probingPaths = new HashSet<string>();
     private Dictionary<string, CachedAssembly> _cachedGrammarAssemblies = new Dictionary<string, CachedAssembly>();
     private static Dictionary<string, Assembly> _loadedAssembliesByNames = new Dictionary<string, Assembly>();
-    private static Dictionary<string, Assembly> _loadedAssembliesByLocation = new Dictionary<string, Assembly>();
+    private static HashSet<Assembly> _loadedAssemblies = new HashSet<Assembly>();
     private static bool _enableBrowsingForAssemblyResolution = false;
 
     static GrammarLoader() {
@@ -190,13 +190,11 @@ namespace Irony.GrammarExplorer {
       // try to load assembly using the standard policy
       var assembly = Assembly.LoadFrom(fileName);
       // if the standard policy returned the old version, force reload
-      Assembly oldVersion;
-      if (_loadedAssembliesByLocation.TryGetValue(fileName, out oldVersion)) {
-        if (assembly == oldVersion)
+      if (_loadedAssemblies.Contains(assembly)) {
           assembly = Assembly.Load(File.ReadAllBytes(fileName));
       }
-      else // cache the loaded assembly by its location
-        _loadedAssembliesByLocation[fileName] = assembly;
+      // cache the loaded assembly by its location
+      _loadedAssemblies.Add(assembly);
       return assembly;
     }
   }

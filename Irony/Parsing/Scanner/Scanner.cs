@@ -182,7 +182,7 @@ namespace Irony.Parsing {
       MatchTerminals();
       if (Context.CurrentToken is MultiToken)
         UnpackMultiToken();
-      return Context.CurrentToken != null;         
+      return Context.CurrentToken != null;
     }
 
     //If token is MultiToken then push all its child tokens into _bufferdTokens and return the first token in buffer

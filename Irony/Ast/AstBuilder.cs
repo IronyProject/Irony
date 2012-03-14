@@ -61,10 +61,11 @@ namespace Irony.Ast {
           config.DefaultNodeCreator = CompileDefaultNodeCreator(config.NodeType);        
       }
       if (missingList.Count > 0)
+        // AST node type is not specified for term {0}. Either assign Term.AstConfig.NodeType, or specify default type(s) in AstBuilder.  
         Context.AddMessage(ErrorLevel.Error, SourceLocation.Empty, Resources.ErrNodeTypeNotSetOn, missingList.ToString());
       Context.Language.AstDataVerified = true; 
     }
-   // AST node type is not specified for term {0}. Either assign Term.AstConfig.NodeType, or specify default type(s) in AstBuilder.  
+
     protected virtual Type GetDefaultNodeType(BnfTerm term) {
       if (term is NumberLiteral || term is StringLiteral)
         return Context.DefaultLiteralNodeType;

@@ -57,6 +57,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "101.IronySilverlight.2010",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "015.Irony.Interpreter.2010", "Irony.Interpreter\015.Irony.Interpreter.2010.csproj", "{321A7F5D-00C2-4095-9970-075CDEE8C139}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "035.Irony.WinForms.2010", "Irony.WinForms\035.Irony.WinForms.2010.csproj", "{70D319F3-3C0C-4EB5-A271-58ED22FB3070}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -189,6 +191,18 @@ Global
 		{321A7F5D-00C2-4095-9970-075CDEE8C139}.Silverlight Release|Any CPU.Build.0 = Release|Any CPU
 		{321A7F5D-00C2-4095-9970-075CDEE8C139}.SpecSharp|Any CPU.ActiveCfg = Release|Any CPU
 		{321A7F5D-00C2-4095-9970-075CDEE8C139}.SpecSharp|Any CPU.Build.0 = Release|Any CPU
+		{70D319F3-3C0C-4EB5-A271-58ED22FB3070}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70D319F3-3C0C-4EB5-A271-58ED22FB3070}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70D319F3-3C0C-4EB5-A271-58ED22FB3070}.FxCop|Any CPU.ActiveCfg = Release|Any CPU
+		{70D319F3-3C0C-4EB5-A271-58ED22FB3070}.FxCop|Any CPU.Build.0 = Release|Any CPU
+		{70D319F3-3C0C-4EB5-A271-58ED22FB3070}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70D319F3-3C0C-4EB5-A271-58ED22FB3070}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70D319F3-3C0C-4EB5-A271-58ED22FB3070}.Silverlight Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70D319F3-3C0C-4EB5-A271-58ED22FB3070}.Silverlight Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70D319F3-3C0C-4EB5-A271-58ED22FB3070}.Silverlight Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70D319F3-3C0C-4EB5-A271-58ED22FB3070}.Silverlight Release|Any CPU.Build.0 = Release|Any CPU
+		{70D319F3-3C0C-4EB5-A271-58ED22FB3070}.SpecSharp|Any CPU.ActiveCfg = Release|Any CPU
+		{70D319F3-3C0C-4EB5-A271-58ED22FB3070}.SpecSharp|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

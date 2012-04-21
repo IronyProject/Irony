@@ -17,7 +17,7 @@ using System.Text;
 using System.Threading;
 using Irony.Parsing;
 
-namespace Irony.GrammarExplorer {
+namespace Irony.WinForms.Highlighter {
   public delegate void ColorizeMethod();
   public interface IUIThreadInvoker {
     void InvokeOnUIThread(ColorizeMethod colorize);

@@ -29,7 +29,7 @@ using Irony.Parsing;
 using System.Diagnostics;
 using FastColoredTextBoxNS;
 
-namespace Irony.GrammarExplorer.Highlighter {
+namespace Irony.WinForms.Highlighter {
 
   /// <summary>
   /// Highlights text inside FastColoredTextBox control.

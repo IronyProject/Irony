@@ -7,7 +7,7 @@ using System.Text;
 using System.Drawing;
 using FastColoredTextBoxNS;
 
-namespace Irony.GrammarExplorer.Highlighter {
+namespace Irony.WinForms.Highlighter {
   /// <summary>
   /// This style draws a wavy line below a given text range.
   /// </summary>

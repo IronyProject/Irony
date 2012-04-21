@@ -89,10 +89,6 @@
     </Compile>
     <Compile Include="GrammarItemList.cs" />
     <Compile Include="GrammarLoader.cs" />
-    <Compile Include="Highlighter\EditorAdapter.cs" />
-    <Compile Include="Highlighter\EditorViewAdapter.cs" />
-    <Compile Include="Highlighter\FastColoredTextBoxHighlighter.cs" />
-    <Compile Include="Highlighter\WavyLineStyle.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="fmGrammarExplorer.resx">
@@ -106,10 +102,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="fmShowException.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>fmShowException.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -126,21 +118,15 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="fmShowException.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="fmShowException.Designer.cs">
-      <DependentUpon>fmShowException.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Highlighter\RichTextBoxHighlighter.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Highlighter\AboutCodeHighlighter.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Irony.Interpreter\015.Irony.Interpreter.2010.csproj">
       <Project>{321A7F5D-00C2-4095-9970-075CDEE8C139}</Project>
       <Name>015.Irony.Interpreter.2010</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Irony.WinForms\035.Irony.WinForms.2010.csproj">
+      <Project>{70D319F3-3C0C-4EB5-A271-58ED22FB3070}</Project>
+      <Name>035.Irony.WinForms.2010</Name>
     </ProjectReference>
     <ProjectReference Include="..\Irony\010.Irony.2010.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>

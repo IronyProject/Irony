@@ -1,4 +1,4 @@
-namespace Irony.GrammarExplorer {
+namespace Irony.WinForms.Exceptions {
   partial class fmShowException {
     /// <summary>
     /// Required designer variable.
@@ -25,9 +25,9 @@ namespace Irony.GrammarExplorer {
     private void InitializeComponent() {
       this.txtException = new System.Windows.Forms.TextBox();
       this.SuspendLayout();
-      // 
+      //
       // txtException
-      // 
+      //
       this.txtException.AcceptsReturn = true;
       this.txtException.AcceptsTab = true;
       this.txtException.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -40,9 +40,9 @@ namespace Irony.GrammarExplorer {
       this.txtException.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
       this.txtException.Size = new System.Drawing.Size(764, 334);
       this.txtException.TabIndex = 1;
-      // 
+      //
       // fmShowException
-      // 
+      //
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(764, 334);

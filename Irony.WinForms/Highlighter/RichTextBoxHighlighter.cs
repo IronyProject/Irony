@@ -3,8 +3,8 @@
  * Copyright (c) Roman Ivantsov
  * This source code is subject to terms and conditions of the MIT License
  * for Irony. A copy of the license can be found in the License.txt file
- * at the root of this distribution. 
- * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * at the root of this distribution.
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the
  * MIT License.
  * You must not remove this notice from this software.
  * **********************************************************************************/
@@ -26,14 +26,14 @@ using System.Runtime.InteropServices;
 using Irony.Parsing;
 using System.Diagnostics;
 
-namespace Irony.GrammarExplorer {
+namespace Irony.WinForms.Highlighter {
 
   public class TokenColorTable : Dictionary<TokenColor, Color> { }
 
   public class RichTextBoxHighlighter : NativeWindow, IDisposable, IUIThreadInvoker {
     public RichTextBox TextBox;
     public readonly TokenColorTable TokenColors = new TokenColorTable();
-    public readonly EditorAdapter Adapter; 
+    public readonly EditorAdapter Adapter;
     public readonly EditorViewAdapter ViewAdapter;
 
     private IntPtr _savedEventMask = IntPtr.Zero;
@@ -43,7 +43,7 @@ namespace Irony.GrammarExplorer {
     #region constructor, initialization and disposing
     public RichTextBoxHighlighter(RichTextBox textBox, LanguageData language) {
       TextBox = textBox;
-      Adapter = new EditorAdapter(language); 
+      Adapter = new EditorAdapter(language);
       ViewAdapter = new EditorViewAdapter(Adapter, this);
       InitColorTable();
       Connect();
@@ -77,7 +77,7 @@ namespace Irony.GrammarExplorer {
 
     public void Dispose() {
       Adapter.Stop();
-      _disposed = true; 
+      _disposed = true;
       Disconnect();
       this.ReleaseHandle();
       GC.SuppressFinalize(this);
@@ -88,7 +88,7 @@ namespace Irony.GrammarExplorer {
       TokenColors[TokenColor.Identifier] = Color.Black;
       TokenColors[TokenColor.Keyword] = Color.Blue;
       TokenColors[TokenColor.Number] = Color.DarkRed;
-      TokenColors[TokenColor.String] = Color.DarkSlateGray; 
+      TokenColors[TokenColor.String] = Color.DarkSlateGray;
       TokenColors[TokenColor.Text] = Color.Black;
 
     }
@@ -106,7 +106,7 @@ namespace Irony.GrammarExplorer {
 
     void TextBox_TextChanged(object sender, EventArgs e) {
       //if we are here while colorizing, it means the "change" event is a result of our coloring action
-      if (_colorizing) return; 
+      if (_colorizing) return;
       ViewAdapter.SetNewText(TextBox.Text);
     }
     void TextBox_ScrollResize(object sender, EventArgs e) {
@@ -152,7 +152,7 @@ namespace Irony.GrammarExplorer {
     private int HScrollPos {
       get {
         //sometimes explodes with null reference exception
-        return GetScrollPos((int)TextBox.Handle, SB_HORZ); 
+        return GetScrollPos((int)TextBox.Handle, SB_HORZ);
       }
       set {
         SetScrollPos((IntPtr)TextBox.Handle, SB_HORZ, value, true);
@@ -162,7 +162,7 @@ namespace Irony.GrammarExplorer {
 
     private int VScrollPos {
       get {
-        return GetScrollPos((int)TextBox.Handle, SB_VERT); 
+        return GetScrollPos((int)TextBox.Handle, SB_VERT);
       }
       set {
         SetScrollPos((IntPtr)TextBox.Handle, SB_VERT, value, true);
@@ -173,25 +173,25 @@ namespace Irony.GrammarExplorer {
 
     #region Colorizing tokens
     public void LockTextBox() {
-      // Stop redrawing:  
+      // Stop redrawing:
       SendMessage(TextBox.Handle, WM_SETREDRAW, 0, IntPtr.Zero );
-      // Stop sending of events:  
+      // Stop sending of events:
       _savedEventMask = SendMessage(TextBox.Handle, EM_GETEVENTMASK, 0,  IntPtr.Zero);
       //SendMessage(TextBox.Handle, EM_SETEVENTMASK, 0, IntPtr.Zero);
     }
 
     public void UnlockTextBox() {
-        // turn on events  
+        // turn on events
         SendMessage(TextBox.Handle, EM_SETEVENTMASK, 0, _savedEventMask);
-        // turn on redrawing  
+        // turn on redrawing
         SendMessage(TextBox.Handle, WM_SETREDRAW, 1, IntPtr.Zero);
     }
 
     void Adapter_ColorizeTokens(object sender, ColorizeEventArgs args) {
-      if (_disposed) return; 
+      if (_disposed) return;
       //Debug.WriteLine("Coloring " + args.Tokens.Count + " tokens.");
       _colorizing = true;
-      
+
       int hscroll = HScrollPos;
       int vscroll = VScrollPos;
       int selstart = TextBox.SelectionStart;
@@ -214,9 +214,9 @@ namespace Irony.GrammarExplorer {
     }
 
     private Color GetTokenColor(Token token) {
-      if (token.EditorInfo == null) return Color.Black; 
+      if (token.EditorInfo == null) return Color.Black;
       //Right now we scan source, not parse; initially all keywords are recognized as Identifiers; then they are "backpatched"
-      // by parser when it detects that it is in fact keyword from Grammar. So now this backpatching does not happen, 
+      // by parser when it detects that it is in fact keyword from Grammar. So now this backpatching does not happen,
       // so we have to detect keywords here
       var colorIndex = token.EditorInfo.Color;
       if (token.KeyTerm != null && token.KeyTerm.EditorInfo != null && token.KeyTerm.Flags.IsSet(TermFlags.IsKeyword)) {
@@ -232,10 +232,10 @@ namespace Irony.GrammarExplorer {
     #region IUIThreadInvoker Members
 
     public void InvokeOnUIThread(ColorizeMethod colorize) {
-      TextBox.BeginInvoke(new MethodInvoker(colorize)); 
+      TextBox.BeginInvoke(new MethodInvoker(colorize));
     }
 
     #endregion
   }//class
 
-}//namespace 
+}//namespace

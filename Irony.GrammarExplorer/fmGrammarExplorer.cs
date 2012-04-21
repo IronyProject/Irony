@@ -24,7 +24,8 @@ using System.Xml;
 using Irony.Ast;
 using Irony.Parsing;
 using Irony.GrammarExplorer.Properties;
-using Irony.GrammarExplorer.Highlighter;
+using Irony.WinForms.Exceptions;
+using Irony.WinForms.Highlighter;
 
 namespace Irony.GrammarExplorer {
   using ScriptException = Irony.Interpreter.ScriptException; //that's the only place we use stuff from Irony.Interpreter

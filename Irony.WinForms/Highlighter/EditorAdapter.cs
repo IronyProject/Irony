@@ -18,8 +18,9 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Irony.Parsing;
+using Irony.WinForms.Exceptions;
 
-namespace Irony.GrammarExplorer {
+namespace Irony.WinForms.Highlighter {
 
   public class EditorAdapter {
     Parser _parser;

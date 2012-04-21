@@ -288,7 +288,7 @@ namespace Irony.GrammarExplorer {
       if (grammars == null) return;
       foreach (GrammarItem item in grammars)
         cboGrammars.Items.Add(item);
-      btnRefresh.Enabled = false;
+      miRefresh.Enabled = false;
       // auto-select the first grammar if no grammar currently selected
       if (cboGrammars.SelectedIndex < 0 && grammars.Count > 0)
         cboGrammars.SelectedIndex = 0;
@@ -302,7 +302,7 @@ namespace Irony.GrammarExplorer {
         if (cboGrammars.Items.Count > 0)
           cboGrammars.SelectedIndex = 0;
         else
-          btnRefresh.Enabled = false;
+          miRefresh.Enabled = false;
       }
     }
 
@@ -310,7 +310,7 @@ namespace Irony.GrammarExplorer {
       if (MessageBox.Show("Are you sure you want to remove all grammmars in the list?",
         "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes) {
         cboGrammars.Items.Clear();
-        btnRefresh.Enabled = false;
+        miRefresh.Enabled = false;
         _parser = null;
       }
     }
@@ -545,7 +545,7 @@ namespace Irony.GrammarExplorer {
       } finally {
         _changingGrammar = false; //in case of exception
       }
-      btnRefresh.Enabled = true;
+      miRefresh.Enabled = true;
     }
 
     private void cboGrammars_SelectedIndexChanged(object sender, EventArgs e) {
@@ -564,7 +564,7 @@ namespace Irony.GrammarExplorer {
       }
     }
 
-    private void btnRefresh_Click(object sender, EventArgs e) {
+    private void miRefresh_Click(object sender, EventArgs e) {
       LoadSelectedGrammar();
     }
 

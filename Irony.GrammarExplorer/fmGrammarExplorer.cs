@@ -11,21 +11,16 @@
 //with contributions by Andrew Bradnan and Alexey Yakovlev
 #endregion
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
-using System.Configuration;
 using System.Text.RegularExpressions;
-using System.Xml;
+using System.Windows.Forms;
 using Irony.Ast;
-using Irony.Parsing;
 using Irony.GrammarExplorer.Properties;
+using Irony.Parsing;
 using Irony.WinForms.Exceptions;
-using Irony.WinForms.Highlighter;
 
 namespace Irony.GrammarExplorer {
   using ScriptException = Irony.Interpreter.ScriptException; //that's the only place we use stuff from Irony.Interpreter
@@ -207,10 +202,7 @@ namespace Irony.GrammarExplorer {
 
     private void ShowSourcePosition(int position, int length) {
       if (position < 0) return;
-      txtSource.SelectionStart = position;
-      txtSource.SelectionLength = length;
-      //txtSource.Select(location.Position, length);
-      txtSource.DoCaretVisible();
+      txtSource.Select(position, length);
       if (tabGrammar.SelectedTab != pageTest)
         tabGrammar.SelectedTab = pageTest;
       txtSource.Focus();
@@ -404,12 +396,7 @@ namespace Irony.GrammarExplorer {
       StreamReader reader = null;
       try {
         reader = new StreamReader(path);
-        txtSource.Text = null;  //to clear any old formatting
-        txtSource.ClearUndo();
-        txtSource.ClearStylesBuffer();
         txtSource.Text = reader.ReadToEnd();
-        txtSource.SetVisibleState(0, FastColoredTextBoxNS.VisibleState.Visible);
-        txtSource.Selection = txtSource.GetRange(0, 0);
       } catch (Exception e) {
         MessageBox.Show(e.Message);
       } finally {
@@ -419,38 +406,15 @@ namespace Irony.GrammarExplorer {
     }
 
     //Source highlighting
-    FastColoredTextBoxHighlighter _highlighter;
     private void StartHighlighter() {
-      if (_highlighter != null)
-        StopHighlighter();
       if (chkDisableHili.Checked) return;
-      if (!_parser.Language.CanParse()) return;
-      _highlighter = new FastColoredTextBoxHighlighter(txtSource, _language);
-      _highlighter.Adapter.Activate();
+      txtSource.Language = _language;
     }
     private void StopHighlighter() {
-      if (_highlighter == null) return;
-      _highlighter.Dispose();
-      _highlighter = null;
-      ClearHighlighting();
-    }
-    private void ClearHighlighting() {
-      var selectedRange = txtSource.Selection;
-      var visibleRange = txtSource.VisibleRange;
-      var firstVisibleLine = Math.Min(visibleRange.Start.iLine, visibleRange.End.iLine);
-
-      var txt = txtSource.Text;
-      txtSource.Clear();
-      txtSource.Text = txt; //remove all old highlighting
-
-      txtSource.SetVisibleState(firstVisibleLine, FastColoredTextBoxNS.VisibleState.Visible);
-      txtSource.Selection = selectedRange;
+      txtSource.HighlightingEnabled = false;
     }
     private void EnableHighlighter(bool enable) {
-      if (_highlighter != null)
-        StopHighlighter();
-      if (enable)
-        StartHighlighter();
+      txtSource.HighlightingEnabled = enable;
     }
 
     //The following methods are contributed by Andrew Bradnan; pasted here with minor changes
@@ -493,8 +457,8 @@ namespace Irony.GrammarExplorer {
           return txtNonTerms;
         case 2:
           return txtParserStates;
-        //case 4:
-        //  return txtSource;
+        case 3:
+          return txtSource;
         default:
           return null;
       }//switch
@@ -575,7 +539,7 @@ namespace Irony.GrammarExplorer {
       LoadSourceFile(dlgOpenFile.FileName);
     }
 
-    private void txtSource_TextChanged(object sender, FastColoredTextBoxNS.TextChangedEventArgs e) {
+    private void txtSource_TextChanged(object sender, EventArgs e) {
       _parseTree = null; //force it to recompile on run
     }
 

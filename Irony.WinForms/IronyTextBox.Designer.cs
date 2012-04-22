@@ -34,6 +34,7 @@
       this.FastColoredTextBox.Name = "FastColoredTextBox";
       this.FastColoredTextBox.Size = new System.Drawing.Size(261, 148);
       this.FastColoredTextBox.TabIndex = 0;
+      this.FastColoredTextBox.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.FastColoredTextBox_TextChanged);
       // 
       // IronyTextBox
       // 

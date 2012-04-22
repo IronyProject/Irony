@@ -25,5 +25,9 @@ namespace Irony.WinForms.Proxies {
       TextBox.Invalidate();
       return result;
     }
+
+    public void ScrollToCaret() {
+      TextBox.DoCaretVisible();
+    }
   }
 }

@@ -42,7 +42,7 @@ namespace Irony.GrammarExplorer {
       this.pageParserStates = new System.Windows.Forms.TabPage();
       this.txtParserStates = new System.Windows.Forms.TextBox();
       this.pageTest = new System.Windows.Forms.TabPage();
-      this.txtSource = new FastColoredTextBoxNS.FastColoredTextBox();
+      this.txtSource = new Irony.WinForms.IronyTextBox();
       this.panel1 = new System.Windows.Forms.Panel();
       this.btnLocate = new System.Windows.Forms.Button();
       this.chkDisableHili = new System.Windows.Forms.CheckBox();
@@ -262,15 +262,14 @@ namespace Irony.GrammarExplorer {
       //
       // txtSource
       //
+      this.txtSource.AutoScroll = true;
       this.txtSource.AutoScrollMinSize = new System.Drawing.Size(25, 15);
-      this.txtSource.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-      this.txtSource.Cursor = System.Windows.Forms.Cursors.IBeam;
       this.txtSource.Dock = System.Windows.Forms.DockStyle.Fill;
       this.txtSource.Location = new System.Drawing.Point(3, 33);
       this.txtSource.Name = "txtSource";
       this.txtSource.Size = new System.Drawing.Size(652, 319);
       this.txtSource.TabIndex = 23;
-      this.txtSource.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.txtSource_TextChanged);
+      this.txtSource.TextChanged += new System.EventHandler(this.txtSource_TextChanged);
       //
       // panel1
       //
@@ -572,7 +571,6 @@ namespace Irony.GrammarExplorer {
       // splitBottom
       //
       this.splitBottom.BackColor = System.Drawing.SystemColors.Control;
-      this.splitBottom.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
       this.splitBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
       this.splitBottom.Location = new System.Drawing.Point(0, 410);
       this.splitBottom.Name = "splitBottom";
@@ -1393,7 +1391,7 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.DataGridViewTextBoxColumn Input;
     private System.Windows.Forms.DataGridViewTextBoxColumn Action;
     private System.Windows.Forms.Button btnLocate;
-    private FastColoredTextBoxNS.FastColoredTextBox txtSource;
+    private Irony.WinForms.IronyTextBox txtSource;
     private System.Windows.Forms.ToolStripMenuItem miRefresh;
     private System.Windows.Forms.ToolStripSeparator miSeparator;
 

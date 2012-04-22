@@ -732,7 +732,7 @@ namespace FastColoredTextBoxNS
             //create regex
             Regex regex = new Regex(regexPattern, options);
             //
-            var fts = tb.TextSource as FileTextSource;
+            var fts = tb.TextSource as FileTextSource;//<----!!!! ugly
             //enumaerate lines
             for (int iLine = Start.iLine; iLine <= End.iLine; iLine++)
             {

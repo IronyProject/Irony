@@ -57,6 +57,7 @@
     <Compile Include="FastColoredTextBox\Char.cs" />
     <Compile Include="FastColoredTextBox\CommandManager.cs" />
     <Compile Include="FastColoredTextBox\Commands.cs" />
+    <Compile Include="FastColoredTextBox\ConsoleTextBox.cs" />
     <Compile Include="FastColoredTextBox\Export.cs" />
     <Compile Include="FastColoredTextBox\FastColoredTextBox.cs">
       <SubType>UserControl</SubType>
@@ -96,7 +97,6 @@
     <Compile Include="Highlighter\EditorViewAdapter.cs" />
     <Compile Include="Highlighter\FastColoredTextBoxHighlighter.cs" />
     <Compile Include="Highlighter\RichTextBoxHighlighter.cs" />
-    <Compile Include="Highlighter\WavyLineStyle.cs" />
     <Compile Include="IronyTextBox.cs">
       <SubType>UserControl</SubType>
     </Compile>

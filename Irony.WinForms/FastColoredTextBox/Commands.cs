@@ -64,6 +64,10 @@ namespace FastColoredTextBoxNS
             if (s.Length == 1)
                 c = s[0];
 
+            if (String.IsNullOrEmpty(s))
+                throw new ArgumentOutOfRangeException();
+
+
             if (ts.Count == 0)
                 InsertLine(ts);
             InsertChar(c, ref deletedChar, ts);
@@ -343,7 +347,11 @@ namespace FastColoredTextBoxNS
         {
             var tb = ts.CurrentTB;
 
-            ts.OnTextChanging();
+            string temp = null;
+            ts.OnTextChanging(ref temp);
+            if (temp == "")
+                throw new ArgumentOutOfRangeException();
+
             deletedText = tb.Selection.Text;
             ClearSelected(ts);
             lastSel = new RangeInfo(tb.Selection);

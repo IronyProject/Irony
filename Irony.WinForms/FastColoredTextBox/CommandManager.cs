@@ -26,7 +26,16 @@ namespace FastColoredTextBoxNS
                 (cmd as UndoableCommand).autoUndo = autoUndoCommands > 0;
                 history.Push(cmd as UndoableCommand);
             }
-            cmd.Execute();
+            try
+            {
+                cmd.Execute();
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                //OnTextChanging cancels enter of the text
+                if (cmd is UndoableCommand)
+                    history.Pop();
+            }
             //
             redoStack.Clear();
             //

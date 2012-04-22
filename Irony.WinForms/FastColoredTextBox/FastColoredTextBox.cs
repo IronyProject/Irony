@@ -8,7 +8,7 @@
 //
 //  Email: pavel_torgashov@mail.ru.
 //
-//  Copyright (C) Pavel Torgashov, 2011-2012.
+//  Copyright (C) Pavel Torgashov, 2011-2012. 
 
 //#define debug
 
@@ -26,6 +26,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 using Timer = System.Windows.Forms.Timer;
+using System.Drawing.Text;
 
 namespace FastColoredTextBoxNS
 {
@@ -50,6 +51,7 @@ namespace FastColoredTextBoxNS
         private Color changedLineColor;
         private int charHeight;
         private Color currentLineColor;
+        private bool caretVisible;
         private Range delayedTextChangedRange;
         private string descriptionFile;
         private int endFoldingLine = -1;
@@ -90,11 +92,7 @@ namespace FastColoredTextBoxNS
         private bool wordWrap;
         private int wordWrapLinesCount;
         private WordWrapMode wordWrapMode = WordWrapMode.WordWrapControlWidth;
-
-        static FastColoredTextBox()
-        {
-            TypeDescriptor.AddProvider(new FCTBDescriptionProvider(), typeof (FastColoredTextBox));
-        }
+        private Color selectionColor;
 
         /// <summary>
         /// Constructor
@@ -103,6 +101,8 @@ namespace FastColoredTextBoxNS
         {
             try
             {
+                //type provider
+                TypeDescriptor.AddProvider(new FCTBDescriptionProvider(GetType()), this);
                 //drawing optimization
                 SetStyle(ControlStyles.AllPaintingInWmPaint, true);
                 SetStyle(ControlStyles.UserPaint, true);
@@ -128,7 +128,7 @@ namespace FastColoredTextBoxNS
                 ShowLineNumbers = true;
                 TabLength = 4;
                 FoldedBlockStyle = new FoldedBlockStyle(Brushes.Gray, null, FontStyle.Regular);
-                SelectionStyle = new SelectionStyle(new SolidBrush(Color.FromArgb(50, Color.Blue)));
+                SelectionColor = Color.Blue;
                 BracketsStyle = new MarkerStyle(new SolidBrush(Color.FromArgb(80, Color.Lime)));
                 BracketsStyle2 = new MarkerStyle(new SolidBrush(Color.FromArgb(60, Color.Red)));
                 DelayedEventsInterval = 100;
@@ -150,6 +150,8 @@ namespace FastColoredTextBoxNS
                 scrollBars = true;
                 AcceptsTab = true;
                 AcceptsReturn = true;
+                caretVisible = true;
+                CaretColor = Color.Black;
                 //
                 base.AutoScroll = true;
                 timer.Tick += timer_Tick;
@@ -177,6 +179,21 @@ namespace FastColoredTextBoxNS
         [DefaultValue(true)]
         [Description("Indicates if return characters are accepted as input.")]
         public bool AcceptsReturn { get; set; }
+
+        /// <summary>
+        /// Shows or hides the caret
+        /// </summary>
+        [DefaultValue(true)]
+        [Description("Shows or hides the caret")]
+        public bool CaretVisible
+        {
+            get { return caretVisible; }
+            set
+            {
+                caretVisible = value;
+                Invalidate();
+            }
+        }
 
         /// <summary>
         /// Background color for current line
@@ -358,6 +375,13 @@ namespace FastColoredTextBoxNS
                 Invalidate();
             }
         }
+
+        /// <summary>
+        /// Color of caret
+        /// </summary>
+        [DefaultValue(typeof(Color), "Black")]
+        [Description("Color of caret.")]
+        public Color CaretColor { get; set; }
 
         /// <summary>
         /// Color of service lines (folding lines, borders of blocks etc.)
@@ -1208,8 +1232,8 @@ namespace FastColoredTextBoxNS
         public event EventHandler VisibleRangeChanged;
 
         /// <summary>
-        /// TextChangedDelayed event.
-        /// It occurs after insert, delete, clear, undo and redo operations.
+        /// TextChangedDelayed event. 
+        /// It occurs after insert, delete, clear, undo and redo operations. 
         /// This event occurs with a delay relative to TextChanged, and fires only once.
         /// </summary>
         [Browsable(true)]
@@ -2342,7 +2366,7 @@ namespace FastColoredTextBoxNS
                     if (ReadOnly) break;
                     if (e.Modifiers == Keys.Alt)
                         Undo();
-                    else
+                    else 
                     if (e.Modifiers == Keys.None)
                     {
                         if (OnKeyPressing('\b')) //KeyPress event processed key
@@ -2573,7 +2597,7 @@ namespace FastColoredTextBoxNS
                     return true;
                 }
             }
-
+            
             return base.ProcessCmdKey(ref msg, keyData);
         }*/
 
@@ -2893,6 +2917,7 @@ namespace FastColoredTextBoxNS
 #endif
             visibleMarkers.Clear();
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            //FCTBRenderingHints.SetGridFitTextHint(e.Graphics);
             //
             Brush lineNumberBrush = new SolidBrush(LineNumberColor);
             var servicePen = new Pen(ServiceLinesColor);
@@ -3013,13 +3038,14 @@ namespace FastColoredTextBoxNS
             //draw caret
             Point car = PlaceToPoint(Selection.Start);
 
-            if (Focused && car.X >= LeftIndent)
+            if (Focused && car.X >= LeftIndent && CaretVisible)
             {
                 int carWidth = IsReplaceMode ? CharWidth : 1;
                 CreateCaret(Handle, 0, carWidth, CharHeight + 1);
                 SetCaretPos(car.X, car.Y);
                 ShowCaret(Handle);
-                e.Graphics.DrawLine(Pens.Black, car.X, car.Y, car.X, car.Y + CharHeight);
+                using(Pen pen = new Pen(CaretColor))
+                    e.Graphics.DrawLine(pen, car.X, car.Y, car.X, car.Y + CharHeight);
             }
             else
                 HideCaret(Handle);
@@ -3037,6 +3063,27 @@ namespace FastColoredTextBoxNS
 #endif
             //
             base.OnPaint(e);
+        }
+
+        /// <summary>
+        /// Color of selected area
+        /// </summary>
+        [DefaultValue(typeof(Color), "Blue")]
+        [Description("Color of selected area.")]
+        public virtual Color SelectionColor
+        {
+            get
+            {
+                return selectionColor;
+            }
+            set
+            {
+                selectionColor = value;
+                if (selectionColor.A == 255)
+                    selectionColor = Color.FromArgb(50, selectionColor);
+                SelectionStyle = new SelectionStyle(new SolidBrush(selectionColor));
+                Invalidate();
+            }
         }
 
         private void DrawLineChars(PaintEventArgs e, int firstChar, int lastChar, int iLine, int iWordWrapLine, int y)
@@ -3304,7 +3351,6 @@ namespace FastColoredTextBoxNS
                 TextChanging(this, args);
                 text = args.InsertingText;
             }
-            ;
         }
 
         public virtual void OnTextChanging()
@@ -3569,7 +3615,7 @@ namespace FastColoredTextBoxNS
         /// <summary>
         /// Gets point for given line and char position
         /// </summary>
-        /// <param name="palce">Line and char position</param>
+        /// <param name="place">Line and char position</param>
         /// <returns>Coordiantes</returns>
         public Point PlaceToPoint(Place place)
         {
@@ -4172,9 +4218,9 @@ namespace FastColoredTextBoxNS
         private void InitializeComponent()
         {
             SuspendLayout();
-            //
+            // 
             // FastColoredTextBox
-            //
+            // 
             Name = "FastColoredTextBox";
             ResumeLayout(false);
         }

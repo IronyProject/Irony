@@ -622,10 +622,8 @@ namespace FastColoredTextBoxNS
         /// </summary>
         [Browsable(true)]
         [DefaultValue(null)]
-        [Editor("System.Design.FileNameEditor, System.Design", typeof (UITypeEditor))]
-        [Description(
-            "XML file with description of syntax highlighting. This property works only with Language == Language.Custom."
-            )]
+        [Editor("System.Windows.Forms.Design.FileNameEditor, System.Design, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", typeof(UITypeEditor))]
+        [Description("XML file with description of syntax highlighting. This property works only with Language == Language.Custom.")]
         public string DescriptionFile
         {
             get { return descriptionFile; }

@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BorderStyleEx.cs" />
     <Compile Include="Exceptions\fmShowException.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -96,7 +97,15 @@
     <Compile Include="Highlighter\FastColoredTextBoxHighlighter.cs" />
     <Compile Include="Highlighter\RichTextBoxHighlighter.cs" />
     <Compile Include="Highlighter\WavyLineStyle.cs" />
+    <Compile Include="IronyTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="IronyTextBox.Designer.cs">
+      <DependentUpon>IronyTextBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Proxies\DuckTypingProxy.cs" />
+    <Compile Include="Proxies\TextBoxProxy.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Highlighter\AboutCodeHighlighter.txt" />
@@ -122,6 +131,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FastColoredTextBox\ReplaceForm.resx">
       <DependentUpon>ReplaceForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="IronyTextBox.resx">
+      <DependentUpon>IronyTextBox.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

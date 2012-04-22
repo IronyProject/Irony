@@ -32,9 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FastColoredTextBox">
-      <HintPath>..\Libraries\FastColoredTextBox\FastColoredTextBox.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -52,6 +49,48 @@
     <Compile Include="Exceptions\fmShowException.Designer.cs">
       <DependentUpon>fmShowException.cs</DependentUpon>
     </Compile>
+    <Compile Include="FastColoredTextBox\AutocompleteItem.cs" />
+    <Compile Include="FastColoredTextBox\AutocompleteMenu.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="FastColoredTextBox\Char.cs" />
+    <Compile Include="FastColoredTextBox\CommandManager.cs" />
+    <Compile Include="FastColoredTextBox\Commands.cs" />
+    <Compile Include="FastColoredTextBox\Export.cs" />
+    <Compile Include="FastColoredTextBox\FastColoredTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FastColoredTextBox\FileTextSource.cs" />
+    <Compile Include="FastColoredTextBox\FindForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FastColoredTextBox\FindForm.Designer.cs">
+      <DependentUpon>FindForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FastColoredTextBox\GoToForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FastColoredTextBox\GoToForm.Designer.cs">
+      <DependentUpon>GoToForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FastColoredTextBox\LimitedStack.cs" />
+    <Compile Include="FastColoredTextBox\Line.cs" />
+    <Compile Include="FastColoredTextBox\LinesAccessor.cs" />
+    <Compile Include="FastColoredTextBox\Place.cs" />
+    <Compile Include="FastColoredTextBox\PlatformType.cs" />
+    <Compile Include="FastColoredTextBox\Range.cs" />
+    <Compile Include="FastColoredTextBox\ReplaceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FastColoredTextBox\ReplaceForm.Designer.cs">
+      <DependentUpon>ReplaceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FastColoredTextBox\Style.cs" />
+    <Compile Include="FastColoredTextBox\SyntaxDescriptor.cs" />
+    <Compile Include="FastColoredTextBox\SyntaxHighlighter.cs" />
+    <Compile Include="FastColoredTextBox\TextSource.cs" />
+    <Compile Include="FastColoredTextBox\TypeDescriptor.cs" />
+    <Compile Include="FastColoredTextBox\VisualMarker.cs" />
     <Compile Include="Highlighter\EditorAdapter.cs" />
     <Compile Include="Highlighter\EditorViewAdapter.cs" />
     <Compile Include="Highlighter\FastColoredTextBoxHighlighter.cs" />
@@ -71,6 +110,18 @@
   <ItemGroup>
     <EmbeddedResource Include="Exceptions\fmShowException.resx">
       <DependentUpon>fmShowException.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FastColoredTextBox\FastColoredTextBox.resx">
+      <DependentUpon>FastColoredTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FastColoredTextBox\FindForm.resx">
+      <DependentUpon>FindForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FastColoredTextBox\GoToForm.resx">
+      <DependentUpon>GoToForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FastColoredTextBox\ReplaceForm.resx">
+      <DependentUpon>ReplaceForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

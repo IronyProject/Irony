@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace FastColoredTextBoxNS
@@ -57,7 +58,10 @@ namespace FastColoredTextBoxNS
             try
             {
                 while (IsReadLineMode)
+                {
                     Application.DoEvents();
+                    Thread.Sleep(5);
+                }
             }
             finally
             {

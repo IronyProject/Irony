@@ -25,10 +25,6 @@
     private void InitializeComponent() {
       this.SuspendLayout();
       // 
-      // FastColoredTextBox
-      // 
-      this.FastColoredTextBox.AutoScrollMinSize = new System.Drawing.Size(25, 15);
-      // 
       // IronyTextBox
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);

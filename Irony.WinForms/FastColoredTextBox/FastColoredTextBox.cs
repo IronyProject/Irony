@@ -2432,17 +2432,15 @@ namespace FastColoredTextBoxNS
                             break;
                         if (Selection.End != Selection.Start)
                             ClearSelected();
-                        else
-                        {
-                            //replace mode? select forward char
-                            if (IsReplaceMode)
-                            {
-                                Selection.GoRight(true);
-                                Selection.Inverse();
-                            }
 
-                            InsertChar(' ');
+                        //replace mode? select forward char
+                        if (IsReplaceMode)
+                        {
+                            Selection.GoRight(true);
+                            Selection.Inverse();
                         }
+
+                        InsertChar(' ');
                         OnKeyPressed(' ');
                     }
                     break;
@@ -2668,10 +2666,11 @@ namespace FastColoredTextBoxNS
                 if (!AcceptsTab)
                     return false;
 
-                if (Selection.Start == Selection.End)
+                if (Selection.Start.iLine == Selection.End.iLine)
                 {
+                    ClearSelected();
                     //insert tab as spaces
-                    int spaces = TabLength - (Selection.Start.iChar%TabLength);
+                    int spaces = TabLength - (Selection.Start.iChar % TabLength);
                     //replace mode? select forward chars
                     if (IsReplaceMode)
                     {
@@ -2682,8 +2681,9 @@ namespace FastColoredTextBoxNS
 
                     InsertText(new String(' ', spaces));
                 }
-                else if ((lastModifiers & Keys.Shift) == 0)
-                    IncreaseIndent();
+                else 
+                    if ((lastModifiers & Keys.Shift) == 0)
+                        IncreaseIndent();
             }
             else
             {

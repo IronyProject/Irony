@@ -10,6 +10,7 @@ using SWFBorderStyle = System.Windows.Forms.BorderStyle;
 namespace Irony.WinForms {
   /// <summary>
   /// Common ancestor for Irony.WinForms text boxes.
+  /// Wraps around FastColoredTextBox, adds VisualStyle border.
   /// Allows implicit conversion to the System.Windows.Forms.TextBox.
   /// </summary>
   [ToolboxItem(false)]
@@ -22,8 +23,27 @@ namespace Irony.WinForms {
     /// </summary>
     public IronyTextBoxBase() {
       InitializeComponent();
+      InitializeFastColoredTextBox();
       BorderStyle = BorderStyleEx.VisualStyle;
     }
+
+    private void InitializeFastColoredTextBox() {
+      FastColoredTextBox = CreateFastColoredTextBox();
+      FastColoredTextBox.Dock = DockStyle.Fill;
+      FastColoredTextBox.Name = "FastColoredTextBox";
+      FastColoredTextBox.TextChanged += FastColoredTextBox_TextChanged;
+      Controls.Add(FastColoredTextBox);
+    }
+
+    /// <remarks>Override this method to create custom descendant of FastColoredTextBox.</remarks>
+    protected virtual FastColoredTextBox CreateFastColoredTextBox() {
+      var textBox = new FastColoredTextBox();
+      textBox.AutoScrollMinSize = new System.Drawing.Size(25, 15);
+      return textBox;
+    }
+
+    [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public FastColoredTextBox FastColoredTextBox { get; private set; }
 
     /// <summary>
     /// Gets or sets the text associated with this <see cref="IronyTextBoxBase"/>.
@@ -44,16 +64,6 @@ namespace Irony.WinForms {
       }
     }
 
-    /// <summary>
-    /// Occurs when Text property is changed.
-    /// </summary>
-    public event EventHandler TextChanged;
-
-    protected virtual void OnTextChanged(EventArgs args) {
-      if (TextChanged != null)
-        TextChanged(this, args);
-    }
-
     private void FastColoredTextBox_TextChanged(object sender, TextChangedEventArgs args) {
       OnTextChanged(args);
     }
@@ -62,20 +72,20 @@ namespace Irony.WinForms {
     /// Gets or sets the border style of the control.
     /// </summary>
     [DefaultValue(BorderStyleEx.VisualStyle), Browsable(true)]
-    public BorderStyleEx BorderStyle {
+    public new BorderStyleEx BorderStyle {
       get { return _borderStyle; }
       set {
         if (_borderStyle != value) {
           _borderStyle = value;
           if (_borderStyle != BorderStyleEx.VisualStyle) {
             base.BorderStyle = (SWFBorderStyle)value;
-            Padding = new Padding(0);
+            base.Padding = new Padding(0);
           } else {
             base.BorderStyle = SWFBorderStyle.None;
             if (Application.RenderWithVisualStyles)
-              Padding = new Padding(1);
+              base.Padding = new Padding(1);
             else
-              Padding = new Padding(2);
+              base.Padding = new Padding(2);
           }
           Invalidate();
         }
@@ -87,8 +97,8 @@ namespace Irony.WinForms {
     /// </summary>
     [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public new Padding Padding {
-      get { return base.Padding; }
-      set { base.Padding = value; }
+      get { return new Padding(0); }
+      set { /* ignore */ }
     }
 
     /// <summary>
@@ -97,11 +107,14 @@ namespace Irony.WinForms {
     /// <param name="args">The <see cref="PaintEventArgs" /> instance containing the event data.</param>
     protected override void OnPaint(PaintEventArgs args) {
       base.OnPaint(args);
-      if (Application.RenderWithVisualStyles)
-        ControlPaint.DrawVisualStyleBorder(args.Graphics, new Rectangle(0, 0, Width - 1, Height - 1));
-      else {
-        ControlPaint.DrawBorder3D(args.Graphics, new Rectangle(0, 0, Width, Height), Border3DStyle.SunkenOuter);
-        ControlPaint.DrawBorder3D(args.Graphics, new Rectangle(1, 1, Width - 2, Height - 2), Border3DStyle.SunkenInner);
+      // paint custom control borders
+      if (BorderStyle == BorderStyleEx.VisualStyle) {
+        if (Application.RenderWithVisualStyles)
+          ControlPaint.DrawVisualStyleBorder(args.Graphics, new Rectangle(0, 0, Width - 1, Height - 1));
+        else {
+          ControlPaint.DrawBorder3D(args.Graphics, new Rectangle(0, 0, Width, Height), Border3DStyle.SunkenOuter);
+          ControlPaint.DrawBorder3D(args.Graphics, new Rectangle(1, 1, Width - 2, Height - 2), Border3DStyle.SunkenInner);
+        }
       }
     }
 
@@ -153,7 +166,7 @@ namespace Irony.WinForms {
     }
 
     /// <summary>
-    /// Allows converting IronyTextBoxBase into TextBox implicitly.
+    /// Allows converting IronyTextBoxBase to TextBox implicitly.
     /// </summary>
     /// <param name="IronyTextBoxBase">The irony text box.</param>
     public static implicit operator TextBox(IronyTextBoxBase IronyTextBoxBase) {

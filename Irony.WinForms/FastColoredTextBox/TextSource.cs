@@ -241,6 +241,9 @@ namespace FastColoredTextBoxNS
             lines.CopyTo(array, arrayIndex);
         }
 
+        /// <summary>
+        /// Lines count
+        /// </summary>
         public virtual int Count
         {
             get { return lines.Count; }

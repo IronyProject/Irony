@@ -8,7 +8,7 @@
 //
 //  Email: pavel_torgashov@mail.ru.
 //
-//  Copyright (C) Pavel Torgashov, 2011-2012.
+//  Copyright (C) Pavel Torgashov, 2011-2012. 
 
 //#define debug
 
@@ -25,6 +25,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
+using Microsoft.Win32;
 using Timer = System.Windows.Forms.Timer;
 
 namespace FastColoredTextBoxNS
@@ -429,10 +430,10 @@ namespace FastColoredTextBoxNS
         [Browsable(true)]
         [Description("Paddings of text area.")]
         public Padding Paddings { get; set; }
-
+        
         //hide parent padding
         [Browsable(false)]
-        public new Padding Padding {
+        public new Padding Padding { 
             get { throw new NotImplementedException(); }
             set { throw new NotImplementedException(); }
         }
@@ -1288,8 +1289,8 @@ namespace FastColoredTextBoxNS
         public event EventHandler VisibleRangeChanged;
 
         /// <summary>
-        /// TextChangedDelayed event.
-        /// It occurs after insert, delete, clear, undo and redo operations.
+        /// TextChangedDelayed event. 
+        /// It occurs after insert, delete, clear, undo and redo operations. 
         /// This event occurs with a delay relative to TextChanged, and fires only once.
         /// </summary>
         [Browsable(true)]
@@ -2435,7 +2436,7 @@ namespace FastColoredTextBoxNS
                     if (ReadOnly) break;
                     if (e.Modifiers == Keys.Alt)
                         Undo();
-                    else
+                    else 
                     if (e.Modifiers == Keys.None)
                     {
                         if (OnKeyPressing('\b')) //KeyPress event processed key
@@ -2664,7 +2665,7 @@ namespace FastColoredTextBoxNS
                     return true;
                 }
             }
-
+            
             return base.ProcessCmdKey(ref msg, keyData);
         }*/
 
@@ -2687,6 +2688,13 @@ namespace FastColoredTextBoxNS
             if (KeyPressed != null)
                 KeyPressed(this, args);
         }
+
+        /*
+        protected override void OnKeyPress(KeyPressEventArgs e)
+        {
+            base.OnKeyPress(e);
+            ProcessKeyPress(e.KeyChar);
+        }*/
 
         protected override bool ProcessMnemonic(char charCode)
         {
@@ -2750,7 +2758,7 @@ namespace FastColoredTextBoxNS
 
                     InsertText(new String(' ', spaces));
                 }
-                else
+                else 
                     if ((lastModifiers & Keys.Shift) == 0)
                         IncreaseIndent();
             }
@@ -3001,8 +3009,7 @@ namespace FastColoredTextBoxNS
             Brush changedLineBrush = new SolidBrush(ChangedLineColor);
             Brush indentBrush = new SolidBrush(IndentBackColor);
             Brush paddingBrush = new SolidBrush(PaddingBackColor);
-            var currentLinePen = new Pen(CurrentLineColor);
-            Brush currentLineBrush = new SolidBrush(Color.FromArgb(50, CurrentLineColor));
+            Brush currentLineBrush = new SolidBrush(Color.FromArgb( CurrentLineColor.A == 255 ? 50:CurrentLineColor.A, CurrentLineColor));
             //draw padding area
             //top
             e.Graphics.FillRectangle(paddingBrush, 0, -VerticalScroll.Value, ClientSize.Width, Math.Max(0, Paddings.Top - 1));
@@ -3057,8 +3064,6 @@ namespace FastColoredTextBoxNS
                 if (CurrentLineColor != Color.Transparent && iLine == Selection.Start.iLine)
                     if (Selection.Start == Selection.End)
                         e.Graphics.FillRectangle(currentLineBrush, new Rectangle(leftTextIndent, y, textWidth, CharHeight));
-                    else
-                        e.Graphics.DrawLine(currentLinePen, leftTextIndent, y + CharHeight, leftTextIndent + textWidth, y + CharHeight);
                 //draw changed line marker
                 if (ChangedLineColor != Color.Transparent && line.IsChanged)
                     e.Graphics.FillRectangle(changedLineBrush,
@@ -3154,7 +3159,6 @@ namespace FastColoredTextBoxNS
             servicePen.Dispose();
             changedLineBrush.Dispose();
             indentBrush.Dispose();
-            currentLinePen.Dispose();
             currentLineBrush.Dispose();
             paddingBrush.Dispose();
             //
@@ -3671,7 +3675,7 @@ namespace FastColoredTextBoxNS
         /// Gets absolute text position from line and char position
         /// </summary>
         /// <param name="point">Line and char position</param>
-        /// <returns>Index of text char</returns>
+        /// <returns>Point of char</returns>
         public int PlaceToPosition(Place point)
         {
             if (point.iLine < 0 || point.iLine >= lines.Count ||
@@ -3712,6 +3716,14 @@ namespace FastColoredTextBoxNS
             else
                 return new Place(0, 0);
             //throw new ArgumentOutOfRangeException("Position out of range");
+        }
+
+        /// <summary>
+        /// Gets absolute char position from char position
+        /// </summary>
+        public Point PositionToPoint(int pos)
+        {
+            return PlaceToPoint(PositionToPlace(pos));
         }
 
         /// <summary>
@@ -4320,9 +4332,9 @@ namespace FastColoredTextBoxNS
         private void InitializeComponent()
         {
             SuspendLayout();
-            //
+            // 
             // FastColoredTextBox
-            //
+            // 
             Name = "FastColoredTextBox";
             ResumeLayout(false);
         }
@@ -4332,14 +4344,72 @@ namespace FastColoredTextBoxNS
         /// </summary>
         public void Print(Range range, PrintDialogSettings settings)
         {
+            //prepare export with wordwrapping
+            var exporter = new ExportToHTML();
+            exporter.UseBr = true;
+            exporter.UseForwardNbsp = true;
+            exporter.UseNbsp = true;
+            exporter.UseStyleTag = false;
+
+            if (range == null)
+                range = this.Range;
+
+            if (range.Text == string.Empty)
+                return;
+
+            //generate HTML
+            string HTML = exporter.GetHtml(range);
+            HTML = "<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=UTF-8\"><head><title>"+ PrepareHtmlText(settings.Title) +"</title></head>"+ HTML + SelectHTMLRangeScript();
+            var tempFile = Path.GetTempPath() + "fctb.html";
+            File.WriteAllText(tempFile, HTML);
+
+            //clear wb page setup settings
+            SetPageSetupSettings(settings);
+
+            //create wb
             var wb = new WebBrowser();
-            settings.printRange = range;
             wb.Tag = settings;
             wb.Visible = false;
             wb.Location = new Point(-1000, -1000);
             wb.Parent = this;
-            wb.Navigate("about:blank");
-            wb.Navigated += ShowPrintDialog;
+            wb.StatusTextChanged += new EventHandler(wb_StatusTextChanged);
+            wb.Navigate(tempFile);
+        }
+
+        private string PrepareHtmlText(string s)
+        {
+            return s.Replace("<", "&lt;").Replace(">", "&gt;").Replace("&", "&amp;");
+        }
+
+        void wb_StatusTextChanged(object sender, EventArgs e)
+        {
+            var wb = sender as WebBrowser;
+            if (wb.StatusText.Contains("#print"))
+            {
+                var settings = wb.Tag as PrintDialogSettings;
+                try
+                {
+                    //show print dialog
+                    if (settings.ShowPrintPreviewDialog)
+                        wb.ShowPrintPreviewDialog();
+                    else
+                    {
+                        if (settings.ShowPageSetupDialog)
+                            wb.ShowPageSetupDialog();
+
+                        if (settings.ShowPrintDialog)
+                            wb.ShowPrintDialog();
+                        else
+                            wb.Print();
+                    }
+                }
+                finally
+                {
+                    //destroy webbrowser
+                    wb.Parent = null;
+                    wb.Dispose();
+                }
+            }
         }
 
         /// <summary>
@@ -4360,35 +4430,33 @@ namespace FastColoredTextBoxNS
                       {ShowPageSetupDialog = false, ShowPrintDialog = false, ShowPrintPreviewDialog = false});
         }
 
-        private void ShowPrintDialog(object sender, WebBrowserNavigatedEventArgs e)
+        private string SelectHTMLRangeScript()
         {
-            var wb = sender as WebBrowser;
-            var settings = wb.Tag as PrintDialogSettings;
-            //prepare export with wordwrapping
-            var exporter = new ExportToHTML();
-            exporter.UseBr = true;
-            exporter.UseForwardNbsp = true;
-            exporter.UseNbsp = false;
-            exporter.UseStyleTag = false;
-            //generate HTML
-            string HTML = exporter.GetHtml(settings.printRange);
-            //show print dialog
-            wb.Document.Body.InnerHtml = HTML;
-            if (settings.ShowPrintPreviewDialog)
-                wb.ShowPrintPreviewDialog();
-            else
-            {
-                if (settings.ShowPageSetupDialog)
-                    wb.ShowPageSetupDialog();
+            var sel = Selection.Clone();
+            sel.Normalize();
+            var start = PlaceToPosition(sel.Start) - sel.Start.iLine;
+            var len = sel.Text.Length - (sel.End.iLine - sel.Start.iLine);
+            return string.Format(
+@"<script type=""text/javascript"">
+try{{
+    var sel = document.selection;
+    var rng = sel.createRange();
+    rng.moveStart(""character"", {0});
+    rng.moveEnd(""character"", {1});
+    rng.select();
+}}catch(ex){{}}
+window.status = ""#print"";
+</script>", start, len);
+        }
 
-                if (settings.ShowPrintDialog)
-                    wb.ShowPrintDialog();
-                else
-                    wb.Print();
+        private static void SetPageSetupSettings(PrintDialogSettings settings)
+        {
+            var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Internet Explorer\PageSetup", true);
+            if (key != null)
+            {
+                key.SetValue("footer", settings.Footer);
+                key.SetValue("header", settings.Header);
             }
-            //destroy webbrowser
-            wb.Parent = null;
-            wb.Dispose();
         }
 
         protected override void Dispose(bool disposing)
@@ -4537,6 +4605,30 @@ namespace FastColoredTextBoxNS
                 UndoRedoStateChanged(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Search lines by regex pattern
+        /// </summary>
+        public List<int> FindLines(string searchPattern, RegexOptions options)
+        {
+            List<int> iLines = new List<int>();
+            foreach (var r in Range.GetRangesByLines(searchPattern, options))
+                iLines.Add(r.Start.iLine);
+
+            return iLines;
+        }
+
+        /// <summary>
+        /// Removes given lines
+        /// </summary>
+        public void RemoveLines(List<int> iLines)
+        {
+            TextSource.Manager.ExecuteCommand(new RemoveLinesCommand(TextSource, iLines));
+            if(iLines.Count > 0)
+                IsChanged = true;
+            NeedRecalc();
+            Invalidate();
+        }
+
         #region Nested type: LineYComparer
 
         private class LineYComparer : IComparer<LineInfo>
@@ -4673,10 +4765,35 @@ namespace FastColoredTextBoxNS
 
     public class PrintDialogSettings
     {
-        public bool ShowPageSetupDialog;
-        public bool ShowPrintDialog;
-        public bool ShowPrintPreviewDialog = true;
-        internal Range printRange;
+        public bool ShowPageSetupDialog { get; set; }
+        public bool ShowPrintDialog { get; set; }
+        public bool ShowPrintPreviewDialog { get; set; }
+        /// <summary>
+        /// Title of page. If you want to print Title on the page, insert code &amp;w in Footer or Header.
+        /// </summary>
+        public string Title { get; set; }
+        /// <summary>
+        /// Footer of page.
+        /// Here you can use special codes: &amp;w (Window title), &amp;D, &amp;d (Date), &amp;t(), &amp;4 (Time), &amp;p (Current page number), &amp;P (Total number of pages),  &amp;&amp; (A single ampersand), &amp;b (Right justify text, Center text. If &amp;b occurs once, then anything after the &amp;b is right justified. If &amp;b occurs twice, then anything between the two &amp;b is centered, and anything after the second &amp;b is right justified).
+        /// More detailed see <see cref="http://msdn.microsoft.com/en-us/library/aa969429(v=vs.85).aspx">here</see>
+        /// </summary>
+        public string Footer { get; set; }
+        /// <summary>
+        /// Header of page
+        /// Here you can use special codes: &amp;w (Window title), &amp;D, &amp;d (Date), &amp;t(), &amp;4 (Time), &amp;p (Current page number), &amp;P (Total number of pages),  &amp;&amp; (A single ampersand), &amp;b (Right justify text, Center text. If &amp;b occurs once, then anything after the &amp;b is right justified. If &amp;b occurs twice, then anything between the two &amp;b is centered, and anything after the second &amp;b is right justified).
+        /// More detailed see <see cref="http://msdn.microsoft.com/en-us/library/aa969429(v=vs.85).aspx">here</see>
+        /// </summary>
+        public string Header { get; set; }
+
+        public PrintDialogSettings()
+        {
+            ShowPrintPreviewDialog = true;
+            Title = "";
+            Footer = "";
+            Header = "";
+            Footer = "";
+            Header = "";
+        }
     }
 
     public class AutoIndentEventArgs : EventArgs

@@ -148,6 +148,9 @@ namespace FastColoredTextBoxNS
             chars.CopyTo(array, arrayIndex);
         }
 
+        /// <summary>
+        /// Chars count
+        /// </summary>
         public int Count
         {
             get { return chars.Count; }

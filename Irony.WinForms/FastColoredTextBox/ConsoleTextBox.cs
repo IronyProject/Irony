@@ -10,6 +10,7 @@ namespace FastColoredTextBoxNS
     /// <summary>
     /// Console emulator.
     /// </summary>
+    [ToolboxItem(false)]
     public class ConsoleTextBox : FastColoredTextBox
     {
         private volatile bool isReadLineMode;
@@ -17,7 +18,7 @@ namespace FastColoredTextBoxNS
         private Place StartReadPlace { get; set; }
 
         /// <summary>
-        /// Control is waiting for line entering. 
+        /// Control is waiting for line entering.
         /// </summary>
         public bool IsReadLineMode
         {

@@ -8,12 +8,23 @@ using Irony.Parsing;
 namespace Irony.WinForms {
   using FastColoredTextBox = FastColoredTextBoxNS.FastColoredTextBox;
   using FctbConsoleTextBox = FastColoredTextBoxNS.ConsoleTextBox;
+  using Style = FastColoredTextBoxNS.Style;
+  using StyleIndex = FastColoredTextBoxNS.StyleIndex;
+  using TextChangedEventArgs = FastColoredTextBoxNS.TextChangedEventArgs;
+  using TextStyle = FastColoredTextBoxNS.TextStyle;
 
   /// <summary>
   /// TextBox with for console emulation.
+  /// Implements <see cref="IConsoleAdaptor"/> interface.
   /// </summary>
+  /// <remarks><see cref="IConsoleAdaptor"/> implementation is thread-safe.</remarks>
   [ToolboxItem(true)]
   public partial class ConsoleTextBox : IronyTextBoxBase, IConsoleAdaptor {
+    private bool _canceled;
+    private Style _normalStyle = new TextStyle(Brushes.White, null, FontStyle.Regular);
+    private Style _errorStyle = new TextStyle(Brushes.Red, null, FontStyle.Bold);
+    private Style _currentStyle;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ConsoleTextBox" /> class.
     /// </summary>
@@ -34,6 +45,7 @@ namespace Irony.WinForms {
         WordWrapMode = FastColoredTextBoxNS.WordWrapMode.CharWrapPreferredWidth
       };
 
+      textBox.TextChanged += textBox_TextChanged;
       return textBox;
     }
 
@@ -47,10 +59,19 @@ namespace Irony.WinForms {
       set { base.Text = value; }
     }
 
+    protected override void OnHandleDestroyed(EventArgs e) {
+      base.OnHandleDestroyed(e);
+      Canceled = true;
+    }
+
     [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool Canceled {
-      get;
-      set;
+      get { return _canceled; }
+      set {
+        _canceled = value;
+        if (Canceled)
+          Console.IsReadLineMode = false;
+      }
     }
 
     public void Write(string text) {
@@ -66,11 +87,20 @@ namespace Irony.WinForms {
     }
 
     public void SetTextStyle(ConsoleTextStyle style) {
-      Console.ForeColor = style == ConsoleTextStyle.Normal ? Color.White : Color.Red;
+      CurrentStyle = style == ConsoleTextStyle.Normal ? _normalStyle : _errorStyle;
+    }
+
+    private Style CurrentStyle {
+      get { return _currentStyle ?? (_currentStyle = _normalStyle); }
+      set { _currentStyle = value; }
+    }
+
+    private void textBox_TextChanged(object sender, TextChangedEventArgs args) {
+      args.ChangedRange.SetStyle(CurrentStyle);
     }
 
     public int Read() {
-      return 0;
+      throw new NotSupportedException();
     }
 
     public string ReadLine() {
@@ -80,7 +110,7 @@ namespace Irony.WinForms {
     }
 
     public void SetTitle(string title) {
-      throw new NotImplementedException();
+      throw new NotSupportedException();
     }
   }
 }

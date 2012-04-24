@@ -3,8 +3,8 @@
  * Copyright (c) Roman Ivantsov
  * This source code is subject to terms and conditions of the MIT License
  * for Irony. A copy of the license can be found in the License.txt file
- * at the root of this distribution. 
- * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * at the root of this distribution.
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the
  * MIT License.
  * You must not remove this notice from this software.
  * **********************************************************************************/
@@ -43,6 +43,7 @@ namespace Irony.Interpreter {
     public IDictionary<string, object> Globals {get; private set;}
     private IList<Assembly> ImportedAssemblies = new List<Assembly>();
 
+    public IConsoleAdaptor Console;
     public StringBuilder OutputBuffer = new StringBuilder();
     private object _lockObject = new object();
 
@@ -50,7 +51,7 @@ namespace Irony.Interpreter {
     public AppStatus Status;
     public long EvaluationTime;
     public Exception LastException;
-    public bool RethrowExceptions = true;  
+    public bool RethrowExceptions = true;
 
     public ParseTree LastScript { get; private set; } //the root node of the last executed script
 
@@ -60,20 +61,20 @@ namespace Irony.Interpreter {
       Language = language;
       var grammar = language.Grammar as InterpretedLanguageGrammar;
       Runtime = grammar.CreateRuntime(language);
-      DataMap = new AppDataMap(Language.Grammar.CaseSensitive); 
-      Init(); 
+      DataMap = new AppDataMap(Language.Grammar.CaseSensitive);
+      Init();
     }
 
     public ScriptApp(LanguageRuntime runtime)  {
       Runtime = runtime;
       Language = Runtime.Language;
       DataMap = new AppDataMap(Language.Grammar.CaseSensitive);
-      Init(); 
+      Init();
     }
 
     public ScriptApp(AppDataMap dataMap) {
       DataMap = dataMap;
-      Init(); 
+      Init();
     }
 
     [SecuritySafeCritical]
@@ -85,7 +86,7 @@ namespace Irony.Interpreter {
       StaticScopes[0] = MainScope;
       Globals = MainScope.AsDictionary();
     }
-    
+
     #endregion
 
     public LogMessageList GetParserMessages() {
@@ -94,7 +95,7 @@ namespace Irony.Interpreter {
     // Utilities
     public IEnumerable<Assembly> GetImportAssemblies() {
       //simple default case - return all assemblies loaded in domain
-      return AppDomain.CurrentDomain.GetAssemblies(); 
+      return AppDomain.CurrentDomain.GetAssemblies();
     }
 
     public ParseMode ParserMode {
@@ -125,28 +126,28 @@ namespace Irony.Interpreter {
       } catch (Exception ex) {
         this.LastException = ex;
         this.Status = AppStatus.Crash;
-        return null; 
+        return null;
       }
     }
 
-    // Irony interpreter requires that once a script is executed in a ScriptApp, it is bound to AppDataMap object, 
+    // Irony interpreter requires that once a script is executed in a ScriptApp, it is bound to AppDataMap object,
     // and all later script executions should be performed only in the context of the same app (or at least by an App with the same DataMap).
-    // The reason is because the first execution sets up a data-binding fields, like slots, scopes, etc, which are bound to ScopeInfo objects, 
+    // The reason is because the first execution sets up a data-binding fields, like slots, scopes, etc, which are bound to ScopeInfo objects,
     // which in turn is part of DataMap.
     public object Evaluate(ParseTree parsedScript) {
       Util.Check (parsedScript.Root.AstNode != null,  "Root AST node is null, cannot evaluate script. Create AST tree first.");
       var root = parsedScript.Root.AstNode as AstNode;
-      Util.Check(root != null, 
+      Util.Check(root != null,
         "Root AST node {0} is not a subclass of Irony.Interpreter.AstNode. ScriptApp cannot evaluate this script.", root.GetType());
-      Util.Check (root.Parent == null || root.Parent == DataMap.ProgramRoot, 
+      Util.Check (root.Parent == null || root.Parent == DataMap.ProgramRoot,
         "Cannot evaluate parsed script. It had been already evaluated in a different application.");
       LastScript = parsedScript;
-      return EvaluateParsedScript(); 
+      return EvaluateParsedScript();
     }
 
     public object Evaluate() {
       Util.Check (LastScript != null, "No previously parsed/evaluated script.");
-      return EvaluateParsedScript(); 
+      return EvaluateParsedScript();
     }
 
     //Actual implementation
@@ -163,7 +164,7 @@ namespace Irony.Interpreter {
         if (result != null)
           thread.App.WriteLine(result.ToString());
         Status = AppStatus.Ready;
-        return result; 
+        return result;
       } catch (ScriptException se) {
         Status = AppStatus.RuntimeError;
         se.Location = thread.CurrentNode.Location;
@@ -174,7 +175,7 @@ namespace Irony.Interpreter {
         return null;
       } catch (Exception ex) {
         Status = AppStatus.RuntimeError;
-        var se = new ScriptException(ex.Message, ex, thread.CurrentNode.Location, thread.GetStackTrace()); 
+        var se = new ScriptException(ex.Message, ex, thread.CurrentNode.Location, thread.GetStackTrace());
         LastException = se;
         if (RethrowExceptions)
           throw se;
@@ -201,7 +202,7 @@ namespace Irony.Interpreter {
 
     public void Write(string text) {
       lock(_lockObject){
-        OnConsoleWrite(text); 
+        OnConsoleWrite(text);
         OutputBuffer.Append(text);
       }
     }

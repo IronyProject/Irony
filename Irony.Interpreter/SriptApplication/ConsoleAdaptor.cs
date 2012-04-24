@@ -21,11 +21,6 @@ namespace Irony.Interpreter {
   //WARNING: Ctrl-C for aborting running script does NOT work when you run console app from Visual Studio 2010. 
   // Run executable directly from bin folder. 
 
-  public enum ConsoleTextStyle {
-    Normal,
-    Error,
-  }
-
   // Default implementation of IConsoleAdaptor with System Console as input/output. 
   public class ConsoleAdapter : IConsoleAdaptor {
     public ConsoleAdapter() {

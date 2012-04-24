@@ -78,7 +78,7 @@ namespace FastColoredTextBoxNS
             fs = new FileStream(fileName, FileMode.Open);
             var length = fs.Length;
             //read signature
-            enc = DefineEncoding(enc);
+            enc = DefineEncoding(enc, fs);
             int shift = DefineShift(enc);
             //first line
             sourceFileLinePositions.Add((int)fs.Position);
@@ -111,6 +111,11 @@ namespace FastColoredTextBoxNS
             fileEncoding = enc;
 
             OnLineInserted(0, Count);
+            //load first lines for calc width of the text
+            var linesCount = Math.Min(lines.Count, CurrentTB.Height/CurrentTB.CharHeight);
+            for (int i = 0; i < linesCount; i++)
+                LoadLineFromSourceFile(i);
+            //
             NeedRecalc(new TextChangedEventArgs(0, 1));
         }
 
@@ -134,7 +139,7 @@ namespace FastColoredTextBoxNS
             return 0;
         }
 
-        private Encoding DefineEncoding(Encoding enc)
+        private static Encoding DefineEncoding(Encoding enc, FileStream fs)
         {
             int bytesPerSignature = 0;
             byte[] signature = new byte[4];

@@ -28,7 +28,7 @@ namespace FastColoredTextBoxNS
             FindNext();
         }
 
-        private void FindNext()
+        public void FindNext()
         {
             try
             {

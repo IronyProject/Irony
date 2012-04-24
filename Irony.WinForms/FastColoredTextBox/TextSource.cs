@@ -282,6 +282,8 @@ namespace FastColoredTextBoxNS
                 var args = new TextChangingEventArgs() { InsertingText = text };
                 TextChanging(this, args);
                 text = args.InsertingText;
+                if (args.Cancel)
+                    text = string.Empty;
             };
         }
 

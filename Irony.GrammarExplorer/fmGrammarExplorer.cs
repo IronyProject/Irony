@@ -414,6 +414,8 @@ namespace Irony.GrammarExplorer {
       txtSource.HighlightingEnabled = false;
     }
     private void EnableHighlighter(bool enable) {
+      if (enable)
+        txtSource.Language = _language;
       txtSource.HighlightingEnabled = enable;
     }
 

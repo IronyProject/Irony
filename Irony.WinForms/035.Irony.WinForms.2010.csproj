@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -57,7 +58,9 @@
     <Compile Include="FastColoredTextBox\Char.cs" />
     <Compile Include="FastColoredTextBox\CommandManager.cs" />
     <Compile Include="FastColoredTextBox\Commands.cs" />
-    <Compile Include="FastColoredTextBox\ConsoleTextBox.cs" />
+    <Compile Include="FastColoredTextBox\ConsoleTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="FastColoredTextBox\Export.cs" />
     <Compile Include="FastColoredTextBox\FastColoredTextBox.cs">
       <SubType>UserControl</SubType>
@@ -103,6 +106,12 @@
     <Compile Include="IronyTextBox.Designer.cs">
       <DependentUpon>IronyTextBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="IronyTextBoxBase.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="IronyTextBoxBase.Designer.cs">
+      <DependentUpon>IronyTextBoxBase.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Proxies\DuckTypingProxy.cs" />
     <Compile Include="Proxies\TextBoxProxy.cs" />
@@ -134,6 +143,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="IronyTextBox.resx">
       <DependentUpon>IronyTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="IronyTextBoxBase.resx">
+      <DependentUpon>IronyTextBoxBase.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

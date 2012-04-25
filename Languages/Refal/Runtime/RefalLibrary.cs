@@ -57,7 +57,7 @@ namespace Refal.Runtime
 				return null;
 
 			//Console.WriteLine("{0}", expression.ToStringBuilder(0));
-			ScriptThread.App.WriteLine(expression.ToStringBuilder(0).ToString());
+			ScriptThread.App.Console.WriteLine(expression.ToStringBuilder(0).ToString());
 
 			return expression;
 		}
@@ -67,22 +67,18 @@ namespace Refal.Runtime
 			if (expression == null)
 				return null;
 
-			//Console.WriteLine("{0}", expression.ToStringBuilder(0));
-			ScriptThread.App.WriteLine(expression.ToStringBuilder(0).ToString());
-
+			ScriptThread.App.Console.WriteLine(expression.ToStringBuilder(0).ToString());
 			return null;
 		}
 
 		public PassiveExpression Card(PassiveExpression expression)
 		{
-			throw new NotSupportedException();
+			string s = ScriptThread.App.Console.ReadLine();
 
-			/*string s = Console.ReadLine();
-
-			if (s != null)
+			if (!string.IsNullOrEmpty(s))
 				return PassiveExpression.Build(s.ToCharArray());
 			else
-				return PassiveExpression.Build(0);*/
+				return PassiveExpression.Build(0);
 		}
 
 		public PassiveExpression Open(PassiveExpression expression)

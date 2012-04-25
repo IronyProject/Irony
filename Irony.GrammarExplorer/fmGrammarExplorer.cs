@@ -355,7 +355,7 @@ namespace Irony.GrammarExplorer {
       ClearRuntimeInfo();
       Stopwatch sw = new Stopwatch();
       int oldGcCount;
-      txtOutput.Text = "";
+      txtOutput.Text = string.Empty;
       try {
         if (_parseTree == null)
           ParseSample();
@@ -367,7 +367,7 @@ namespace Irony.GrammarExplorer {
 
         sw.Start();
         var iRunner = _grammar as ICanRunSample;
-        var args = new RunSampleArgs(_language, txtSource.Text, _parseTree);
+        var args = new RunSampleArgs(_language, txtSource.Text, _parseTree, txtOutput);
         string output = iRunner.RunSample(args);
         sw.Stop();
         lblRunTime.Text = sw.ElapsedMilliseconds.ToString();

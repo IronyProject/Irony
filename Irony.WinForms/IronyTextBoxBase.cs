@@ -118,6 +118,12 @@ namespace Irony.WinForms {
       }
     }
 
+    [DefaultValue(false)]
+    public bool ReadOnly {
+      get { return FastColoredTextBox.ReadOnly; }
+      set { FastColoredTextBox.ReadOnly = value; }
+    }
+
     /// <summary>
     /// Selects a range of text in the text box.
     /// </summary>

@@ -36,7 +36,6 @@ namespace Irony.WinForms {
     protected override FastColoredTextBox CreateFastColoredTextBox() {
       var textBox = new FctbConsoleTextBox {
         LeftPadding = 2,
-        PreferredLineWidth = 80,
         ShowLineNumbers = false,
         WordWrap = true,
         WordWrapMode = WordWrapMode.CharWrapPreferredWidth,
@@ -53,8 +52,11 @@ namespace Irony.WinForms {
 
     [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public override string Text {
-      get { return base.Text; }
-      set { base.Text = value; }
+      get { return Console.Text; }
+      set {
+        Console.Clear();
+        Console.WriteLine(value);
+      }
     }
 
     protected override void OnHandleDestroyed(EventArgs e) {

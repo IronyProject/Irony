@@ -122,7 +122,7 @@ namespace Irony.GrammarExplorer {
       this.chkExcludeComments = new System.Windows.Forms.CheckBox();
       this.lblTraceComment = new System.Windows.Forms.Label();
       this.pageOutput = new System.Windows.Forms.TabPage();
-      this.txtOutput = new System.Windows.Forms.TextBox();
+      this.txtOutput = new WinForms.ConsoleTextBox();
       this.pnlRuntimeInfo = new System.Windows.Forms.Panel();
       this.label14 = new System.Windows.Forms.Label();
       this.lblGCCount = new System.Windows.Forms.Label();
@@ -1146,12 +1146,8 @@ namespace Irony.GrammarExplorer {
       // txtOutput
       //
       this.txtOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.txtOutput.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.txtOutput.Location = new System.Drawing.Point(3, 3);
-      this.txtOutput.Multiline = true;
       this.txtOutput.Name = "txtOutput";
-      this.txtOutput.ReadOnly = true;
-      this.txtOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
       this.txtOutput.Size = new System.Drawing.Size(857, 155);
       this.txtOutput.TabIndex = 1;
       //
@@ -1329,7 +1325,7 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.ToolStripMenuItem miRemoveAll;
     private System.Windows.Forms.TabControl tabBottom;
     private System.Windows.Forms.TabPage pageOutput;
-    private System.Windows.Forms.TextBox txtOutput;
+    private Irony.WinForms.ConsoleTextBox txtOutput;
     private System.Windows.Forms.TabPage pageLanguage;
     private System.Windows.Forms.Splitter splitBottom;
     private System.Windows.Forms.GroupBox grpLanguageInfo;

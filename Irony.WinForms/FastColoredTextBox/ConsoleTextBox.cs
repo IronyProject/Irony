@@ -26,6 +26,19 @@ namespace FastColoredTextBoxNS
             set { isReadLineMode = value; }
         }
 
+        public new void Clear()
+        {
+            isUpdating = true;
+            try
+            {
+                base.Clear();
+            }
+            finally
+            {
+                isUpdating = false;
+            }
+        }
+
         /// <summary>
         /// Append line to end of text.
         /// </summary>

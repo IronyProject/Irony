@@ -12,6 +12,7 @@ namespace Irony.WinForms {
   using StyleIndex = FastColoredTextBoxNS.StyleIndex;
   using TextChangedEventArgs = FastColoredTextBoxNS.TextChangedEventArgs;
   using TextStyle = FastColoredTextBoxNS.TextStyle;
+  using WordWrapMode = FastColoredTextBoxNS.WordWrapMode;
 
   /// <summary>
   /// TextBox with for console emulation.
@@ -21,7 +22,7 @@ namespace Irony.WinForms {
   [ToolboxItem(true)]
   public partial class ConsoleTextBox : IronyTextBoxBase, IConsoleAdaptor {
     private bool _canceled;
-    private Style _normalStyle = new TextStyle(Brushes.White, null, FontStyle.Regular);
+    private Style _normalStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
     private Style _errorStyle = new TextStyle(Brushes.Red, null, FontStyle.Bold);
     private Style _currentStyle;
 
@@ -34,18 +35,15 @@ namespace Irony.WinForms {
 
     protected override FastColoredTextBox CreateFastColoredTextBox() {
       var textBox = new FctbConsoleTextBox {
-        BackColor = Color.Black,
-        IndentBackColor = Color.Black,
-        PaddingBackColor = Color.Black,
-        LineNumberColor = Color.Gold,
-        ForeColor = Color.White,
-        CaretColor = Color.White,
+        LeftPadding = 2,
         PreferredLineWidth = 80,
+        ShowLineNumbers = false,
         WordWrap = true,
-        WordWrapMode = FastColoredTextBoxNS.WordWrapMode.CharWrapPreferredWidth
+        WordWrapMode = WordWrapMode.CharWrapPreferredWidth,
       };
 
       textBox.TextChanged += textBox_TextChanged;
+      textBox.Enter += textBox_Enter;
       return textBox;
     }
 
@@ -97,6 +95,11 @@ namespace Irony.WinForms {
 
     private void textBox_TextChanged(object sender, TextChangedEventArgs args) {
       args.ChangedRange.SetStyle(CurrentStyle);
+    }
+
+    public void textBox_Enter(object sender, EventArgs args) {
+      if (Console.IsReadLineMode)
+        BeginInvoke(new Action(Console.GoEnd));
     }
 
     public int Read() {

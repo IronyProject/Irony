@@ -186,8 +186,8 @@ namespace Irony.Interpreter {
     }
     #endregion
 
-
     #region Output writing
+
     #region ConsoleWrite event
     public event EventHandler<ConsoleWriteEventArgs> ConsoleWrite;
     private void OnConsoleWrite(string text) {
@@ -198,14 +198,13 @@ namespace Irony.Interpreter {
     }
     #endregion
 
-
-
     public void Write(string text) {
       lock(_lockObject){
         OnConsoleWrite(text);
         OutputBuffer.Append(text);
       }
     }
+
     public void WriteLine(string text) {
       lock(_lockObject){
         OnConsoleWrite(text + Environment.NewLine);
@@ -224,9 +223,8 @@ namespace Irony.Interpreter {
         return OutputBuffer.ToString();
       }
     }
+
     #endregion
-
-
 
   }//class
 }

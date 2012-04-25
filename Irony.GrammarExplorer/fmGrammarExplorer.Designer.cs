@@ -49,7 +49,7 @@ namespace Irony.GrammarExplorer {
       this.btnRun = new System.Windows.Forms.Button();
       this.btnFileOpen = new System.Windows.Forms.Button();
       this.btnParse = new System.Windows.Forms.Button();
-      this.splitter3 = new System.Windows.Forms.Splitter();
+      this.splitRight = new System.Windows.Forms.Splitter();
       this.tabOutput = new System.Windows.Forms.TabControl();
       this.pageSyntaxTree = new System.Windows.Forms.TabPage();
       this.tvParseTree = new System.Windows.Forms.TreeView();
@@ -122,7 +122,7 @@ namespace Irony.GrammarExplorer {
       this.chkExcludeComments = new System.Windows.Forms.CheckBox();
       this.lblTraceComment = new System.Windows.Forms.Label();
       this.pageOutput = new System.Windows.Forms.TabPage();
-      this.txtOutput = new WinForms.ConsoleTextBox();
+      this.txtOutput = new Irony.WinForms.ConsoleTextBox();
       this.pnlRuntimeInfo = new System.Windows.Forms.Panel();
       this.label14 = new System.Windows.Forms.Label();
       this.lblGCCount = new System.Windows.Forms.Label();
@@ -250,7 +250,7 @@ namespace Irony.GrammarExplorer {
       //
       this.pageTest.Controls.Add(this.txtSource);
       this.pageTest.Controls.Add(this.panel1);
-      this.pageTest.Controls.Add(this.splitter3);
+      this.pageTest.Controls.Add(this.splitRight);
       this.pageTest.Controls.Add(this.tabOutput);
       this.pageTest.Location = new System.Drawing.Point(4, 22);
       this.pageTest.Name = "pageTest";
@@ -343,14 +343,14 @@ namespace Irony.GrammarExplorer {
       this.btnParse.UseVisualStyleBackColor = true;
       this.btnParse.Click += new System.EventHandler(this.btnParse_Click);
       //
-      // splitter3
+      // splitRight
       //
-      this.splitter3.Dock = System.Windows.Forms.DockStyle.Right;
-      this.splitter3.Location = new System.Drawing.Point(655, 3);
-      this.splitter3.Name = "splitter3";
-      this.splitter3.Size = new System.Drawing.Size(6, 349);
-      this.splitter3.TabIndex = 14;
-      this.splitter3.TabStop = false;
+      this.splitRight.Dock = System.Windows.Forms.DockStyle.Right;
+      this.splitRight.Location = new System.Drawing.Point(655, 3);
+      this.splitRight.Name = "splitRight";
+      this.splitRight.Size = new System.Drawing.Size(6, 349);
+      this.splitRight.TabIndex = 14;
+      this.splitRight.TabStop = false;
       //
       // tabOutput
       //
@@ -1283,7 +1283,6 @@ namespace Irony.GrammarExplorer {
       this.pnlParserTraceTop.ResumeLayout(false);
       this.pnlParserTraceTop.PerformLayout();
       this.pageOutput.ResumeLayout(false);
-      this.pageOutput.PerformLayout();
       this.pnlRuntimeInfo.ResumeLayout(false);
       this.pnlRuntimeInfo.PerformLayout();
       this.ResumeLayout(false);
@@ -1301,7 +1300,7 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.ComboBox cboGrammars;
     private System.Windows.Forms.Label label2;
     private System.Windows.Forms.TabPage pageTest;
-    private System.Windows.Forms.Splitter splitter3;
+    private System.Windows.Forms.Splitter splitRight;
     private System.Windows.Forms.TabControl tabOutput;
     private System.Windows.Forms.TabPage pageAst;
     private System.Windows.Forms.TabPage pageSyntaxTree;

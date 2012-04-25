@@ -53,6 +53,8 @@ namespace Irony.GrammarExplorer {
         chkDisableHili.Checked = Settings.Default.DisableHili;
         chkAutoRefresh.Checked = Settings.Default.AutoRefresh;
         cboGrammars.SelectedIndex = Settings.Default.LanguageIndex; //this will build parser and start colorizer
+        if (Application.RenderWithVisualStyles)
+          splitRight.BackColor = SystemColors.ControlLightLight;
       } catch { }
       _loaded = true;
     }
@@ -361,6 +363,9 @@ namespace Irony.GrammarExplorer {
           ParseSample();
         if (_parseTree.ParserMessages.Count > 0) return;
 
+        //show output console
+        tabBottom.SelectedTab = pageOutput;
+        btnRun.Enabled = false;
         GC.Collect(); //to avoid disruption of perf times with occasional collections
         oldGcCount = GC.CollectionCount(0);
         System.Threading.Thread.Sleep(100);
@@ -374,11 +379,11 @@ namespace Irony.GrammarExplorer {
         var gcCount = GC.CollectionCount(0) - oldGcCount;
         lblGCCount.Text = gcCount.ToString();
         WriteOutput(output);
-        tabBottom.SelectedTab = pageOutput;
       } catch (ScriptException ex) {
         ShowRuntimeError(ex);
       } finally {
         sw.Stop();
+        btnRun.Enabled = true;
       }//finally
     }//method
 

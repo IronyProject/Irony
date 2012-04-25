@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using Irony.Interpreter.Ast;
 using Irony.Interpreter;
 using System.Numerics;
+using System.Collections.Concurrent;
 
 namespace Refal.Runtime
 {
@@ -43,9 +44,9 @@ namespace Refal.Runtime
 		public RefalLibrary(ScriptThread thread)
 		{
 			ScriptThread = thread;
-			OpenFiles = new Dictionary<string, object>();
-			BuriedKeys = new Dictionary<string, PassiveExpression>();
-			BuriedValues = new Dictionary<string, PassiveExpression>();
+			OpenFiles = new ConcurrentDictionary<string, object>();
+			BuriedKeys = new ConcurrentDictionary<string, PassiveExpression>();
+			BuriedValues = new ConcurrentDictionary<string, PassiveExpression>();
 			CommandLineArguments = null;
 		}
 

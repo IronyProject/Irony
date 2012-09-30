@@ -53,7 +53,6 @@
     <Compile Include="Ast\Expressions\MemberAccessNode.cs" />
     <Compile Include="Ast\AstContext\InterpreterAstContext.cs" />
     <Compile Include="Ast\Functions\LambdaNode.cs" />
-    <None Include="Ast\Statements\SpecialFormNode.cs" />
     <Compile Include="LanguageRuntime\SpecialFormsLibrary.cs" />
     <Compile Include="Ast\Expressions\BinaryOperationNode.cs" />
     <Compile Include="Ast\Expressions\ExpressionListNode.cs" />

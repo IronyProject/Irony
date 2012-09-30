@@ -217,13 +217,12 @@ namespace Irony.Samples {
 
             this.LanguageFlags = LanguageFlags.NewLineBeforeEOF;
 
-            lineNumber.ValidateToken += identifier_ValidateToken;
-
+            lineNumber.ValidateToken += lineNumber_ValidateToken;
       }
 
-        void identifier_ValidateToken(object sender, ParsingEventArgs e) {
+        void lineNumber_ValidateToken(object sender, ParsingEventArgs e) {
           if (e.Context.CurrentToken.ValueString.Length > 4)
-            e.Context.CurrentToken = e.Context.CreateErrorToken("Identifier cannot be longer than 4 characters"); 
+            e.Context.CurrentToken = e.Context.CreateErrorToken("Line number cannot be longer than 4 characters"); 
         }//constructor
 
     }//class

@@ -222,6 +222,7 @@ namespace Irony.Parsing {
       switch (ch) {
         case ' ':   case '\t': case '\r': case '\n': case '\v': //whitespaces
         case '(': case ')': case ',': case ';': case '[': case ']': case '{': case '}':
+        case (char)0: //EOF
           return true;
         default:
           return false;
@@ -282,27 +283,14 @@ namespace Irony.Parsing {
       return MakeListRule(listNonTerminal, delimiter, listMember, TermListOptions.StarList);
     }
 
-    //Note: Here and in other make-list methods with delimiter. More logical would be the parameters order (list, listMember, delimiter=null).
-    // But for historical reasons it's the way it is, and I think it's too late to change and to reverse the order of delimiter and listMember.
-    // Too many existing grammars would be broken. The big trouble is that these two parameters are of the same type, so compiler would not 
-    // detect that order had changed (if we change it) for existing grammars. The grammar would stop working at runtime, and it would 
-    // require some effort to debug and find the cause of the problem. For these reasons, we leave it as is. 
-    [Obsolete("Method overload is obsolete - use MakeListRule instead")]
-    public BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember, TermListOptions options) {
-      return MakeListRule(listNonTerminal, delimiter, listMember, options);
-   }
-
-    [Obsolete("Method overload is obsolete - use MakeListRule instead")]
-    public BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember, TermListOptions options) {
-      return MakeListRule(listNonTerminal, delimiter, listMember, options | TermListOptions.StarList);
-    }
-
     protected BnfExpression MakeListRule(NonTerminal list, BnfTerm delimiter, BnfTerm listMember, TermListOptions options = TermListOptions.PlusList) {
       //If it is a star-list (allows empty), then we first build plus-list
-      var isStarList = options.IsSet(TermListOptions.AllowEmpty);
-      NonTerminal plusList = isStarList ? new NonTerminal(listMember.Name + "+") : list;
-      //"list" is the real list for which we will construct expression - it is either extra plus-list or original listNonTerminal. 
-      // In the latter case we will use it later to construct expression for listNonTerminal
+      var isPlusList = !options.IsSet(TermListOptions.AllowEmpty);
+      var allowTrailingDelim = options.IsSet(TermListOptions.AllowTrailingDelimiter) && delimiter != null;
+      //"plusList" is the list for which we will construct expression - it is either extra plus-list or original list. 
+      // In the former case (extra plus-list) we will use it later to construct expression for list
+      NonTerminal plusList = isPlusList ? list : new NonTerminal(listMember.Name + "+");
+      plusList.SetFlag(TermFlags.IsList);
       plusList.Rule = plusList;  // rule => list
       if (delimiter != null)
         plusList.Rule += delimiter;  // rule => list + delim
@@ -310,19 +298,19 @@ namespace Irony.Parsing {
         plusList.Rule += PreferShiftHere(); // rule => list + delim + PreferShiftHere()
       plusList.Rule += listMember;          // rule => list + delim + PreferShiftHere() + elem
       plusList.Rule |= listMember;        // rule => list + delim + PreferShiftHere() + elem | elem
-      //trailing delimiter
-      if (options.IsSet(TermListOptions.AllowTrailingDelimiter) & delimiter != null)
-        plusList.Rule |= list + delimiter; // => list + delim + PreferShiftHere() + elem | elem | list + delim
-      // set Rule value
-      plusList.SetFlag(TermFlags.IsList);
-      //If we do not use exra list - we're done, return list.Rule
-      if (plusList == list) 
-        return list.Rule;
-      // Let's setup listNonTerminal.Rule using plus-list we just created
-      //If we are here, TermListOptions.AllowEmpty is set, so we have star-list
-      list.Rule = Empty | plusList;
-      plusList.SetFlag(TermFlags.NoAstNode); 
-      list.SetFlag(TermFlags.IsListContainer); //indicates that real list is one level lower
+      if (isPlusList) {
+        // if we build plus list - we're almost done; plusList == list
+        // add trailing delimiter if necessary; for star list we'll add it to final expression
+        if (allowTrailingDelim)
+          plusList.Rule |= list + delimiter; // rule => list + delim + PreferShiftHere() + elem | elem | list + delim
+      } else {
+        // Setup list.Rule using plus-list we just created
+        list.Rule = Empty | plusList;
+        if (allowTrailingDelim)
+          list.Rule |= plusList + delimiter | delimiter;
+        plusList.SetFlag(TermFlags.NoAstNode);
+        list.SetFlag(TermFlags.IsListContainer); //indicates that real list is one level lower
+      } 
       return list.Rule; 
     }//method
     #endregion
@@ -426,6 +414,9 @@ namespace Irony.Parsing {
     // Note: using Eof in grammar rules is optional. Parser automatically adds this symbol 
     // as a lookahead to Root non-terminal
     public readonly Terminal Eof = new Terminal("EOF", TokenCategory.Outline);
+
+    //Artificial terminal to use for injected/replaced tokens that must be ignored by parser. 
+    public readonly Terminal Skip = new Terminal("(SKIP)", TokenCategory.Outline, TermFlags.IsNonGrammar);
 
     //Used as a "line-start" indicator
     public readonly Terminal LineStartTerminal = new Terminal("LINE_START", TokenCategory.Outline);

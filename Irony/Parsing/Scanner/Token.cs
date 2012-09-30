@@ -91,6 +91,10 @@ namespace Irony.Parsing {
   //Some terminals may need to return a bunch of tokens in one call to TryMatch; MultiToken is a container for these tokens
   public class MultiToken : Token {
     public TokenList ChildTokens;
+
+    public MultiToken(params Token[] tokens) : this(tokens[0].Terminal, tokens[0].Location, new TokenList()) {
+        ChildTokens.AddRange(tokens);
+    }
     public MultiToken(Terminal term, SourceLocation location, TokenList childTokens) : base(term, location, string.Empty, null) {
       ChildTokens = childTokens;
     }

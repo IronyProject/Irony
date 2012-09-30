@@ -27,7 +27,7 @@ namespace Irony.Parsing {
   public enum IdOptions : short {
     None = 0,
     AllowsEscapes = 0x01,
-    CanStartWithEscape = 0x03, //bit 2 with bit 1 together  
+    CanStartWithEscape = 0x03, 
     
     IsNotKeyword = 0x10,
     NameIncludesPrefix = 0x20,

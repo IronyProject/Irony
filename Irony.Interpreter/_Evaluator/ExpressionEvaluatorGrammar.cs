@@ -85,7 +85,7 @@ bool operations &,&&, |, ||; ternary '?:' operator." ;
       Term.Rule = number | ParExpr | stringLit | FunctionCall | identifier | MemberAccess | IndexedAccess;
       ParExpr.Rule = "(" + Expr + ")";
       UnExpr.Rule = UnOp + Term + ReduceHere();
-      UnOp.Rule = ToTerm("+") | "-"; 
+      UnOp.Rule = ToTerm("+") | "-" | "!"; 
       BinExpr.Rule = Expr + BinOp + Expr;
       BinOp.Rule = ToTerm("+") | "-" | "*" | "/" | "**" | "==" | "<" | "<=" | ">" | ">=" | "!=" | "&&" | "||" | "&" | "|";
       PrefixIncDec.Rule = IncDecOp + identifier;
@@ -113,6 +113,7 @@ bool operations &,&&, |, ||; ternary '?:' operator." ;
       RegisterOperators(30, "+", "-");
       RegisterOperators(40, "*", "/");
       RegisterOperators(50, Associativity.Right, "**");
+      RegisterOperators(60, "!");
       // For precedence to work, we need to take care of one more thing: BinOp. 
       //For BinOp which is or-combination of binary operators, we need to either 
       // 1) mark it transient or 2) set flag TermFlags.InheritPrecedence

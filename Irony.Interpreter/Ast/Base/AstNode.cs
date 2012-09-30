@@ -51,7 +51,7 @@ namespace Irony.Interpreter.Ast {
     // Node's parent can set it to "property name" or role of the child node in parent's node currentFrame.Context. 
     public string Role;
     // Default AstNode.ToString() returns 'Role: AsString', which is used for showing node in AST tree. 
-    public string AsString { get; protected set; }
+    public virtual string AsString { get; protected set; }
     public readonly AstNodeList ChildNodes = new AstNodeList();  //List of child nodes
 
     //Reference to Evaluate method implementation. Initially set to DoEvaluate virtual method. 

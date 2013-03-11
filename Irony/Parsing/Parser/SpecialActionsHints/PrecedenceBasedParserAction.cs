@@ -28,10 +28,12 @@ namespace Irony.Parsing {
       base.DefaultAction = _shiftAction = new ShiftParserAction(shiftTerm, newShiftState);
     }
 
-    private static bool CheckMustReduce(ParsingContext context) {
+    private bool CheckMustReduce(ParsingContext context) {
       var input = context.CurrentParserInput;
-      for (int i = context.ParserStack.Count - 1; i >= 0; i--) {
-        var prevNode = context.ParserStack[i];
+      var stackCount = context.ParserStack.Count;
+      var prodLength = _reduceAction.Production.RValues.Count;
+      for (int i = 1; i <= prodLength; i++) {
+        var prevNode = context.ParserStack[stackCount - i];
         if (prevNode == null) continue;
         if (prevNode.Precedence == BnfTerm.NoPrecedence) continue;
         //if previous operator has the same precedence then use associativity

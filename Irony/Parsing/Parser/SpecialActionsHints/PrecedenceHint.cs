@@ -40,8 +40,10 @@ namespace Irony.Parsing {
           operConflicts.Add(c);
       foreach (var conflict in operConflicts) {
         var newState = state.BuilderData.GetNextState(conflict);
-        var reduceItem = state.BuilderData.ReduceItems.SelectByLookahead(conflict).First(); //should be only one
-        state.Actions[conflict] = new PrecedenceBasedParserAction(conflict, newState, reduceItem.Core.Production);
+        var reduceItems = state.BuilderData.ReduceItems.SelectByLookahead(conflict).ToList();
+        if (newState == null || reduceItems.Count != 1)
+          continue; // this cannot be fixed by precedence
+        state.Actions[conflict] = new PrecedenceBasedParserAction(conflict, newState, reduceItems[0].Core.Production);
         allConflicts.Remove(conflict);
       }//foreach conflict
     }

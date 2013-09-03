@@ -74,7 +74,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Playground_Grammar_New.cs" />
     <Compile Include="CSharp\CSharpGrammar.cs" />
     <Compile Include="DataGrammars\SampleCsvGrammar.cs" />
     <Compile Include="FullTextSearchQueryConverter\SearchGrammar.cs" />
@@ -97,7 +96,6 @@
     <None Include="SourceSamples\c#\escapes_in_IDs.cs" />
     <None Include="SourceSamples\c#\TestLessThanOp.cs" />
     <Compile Include="SQL\SqlGrammar.cs" />
-    <Compile Include="TestBed_SimpleEval.cs" />
     <Compile Include="Wiki\WikiCodeplexGrammar.cs" />
     <Compile Include="Wiki\WikiCreoleGrammar.cs" />
     <Compile Include="Wiki\WikiHtmlConverter.cs" />

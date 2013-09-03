@@ -133,7 +133,7 @@ namespace Irony.Parsing {
       if (context.VsLineScanState.Value == 0) {
         token = QuickParse(context, source);
         if (token != null) return token;
-        source.PreviewPosition = source.Location.Position; //revert the position
+        source.PreviewPosition = source.Position; //revert the position
       }
 
       CompoundTokenDetails details = new CompoundTokenDetails();

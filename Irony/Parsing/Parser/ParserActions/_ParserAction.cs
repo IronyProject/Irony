@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Irony.Parsing {
 
-  public abstract class ParserAction {
+  public abstract partial class ParserAction {
 
     public ParserAction() { }
 
@@ -16,6 +16,7 @@ namespace Irony.Parsing {
     public override string ToString() {
       return Resources.LabelActionUnknown; //should never happen
     }
+
   }//class ParserAction
 
   public class ParserActionTable : Dictionary<BnfTerm, ParserAction> { }

@@ -345,7 +345,6 @@ namespace Irony.Samples.CSharp {
       RegisterOperators(-2, "?");
       RegisterOperators(-1, "??");
 
-      this.Delimiters = "{}[](),:;+-*/%&|^!~<>=";
       this.MarkPunctuation(";", ",", "(", ")", "{", "}", "[", "]", ":");
       this.MarkTransient(namespace_member_declaration, member_declaration, type_declaration, statement, embedded_statement, expression, 
         literal, bin_op, primary_expression, expression);

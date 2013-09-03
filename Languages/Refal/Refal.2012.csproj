@@ -10,8 +10,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Refal</RootNamespace>
     <AssemblyName>Refal</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -23,6 +24,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -79,13 +82,13 @@
     <None Include="RefalAstNodes.cd" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Irony.Interpreter\015.Irony.Interpreter.2010.csproj">
+    <ProjectReference Include="..\..\Irony.Interpreter\015.Irony.Interpreter.2012.csproj">
       <Project>{321A7F5D-00C2-4095-9970-075CDEE8C139}</Project>
-      <Name>015.Irony.Interpreter.2010</Name>
+      <Name>015.Irony.Interpreter.2012</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Irony\010.Irony.2010.csproj">
+    <ProjectReference Include="..\..\Irony\010.Irony.2012.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
-      <Name>010.Irony.2010</Name>
+      <Name>010.Irony.2012</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

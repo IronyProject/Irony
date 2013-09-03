@@ -16,7 +16,7 @@ using System.Linq;
 using System.Text;
 
 namespace Irony.Parsing {
-  //
+  
   /// <summary>
   /// Interface for Terminals to access the source stream and produce tokens.
   /// </summary>

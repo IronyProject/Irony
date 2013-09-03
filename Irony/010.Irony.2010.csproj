@@ -98,6 +98,16 @@
     <Compile Include="Parsing\Grammar\TermReportGroups.cs" />
     <Compile Include="Parsing\Parser\ParseTreeExtensions.cs" />
     <Compile Include="Parsing\Parser\ParsingEventArgs.cs" />
+    <None Include="Parsing\_new\CompilerDirective\CompilerDirectiveBase.cs" />
+    <None Include="Parsing\_new\CompilerDirective\IfDirective.cs" />
+    <None Include="Parsing\_new\CompilerDirective\IfExpressionHandler.cs" />
+    <None Include="Parsing\_new\CompilerDirective\_CompilerDirectiveTerminal.cs" />
+    <None Include="Parsing\_new\CompilerDirective\MacroDirective.cs" />
+    <Compile Include="Parsing\_new\GlrParser.cs" />
+    <Compile Include="Parsing\_new\NewScanner\NewScanner.cs" />
+    <Compile Include="Parsing\_new\NewScanner\SourceSegments.cs" />
+    <Compile Include="Parsing\_new\NewScanner\TerminalLookupByPrefix.cs" />
+    <Compile Include="Parsing\_new\NewScanner\_partialDefs.cs" />
     <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Utilities\StringUtils.cs" />
     <Compile Include="Parsing\Parser\ParserTrace.cs" />

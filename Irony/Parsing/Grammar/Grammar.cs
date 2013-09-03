@@ -32,6 +32,7 @@ namespace Irony.Parsing {
     
     //List of chars that unambigously identify the start of new token. 
     //used in scanner error recovery, and in quick parse path in NumberLiterals, Identifiers 
+    [Obsolete("Use IsWhitespaceOrDelimiter() method instead.")]
     public string Delimiters = null; 
 
     [Obsolete("Override Grammar.SkipWhitespace method instead.")]

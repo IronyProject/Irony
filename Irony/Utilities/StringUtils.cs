@@ -47,8 +47,8 @@ namespace Irony {
       if (_caseSensitive)
         base.Add(ch);
       else {
-        base.Add(ch.ToString().ToLowerInvariant()[0]);
-        base.Add(ch.ToString().ToUpperInvariant()[0]);
+        base.Add(char.ToLowerInvariant(ch));
+        base.Add(char.ToUpperInvariant(ch));
       }
 
     }

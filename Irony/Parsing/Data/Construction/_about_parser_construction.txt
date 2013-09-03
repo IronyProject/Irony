@@ -16,7 +16,7 @@
 
  Note about immediate Include propagation
   I think that the method with immediate Includes propagation is as efficient as it can be, and using Transitive Closure optimization
-  through Srongly-Connected Components (SCC) algorithm would not be much faster. With immediate propagation we attempt to add 
+  through Strongly-Connected Components (SCC) algorithm would not be any faster. With immediate propagation we attempt to add 
   a transition to Includes set of another transition only once and stop propagation of the transition further down the chain if it is
   already there. Essentially, we don't waste time propagating sets of transitions through chains of Includes if the transitions are 
   already there, propagated through different route. This is what SCC method is trying to mitigate - repeated propagation of transitions - 

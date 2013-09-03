@@ -1,0 +1,39 @@
+﻿
+JavaScript semicolumn auto-insertion
+  http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf  , section 7.9.1 Rules of Automatic Semicolon Insertion
+
+There are three basic rules of semicolon insertion:
+1. When, as the program is parsed from left to right, a token (called the offending token) is encountered that is not allowed by any production of the grammar, then a semicolon is automatically inserted before the offending token if one or more of the following conditions is true:
+ The offending token is separated from the previous token by at least one LineTerminator.
+ The offending token is }.
+2. When, as the program is parsed from left to right, the end of the input stream of tokens is encountered and the parser is unable to parse the input token stream as a single complete ECMAScript Program, then a semicolon is automatically inserted at the end of the input stream.
+3. When, as the program is parsed from left to right, a token is encountered that is allowed by some production of the grammar, but the production is a restricted production and the token would be the first token for a terminal or nonterminal immediately following the annotation ―[no LineTerminator here]‖ within the restricted production (and therefore such a token is called a restricted token), and the restricted token is separated from the previous token by at least one LineTerminator, then a semicolon is automatically inserted before the restricted token.
+
+If the phrase ―[no LineTerminator here]‖ appears in the right-hand side of a production of the syntactic grammar, 
+  it indicates that the production is a restricted production: it may not be used if a LineTerminator occurs in the input stream at the indicated position. 
+  For example, the production:
+    ThrowStatement :  throw [no LineTerminator here] Expression ;
+  indicates that the production may not be used if a LineTerminator occurs in the program between the throw token and the Expression.
+NOTE The following are the only restricted productions in the grammar:
+PostfixExpression :
+  LeftHandSideExpression [no LineTerminator here] ++ 
+  LeftHandSideExpression [no LineTerminator here] --
+ContinueStatement :
+  continue [no LineTerminator here] Identifier ;
+BreakStatement :
+  break [no LineTerminator here] Identifier ;
+ReturnStatement :
+  return [no LineTerminator here] Expression ;
+ThrowStatement :
+  throw [no LineTerminator here] Expression ;
+
+
+
+  To think about - maybe define hint NoLineTerminatorHere(IfFoundHandler); handler injects semi-colon in JS 
+  other alternative: CheckWhitespace(CheckHandler) 
+
+More explanations here: http://inimino.org/~inimino/blog/javascript_semicolons
+
+
+LUA: 
+Lua needs no separator between statements

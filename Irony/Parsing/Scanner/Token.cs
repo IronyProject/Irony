@@ -33,7 +33,7 @@ namespace Irony.Parsing {
   public class TokenStack : Stack<Token> { }
 
   //Tokens are produced by scanner and fed to parser, optionally passing through Token filters in between. 
-  public class Token  {
+  public partial class Token {
     public Terminal Terminal {get; private set;} 
     public KeyTerm KeyTerm;
     public readonly SourceLocation Location; 

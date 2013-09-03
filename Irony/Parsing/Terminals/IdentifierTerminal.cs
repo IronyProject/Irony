@@ -113,8 +113,10 @@ namespace Irony.Parsing {
         this.EditorInfo = new TokenEditorInfo(TokenType.Identifier, TokenColor.Identifier, TokenTriggers.None);
     }
 
-    //TODO: put into account non-Ascii aplhabets specified by means of Unicode categories!
     public override IList<string> GetFirsts() {
+      // new scanner: identifier has no prefixes
+      return null; 
+/*
       var list = new StringList();
       list.AddRange(Prefixes);
       foreach (char ch in _allFirstCharsSet)
@@ -122,6 +124,7 @@ namespace Irony.Parsing {
       if ((Options & IdOptions.CanStartWithEscape) != 0)
         list.Add(this.EscapeChar.ToString());
       return list;
+ */
     }
 
     protected override void InitDetails(ParsingContext context, CompoundTokenDetails details) {

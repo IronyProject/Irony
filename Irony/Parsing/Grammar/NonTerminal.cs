@@ -20,7 +20,7 @@ namespace Irony.Parsing {
 
   internal class IntList : List<int> { }
 
-  public class NonTerminal : BnfTerm {
+  public partial class NonTerminal : BnfTerm {
 
     #region constructors
     public NonTerminal(string name)  : base(name, null) { }  //by default display name is null

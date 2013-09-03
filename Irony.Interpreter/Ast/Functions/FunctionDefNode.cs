@@ -20,7 +20,7 @@ using Irony.Parsing;
 
 namespace Irony.Interpreter.Ast {
 
-  //A node representing function definition
+  //A node representing function definition (named lambda)
   public class FunctionDefNode : AstNode {
     public AstNode NameNode;
     public LambdaNode Lambda; 
@@ -30,7 +30,7 @@ namespace Irony.Interpreter.Ast {
       //child #0 is usually a keyword like "def"
       var nodes = treeNode.GetMappedChildNodes();
       NameNode = AddChild("Name", nodes[1]);
-      Lambda = new LambdaNode(context, treeNode, nodes[2], nodes[3]);
+      Lambda = new LambdaNode(context, treeNode, nodes[2], nodes[3]); //node, params, body
       Lambda.Parent = this; 
       AsString = "<Function " + NameNode.AsString + ">";
       //Lamda will set treeNode.AstNode to itself, we need to set it back to "this" here

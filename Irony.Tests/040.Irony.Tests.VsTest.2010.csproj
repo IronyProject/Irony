@@ -78,6 +78,7 @@
     <Compile Include="DataLiteralsTests.cs" />
     <Compile Include="EvaluatorTests.cs" />
     <Compile Include="TokenPreviewResolution\ConflictGrammars.cs" />
+    <None Include="_newArchTests.cs" />
     <None Include="HeredocTerminalTests.cs" />
     <Compile Include="LineContinuationTests.cs" />
     <Compile Include="RegexLiteralTests.cs" />

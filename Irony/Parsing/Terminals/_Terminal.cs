@@ -24,7 +24,7 @@ namespace Irony.Parsing {
 
   }
 
-  public class Terminal : BnfTerm {
+  public partial class Terminal : BnfTerm {
     #region Constructors
     public Terminal(string name)  : this(name, TokenCategory.Content, TermFlags.None) {  }
     public Terminal(string name, TokenCategory category)  : this(name, category, TermFlags.None) {  }

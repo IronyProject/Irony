@@ -6,7 +6,7 @@ using System.Text;
 namespace Irony.Parsing {
 
   /// <summary>Base class for more specific reduce actions. </summary>
-  public class ReduceParserAction: ParserAction {
+  public partial class ReduceParserAction: ParserAction {
     public readonly Production Production;
   
     public ReduceParserAction(Production production) {
@@ -141,7 +141,7 @@ namespace Irony.Parsing {
     }
   }//class
 
-  //List container is an artificial non-terminal created by MakeStarRule method; this actual list is a direct child. 
+  //List container is an artificial non-terminal created by MakeStarRule method; the actual list is a direct child. 
   public class ReduceListContainerParserAction : ReduceParserAction {
     public ReduceListContainerParserAction(Production production) : base(production) { }
 

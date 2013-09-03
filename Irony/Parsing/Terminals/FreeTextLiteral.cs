@@ -25,6 +25,7 @@ namespace Irony.Parsing {
     ConsumeTerminator = 0x01, //move source pointer beyond terminator (so token "consumes" it from input), but don't include it in token text
     IncludeTerminator = 0x02, // include terminator into token text/value
     AllowEof = 0x04, // treat EOF as legitimate terminator
+    AllowEmpty = 0x08,
   }
 
   public class FreeTextLiteral : Terminal {
@@ -93,6 +94,8 @@ namespace Irony.Parsing {
       if (IsSet(FreeTextOptions.IncludeTerminator))
         textEnd += termLen;
       var tokenText = source.Text.Substring(startPos, textEnd - startPos);
+      if (string.IsNullOrEmpty(tokenText) && (this.FreeTextOptions & Parsing.FreeTextOptions.AllowEmpty) == 0)
+        return null; 
       // The following line is a fix submitted by user rmcase
       source.PreviewPosition = IsSet(FreeTextOptions.ConsumeTerminator) ? termPos + termLen : termPos; 
       return source.CreateToken(this.OutputTerminal, tokenText); 
@@ -123,7 +126,10 @@ namespace Irony.Parsing {
         tokenText.Append(source.PreviewChar);
         source.PreviewPosition++; 
       }//while
-      return source.CreateToken(this.OutputTerminal, tokenText.ToString());
+      var text = tokenText.ToString(); 
+      if (string.IsNullOrEmpty(text) && (this.FreeTextOptions & Parsing.FreeTextOptions.AllowEmpty) == 0)
+        return null;
+      return source.CreateToken(this.OutputTerminal, text);
     }
 
     private bool CheckEscape(ISourceStream source, StringBuilder tokenText) {

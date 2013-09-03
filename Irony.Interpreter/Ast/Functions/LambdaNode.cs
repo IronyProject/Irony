@@ -20,7 +20,7 @@ using Irony.Parsing;
 
 namespace Irony.Interpreter.Ast {
 
-  //A node representing function definition
+  //A node representing an anonymous function
   public class LambdaNode : AstNode {
     public AstNode Parameters;
     public AstNode Body;

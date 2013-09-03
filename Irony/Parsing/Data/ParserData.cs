@@ -34,7 +34,7 @@ namespace Irony.Parsing {
     }
   }
 
-  public class ParserState {
+  public partial class ParserState {
     public readonly string Name;
     public readonly ParserActionTable Actions = new ParserActionTable();
     //Defined for states with a single reduce item; Parser.GetAction returns this action if it is not null.
@@ -84,7 +84,7 @@ namespace Irony.Parsing {
     IsEmpty = 0x08,
   }
 
-  public class Production {
+  public partial class Production {
     public ProductionFlags Flags;
     public readonly NonTerminal LValue;                              // left-side element
     public readonly BnfTermList RValues = new BnfTermList();         //the right-side elements sequence

@@ -44,7 +44,7 @@ namespace Irony.Parsing {
 
   // The purpose of this class is to provide a container for information shared 
   // between parser, scanner and token filters.
-  public class ParsingContext {
+  public partial class ParsingContext {
     public readonly Parser Parser;
     public readonly LanguageData Language;
 

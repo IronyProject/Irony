@@ -17,7 +17,7 @@ using System.Text;
 using Irony.Parsing.Construction;
 
 namespace Irony.Parsing { 
-  public class LanguageData {
+  public partial class LanguageData {
     public readonly Grammar Grammar;
     public readonly GrammarData GrammarData; 
     public readonly ParserData ParserData;

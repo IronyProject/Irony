@@ -65,9 +65,9 @@ namespace Irony.Parsing {
       var state = owner.State;
       if (!state.BuilderData.IsInadequate) return; //the state is adequate, we don't need to do anything
       var conflicts = state.BuilderData.Conflicts;
-      // Note that remove lookaheads from the state conflicts set at the end of this method - to let parser builder know
+      // Note that we remove lookaheads from the state conflicts set at the end of this method - to let parser builder know
       // that this conflict is taken care of. 
-      // On the other head we may call this method multiple times for different LRItems if we have multiple hints in the same state. 
+      // On the other hand we may call this method multiple times for different LRItems if we have multiple hints in the same state. 
       // Since we remove lookahead from conflicts on the first call, on the consequitive calls it will not be a conflict -
       // but we still need to add a new conditional entry to a conditional parser action for this lookahead. 
       // Thus we process the lookahead anyway, even if it is not a conflict. 

@@ -11,6 +11,9 @@ namespace Irony.Parsing {
     public ShiftParserAction(Construction.LRItem item) : this(item.Core.Current, item.ShiftedItem.State) {  }
     
     public ShiftParserAction(BnfTerm term, ParserState newState) {
+      if (newState == null)
+        throw new Exception("ParserShiftAction: newState may not be null. term: " + term.ToString());
+
       Term = term; 
       NewState = newState;
     }

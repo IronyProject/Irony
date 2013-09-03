@@ -80,6 +80,9 @@
     <Compile Include="Java\JavaGrammar.Syntax.cs" />
     <Compile Include="MiniPython\MiniPython.cs" />
     <Compile Include="GWBasic\GwBasicGrammar.cs" />
+    <Compile Include="MyC\MyCGrammarExtended.cs" />
+    <Compile Include="MyC\MyCGrammar.cs" />
+    <Compile Include="Playground_Grammar.cs" />
     <Compile Include="SampleExpressionEvaluator\SampleExpressionEvaluatorGrammar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scheme\SchemeGrammar.cs" />
@@ -89,6 +92,7 @@
     <None Include="SourceSamples\c#\bottles-v30.cs" />
     <None Include="SourceSamples\c#\escapes_in_IDs.cs" />
     <None Include="SourceSamples\c#\TestLessThanOp.cs" />
+    <Compile Include="SLangGrammar.cs" />
     <Compile Include="SQL\SqlGrammar.cs" />
     <Compile Include="Wiki\WikiCodeplexGrammar.cs" />
     <Compile Include="Wiki\WikiCreoleGrammar.cs" />

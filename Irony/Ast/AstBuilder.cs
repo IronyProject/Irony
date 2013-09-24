@@ -62,7 +62,7 @@ namespace Irony.Ast {
       }
       if (missingList.Count > 0)
         // AST node type is not specified for term {0}. Either assign Term.AstConfig.NodeType, or specify default type(s) in AstBuilder.  
-        Context.AddMessage(ErrorLevel.Error, SourceLocation.Empty, Resources.ErrNodeTypeNotSetOn, missingList.ToString());
+        Context.AddMessage(ErrorLevel.Error, SourceLocation.Empty, Resources.ErrNodeTypeNotSetOn, string.Join(", " , missingList));
       Context.Language.AstDataVerified = true; 
     }
 

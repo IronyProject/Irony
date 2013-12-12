@@ -138,6 +138,8 @@ namespace Irony.Parsing {
       int col = Location.Column;
       int line = Location.Line; 
       while(p <  newPosition) {
+        if (p >= _textLength)
+          break;
         var curr = _chars[p];
         switch (curr) {
           case '\n': line++; col = 0; break;

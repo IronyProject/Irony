@@ -24,11 +24,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Languages", "Languages", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Refal", "Refal", "{FEE137AB-6C8B-4576-81BE-119DA16DCF78}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.2010", "Languages\Refal\Refal.2010.csproj", "{19A86418-BA99-41F4-80A5-A7F3A6383123}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.2010", "Languages\Refal\Refal.2012.csproj", "{19A86418-BA99-41F4-80A5-A7F3A6383123}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.UnitTests.VsTest.2010", "Languages\Refal\UnitTests\Refal.UnitTests.VsTest.2010.csproj", "{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.UnitTests.VsTest.2010", "Languages\Refal\UnitTests\Refal.UnitTests.VsTest.2012.csproj", "{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.UnitTests.NUnit.2010", "Languages\Refal\UnitTests\Refal.UnitTests.NUnit.2010.csproj", "{A34F4AE5-A6E5-43F9-9F16-A43F34599053}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.UnitTests.NUnit.2010", "Languages\Refal\UnitTests\Refal.UnitTests.NUnit.2012.csproj", "{A34F4AE5-A6E5-43F9-9F16-A43F34599053}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{44A73DB9-DD6C-4BFD-A169-F17A8C82A4A3}"
 	ProjectSection(SolutionItems) = preProject

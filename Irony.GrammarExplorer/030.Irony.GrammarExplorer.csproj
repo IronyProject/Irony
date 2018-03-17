@@ -1,18 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\NUnit.3.10.1\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.10.1\build\NUnit.props')" />
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{1A98BEDA-DF53-49B7-A366-2ED7606036BD}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{AE1C04A8-B03D-4144-98E9-BF66C50265E7}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Irony.Tests</RootNamespace>
-    <AssemblyName>Irony.Tests.NUnit</AssemblyName>
+    <RootNamespace>Irony.GrammarExplorer</RootNamespace>
+    <AssemblyName>Irony.GrammarExplorer</AssemblyName>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
     <SccProjectName>
     </SccProjectName>
     <SccLocalPath>
@@ -21,10 +24,6 @@
     </SccAuxPath>
     <SccProvider>
     </SccProvider>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation />
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -42,15 +41,13 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;USE_NUNIT</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -60,7 +57,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;USE_NUNIT</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -70,60 +67,75 @@
     <Reference Include="FastColoredTextBox, Version=2.16.21.0, Culture=neutral, PublicKeyToken=fb8aa12b994ef61b, processorArchitecture=MSIL">
       <HintPath>..\packages\FCTB.2.16.21.0\lib\FastColoredTextBox.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=3.10.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnit.3.10.1\lib\net45\nunit.framework.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommentTerminalTests.cs" />
-    <Compile Include="DataLiteralsTests.cs" />
-    <Compile Include="ErrorRecoveryTests.cs" />
-    <Compile Include="EvaluatorTests.cs" />
-    <None Include="HeredocTerminalTests.cs" />
-    <Compile Include="LineContinuationTests.cs" />
-    <Compile Include="FreeTextLiteralTests.cs" />
-    <Compile Include="IdentifierTerminalTests.cs" />
-    <Compile Include="IntegrationTests.cs" />
-    <Compile Include="NumberLiteralTests.cs" />
-    <Compile Include="OperatorTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RegExLiteralTests.cs" />
-    <Compile Include="StringLiteralTests.cs" />
-    <Compile Include="TestHelper.cs" />
-    <Compile Include="TokenPreviewResolution\ConflictGrammars.cs" />
-    <Compile Include="TokenPreviewResolution\ConflictResolutionTests.cs">
-      <SubType>Code</SubType>
+    <Compile Include="fmGrammarExplorer.cs">
+      <SubType>Form</SubType>
     </Compile>
+    <Compile Include="fmGrammarExplorer.Designer.cs">
+      <DependentUpon>fmGrammarExplorer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="fmSelectGrammars.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="fmSelectGrammars.Designer.cs">
+      <DependentUpon>fmSelectGrammars.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GrammarItemList.cs" />
+    <Compile Include="GrammarLoader.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="fmGrammarExplorer.resx">
+      <DependentUpon>fmGrammarExplorer.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="fmSelectGrammars.resx">
+      <DependentUpon>fmSelectGrammars.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Irony.Interpreter\015.Irony.Interpreter.2012.csproj">
+    <ProjectReference Include="..\Irony.Interpreter\015.Irony.Interpreter.csproj">
       <Project>{321A7F5D-00C2-4095-9970-075CDEE8C139}</Project>
       <Name>015.Irony.Interpreter.2012</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Irony.Samples\020.Irony.Samples.2012.csproj">
-      <Project>{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}</Project>
-      <Name>020.Irony.Samples.2012</Name>
+    <ProjectReference Include="..\Irony.WinForms\035.Irony.WinForms.csproj">
+      <Project>{70D319F3-3C0C-4EB5-A271-58ED22FB3070}</Project>
+      <Name>035.Irony.WinForms.2010</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Irony\010.Irony.2012.csproj">
+    <ProjectReference Include="..\Irony\010.Irony.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
       <Name>010.Irony.2012</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="_ Tests - read me.txt" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -142,13 +154,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\NUnit.3.10.1\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.10.1\build\NUnit.props'))" />
-  </Target>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

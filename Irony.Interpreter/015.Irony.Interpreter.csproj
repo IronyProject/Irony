@@ -119,7 +119,7 @@
     <Content Include="_about_Irony_Interpreter.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Irony\010.Irony.2012.csproj">
+    <ProjectReference Include="..\Irony\010.Irony.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
       <Name>010.Irony.2012</Name>
     </ProjectReference>

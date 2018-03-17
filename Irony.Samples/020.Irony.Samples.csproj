@@ -15,7 +15,7 @@
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <SccProjectName>
     </SccProjectName>
     <SccLocalPath>
@@ -39,7 +39,8 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -52,6 +53,7 @@
     <RegisterForComInterop>false</RegisterForComInterop>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -61,6 +63,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -92,7 +95,6 @@
     <None Include="SourceSamples\c#\bottles-v30.cs" />
     <None Include="SourceSamples\c#\escapes_in_IDs.cs" />
     <None Include="SourceSamples\c#\TestLessThanOp.cs" />
-    <Compile Include="SLangGrammar.cs" />
     <Compile Include="SQL\SqlGrammar.cs" />
     <Compile Include="Wiki\WikiCodeplexGrammar.cs" />
     <Compile Include="Wiki\WikiCreoleGrammar.cs" />
@@ -142,13 +144,13 @@
     <Content Include="SQL\Sql89-GoldParser.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Irony.Interpreter\015.Irony.Interpreter.2010.csproj">
+    <ProjectReference Include="..\Irony.Interpreter\015.Irony.Interpreter.csproj">
       <Project>{321A7F5D-00C2-4095-9970-075CDEE8C139}</Project>
-      <Name>015.Irony.Interpreter.2010</Name>
+      <Name>015.Irony.Interpreter.2012</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Irony\010.Irony.2010.csproj">
+    <ProjectReference Include="..\Irony\010.Irony.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
-      <Name>010.Irony.2010</Name>
+      <Name>010.Irony.2012</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

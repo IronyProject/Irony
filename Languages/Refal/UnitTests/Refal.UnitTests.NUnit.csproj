@@ -39,9 +39,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FastColoredTextBox, Version=2.16.21.0, Culture=neutral, PublicKeyToken=fb8aa12b994ef61b, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\FCTB.2.16.21.0\lib\FastColoredTextBox.dll</HintPath>
-    </Reference>
     <Reference Include="nunit.framework, Version=3.10.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\NUnit.3.10.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
@@ -62,15 +59,15 @@
     <Compile Include="RefalRegressionTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Irony.Interpreter\015.Irony.Interpreter.2012.csproj">
+    <ProjectReference Include="..\..\..\Irony.Interpreter\015.Irony.Interpreter.csproj">
       <Project>{321A7F5D-00C2-4095-9970-075CDEE8C139}</Project>
       <Name>015.Irony.Interpreter.2012</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Irony\010.Irony.2012.csproj">
+    <ProjectReference Include="..\..\..\Irony\010.Irony.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
       <Name>010.Irony.2012</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Refal.2012.csproj">
+    <ProjectReference Include="..\Refal.csproj">
       <Project>{19A86418-BA99-41F4-80A5-A7F3A6383123}</Project>
       <Name>Refal.2012</Name>
     </ProjectReference>

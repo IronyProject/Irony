@@ -9,7 +9,6 @@ namespace Irony.WinForms {
   using FastColoredTextBox = FastColoredTextBoxNS.FastColoredTextBox;
   using FctbConsoleTextBox = FastColoredTextBoxNS.ConsoleTextBox;
   using Style = FastColoredTextBoxNS.Style;
-  using StyleIndex = FastColoredTextBoxNS.StyleIndex;
   using TextChangedEventArgs = FastColoredTextBoxNS.TextChangedEventArgs;
   using TextStyle = FastColoredTextBoxNS.TextStyle;
   using WordWrapMode = FastColoredTextBoxNS.WordWrapMode;

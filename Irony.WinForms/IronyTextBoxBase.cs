@@ -32,6 +32,7 @@ namespace Irony.WinForms {
       FastColoredTextBox.Dock = DockStyle.Fill;
       FastColoredTextBox.Name = "FastColoredTextBox";
       FastColoredTextBox.TextChanged += FastColoredTextBox_TextChanged;
+      FastColoredTextBox.WordWrap = false;
       Controls.Add(FastColoredTextBox);
     }
 

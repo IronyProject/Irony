@@ -1,2 +1,6 @@
+*.suo
+*.user
 /**/bin
 /**/obj
+/.vs
+/packages

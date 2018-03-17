@@ -121,9 +121,8 @@
     <Compile Include="IronyTextBoxBase.Designer.cs">
       <DependentUpon>IronyTextBoxBase.cs</DependentUpon>
     </Compile>
+    <Compile Include="ITextBox.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Proxies\DuckTypingProxy.cs" />
-    <Compile Include="Proxies\TextBoxProxy.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Highlighter\AboutCodeHighlighter.txt" />

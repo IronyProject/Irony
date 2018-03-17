@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Drawing.Design;
 using System.Windows.Forms;
 using FastColoredTextBoxNS;
-using Irony.WinForms.Proxies;
 using SWFBorderStyle = System.Windows.Forms.BorderStyle;
 
 namespace Irony.WinForms {
@@ -14,9 +13,8 @@ namespace Irony.WinForms {
   /// Allows implicit conversion to the System.Windows.Forms.TextBox.
   /// </summary>
   [ToolboxItem(false)]
-  public partial class IronyTextBoxBase : UserControl {
+  public partial class IronyTextBoxBase : UserControl, ITextBox {
     BorderStyleEx _borderStyle;
-    TextBox _textBoxProxy;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IronyTextBoxBase" /> class.
@@ -159,25 +157,6 @@ namespace Irony.WinForms {
     /// </summary>
     public void ScrollToCaret() {
       FastColoredTextBox.DoCaretVisible();
-    }
-
-    /// <summary>
-    /// Gets the TextBox proxy object.
-    /// </summary>
-    private TextBox TextBoxProxy {
-      get {
-        if (_textBoxProxy == null)
-          _textBoxProxy = new TextBoxProxy(FastColoredTextBox).Instance;
-        return _textBoxProxy;
-      }
-    }
-
-    /// <summary>
-    /// Allows converting IronyTextBoxBase to TextBox implicitly.
-    /// </summary>
-    /// <param name="IronyTextBoxBase">The irony text box.</param>
-    public static implicit operator TextBox(IronyTextBoxBase IronyTextBoxBase) {
-      return IronyTextBoxBase.TextBoxProxy;
     }
   }
 }

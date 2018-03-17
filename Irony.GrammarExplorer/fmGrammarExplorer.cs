@@ -20,6 +20,7 @@ using System.Windows.Forms;
 using Irony.Ast;
 using Irony.GrammarExplorer.Properties;
 using Irony.Parsing;
+using Irony.WinForms;
 using Irony.WinForms.Exceptions;
 
 namespace Irony.GrammarExplorer {
@@ -228,7 +229,7 @@ namespace Irony.GrammarExplorer {
       //first scroll to the bottom, so that scrolling to needed position brings it to top
       txtParserStates.SelectionStart = txtParserStates.Text.Length - 1;
       txtParserStates.ScrollToCaret();
-      DoSearch(txtParserStates, "State " + state.Name, 0);
+      DoSearch(txtParserStates.AsITextBox(), "State " + state.Name, 0);
     }
 
     private void ShowRuntimeError(ScriptException error){
@@ -427,7 +428,7 @@ namespace Irony.GrammarExplorer {
     //The following methods are contributed by Andrew Bradnan; pasted here with minor changes
     private void DoSearch() {
       lblSearchError.Visible = false;
-      TextBoxBase textBox = GetSearchContentBox();
+      var textBox = GetSearchContentBox();
       if (textBox == null) return;
       int idxStart = textBox.SelectionStart + textBox.SelectionLength;
       if (!DoSearch(textBox, txtSearch.Text, idxStart)) {
@@ -436,7 +437,7 @@ namespace Irony.GrammarExplorer {
       }
     }//method
 
-    private bool DoSearch(TextBoxBase textBox, string fragment, int start) {
+    private bool DoSearch(ITextBox textBox, string fragment, int start) {
       textBox.SelectionLength = 0;
       // Compile the regular expression.
       Regex r = new Regex(fragment, RegexOptions.IgnoreCase);
@@ -456,14 +457,14 @@ namespace Irony.GrammarExplorer {
       return false;
     }//method
 
-    public TextBoxBase GetSearchContentBox() {
+    public ITextBox GetSearchContentBox() {
       switch (tabGrammar.SelectedIndex) {
         case 0:
-          return txtTerms;
+          return txtTerms.AsITextBox();
         case 1:
-          return txtNonTerms;
+          return txtNonTerms.AsITextBox();
         case 2:
-          return txtParserStates;
+          return txtParserStates.AsITextBox();
         case 3:
           return txtSource;
         default:

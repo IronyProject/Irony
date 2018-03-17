@@ -39,15 +39,16 @@ namespace Irony.Interpreter {
     private ParseTree _prevSample;
 
     public virtual string RunSample(RunSampleArgs args) {
-      if (_app == null || args.ParsedSample != _prevSample)
-        _app = new ScriptApp(args.Language) {
-          Console = args.Console
-        };
+      if (_app == null || args.ParsedSample != _prevSample) {
+        _app = new ScriptApp(args.Language);
+        if (args.Console != null)
+          _app.Console = args.Console;
+      }
       _prevSample = args.ParsedSample;
 
       //for (int i = 0; i < 1000; i++)  //for perf measurements, to execute 1000 times
         _app.Evaluate(args.ParsedSample);
-      return _app.OutputBuffer.ToString();
+      return _app.GetOutput();
     }
 
     public virtual LanguageRuntime CreateRuntime(LanguageData language) {

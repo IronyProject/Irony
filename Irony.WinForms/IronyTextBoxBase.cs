@@ -162,7 +162,7 @@ namespace Irony.WinForms {
     }
 
     /// <summary>
-    /// Gets or sets the TextBox proxy object.
+    /// Gets the TextBox proxy object.
     /// </summary>
     private TextBox TextBoxProxy {
       get {

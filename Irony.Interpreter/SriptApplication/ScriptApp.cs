@@ -43,9 +43,7 @@ namespace Irony.Interpreter {
     public IDictionary<string, object> Globals {get; private set;}
     private IList<Assembly> ImportedAssemblies = new List<Assembly>();
 
-    public IConsoleAdaptor Console;
-    public StringBuilder OutputBuffer = new StringBuilder();
-    private object _lockObject = new object();
+    public IConsoleAdapter Console = new BufferedConsoleAdapter();
 
     // Current mode/status variables
     public AppStatus Status;
@@ -199,29 +197,21 @@ namespace Irony.Interpreter {
     #endregion
 
     public void Write(string text) {
-      lock(_lockObject){
-        OnConsoleWrite(text);
-        OutputBuffer.Append(text);
-      }
+      OnConsoleWrite(text);
+      Console?.Write(text);
     }
 
     public void WriteLine(string text) {
-      lock(_lockObject){
-        OnConsoleWrite(text + Environment.NewLine);
-        OutputBuffer.AppendLine(text);
-      }
+      OnConsoleWrite(text + Environment.NewLine);
+      Console?.WriteLine(text);
     }
 
     public void ClearOutputBuffer() {
-      lock(_lockObject){
-        OutputBuffer.Clear();
-      }
+      Console?.Clear();
     }
 
     public string GetOutput() {
-      lock(_lockObject){
-        return OutputBuffer.ToString();
-      }
+      return Console?.GetOutput();
     }
 
     #endregion

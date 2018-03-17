@@ -15,11 +15,11 @@ namespace Irony.WinForms {
 
   /// <summary>
   /// TextBox with for console emulation.
-  /// Implements <see cref="IConsoleAdaptor"/> interface.
+  /// Implements <see cref="IConsoleAdapter"/> interface.
   /// </summary>
-  /// <remarks><see cref="IConsoleAdaptor"/> implementation is thread-safe.</remarks>
+  /// <remarks><see cref="IConsoleAdapter"/> implementation is thread-safe.</remarks>
   [ToolboxItem(true)]
-  public partial class ConsoleTextBox : IronyTextBoxBase, IConsoleAdaptor {
+  public partial class ConsoleTextBox : IronyTextBoxBase, IConsoleAdapter {
     private bool _canceled;
     private Style _normalStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
     private Style _errorStyle = new TextStyle(Brushes.Red, null, FontStyle.Bold);
@@ -108,13 +108,23 @@ namespace Irony.WinForms {
     }
 
     public string ReadLine() {
-      if (!InvokeRequired)
+      if (!InvokeRequired) {
+        Focus();
         return Console.ReadLine();
+      }
       return Invoke(new Func<string>(Console.ReadLine)) as string;
     }
 
     public void SetTitle(string title) {
       throw new NotSupportedException();
+    }
+
+    public void Clear() {
+      Console.Text = string.Empty;
+    }
+
+    public string GetOutput() {
+      return Console.Text;
     }
   }
 }

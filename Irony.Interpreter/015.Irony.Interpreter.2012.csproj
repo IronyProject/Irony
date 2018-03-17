@@ -90,7 +90,8 @@
     <Compile Include="Bindings\BuiltInObjectBinding.cs" />
     <Compile Include="Bindings\SpecialFormBinding.cs" />
     <Compile Include="Bindings\ModuleExport.cs" />
-    <Compile Include="SriptApplication\ConsoleAdaptor.cs" />
+    <Compile Include="SriptApplication\BufferedConsoleAdapter.cs" />
+    <Compile Include="SriptApplication\SystemConsoleAdapter.cs" />
     <Compile Include="Ast\AstContext\OperatorHandler.cs" />
     <Compile Include="Utilities\Util.cs" />
     <Compile Include="_Evaluator\ExpressionEvaluator.cs" />

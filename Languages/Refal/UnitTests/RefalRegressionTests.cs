@@ -1,19 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using Irony;
+using Irony.Interpreter;
 using Irony.Parsing;
 
 namespace Refal.UnitTests
 {
-	#region Unit testing platform abstraction layer
+  #region Unit testing platform abstraction layer
 #if NUNIT
 	using NUnit.Framework;
 	using TestClass = NUnit.Framework.TestFixtureAttribute;
 	using TestMethod = NUnit.Framework.TestAttribute;
 	using TestContext = System.Object;
 #else
-	using Microsoft.VisualStudio.TestTools.UnitTesting;
+  using Microsoft.VisualStudio.TestTools.UnitTesting;
 #endif
 	#endregion
 
@@ -78,10 +80,24 @@ namespace Refal.UnitTests
 			RunSampleAndCompareResults("palyndrome.ref", "palyndrome.txt");
 		}
 
+    internal class ArithInputAdapter : BufferedConsoleAdapter {
+      private Queue<string> SampleInputs = new Queue<string>(new[] {
+        "10+20*30-40", "Joe^2 * 5 / Markus^(Carol + 318)"
+      });
+
+      public override string ReadLine() {
+        var input = SampleInputs.Count > 0 ? SampleInputs.Dequeue() : null;
+        if (input != null) {
+          WriteLine(input);
+        }
+        return input;
+      }
+    }
+
 		[TestMethod]
 		public void RefalTest_ArithmeticTranslator()
 		{
-			RunSampleAndCompareResults("arith.ref", "arith.txt");
+      RunSampleAndCompareResults("arith.ref", "arith.txt", new ArithInputAdapter());
 		}
 
 		[TestMethod]
@@ -141,7 +157,7 @@ namespace Refal.UnitTests
 		/// <summary>
 		/// Load sample program from resources, run it and check its output
 		/// </summary>
-		void RunSampleAndCompareResults(string programResourceName, string outputResourceName)
+		void RunSampleAndCompareResults(string programResourceName, string outputResourceName, IConsoleAdapter console = null)
 		{
 			var grammar = new RefalGrammar();
 			var parser = new Parser(grammar);
@@ -150,7 +166,7 @@ namespace Refal.UnitTests
 			Assert.IsNotNull(parseTree);
 			Assert.IsFalse(parseTree.HasErrors());
 
-			string result = grammar.RunSample(new RunSampleArgs(parser.Language, null, parseTree));
+			string result = grammar.RunSample(new RunSampleArgs(parser.Language, null, parseTree, console));
 			Assert.IsNotNull(result);
 			Assert.AreEqual(LoadResourceText(outputResourceName), result);
 		}

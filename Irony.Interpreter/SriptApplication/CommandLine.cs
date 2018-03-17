@@ -3,8 +3,8 @@
  * Copyright (c) Roman Ivantsov
  * This source code is subject to terms and conditions of the MIT License
  * for Irony. A copy of the license can be found in the License.txt file
- * at the root of this distribution. 
- * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+ * at the root of this distribution.
+ * By using this source code in any fashion, you are agreeing to be bound by the terms of the
  * MIT License.
  * You must not remove this notice from this software.
  * **********************************************************************************/
@@ -20,12 +20,12 @@ using Irony.Parsing;
 
 namespace Irony.Interpreter {
 
-  //WARNING: Ctrl-C for aborting running script does NOT work when you run console app from Visual Studio 2010. 
-  // Run executable directly from bin folder. 
+  //WARNING: Ctrl-C for aborting running script does NOT work when you run console app from Visual Studio 2010.
+  // Run executable directly from bin folder.
   public class CommandLine {
     #region Fields and properties
     public readonly LanguageRuntime Runtime;
-    public readonly IConsoleAdaptor _console;
+    public readonly IConsoleAdapter _console;
     //Initialized from grammar
     public string Title;
     public string Greeting;
@@ -36,11 +36,11 @@ namespace Irony.Interpreter {
     Thread _workerThread;
     public bool IsEvaluating { get; private set; }
 
-    #endregion 
+    #endregion
 
-    public CommandLine(LanguageRuntime runtime, IConsoleAdaptor console = null) {
+    public CommandLine(LanguageRuntime runtime, IConsoleAdapter console = null) {
       Runtime = runtime;
-      _console = console ?? new ConsoleAdapter();
+      _console = console ?? new SystemConsoleAdapter();
       var grammar = runtime.Language.Grammar;
       Title = grammar.ConsoleTitle;
       Greeting = grammar.ConsoleGreeting;
@@ -50,7 +50,6 @@ namespace Irony.Interpreter {
       App.ParserMode = ParseMode.CommandLine;
       // App.PrintParseErrors = false;
       App.RethrowExceptions = false;
-    
     }
 
     public void Run() {
@@ -80,18 +79,18 @@ namespace Irony.Interpreter {
         //Write prompt, read input, check for Ctrl-C
         _console.Write(prompt);
         input = _console.ReadLine();
-        if (_console.Canceled) 
+        if (_console.Canceled)
           if (Confirm(Resources.MsgExitConsoleYN))
             return;
           else
             continue; //from the start of the loop
 
         //Execute
-        App.ClearOutputBuffer(); 
+        App.ClearOutputBuffer();
         EvaluateAsync(input);
         //Evaluate(input);
-        WaitForScriptComplete(); 
-       
+        WaitForScriptComplete();
+
         switch (App.Status) {
           case AppStatus.Ready: //success
             _console.WriteLine(App.GetOutput());
@@ -106,7 +105,7 @@ namespace Irony.Interpreter {
             break;
           case AppStatus.Crash:
           case AppStatus.RuntimeError:
-            ReportException(); 
+            ReportException();
             break;
           default: break;
         }//switch
@@ -115,12 +114,12 @@ namespace Irony.Interpreter {
     }//Run method
 
     private void WaitForScriptComplete() {
-      _console.Canceled = false; 
+      _console.Canceled = false;
       while(true) {
         Thread.Sleep(50);
         if(!IsEvaluating) return;
         if(_console.Canceled) {
-          _console.Canceled = false; 
+          _console.Canceled = false;
           if (Confirm(Resources.MsgAbortScriptYN))
             WorkerThreadAbort();
         }//if Canceled
@@ -132,12 +131,12 @@ namespace Irony.Interpreter {
         IsEvaluating = true;
         App.Evaluate(script);
       } finally {
-        IsEvaluating = false; 
+        IsEvaluating = false;
       }
     }
 
     private void EvaluateAsync(string script) {
-      IsEvaluating = true; 
+      IsEvaluating = true;
       _workerThread = new Thread(WorkerThreadStart);
       _workerThread.Start(script);
     }
@@ -147,7 +146,7 @@ namespace Irony.Interpreter {
         var script = data as string;
         App.Evaluate(script);
       } finally {
-        IsEvaluating = false; 
+        IsEvaluating = false;
       }
     }
     private void WorkerThreadAbort() {
@@ -174,7 +173,7 @@ namespace Irony.Interpreter {
         _console.WriteLine(scriptEx.Message + " " + Resources.LabelLocation + " " + scriptEx.Location.ToUiString());
       else {
         if (App.Status == AppStatus.Crash)
-          _console.WriteLine(ex.ToString());   //Unexpected interpreter crash:  the full stack when debugging your language  
+          _console.WriteLine(ex.ToString());   //Unexpected interpreter crash:  the full stack when debugging your language
         else
         _console.WriteLine(ex.Message);
 

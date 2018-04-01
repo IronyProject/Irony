@@ -1,0 +1,8 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+before_build:
+- cmd: nuget restore Irony_All.sln
+build:
+  project: Irony_All.sln
+  parallel: true
+  verbosity: minimal

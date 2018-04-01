@@ -1,10 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net45;netcoreapp2.0</TargetFrameworks>
     <RootNamespace>Irony.Samples.Console</RootNamespace>
     <AssemblyName>Irony.Samples.Console</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>

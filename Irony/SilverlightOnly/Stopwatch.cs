@@ -1,5 +1,6 @@
-﻿
-namespace System {
+﻿using System;
+
+namespace Irony.Parsing {
 #if SILVERLIGHT
   //Less precise version for Silverlight
   internal class Stopwatch {

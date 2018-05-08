@@ -6,3 +6,14 @@ build:
   project: Irony_All.sln
   parallel: true
   verbosity: minimal
+
+artifacts:
+- path: Irony/bin/Debug/netstandard2.0/Irony.dll
+- path: Irony/bin/Debug/net40/Irony.dll
+- path: Irony/bin/Debug/net46/Irony.dll
+- path: Irony/bin/Debug/sl5/Irony.dll
+
+- path: Irony/bin/Debug/netstandard2.0/Irony.pdb
+- path: Irony/bin/Debug/net40/Irony.pdb
+- path: Irony/bin/Debug/net46/Irony.pdb
+- path: Irony/bin/Debug/sl5/Irony.pdb

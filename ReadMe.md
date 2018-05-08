@@ -3,6 +3,7 @@ https://github.com/IronyProject/Irony
 
 [![appveyor](https://ci.appveyor.com/api/projects/status/github/ironyproject/irony?svg=true)](https://ci.appveyor.com/project/yallie/irony)
 [![tests](https://img.shields.io/appveyor/tests/yallie/irony.svg)](https://ci.appveyor.com/project/yallie/irony/build/tests)
+[![nuget](https://img.shields.io/nuget/v/Irony.svg)](https://www.nuget.org/packages/Irony)
 
 ### Prerequisites
   
@@ -13,7 +14,7 @@ https://github.com/IronyProject/Irony
 
 To run Grammar Explorer
 
-* Open Irony_All.sln solution file in Visual Studio.
+* Open Irony.sln solution file in Visual Studio.
 * Right-click on the project "030.Irony.GrammarExplorer" and select "Set as StartUp project" from context menu.
 * Click Run button on toolbar (F5). Grammar Explorer Window opens.
 * !!!Important: if you are launching the Grammar Explorer for the first time after downloading Irony and

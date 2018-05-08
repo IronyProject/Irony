@@ -16,12 +16,12 @@ after_build:
   - nuget pack Irony\Irony.nuspec -version "%APPVEYOR_BUILD_VERSION%" -OutputDirectory Irony\bin\Release
 
 artifacts:
-- path: Irony/bin/Release/netstandard2.0/Irony.dll
+- path: Irony/bin/Release/netstandard1.6/Irony.dll
 - path: Irony/bin/Release/net40/Irony.dll
 - path: Irony/bin/Release/net45/Irony.dll
 - path: Irony/bin/Release/sl5/Irony.dll
 
-- path: Irony/bin/Release/netstandard2.0/Irony.pdb
+- path: Irony/bin/Release/netstandard1.6/Irony.pdb
 - path: Irony/bin/Release/net40/Irony.pdb
 - path: Irony/bin/Release/net45/Irony.pdb
 - path: Irony/bin/Release/sl5/Irony.pdb

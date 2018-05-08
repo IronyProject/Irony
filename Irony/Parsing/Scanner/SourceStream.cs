@@ -29,7 +29,7 @@ namespace Irony.Parsing {
       _text = text;
       _textLength = _text.Length; 
       _chars = Text.ToCharArray(); 
-      _stringComparison = caseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase;
+      _stringComparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
       _tabWidth = tabWidth; 
       _location = initialLocation;
       _previewPosition = _location.Position;

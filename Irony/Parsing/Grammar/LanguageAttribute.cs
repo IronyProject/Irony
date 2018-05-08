@@ -13,7 +13,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+
+#if NET40
+using Irony.Utilities;
+#endif
 
 namespace Irony.Parsing {
 
@@ -41,10 +46,9 @@ namespace Irony.Parsing {
     } string _description; 
 
     public static LanguageAttribute GetValue(Type grammarClass) {
-      object[] attrs = grammarClass.GetCustomAttributes(typeof(LanguageAttribute), true);
-      if (attrs != null && attrs.Length > 0) {
-        LanguageAttribute la = attrs[0] as LanguageAttribute;
-        return la; 
+      var attrs = grammarClass.GetTypeInfo().GetCustomAttributes(typeof(LanguageAttribute), true).OfType<LanguageAttribute>();
+      if (attrs != null && attrs.Any()) {
+        return attrs.First();
       }
       return null; 
     }

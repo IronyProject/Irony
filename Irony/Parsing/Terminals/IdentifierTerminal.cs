@@ -192,7 +192,7 @@ namespace Irony.Parsing {
         if (!CharOk(current, source.PreviewPosition == start)) 
           break; 
         //Check if we need to skip this char
-        UnicodeCategory currCat = char.GetUnicodeCategory(current); //I know, it suxx, we do it twice, fix it later
+        UnicodeCategory currCat = CharUnicodeInfo.GetUnicodeCategory(current); //I know, it suxx, we do it twice, fix it later
         if (!this.CharsToRemoveCategories.Contains(currCat))
           outputChars.Add(current); //add it to output (identifier)
         source.PreviewPosition++;
@@ -212,7 +212,7 @@ namespace Irony.Parsing {
       if(charSet.Contains(ch)) return true;
       //check categories
       if (CharCategories.Count > 0) {
-        UnicodeCategory chCat = char.GetUnicodeCategory(ch);
+        UnicodeCategory chCat = CharUnicodeInfo.GetUnicodeCategory(ch);
         UnicodeCategoryList catList = first ? StartCharCategories : CharCategories;
         if (catList.Contains(chCat)) return true;
       }

@@ -84,7 +84,7 @@ namespace Irony.Parsing {
     private Token TryMatchContentSimple(ParsingContext context, ISourceStream source) {
       var startPos = source.PreviewPosition;
       var termLen = _singleTerminator.Length;
-      var stringComp = Grammar.CaseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase;
+      var stringComp = Grammar.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
       int termPos = source.Text.IndexOf(_singleTerminator, startPos, stringComp);
       if (termPos < 0 && IsSet(FreeTextOptions.AllowEof))
         termPos = source.Text.Length;

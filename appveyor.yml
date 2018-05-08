@@ -1,19 +1,27 @@
 version: 1.0.{build}
+
 image: Visual Studio 2017
+
 before_build:
 - cmd: nuget restore Irony_All.sln
+
 build:
   project: Irony_All.sln
   parallel: true
   verbosity: minimal
 
+after_build:
+  - nuget pack Irony\Irony.nuspec -version "%APPVEYOR_BUILD_VERSION%" -OutputDirectory Irony\bin\Debug
+
 artifacts:
 - path: Irony/bin/Debug/netstandard2.0/Irony.dll
 - path: Irony/bin/Debug/net40/Irony.dll
-- path: Irony/bin/Debug/net46/Irony.dll
+- path: Irony/bin/Debug/net45/Irony.dll
 - path: Irony/bin/Debug/sl5/Irony.dll
 
 - path: Irony/bin/Debug/netstandard2.0/Irony.pdb
 - path: Irony/bin/Debug/net40/Irony.pdb
-- path: Irony/bin/Debug/net46/Irony.pdb
+- path: Irony/bin/Debug/net45/Irony.pdb
 - path: Irony/bin/Debug/sl5/Irony.pdb
+
+- path: '**/bin/Debug/**/*.nupkg'

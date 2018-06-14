@@ -80,6 +80,9 @@ namespace Irony.Tests {
       Assert.IsTrue((string)token.Value == "00\a\b\t\n\v\f\r\"\\00", "Failed to process escaped characters.");
       token = parser.ParseInput(ReplaceQuotes("'abcd\nefg'  "));
       Assert.IsTrue(token.IsError(), "Failed to detect erroneous multi-line string.");
+      //With invalid escape
+      token = parser.ParseInput(ReplaceQuotes("\"\\d\""));
+      Assert.IsTrue(token.IsError(), "Failed to detect invalid escape sequence.");
       //with disabled escapes
       token = parser.ParseInput(ReplaceQuotes(@"@'00\a\b\t\n\v\f\r00'  "));
       Assert.IsTrue((string)token.Value == @"00\a\b\t\n\v\f\r00", "Failed to process @-string with disabled escapes.");
@@ -90,6 +93,8 @@ namespace Irony.Tests {
       Assert.IsTrue((string)token.Value == "abc@def", "Failed to process unicode escape \\u.");
       token = parser.ParseInput(ReplaceQuotes(@"'abc\U00000040def'  "));
       Assert.IsTrue((string)token.Value == "abc@def", "Failed to process unicode escape \\u.");
+      token = parser.ParseInput(ReplaceQuotes("\"\\u1\""));
+      Assert.IsTrue((string)token.Text == "\"\\u1\"", "Failed to process unicode escape \"\\u1\".");
       token = parser.ParseInput(ReplaceQuotes(@"'abc\x0040xyz'  "));
       Assert.IsTrue((string)token.Value == "abc@xyz", "Failed to process hex escape (4 digits).");
       token = parser.ParseInput(ReplaceQuotes(@"'abc\x040xyz'  "));

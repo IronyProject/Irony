@@ -313,6 +313,10 @@ namespace Irony.Parsing {
             arr[i] = newFirst + s.Substring(1);
           else {
             arr[i] = HandleSpecialEscape(arr[i], details);
+            // Checks for errors that were noted during handling of escape characters.
+            // This ensures that the parser correctly reports an error when encountering invalid escape sequences.
+            // See Codeplex issue #9897 (https://archive.codeplex.com/?p=irony)
+            if (!string.IsNullOrEmpty(details.Error)) return false;
           }//else
         }//for i
         value = string.Join(string.Empty, arr);
@@ -347,7 +351,10 @@ namespace Irony.Parsing {
           if (details.IsSet((short)StringOptions.AllowsUEscapes)) {
             len = (first == 'u' ? 4 : 8);
             if (segment.Length < len + 1) {
-              details.Error = string.Format(Resources.ErrBadUnEscape, segment.Substring(len + 1), len);// "Invalid unicode escape ({0}), expected {1} hex digits."
+              // Fixed Substring call which always failed. Instead, show details.Text. Original line commented out below.
+              // See Codeplex issue #9893 (https://archive.codeplex.com/?p=irony)
+              details.Error = string.Format(Resources.ErrBadUnEscape, details.Text, len);// "Invalid unicode escape ({0}), expected {1} hex digits."
+              //details.Error = string.Format(Resources.ErrBadUnEscape, segment.Substring(len + 1), len);// "Invalid unicode escape ({0}), expected {1} hex digits."
               return segment;
             }
             digits = segment.Substring(1, len);

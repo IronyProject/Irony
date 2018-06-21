@@ -1,0 +1,24 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Irony.Interpreter</id>
+    <title>Irony.Interpreter</title>
+    <version>$version$</version>
+    <authors>Roman Ivantsov</authors>
+    <owners>Roman Ivantsov</owners>
+    <description>Irony is a development kit for implementing languages on .NET platform.</description>
+    <licenseUrl>https://github.com/IronyProject/Irony/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/IronyProject/Irony</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <tags> irony ast grammar bnf interpreter </tags>
+    <dependencies>
+      <dependency id="Irony" version="1.0.0-beta1" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\Release\net40\Irony.Interpreter.dll" target="lib\net40\Irony.Interpreter.dll" />
+    <file src="bin\Release\net45\Irony.Interpreter.dll" target="lib\net45\Irony.Interpreter.dll" />
+    <file src="bin\Release\netstandard2.0\Irony.Interpreter.dll" target="lib\netstandard2.0\Irony.Interpreter.dll" />
+    <file src="bin\Release\sl5\Irony.Interpreter.dll" target="lib\sl5\Irony.Interpreter.dll" />
+  </files>
+</package>

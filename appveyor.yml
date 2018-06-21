@@ -14,6 +14,7 @@ build:
 
 after_build:
   - nuget pack Irony\Irony.nuspec -version "%APPVEYOR_BUILD_VERSION%" -OutputDirectory Irony\bin\Release
+  - nuget pack Irony.Interpreter\Irony.Interpreter.nuspec -version "%APPVEYOR_BUILD_VERSION%" -OutputDirectory Irony.Interpreter\bin\Release
 
 artifacts:
 - path: Irony/bin/Release/netstandard2.0/Irony.dll

@@ -6,8 +6,8 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{05F0AC0D-AD43-45B4-8A98-00C54CF5280D}"
 	ProjectSection(SolutionItems) = preProject
 		appveyor.yml = appveyor.yml
-		License.txt = License.txt
-		ReadMe.txt = ReadMe.txt
+		LICENSE = LICENSE
+		ReadMe.md = ReadMe.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "010.Irony", "Irony\010.Irony.csproj", "{D81F5C91-D7DB-46E5-BC99-49488FB6814C}"
@@ -16,7 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "015.Irony.Interpreter", "Ir
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "020.Irony.Samples", "Irony.Samples\020.Irony.Samples.csproj", "{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "025.Irony.Samples.Console", "Irony.Samples.Console\025.Irony.Samples.Console.csproj", "{5A31B964-CDFA-4406-9316-32A0F04CE149}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "025.Irony.Samples.Console", "Irony.Samples.Console\025.Irony.Samples.Console.csproj", "{5A31B964-CDFA-4406-9316-32A0F04CE149}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "030.Irony.GrammarExplorer", "Irony.GrammarExplorer\030.Irony.GrammarExplorer.csproj", "{AE1C04A8-B03D-4144-98E9-BF66C50265E7}"
 EndProject
@@ -31,10 +31,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Refal", "Refal", "{FEE137AB-6C8B-4576-81BE-119DA16DCF78}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Refal", "Languages\Refal\Refal.csproj", "{19A86418-BA99-41F4-80A5-A7F3A6383123}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.UnitTests.VsTest", "Languages\Refal\UnitTests\Refal.UnitTests.VsTest.csproj", "{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.UnitTests.NUnit", "Languages\Refal\UnitTests\Refal.UnitTests.NUnit.csproj", "{A34F4AE5-A6E5-43F9-9F16-A43F34599053}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{44A73DB9-DD6C-4BFD-A169-F17A8C82A4A3}"
 	ProjectSection(SolutionItems) = preProject
@@ -58,6 +54,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{44A7
 		Languages\Refal\UnitTests\Sources\xtras-bigint.ref = Languages\Refal\UnitTests\Sources\xtras-bigint.ref
 		Languages\Refal\UnitTests\Sources\xtras-factorial.ref = Languages\Refal\UnitTests\Sources\xtras-factorial.ref
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.UnitTests.VsTest", "Languages\Refal.UnitTests\Refal.UnitTests.VsTest.csproj", "{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -187,12 +185,6 @@ Global
 		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.Silverlight Release|Any CPU.Build.0 = Release|Any CPU
 		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.SpecSharp|Any CPU.ActiveCfg = Release|Any CPU
 		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}.SpecSharp|Any CPU.Build.0 = Release|Any CPU
-		{A34F4AE5-A6E5-43F9-9F16-A43F34599053}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A34F4AE5-A6E5-43F9-9F16-A43F34599053}.FxCop|Any CPU.ActiveCfg = Release|Any CPU
-		{A34F4AE5-A6E5-43F9-9F16-A43F34599053}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A34F4AE5-A6E5-43F9-9F16-A43F34599053}.Silverlight Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A34F4AE5-A6E5-43F9-9F16-A43F34599053}.Silverlight Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A34F4AE5-A6E5-43F9-9F16-A43F34599053}.SpecSharp|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -200,9 +192,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{FEE137AB-6C8B-4576-81BE-119DA16DCF78} = {0850FA53-413E-4AF9-B918-8FF524FFA5D7}
 		{19A86418-BA99-41F4-80A5-A7F3A6383123} = {FEE137AB-6C8B-4576-81BE-119DA16DCF78}
-		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E} = {FEE137AB-6C8B-4576-81BE-119DA16DCF78}
-		{A34F4AE5-A6E5-43F9-9F16-A43F34599053} = {FEE137AB-6C8B-4576-81BE-119DA16DCF78}
 		{44A73DB9-DD6C-4BFD-A169-F17A8C82A4A3} = {FEE137AB-6C8B-4576-81BE-119DA16DCF78}
+		{94409071-FF65-4C3C-97EB-BD4FDEF90B4E} = {FEE137AB-6C8B-4576-81BE-119DA16DCF78}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {96DE7B56-0972-4132-ABC9-E21835C82177}

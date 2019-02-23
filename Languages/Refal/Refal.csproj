@@ -1,22 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>sl5;net40;net45;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <RootNamespace>Refal</RootNamespace>
     <AssemblyName>Refal</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="UnitTests\**" />
-    <EmbeddedResource Remove="UnitTests\**" />
-    <None Remove="UnitTests\**" />
-  </ItemGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'sl5' ">
-    <DefineConstants>$(DefineConstants);SILVERLIGHT</DefineConstants>
-    <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>

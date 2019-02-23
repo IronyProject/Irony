@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Irony.Tests</RootNamespace>
     <AssemblyName>Irony.Tests.VSTest</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <SccProjectName>
@@ -80,7 +80,6 @@
     <Compile Include="DataLiteralsTests.cs" />
     <Compile Include="EvaluatorTests.cs" />
     <Compile Include="TokenPreviewResolution\ConflictGrammars.cs" />
-    <None Include="_newArchTests.cs" />
     <None Include="HeredocTerminalTests.cs" />
     <Compile Include="LineContinuationTests.cs" />
     <Compile Include="RegexLiteralTests.cs" />
@@ -94,15 +93,15 @@
   <ItemGroup>
     <ProjectReference Include="..\Irony.Interpreter\015.Irony.Interpreter.csproj">
       <Project>{321A7F5D-00C2-4095-9970-075CDEE8C139}</Project>
-      <Name>015.Irony.Interpreter.2012</Name>
+      <Name>015.Irony.Interpreter</Name>
     </ProjectReference>
     <ProjectReference Include="..\Irony.Samples\020.Irony.Samples.csproj">
       <Project>{AD263C0B-99D3-40A9-9DBF-9086CC524A0B}</Project>
-      <Name>020.Irony.Samples.2012</Name>
+      <Name>020.Irony.Samples</Name>
     </ProjectReference>
     <ProjectReference Include="..\Irony\010.Irony.csproj">
       <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
-      <Name>010.Irony.2012</Name>
+      <Name>010.Irony</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

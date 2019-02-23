@@ -16,7 +16,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using Irony.Parsing;
-using System.Reflection.Emit;
+using System.Collections.Concurrent;
 
 namespace Irony.Ast {
 
@@ -58,7 +58,7 @@ namespace Irony.Ast {
         if (config.NodeType == null)
           missingList.Add(term);
         else 
-          config.DefaultNodeCreator = CompileDefaultNodeCreator(config.NodeType);        
+          config.DefaultNodeCreator = CompileDefaultNodeCreator(config.NodeType);   
       }
       if (missingList.Count > 0)
         // AST node type is not specified for term {0}. Either assign Term.AstConfig.NodeType, or specify default type(s) in AstBuilder.  
@@ -104,31 +104,20 @@ namespace Irony.Ast {
       term.OnAstNodeCreated(parseNode);
     }//method
 
-    //Contributed by William Horner (wmh)
-    private DefaultAstNodeCreator CompileDefaultNodeCreator(Type nodeType) {
-      ConstructorInfo constr = nodeType.GetConstructor(Type.EmptyTypes);
-      DynamicMethod method = new DynamicMethod("CreateAstNode", nodeType, Type.EmptyTypes);
-      ILGenerator il = method.GetILGenerator();
-      il.Emit(OpCodes.Newobj, constr);
-      il.Emit(OpCodes.Ret);
-      var result  = (DefaultAstNodeCreator) method.CreateDelegate(typeof(DefaultAstNodeCreator));
-      return result; 
-    }
-
-/*
-    //A list of of child nodes based on AstPartsMap. By default, the same as ChildNodes
-    private ParseTreeNodeList _mappedChildNodes;
-    public ParseTreeNodeList MappedChildNodes {
-      get {
-        if (_mappedChildNodes == null)
-          _mappedChildNodes = GetMappedChildNodes();
-        return _mappedChildNodes;
+    private Func<object> CompileDefaultNodeCreator(Type nodeType) {
+      if(_cachedNodeCreators.TryGetValue(nodeType, out var creator))
+        return creator;
+      var constr = nodeType.GetConstructor(Type.EmptyTypes);
+      if (constr == null) {
+        this.Context.AddMessage(ErrorLevel.Error, SourceLocation.Empty, "AST node type {0} does not have default constructor.", nodeType);
+        return null; 
       }
+      creator = () => constr.Invoke(null);
+      _cachedNodeCreators[nodeType] = creator; 
+      return creator; 
     }
-*/
 
-
-
+    static ConcurrentDictionary<Type, Func<object>> _cachedNodeCreators = new ConcurrentDictionary<Type, Func<object>>();
 
   }//class
 

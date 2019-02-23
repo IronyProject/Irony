@@ -24,7 +24,7 @@ namespace Irony.Samples {
       label.ValidateToken += label_ValidateToken;
       label.Priority = TerminalPriority.High;
       //Clarion uses suffixes for identifying number base (bin, octal, hex) - unlike Irony's NumberLiteral which supports suffixes.
-      // We treat all numbers as hexadecimal with optional prefixes that don't mean anything. We "fix" the value in ValidateToken handler
+      // We treat all numbers as hexadecimal with optional sufffixes that don't mean anything. We "fix" the value in ValidateToken handler
       var number = new NumberLiteral("number");
       number.Options = NumberOptions.Hex | NumberOptions.DisableQuickParse;
       number.AddSuffix("b", TypeCode.Int64);

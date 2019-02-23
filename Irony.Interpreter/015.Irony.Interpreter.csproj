@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>sl5;net40;net45;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net40;netstandard2.0</TargetFrameworks>
     <RootNamespace>Irony.Interpreter</RootNamespace>
     <AssemblyName>Irony.Interpreter</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -12,11 +12,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Irony\010.Irony.csproj" />
   </ItemGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'sl5' ">
-    <DefineConstants>$(DefineConstants);SILVERLIGHT</DefineConstants>
-    <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-  </PropertyGroup>
 
 </Project>

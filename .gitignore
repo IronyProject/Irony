@@ -2,6 +2,7 @@
 *.user
 *.bak
 *.orig
+*.nupkg
 /**/bin
 /**/obj
 /.vs

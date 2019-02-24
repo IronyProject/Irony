@@ -6,4 +6,6 @@ del /q /s ..\TemporaryGeneratedFile_*.cs
 nuget.exe pack PackageSpecs\Irony.nuspec -Symbols -version %pver% -outputdirectory Nupkg
 nuget.exe pack PackageSpecs\Irony.Interpreter.nuspec -Symbols -version %pver% -outputdirectory Nupkg
 
+if "%1"=="/nopause" goto end
 pause
+:end

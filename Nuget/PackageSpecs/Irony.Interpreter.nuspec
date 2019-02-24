@@ -13,10 +13,14 @@
     <copyright>Copyright IronyProject, 2019</copyright>
     <tags>Parser Parsing Compiler Interpreter</tags>
     <dependencies>
+      <dependency id="Irony" version="$version$" />
     </dependencies>
   </metadata>
-  
+
   <files>
-	 <file src="..\..\Irony.Interpreter\bin\Release\netstandard2.0\Irony.Interpreter.dll" target="lib\netstandard2.0" />
+    <file src="..\..\Irony.Interpreter\bin\Release\net40\Irony.Interpreter.dll" target="lib\net40" />
+    <file src="..\..\Irony.Interpreter\bin\Release\net40\Irony.Interpreter.pdb" target="lib\net40" />
+    <file src="..\..\Irony.Interpreter\bin\Release\netstandard2.0\Irony.Interpreter.dll" target="lib\netstandard2.0" />
+    <file src="..\..\Irony.Interpreter\bin\Release\netstandard2.0\Irony.Interpreter.pdb" target="lib\netstandard2.0" />
   </files>
 </package>

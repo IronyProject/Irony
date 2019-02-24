@@ -1,0 +1,24 @@
+version: 1.0.{build}
+
+image: Visual Studio 2017
+
+configuration : Release
+
+before_build:
+- cmd: nuget restore Irony.sln
+
+build:
+  project: Irony.sln
+  parallel: true
+  verbosity: minimal
+
+after_build:
+  - cd Nuget
+  - PackAll.bat /nopause
+
+artifacts:
+- path: Irony/bin/Release/netstandard2.0/Irony.dll
+- path: Irony/bin/Release/net40/Irony.dll
+- path: Irony/bin/Release/netstandard2.0/Irony.pdb
+- path: Irony/bin/Release/net40/Irony.pdb
+- path: Nuget/Nupkg/*.nupkg

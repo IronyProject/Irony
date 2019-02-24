@@ -9,7 +9,7 @@
     <license type="expression">MIT</license>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Irony Parser Kit, core library</description>
-    <releaseNotes>Release candidate!</releaseNotes>
+    <releaseNotes>Official Release</releaseNotes>
     <copyright>Copyright IronyProject, 2019</copyright>
     <tags>Parser Parsing Compiler</tags>
     <dependencies>

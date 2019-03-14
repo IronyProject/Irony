@@ -7,6 +7,12 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>irony.snk</AssemblyOriginatorKeyFile>
+
+    <!--
+      This assembly is marked SecurityTransparent, which requires verifiable IL.
+      Setting peverify-compat ensures that the C# compiler will forgoe optimizations that would produce unverifiable IL.
+    -->
+    <Features>peverify-compat</Features>
   </PropertyGroup>
 
 </Project>

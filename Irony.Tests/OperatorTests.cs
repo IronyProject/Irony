@@ -109,7 +109,7 @@ namespace Irony.Tests {
       TestHelper.CheckParseErrors(parseTree);
       Assert.IsTrue(parseTree.Root != null, "Root not found.");
       Assert.IsTrue(parseTree.Root.Term.Name == "unExpr", "Expected unExpr.");
-      Assert.IsTrue(parseTree.Root.ChildNodes[0].Term.Name == "-", "Expected - operator."); //check that top operator is "+", not "*"
+      Assert.IsTrue(parseTree.Root.ChildNodes[0].Term.Name == "-", "Expected - operator."); //check that top operator is "-", not "*"
 
     }
 
@@ -133,7 +133,7 @@ namespace Irony.Tests {
       TestHelper.CheckParseErrors(parseTree);
       Assert.IsTrue(parseTree.Root != null, "Root not found.");
       Assert.IsTrue(parseTree.Root.Term.Name == "binExpr", "Expected binExpr.");
-      Assert.IsTrue(parseTree.Root.ChildNodes[1].Term.Name == "*", "Expected * operator."); //check that top operator is "+", not "*"
+      Assert.IsTrue(parseTree.Root.ChildNodes[1].Term.Name == "*", "Expected * operator."); //check that top operator is "*", not "-"
 
       var grammar2 = new OperatorGrammarHintsOnNonTerms();
       parser = new Parser(grammar2);
@@ -149,7 +149,7 @@ namespace Irony.Tests {
       TestHelper.CheckParseErrors(parseTree);
       Assert.IsTrue(parseTree.Root != null, "Root not found.");
       Assert.IsTrue(parseTree.Root.Term.Name == "binExpr", "Expected binExpr.");
-      Assert.IsTrue(parseTree.Root.ChildNodes[1].Term.Name == "*", "Expected * operator."); //check that top operator is "+", not "*"
+      Assert.IsTrue(parseTree.Root.ChildNodes[1].Term.Name == "*", "Expected * operator."); //check that top operator is "*", not "-"
     
     }
 

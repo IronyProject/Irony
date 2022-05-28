@@ -273,7 +273,7 @@ namespace Irony.Parsing {
           case TypeCode.SByte:    case TypeCode.Byte:    case TypeCode.Int16:    case TypeCode.UInt16:
           case TypeCode.Int32:    case TypeCode.UInt32:  case TypeCode.Int64:    case TypeCode.UInt64:
             if (details.Value == null) //if it is not done yet
-              TryConvertToLong(details, typeCode == TypeCode.UInt64); //try to convert to Long/Ulong and place the result into details.Value field;
+              return TryConvertToLong(details, typeCode == TypeCode.UInt64); //try to convert to Long/Ulong and place the result into details.Value field;
             if(TryCastToIntegerType(typeCode, details)) //now try to cast the ULong value to the target type 
               return true;
             break;
@@ -316,11 +316,13 @@ namespace Irony.Parsing {
       if (radix == 10 && details.Body.Length > 10) return false;    //10 digits is maximum for int32; int32.MaxValue = 2 147 483 647
       try {
         //workaround for .Net FX bug: http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=278448
-        int iValue = 0;
+        long iValue = 0;
         if (radix == 10)
-          iValue =  Convert.ToInt32(details.Body, CultureInfo.InvariantCulture);
+          iValue = Convert.ToInt64(details.Body, CultureInfo.InvariantCulture);
         else
-          iValue = Convert.ToInt32(details.Body, radix);
+        {          
+          iValue = Convert.ToInt64(details.Body, radix);
+        }
         details.Value = iValue;
         return true;
       } catch {

@@ -27,7 +27,7 @@ namespace Irony.GrammarExplorer {
       program.RunApplication();
     }
 
-#if NET40_OR_GREATER
+#if NET462
     static Program CreateInstanceInSeparateDomain() {
       var setup = new AppDomainSetup {
         ShadowCopyFiles = true.ToString()
@@ -38,11 +38,11 @@ namespace Irony.GrammarExplorer {
     }
 #endif
 
-#if NET6_0_OR_GREATER
+#if NET6_0 && WINDOWS
     static Program CreateInstanceInSeparateDomain() {      
       var domain = AppDomain.CurrentDomain;       
       return (Program)domain.CreateInstanceAndUnwrap(typeof(Program).Assembly.FullName, typeof(Program).FullName);
-    }
+    }    
 #endif
 
     void RunApplication() {

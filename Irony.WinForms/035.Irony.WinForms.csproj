@@ -1,15 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
-		<TargetFrameworks>net48;net6.0-windows</TargetFrameworks>
+		<TargetFrameworks>net462;net6.0-windows</TargetFrameworks>
 		<!--<Nullable>enable</Nullable>-->
 		<UseWindowsForms>true</UseWindowsForms>
 		<!--<ImplicitUsings>enable</ImplicitUsings>-->
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>irony.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="FastColoredTextBox.Net5" Version="2.16.26" Condition="'$(TargetFramework)' == 'net6.0-windows'"  />
-		<PackageReference Include="FCTB" Version="2.16.24" Condition="'$(TargetFramework)' == 'net48'" />
+		<PackageReference Include="FastColoredTextBox.Net5" Version="2.16.26" Condition="'$(TargetFramework)' == 'net6.0-windows'" />
+		<PackageReference Include="FCTB" Version="2.16.24" Condition="'$(TargetFramework)' == 'net462'" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Irony.Interpreter\015.Irony.Interpreter.csproj" />

@@ -445,7 +445,8 @@ namespace Irony.GrammarExplorer {
       this.chkAutoRefresh.Size = new System.Drawing.Size(83, 17);
       this.chkAutoRefresh.TabIndex = 13;
       this.chkAutoRefresh.Text = "Auto-refresh";
-      this.toolTip.SetToolTip(this.chkAutoRefresh, resources.GetString("chkAutoRefresh.ToolTip"));
+      // Produces exeception in net462 - tmp disabled
+      //this.toolTip.SetToolTip(this.chkAutoRefresh, resources.GetString("chkAutoRefresh.ToolTip"));            
       this.chkAutoRefresh.UseVisualStyleBackColor = true;
       //
       // btnManageGrammars

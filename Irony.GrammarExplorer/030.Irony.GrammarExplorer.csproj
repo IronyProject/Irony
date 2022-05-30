@@ -1,16 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFrameworks>net48;net6.0-windows</TargetFrameworks>
+		<TargetFrameworks>net462;net6.0-windows</TargetFrameworks>
 		<!--<Nullable>enable</Nullable>-->
 		<UseWindowsForms>true</UseWindowsForms>
 		<!--<ImplicitUsings>enable</ImplicitUsings>-->
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>irony.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>	
 	<ItemGroup>
 	  <ProjectReference Include="..\Irony.Interpreter\015.Irony.Interpreter.csproj" />
 	  <ProjectReference Include="..\Irony.WinForms\035.Irony.WinForms.csproj" />
 	  <ProjectReference Include="..\Irony\010.Irony.csproj" />
+	</ItemGroup>	
+	<ItemGroup>
+	  <Compile Update="Properties\Settings.Designer.cs">
+	    <DesignTimeSharedInput>True</DesignTimeSharedInput>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>Settings.settings</DependentUpon>
+	  </Compile>
+	</ItemGroup>	
+	<ItemGroup>
+	  <EmbeddedResource Update="Properties\Resources.resx">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </EmbeddedResource>
+	</ItemGroup>	
+	<ItemGroup>
+	  <None Update="Properties\Settings.settings">
+	    <Generator>SettingsSingleFileGenerator</Generator>
+	    <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>

@@ -87,6 +87,7 @@
     <Compile Include="IdentifierTerminalTests.cs" />
     <Compile Include="IntegrationTests.cs" />
     <Compile Include="NumberLiteralTests.cs" />
+    <Compile Include="ParseTreeSimplicityTests.cs" />
     <Compile Include="OperatorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegExLiteralTests.cs" />

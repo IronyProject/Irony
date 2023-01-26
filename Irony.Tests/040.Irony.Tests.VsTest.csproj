@@ -75,6 +75,7 @@
     <Compile Include="CommentTerminalTests.cs" />
     <Compile Include="ErrorRecoveryTests.cs" />
     <Compile Include="OperatorTests.cs" />
+    <Compile Include="ParseTreeSimplicityTests.cs" />
     <Compile Include="TestHelper.cs" />
     <Compile Include="TokenPreviewResolution\ConflictResolutionTests.cs" />
     <Compile Include="DataLiteralsTests.cs" />

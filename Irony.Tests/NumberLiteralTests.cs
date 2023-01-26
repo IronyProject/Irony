@@ -36,8 +36,24 @@ namespace Irony.Tests {
       Assert.IsTrue(token.Value.ToString() == sbig, "Failed to read big integer value");
     }//method
 
+    [TestMethod]
+    public void TestNumber_CommaAsDecimalSeparator()
+    {
+      Parser parser; Token token;
+
+      var number = new NumberLiteral("number") { DecimalSeparator = ',' };
+      number.AddPrefix("0", NumberOptions.Octal);
+      parser = TestHelper.CreateParser(number);
+      token = parser.ParseInput("123,4");
+      Assert.AreEqual(123.4, Convert.ToDouble(token.Value), 0.000001, "Failed to read float value");
+      token = parser.ParseInput("1,2");
+      Assert.AreEqual(1.2, Convert.ToDouble(token.Value), 0.000001, "Failed to read float value");
+      token = parser.ParseInput("0,123");
+      Assert.AreEqual(0.123, Convert.ToDouble(token.Value), 0.000001, "Failed to read float value");
+    }
+
     //The following "sign" test methods and a fix are contributed by ashmind codeplex user
-     [TestMethod]
+    [TestMethod]
     public void TestNumber_SignedDoesNotMatchSingleMinus() {
       Parser parser; Token token;
 

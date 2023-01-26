@@ -205,7 +205,12 @@ namespace Irony.Parsing {
       BnfExpression expr1 = term1 as BnfExpression;
       if (expr1 == null || expr1.Data.Count > 1) //either not expression at all, or Pipe-type expression (count > 1)
         expr1 = new BnfExpression(term1);
-      expr1.Data[expr1.Data.Count - 1].Add(term2);
+      //Check term2 and see if we can use it as result, simply adding term1 as operand
+      BnfExpression expr2 = term2 as BnfExpression;
+      if (expr2 == null || expr2.Data.Count > 1) //either not expression at all, or Pipe-type expression (count > 1)
+        expr2 = new BnfExpression(term2);
+      System.Diagnostics.Debug.Assert(expr1.Data.Count == 1 && expr2.Data.Count == 1);
+      expr1.Data[0].AddRange(expr2.Data[0]);
       return expr1;
     }
 

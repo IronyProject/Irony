@@ -134,7 +134,7 @@ namespace Irony.Parsing {
       char current = source.PreviewChar;
       //it must be a digit followed by a whitespace or delimiter
       if (!char.IsDigit(current))  return null;
-      if (!Grammar.IsWhitespaceOrDelimiter(source.NextPreviewChar))
+      if (!Grammar.IsWhitespaceOrDelimiter(source.NextPreviewChar) || source.NextPreviewChar == DecimalSeparator)
         return null; 
       int iValue = current - '0';
       object value = null;
@@ -159,7 +159,7 @@ namespace Irony.Parsing {
     protected override void ReadPrefix(ISourceStream source, CompoundTokenDetails details) {
       //check that is not a  0 followed by dot; 
       //this may happen in Python for number "0.123" - we can mistakenly take "0" as octal prefix
-      if (source.PreviewChar == '0' && source.NextPreviewChar == '.') return;
+      if (source.PreviewChar == '0' && source.NextPreviewChar == DecimalSeparator) return;
       base.ReadPrefix(source, details);
     }//method
 

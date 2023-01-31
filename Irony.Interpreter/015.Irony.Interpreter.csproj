@@ -1,12 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net40;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <RootNamespace>Irony.Interpreter</RootNamespace>
     <AssemblyName>Irony.Interpreter</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>irony.snk</AssemblyOriginatorKeyFile>
+	<AssemblyVersion>1.2.0</AssemblyVersion>
+	<Version>1.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

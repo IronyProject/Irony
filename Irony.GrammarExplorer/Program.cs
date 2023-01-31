@@ -28,7 +28,8 @@ namespace Irony.GrammarExplorer {
     }
 
     static Program CreateInstanceInSeparateDomain() {
-      var setup = new AppDomainSetup {
+      var setup = new AppDomainSetup()
+      {
         ShadowCopyFiles = true.ToString()
       };
 

@@ -273,7 +273,8 @@ namespace Irony.Parsing {
           case TypeCode.SByte:    case TypeCode.Byte:    case TypeCode.Int16:    case TypeCode.UInt16:
           case TypeCode.Int32:    case TypeCode.UInt32:  case TypeCode.Int64:    case TypeCode.UInt64:
             if (details.Value == null) //if it is not done yet
-              TryConvertToLong(details, typeCode == TypeCode.UInt64); //try to convert to Long/Ulong and place the result into details.Value field;
+              if (TryConvertToLong(details, typeCode == TypeCode.UInt64)) //try to convert to Long/Ulong and place the result into details.Value field;
+                return true;
             if(TryCastToIntegerType(typeCode, details)) //now try to cast the ULong value to the target type 
               return true;
             break;

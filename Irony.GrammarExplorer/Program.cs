@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Diagnostics;
 using Irony.WinForms.Exceptions;
+using static System.Windows.Forms.DataFormats;
 
 namespace Irony.GrammarExplorer {
   class Program : MarshalByRefObject {
@@ -23,27 +24,12 @@ namespace Irony.GrammarExplorer {
     /// </summary>
     [STAThread]
     static void Main() {
-      var program = CreateInstanceInSeparateDomain();
-      program.RunApplication();
-    }
-
-    static Program CreateInstanceInSeparateDomain() {
-      var setup = new AppDomainSetup()
-      {
-        ShadowCopyFiles = true.ToString()
-      };
-
-      var domain = AppDomain.CreateDomain("HostedDomain", null, setup);
-      return (Program)domain.CreateInstanceAndUnwrap(typeof(Program).Assembly.FullName, typeof(Program).FullName);
-    }
-
-    void RunApplication() {
-      Application.EnableVisualStyles();
-      Application.SetCompatibleTextRenderingDefault(false);
+      ApplicationConfiguration.Initialize();
       Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(Application_ThreadException);
       AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
       Application.Run(new fmGrammarExplorer());
     }
+
 
     static void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e) {
       fmShowException.ShowException(e.Exception);
@@ -55,7 +41,7 @@ namespace Irony.GrammarExplorer {
       string message = (ex == null ? e.ExceptionObject.ToString() : ex.Message);
       if (ex == null) {
         Debug.Write("Exception!: ############################################## \n" + e.ExceptionObject.ToString());
-        MessageBox.Show(message, "Exception");
+        _ = MessageBox.Show(message, "Exception");
       } else {
         fmShowException.ShowException(ex);
       }

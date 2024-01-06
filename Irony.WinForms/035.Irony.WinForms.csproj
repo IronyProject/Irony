@@ -1,126 +1,22 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{70D319F3-3C0C-4EB5-A271-58ED22FB3070}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Irony.WinForms</RootNamespace>
-    <AssemblyName>Irony.WinForms</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="FastColoredTextBox, Version=2.16.21.0, Culture=neutral, PublicKeyToken=fb8aa12b994ef61b, processorArchitecture=MSIL">
-      <HintPath>..\packages\FCTB.2.16.21.0\lib\FastColoredTextBox.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="BorderStyleEx.cs" />
-    <Compile Include="ConsoleTextBox.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="ConsoleTextBox.Designer.cs">
-      <DependentUpon>ConsoleTextBox.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Exceptions\fmShowException.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Exceptions\fmShowException.Designer.cs">
-      <DependentUpon>fmShowException.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FastColoredTextBox\ConsoleTextBox.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Highlighter\EditorAdapter.cs" />
-    <Compile Include="Highlighter\EditorViewAdapter.cs" />
-    <Compile Include="Highlighter\FastColoredTextBoxHighlighter.cs" />
-    <Compile Include="Highlighter\RichTextBoxHighlighter.cs" />
-    <Compile Include="IronyTextBox.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="IronyTextBox.Designer.cs">
-      <DependentUpon>IronyTextBox.cs</DependentUpon>
-    </Compile>
-    <Compile Include="IronyTextBoxBase.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="IronyTextBoxBase.Designer.cs">
-      <DependentUpon>IronyTextBoxBase.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ITextBox.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="FastColoredTextBox\AboutFastColoredTextBox.txt" />
-    <Content Include="Highlighter\AboutCodeHighlighter.txt" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Irony.Interpreter\015.Irony.Interpreter.csproj">
-      <Project>{321A7F5D-00C2-4095-9970-075CDEE8C139}</Project>
-      <Name>015.Irony.Interpreter</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Irony\010.Irony.csproj">
-      <Project>{D81F5C91-D7DB-46E5-BC99-49488FB6814C}</Project>
-      <Name>010.Irony</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="ConsoleTextBox.resx">
-      <DependentUpon>ConsoleTextBox.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Exceptions\fmShowException.resx">
-      <DependentUpon>fmShowException.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="IronyTextBox.resx">
-      <DependentUpon>IronyTextBox.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="IronyTextBoxBase.resx">
-      <DependentUpon>IronyTextBoxBase.cs</DependentUpon>
-    </EmbeddedResource>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>disable</Nullable>
+		<UseWindowsForms>true</UseWindowsForms>
+		<RootNamespace>Irony.WinForms</RootNamespace>
+		<AssemblyName>Irony.WinForms</AssemblyName>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="FastColoredTextBox.Net6" Version="1.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Irony.Interpreter\015.Irony.Interpreter.csproj" />
+	  <ProjectReference Include="..\Irony\010.Irony.csproj" />
+	</ItemGroup>
+
 </Project>

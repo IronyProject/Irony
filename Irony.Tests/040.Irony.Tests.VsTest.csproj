@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net8</TargetFrameworks>
+		<TargetFramework>net8</TargetFramework>
 		<RootNamespace>Irony</RootNamespace>
 		<AssemblyName>Irony.Tests.VsTest</AssemblyName>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>

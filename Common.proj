@@ -1,0 +1,23 @@
+<Project>
+    <PropertyGroup>
+        <Version>1.5.0</Version>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+		<FileVersion>1.5.0.0</FileVersion>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		
+
+		<AssemblyName>$(MSBuildProjectName)</AssemblyName>
+        <RootNamespace>$(MSBuildProjectName)</RootNamespace>
+        <LangVersion>10.0</LangVersion>
+        <NoWarn>1701;1702;1591</NoWarn>
+        <PackageProjectUrl>https://github.com/IronyProject/Irony</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/IronyProject/Irony</RepositoryUrl>
+        <Copyright>Irony Project</Copyright>
+        <Authors>Roman Ivantsov</Authors>
+
+        <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
+        <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
+        <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+
+    </PropertyGroup>
+</Project>

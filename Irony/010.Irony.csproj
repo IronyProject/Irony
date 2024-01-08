@@ -1,20 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\Common.proj" />
+	<Import Project="..\Packages.proj" />
 
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <RootNamespace>Irony</RootNamespace>
-    <AssemblyName>Irony</AssemblyName>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>irony.snk</AssemblyOriginatorKeyFile>
-	<AssemblyVersion>1.2.0</AssemblyVersion>
-	<Version>1.2.0</Version>
-
-	  <!--
-      This assembly is marked SecurityTransparent, which requires verifiable IL.
-      Setting peverify-compat ensures that the C# compiler will forgoe optimizations that would produce unverifiable IL.
-    -->
-    <Features>peverify-compat</Features>
-  </PropertyGroup>
+	<PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <Title>Irony Parsing Framework</Title>
+    </PropertyGroup>
 
 </Project>

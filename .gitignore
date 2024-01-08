@@ -3,9 +3,10 @@
 *.bak
 *.orig
 *.nupkg
+*.snupkg
 /**/bin
 /**/obj
 /.vs
 /.vscode
-/nuget/packages
+/packages
 /TestResults

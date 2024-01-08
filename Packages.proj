@@ -7,7 +7,7 @@
 		<AssemblyOriginatorKeyFile>irony.snk</AssemblyOriginatorKeyFile>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageOutputPath>..\Nuget\packages</PackageOutputPath>
+        <PackageOutputPath>..\packages</PackageOutputPath>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <IncludeSymbols>True</IncludeSymbols>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>

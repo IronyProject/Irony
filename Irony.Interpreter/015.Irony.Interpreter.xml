@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>015.Irony.Interpreter</name>
+        <name>Irony.Interpreter</name>
     </assembly>
     <members>
         <member name="M:Irony.Interpreter.Ast.AstNode.SetIsTail">

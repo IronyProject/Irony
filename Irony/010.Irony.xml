@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>010.Irony</name>
+        <name>Irony</name>
     </assembly>
     <members>
         <member name="F:Irony.Parsing.Grammar.CaseSensitive">

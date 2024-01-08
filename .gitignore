@@ -7,5 +7,5 @@
 /**/obj
 /.vs
 /.vscode
-/packages
+/nuget/packages
 /TestResults

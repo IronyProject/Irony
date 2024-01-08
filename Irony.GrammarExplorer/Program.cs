@@ -14,7 +14,6 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Diagnostics;
-using Irony.WinForms.Exceptions;
 using static System.Windows.Forms.DataFormats;
 
 namespace Irony.GrammarExplorer {

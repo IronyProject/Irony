@@ -23,9 +23,11 @@ namespace Irony.GrammarExplorer {
     /// Required method for Designer support - do not modify
     /// the contents of this method with the code editor.
     /// </summary>
-    private void InitializeComponent() {
-      this.components = new System.ComponentModel.Container();
+    private void InitializeComponent()
+    {
+      components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(fmGrammarExplorer));
+      Properties.Settings settings1 = new Properties.Settings();
       System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
       System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
       System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
@@ -34,1259 +36,1334 @@ namespace Irony.GrammarExplorer {
       System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
       System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
       System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
-      this.tabGrammar = new System.Windows.Forms.TabControl();
-      this.pageTerminals = new System.Windows.Forms.TabPage();
-      this.txtTerms = new System.Windows.Forms.TextBox();
-      this.pageNonTerms = new System.Windows.Forms.TabPage();
-      this.txtNonTerms = new System.Windows.Forms.TextBox();
-      this.pageParserStates = new System.Windows.Forms.TabPage();
-      this.txtParserStates = new System.Windows.Forms.TextBox();
-      this.pageTest = new System.Windows.Forms.TabPage();
-      this.txtSource = new Irony.WinForms.IronyTextBox();
-      this.panel1 = new System.Windows.Forms.Panel();
-      this.btnLocate = new System.Windows.Forms.Button();
-      this.chkDisableHili = new System.Windows.Forms.CheckBox();
-      this.btnRun = new System.Windows.Forms.Button();
-      this.btnFileOpen = new System.Windows.Forms.Button();
-      this.btnParse = new System.Windows.Forms.Button();
-      this.splitRight = new System.Windows.Forms.Splitter();
-      this.tabOutput = new System.Windows.Forms.TabControl();
-      this.pageSyntaxTree = new System.Windows.Forms.TabPage();
-      this.tvParseTree = new System.Windows.Forms.TreeView();
-      this.pageAst = new System.Windows.Forms.TabPage();
-      this.tvAst = new System.Windows.Forms.TreeView();
-      this.chkParserTrace = new System.Windows.Forms.CheckBox();
-      this.pnlLang = new System.Windows.Forms.Panel();
-      this.chkAutoRefresh = new System.Windows.Forms.CheckBox();
-      this.btnManageGrammars = new System.Windows.Forms.Button();
-      this.lblSearchError = new System.Windows.Forms.Label();
-      this.btnSearch = new System.Windows.Forms.Button();
-      this.txtSearch = new System.Windows.Forms.TextBox();
-      this.label2 = new System.Windows.Forms.Label();
-      this.cboGrammars = new System.Windows.Forms.ComboBox();
-      this.menuGrammars = new System.Windows.Forms.ContextMenuStrip(this.components);
-      this.miAdd = new System.Windows.Forms.ToolStripMenuItem();
-      this.miRefresh = new System.Windows.Forms.ToolStripMenuItem();
-      this.miSeparator = new System.Windows.Forms.ToolStripSeparator();
-      this.miRemove = new System.Windows.Forms.ToolStripMenuItem();
-      this.miRemoveAll = new System.Windows.Forms.ToolStripMenuItem();
-      this.dlgOpenFile = new System.Windows.Forms.OpenFileDialog();
-      this.dlgSelectAssembly = new System.Windows.Forms.OpenFileDialog();
-      this.splitBottom = new System.Windows.Forms.Splitter();
-      this.tabBottom = new System.Windows.Forms.TabControl();
-      this.pageLanguage = new System.Windows.Forms.TabPage();
-      this.grpLanguageInfo = new System.Windows.Forms.GroupBox();
-      this.label8 = new System.Windows.Forms.Label();
-      this.lblParserStateCount = new System.Windows.Forms.Label();
-      this.lblLanguageDescr = new System.Windows.Forms.Label();
-      this.txtGrammarComments = new System.Windows.Forms.TextBox();
-      this.label11 = new System.Windows.Forms.Label();
-      this.label9 = new System.Windows.Forms.Label();
-      this.lblLanguageVersion = new System.Windows.Forms.Label();
-      this.label10 = new System.Windows.Forms.Label();
-      this.lblLanguage = new System.Windows.Forms.Label();
-      this.label4 = new System.Windows.Forms.Label();
-      this.label6 = new System.Windows.Forms.Label();
-      this.lblParserConstrTime = new System.Windows.Forms.Label();
-      this.pageGrammarErrors = new System.Windows.Forms.TabPage();
-      this.gridGrammarErrors = new System.Windows.Forms.DataGridView();
-      this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.pageParserOutput = new System.Windows.Forms.TabPage();
-      this.groupBox1 = new System.Windows.Forms.GroupBox();
-      this.gridCompileErrors = new System.Windows.Forms.DataGridView();
-      this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.grpCompileInfo = new System.Windows.Forms.GroupBox();
-      this.label12 = new System.Windows.Forms.Label();
-      this.lblParseErrorCount = new System.Windows.Forms.Label();
-      this.label1 = new System.Windows.Forms.Label();
-      this.lblParseTime = new System.Windows.Forms.Label();
-      this.label7 = new System.Windows.Forms.Label();
-      this.lblSrcLineCount = new System.Windows.Forms.Label();
-      this.label3 = new System.Windows.Forms.Label();
-      this.lblSrcTokenCount = new System.Windows.Forms.Label();
-      this.pageParserTrace = new System.Windows.Forms.TabPage();
-      this.grpParserActions = new System.Windows.Forms.GroupBox();
-      this.gridParserTrace = new System.Windows.Forms.DataGridView();
-      this.State = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.Stack = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.Input = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.Action = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.splitter1 = new System.Windows.Forms.Splitter();
-      this.grpTokens = new System.Windows.Forms.GroupBox();
-      this.lstTokens = new System.Windows.Forms.ListBox();
-      this.pnlParserTraceTop = new System.Windows.Forms.Panel();
-      this.chkExcludeComments = new System.Windows.Forms.CheckBox();
-      this.lblTraceComment = new System.Windows.Forms.Label();
-      this.pageOutput = new System.Windows.Forms.TabPage();
-      this.txtOutput = new Irony.WinForms.ConsoleTextBox();
-      this.pnlRuntimeInfo = new System.Windows.Forms.Panel();
-      this.label14 = new System.Windows.Forms.Label();
-      this.lblGCCount = new System.Windows.Forms.Label();
-      this.label13 = new System.Windows.Forms.Label();
-      this.lnkShowErrStack = new System.Windows.Forms.LinkLabel();
-      this.lnkShowErrLocation = new System.Windows.Forms.LinkLabel();
-      this.label5 = new System.Windows.Forms.Label();
-      this.lblRunTime = new System.Windows.Forms.Label();
-      this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-      this.tabGrammar.SuspendLayout();
-      this.pageTerminals.SuspendLayout();
-      this.pageNonTerms.SuspendLayout();
-      this.pageParserStates.SuspendLayout();
-      this.pageTest.SuspendLayout();
-      this.panel1.SuspendLayout();
-      this.tabOutput.SuspendLayout();
-      this.pageSyntaxTree.SuspendLayout();
-      this.pageAst.SuspendLayout();
-      this.pnlLang.SuspendLayout();
-      this.menuGrammars.SuspendLayout();
-      this.tabBottom.SuspendLayout();
-      this.pageLanguage.SuspendLayout();
-      this.grpLanguageInfo.SuspendLayout();
-      this.pageGrammarErrors.SuspendLayout();
-      ((System.ComponentModel.ISupportInitialize)(this.gridGrammarErrors)).BeginInit();
-      this.pageParserOutput.SuspendLayout();
-      this.groupBox1.SuspendLayout();
-      ((System.ComponentModel.ISupportInitialize)(this.gridCompileErrors)).BeginInit();
-      this.grpCompileInfo.SuspendLayout();
-      this.pageParserTrace.SuspendLayout();
-      this.grpParserActions.SuspendLayout();
-      ((System.ComponentModel.ISupportInitialize)(this.gridParserTrace)).BeginInit();
-      this.grpTokens.SuspendLayout();
-      this.pnlParserTraceTop.SuspendLayout();
-      this.pageOutput.SuspendLayout();
-      this.pnlRuntimeInfo.SuspendLayout();
-      this.SuspendLayout();
-      //
+      tabGrammar = new System.Windows.Forms.TabControl();
+      pageTerminals = new System.Windows.Forms.TabPage();
+      txtTerms = new System.Windows.Forms.TextBox();
+      pageNonTerms = new System.Windows.Forms.TabPage();
+      txtNonTerms = new System.Windows.Forms.TextBox();
+      pageParserStates = new System.Windows.Forms.TabPage();
+      txtParserStates = new System.Windows.Forms.TextBox();
+      pageTest = new System.Windows.Forms.TabPage();
+      txtSource = new System.Windows.Forms.TextBox();
+      panel1 = new System.Windows.Forms.Panel();
+      btnLocate = new System.Windows.Forms.Button();
+      btnRun = new System.Windows.Forms.Button();
+      btnFileOpen = new System.Windows.Forms.Button();
+      btnParse = new System.Windows.Forms.Button();
+      splitRight = new System.Windows.Forms.Splitter();
+      tabOutput = new System.Windows.Forms.TabControl();
+      pageSyntaxTree = new System.Windows.Forms.TabPage();
+      tvParseTree = new System.Windows.Forms.TreeView();
+      pageAst = new System.Windows.Forms.TabPage();
+      tvAst = new System.Windows.Forms.TreeView();
+      chkParserTrace = new System.Windows.Forms.CheckBox();
+      pnlLang = new System.Windows.Forms.Panel();
+      chkAutoRefresh = new System.Windows.Forms.CheckBox();
+      btnManageGrammars = new System.Windows.Forms.Button();
+      lblSearchError = new System.Windows.Forms.Label();
+      btnSearch = new System.Windows.Forms.Button();
+      txtSearch = new System.Windows.Forms.TextBox();
+      label2 = new System.Windows.Forms.Label();
+      cboGrammars = new System.Windows.Forms.ComboBox();
+      menuGrammars = new System.Windows.Forms.ContextMenuStrip(components);
+      miAdd = new System.Windows.Forms.ToolStripMenuItem();
+      miRefresh = new System.Windows.Forms.ToolStripMenuItem();
+      miSeparator = new System.Windows.Forms.ToolStripSeparator();
+      miRemove = new System.Windows.Forms.ToolStripMenuItem();
+      miRemoveAll = new System.Windows.Forms.ToolStripMenuItem();
+      dlgOpenFile = new System.Windows.Forms.OpenFileDialog();
+      dlgSelectAssembly = new System.Windows.Forms.OpenFileDialog();
+      splitBottom = new System.Windows.Forms.Splitter();
+      tabBottom = new System.Windows.Forms.TabControl();
+      pageLanguage = new System.Windows.Forms.TabPage();
+      grpLanguageInfo = new System.Windows.Forms.GroupBox();
+      label8 = new System.Windows.Forms.Label();
+      lblParserStateCount = new System.Windows.Forms.Label();
+      lblLanguageDescr = new System.Windows.Forms.Label();
+      txtGrammarComments = new System.Windows.Forms.TextBox();
+      label11 = new System.Windows.Forms.Label();
+      label9 = new System.Windows.Forms.Label();
+      lblLanguageVersion = new System.Windows.Forms.Label();
+      label10 = new System.Windows.Forms.Label();
+      lblLanguage = new System.Windows.Forms.Label();
+      label4 = new System.Windows.Forms.Label();
+      label6 = new System.Windows.Forms.Label();
+      lblParserConstrTime = new System.Windows.Forms.Label();
+      pageGrammarErrors = new System.Windows.Forms.TabPage();
+      gridGrammarErrors = new System.Windows.Forms.DataGridView();
+      dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      pageParserOutput = new System.Windows.Forms.TabPage();
+      groupBox1 = new System.Windows.Forms.GroupBox();
+      gridCompileErrors = new System.Windows.Forms.DataGridView();
+      dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      grpCompileInfo = new System.Windows.Forms.GroupBox();
+      label12 = new System.Windows.Forms.Label();
+      lblParseErrorCount = new System.Windows.Forms.Label();
+      label1 = new System.Windows.Forms.Label();
+      lblParseTime = new System.Windows.Forms.Label();
+      label7 = new System.Windows.Forms.Label();
+      lblSrcLineCount = new System.Windows.Forms.Label();
+      label3 = new System.Windows.Forms.Label();
+      lblSrcTokenCount = new System.Windows.Forms.Label();
+      pageParserTrace = new System.Windows.Forms.TabPage();
+      grpParserActions = new System.Windows.Forms.GroupBox();
+      gridParserTrace = new System.Windows.Forms.DataGridView();
+      State = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      Stack = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      Input = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      Action = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      splitter1 = new System.Windows.Forms.Splitter();
+      grpTokens = new System.Windows.Forms.GroupBox();
+      lstTokens = new System.Windows.Forms.ListBox();
+      pnlParserTraceTop = new System.Windows.Forms.Panel();
+      chkExcludeComments = new System.Windows.Forms.CheckBox();
+      lblTraceComment = new System.Windows.Forms.Label();
+      pageOutput = new System.Windows.Forms.TabPage();
+      txtOutput = new ConsoleTextBox();
+      pnlRuntimeInfo = new System.Windows.Forms.Panel();
+      label14 = new System.Windows.Forms.Label();
+      lblGCCount = new System.Windows.Forms.Label();
+      label13 = new System.Windows.Forms.Label();
+      lnkShowErrStack = new System.Windows.Forms.LinkLabel();
+      lnkShowErrLocation = new System.Windows.Forms.LinkLabel();
+      label5 = new System.Windows.Forms.Label();
+      lblRunTime = new System.Windows.Forms.Label();
+      toolTip = new System.Windows.Forms.ToolTip(components);
+      tabGrammar.SuspendLayout();
+      pageTerminals.SuspendLayout();
+      pageNonTerms.SuspendLayout();
+      pageParserStates.SuspendLayout();
+      pageTest.SuspendLayout();
+      panel1.SuspendLayout();
+      tabOutput.SuspendLayout();
+      pageSyntaxTree.SuspendLayout();
+      pageAst.SuspendLayout();
+      pnlLang.SuspendLayout();
+      menuGrammars.SuspendLayout();
+      tabBottom.SuspendLayout();
+      pageLanguage.SuspendLayout();
+      grpLanguageInfo.SuspendLayout();
+      pageGrammarErrors.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)gridGrammarErrors).BeginInit();
+      pageParserOutput.SuspendLayout();
+      groupBox1.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)gridCompileErrors).BeginInit();
+      grpCompileInfo.SuspendLayout();
+      pageParserTrace.SuspendLayout();
+      grpParserActions.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)gridParserTrace).BeginInit();
+      grpTokens.SuspendLayout();
+      pnlParserTraceTop.SuspendLayout();
+      pageOutput.SuspendLayout();
+      pnlRuntimeInfo.SuspendLayout();
+      SuspendLayout();
+      // 
       // tabGrammar
-      //
-      this.tabGrammar.Controls.Add(this.pageTerminals);
-      this.tabGrammar.Controls.Add(this.pageNonTerms);
-      this.tabGrammar.Controls.Add(this.pageParserStates);
-      this.tabGrammar.Controls.Add(this.pageTest);
-      this.tabGrammar.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.tabGrammar.Location = new System.Drawing.Point(0, 29);
-      this.tabGrammar.Name = "tabGrammar";
-      this.tabGrammar.SelectedIndex = 0;
-      this.tabGrammar.Size = new System.Drawing.Size(1022, 381);
-      this.tabGrammar.TabIndex = 0;
-      //
+      // 
+      tabGrammar.Controls.Add(pageTerminals);
+      tabGrammar.Controls.Add(pageNonTerms);
+      tabGrammar.Controls.Add(pageParserStates);
+      tabGrammar.Controls.Add(pageTest);
+      tabGrammar.Dock = System.Windows.Forms.DockStyle.Fill;
+      tabGrammar.Location = new System.Drawing.Point(0, 67);
+      tabGrammar.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      tabGrammar.Name = "tabGrammar";
+      tabGrammar.SelectedIndex = 0;
+      tabGrammar.Size = new System.Drawing.Size(2044, 879);
+      tabGrammar.TabIndex = 0;
+      // 
       // pageTerminals
-      //
-      this.pageTerminals.Controls.Add(this.txtTerms);
-      this.pageTerminals.Location = new System.Drawing.Point(4, 22);
-      this.pageTerminals.Name = "pageTerminals";
-      this.pageTerminals.Padding = new System.Windows.Forms.Padding(3);
-      this.pageTerminals.Size = new System.Drawing.Size(1014, 355);
-      this.pageTerminals.TabIndex = 5;
-      this.pageTerminals.Text = "Terminals";
-      this.pageTerminals.UseVisualStyleBackColor = true;
-      //
+      // 
+      pageTerminals.Controls.Add(txtTerms);
+      pageTerminals.Location = new System.Drawing.Point(4, 39);
+      pageTerminals.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageTerminals.Name = "pageTerminals";
+      pageTerminals.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageTerminals.Size = new System.Drawing.Size(2036, 836);
+      pageTerminals.TabIndex = 5;
+      pageTerminals.Text = "Terminals";
+      pageTerminals.UseVisualStyleBackColor = true;
+      // 
       // txtTerms
-      //
-      this.txtTerms.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.txtTerms.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.txtTerms.HideSelection = false;
-      this.txtTerms.Location = new System.Drawing.Point(3, 3);
-      this.txtTerms.Multiline = true;
-      this.txtTerms.Name = "txtTerms";
-      this.txtTerms.ReadOnly = true;
-      this.txtTerms.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-      this.txtTerms.Size = new System.Drawing.Size(1008, 349);
-      this.txtTerms.TabIndex = 2;
-      //
+      // 
+      txtTerms.AcceptsTab = true;
+      txtTerms.Dock = System.Windows.Forms.DockStyle.Fill;
+      txtTerms.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+      txtTerms.HideSelection = false;
+      txtTerms.Location = new System.Drawing.Point(6, 7);
+      txtTerms.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      txtTerms.Multiline = true;
+      txtTerms.Name = "txtTerms";
+      txtTerms.ReadOnly = true;
+      txtTerms.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+      txtTerms.Size = new System.Drawing.Size(2024, 822);
+      txtTerms.TabIndex = 2;
+      // 
       // pageNonTerms
-      //
-      this.pageNonTerms.Controls.Add(this.txtNonTerms);
-      this.pageNonTerms.Location = new System.Drawing.Point(4, 22);
-      this.pageNonTerms.Name = "pageNonTerms";
-      this.pageNonTerms.Padding = new System.Windows.Forms.Padding(3);
-      this.pageNonTerms.Size = new System.Drawing.Size(1014, 355);
-      this.pageNonTerms.TabIndex = 0;
-      this.pageNonTerms.Text = "Non-Terminals";
-      this.pageNonTerms.UseVisualStyleBackColor = true;
-      //
+      // 
+      pageNonTerms.Controls.Add(txtNonTerms);
+      pageNonTerms.Location = new System.Drawing.Point(4, 39);
+      pageNonTerms.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageNonTerms.Name = "pageNonTerms";
+      pageNonTerms.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageNonTerms.Size = new System.Drawing.Size(2036, 836);
+      pageNonTerms.TabIndex = 0;
+      pageNonTerms.Text = "Non-Terminals";
+      pageNonTerms.UseVisualStyleBackColor = true;
+      // 
       // txtNonTerms
-      //
-      this.txtNonTerms.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.txtNonTerms.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.txtNonTerms.HideSelection = false;
-      this.txtNonTerms.Location = new System.Drawing.Point(3, 3);
-      this.txtNonTerms.Multiline = true;
-      this.txtNonTerms.Name = "txtNonTerms";
-      this.txtNonTerms.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-      this.txtNonTerms.Size = new System.Drawing.Size(1008, 349);
-      this.txtNonTerms.TabIndex = 1;
-      this.txtNonTerms.WordWrap = false;
-      //
+      // 
+      txtNonTerms.Dock = System.Windows.Forms.DockStyle.Fill;
+      txtNonTerms.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+      txtNonTerms.HideSelection = false;
+      txtNonTerms.Location = new System.Drawing.Point(6, 7);
+      txtNonTerms.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      txtNonTerms.Multiline = true;
+      txtNonTerms.Name = "txtNonTerms";
+      txtNonTerms.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+      txtNonTerms.Size = new System.Drawing.Size(2024, 822);
+      txtNonTerms.TabIndex = 1;
+      txtNonTerms.WordWrap = false;
+      // 
       // pageParserStates
-      //
-      this.pageParserStates.Controls.Add(this.txtParserStates);
-      this.pageParserStates.Location = new System.Drawing.Point(4, 22);
-      this.pageParserStates.Name = "pageParserStates";
-      this.pageParserStates.Padding = new System.Windows.Forms.Padding(3);
-      this.pageParserStates.Size = new System.Drawing.Size(1014, 355);
-      this.pageParserStates.TabIndex = 1;
-      this.pageParserStates.Text = "Parser States";
-      this.pageParserStates.UseVisualStyleBackColor = true;
-      //
+      // 
+      pageParserStates.Controls.Add(txtParserStates);
+      pageParserStates.Location = new System.Drawing.Point(4, 39);
+      pageParserStates.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageParserStates.Name = "pageParserStates";
+      pageParserStates.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageParserStates.Size = new System.Drawing.Size(2036, 836);
+      pageParserStates.TabIndex = 1;
+      pageParserStates.Text = "Parser States";
+      pageParserStates.UseVisualStyleBackColor = true;
+      // 
       // txtParserStates
-      //
-      this.txtParserStates.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.txtParserStates.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.txtParserStates.HideSelection = false;
-      this.txtParserStates.Location = new System.Drawing.Point(3, 3);
-      this.txtParserStates.Multiline = true;
-      this.txtParserStates.Name = "txtParserStates";
-      this.txtParserStates.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-      this.txtParserStates.Size = new System.Drawing.Size(1008, 349);
-      this.txtParserStates.TabIndex = 2;
-      this.txtParserStates.WordWrap = false;
-      //
+      // 
+      txtParserStates.Dock = System.Windows.Forms.DockStyle.Fill;
+      txtParserStates.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+      txtParserStates.HideSelection = false;
+      txtParserStates.Location = new System.Drawing.Point(6, 7);
+      txtParserStates.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      txtParserStates.Multiline = true;
+      txtParserStates.Name = "txtParserStates";
+      txtParserStates.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+      txtParserStates.Size = new System.Drawing.Size(2024, 822);
+      txtParserStates.TabIndex = 2;
+      txtParserStates.WordWrap = false;
+      // 
       // pageTest
-      //
-      this.pageTest.Controls.Add(this.txtSource);
-      this.pageTest.Controls.Add(this.panel1);
-      this.pageTest.Controls.Add(this.splitRight);
-      this.pageTest.Controls.Add(this.tabOutput);
-      this.pageTest.Location = new System.Drawing.Point(4, 22);
-      this.pageTest.Name = "pageTest";
-      this.pageTest.Padding = new System.Windows.Forms.Padding(3);
-      this.pageTest.Size = new System.Drawing.Size(1014, 355);
-      this.pageTest.TabIndex = 4;
-      this.pageTest.Text = "Test";
-      this.pageTest.UseVisualStyleBackColor = true;
-      //
+      // 
+      pageTest.Controls.Add(txtSource);
+      pageTest.Controls.Add(panel1);
+      pageTest.Controls.Add(splitRight);
+      pageTest.Controls.Add(tabOutput);
+      pageTest.Location = new System.Drawing.Point(4, 39);
+      pageTest.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageTest.Name = "pageTest";
+      pageTest.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageTest.Size = new System.Drawing.Size(2036, 836);
+      pageTest.TabIndex = 4;
+      pageTest.Text = "Test";
+      pageTest.UseVisualStyleBackColor = true;
+      // 
       // txtSource
-      //
-      this.txtSource.AutoScroll = true;
-      this.txtSource.AutoScrollMinSize = new System.Drawing.Size(25, 15);
-      this.txtSource.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.txtSource.Location = new System.Drawing.Point(3, 33);
-      this.txtSource.Name = "txtSource";
-      this.txtSource.Size = new System.Drawing.Size(652, 319);
-      this.txtSource.TabIndex = 23;
-      this.txtSource.TextChanged += new System.EventHandler(this.txtSource_TextChanged);
-      //
+      // 
+      txtSource.Dock = System.Windows.Forms.DockStyle.Fill;
+      txtSource.Location = new System.Drawing.Point(6, 76);
+      txtSource.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      txtSource.Multiline = true;
+      txtSource.Name = "txtSource";
+      txtSource.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+      txtSource.Size = new System.Drawing.Size(1312, 753);
+      txtSource.TabIndex = 23;
+      txtSource.TextChanged += txtSource_TextChanged;
+      // 
       // panel1
-      //
-      this.panel1.Controls.Add(this.btnLocate);
-      this.panel1.Controls.Add(this.chkDisableHili);
-      this.panel1.Controls.Add(this.btnRun);
-      this.panel1.Controls.Add(this.btnFileOpen);
-      this.panel1.Controls.Add(this.btnParse);
-      this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
-      this.panel1.Location = new System.Drawing.Point(3, 3);
-      this.panel1.Name = "panel1";
-      this.panel1.Size = new System.Drawing.Size(652, 30);
-      this.panel1.TabIndex = 2;
-      //
+      // 
+      panel1.Controls.Add(btnLocate);
+      panel1.Controls.Add(btnRun);
+      panel1.Controls.Add(btnFileOpen);
+      panel1.Controls.Add(btnParse);
+      panel1.Dock = System.Windows.Forms.DockStyle.Top;
+      panel1.Location = new System.Drawing.Point(6, 7);
+      panel1.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      panel1.Name = "panel1";
+      panel1.Size = new System.Drawing.Size(1312, 69);
+      panel1.TabIndex = 2;
+      // 
       // btnLocate
-      //
-      this.btnLocate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnLocate.Location = new System.Drawing.Point(578, 3);
-      this.btnLocate.Name = "btnLocate";
-      this.btnLocate.Size = new System.Drawing.Size(65, 23);
-      this.btnLocate.TabIndex = 10;
-      this.btnLocate.Text = "Locate >>";
-      this.toolTip.SetToolTip(this.btnLocate, "Locate the source position in parse/Ast tree. ");
-      this.btnLocate.UseVisualStyleBackColor = true;
-      this.btnLocate.Click += new System.EventHandler(this.btnLocate_Click);
-      //
-      // chkDisableHili
-      //
-      this.chkDisableHili.AutoSize = true;
-      this.chkDisableHili.Location = new System.Drawing.Point(5, 7);
-      this.chkDisableHili.Name = "chkDisableHili";
-      this.chkDisableHili.Size = new System.Drawing.Size(150, 17);
-      this.chkDisableHili.TabIndex = 9;
-      this.chkDisableHili.Text = "Disable syntax highlighting";
-      this.chkDisableHili.UseVisualStyleBackColor = true;
-      this.chkDisableHili.CheckedChanged += new System.EventHandler(this.chkDisableHili_CheckedChanged);
-      //
+      // 
+      btnLocate.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+      btnLocate.Location = new System.Drawing.Point(1164, 7);
+      btnLocate.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      btnLocate.Name = "btnLocate";
+      btnLocate.Size = new System.Drawing.Size(130, 53);
+      btnLocate.TabIndex = 10;
+      btnLocate.Text = "Locate >>";
+      toolTip.SetToolTip(btnLocate, "Locate the source position in parse/Ast tree. ");
+      btnLocate.UseVisualStyleBackColor = true;
+      btnLocate.Click += btnLocate_Click;
+      // 
       // btnRun
-      //
-      this.btnRun.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnRun.Location = new System.Drawing.Point(506, 3);
-      this.btnRun.Name = "btnRun";
-      this.btnRun.Size = new System.Drawing.Size(65, 23);
-      this.btnRun.TabIndex = 7;
-      this.btnRun.Text = "Run";
-      this.toolTip.SetToolTip(this.btnRun, "Run the source sample");
-      this.btnRun.UseVisualStyleBackColor = true;
-      this.btnRun.Click += new System.EventHandler(this.btnRun_Click);
-      //
+      // 
+      btnRun.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+      btnRun.Location = new System.Drawing.Point(1020, 7);
+      btnRun.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      btnRun.Name = "btnRun";
+      btnRun.Size = new System.Drawing.Size(130, 53);
+      btnRun.TabIndex = 7;
+      btnRun.Text = "Run";
+      toolTip.SetToolTip(btnRun, "Run the source sample");
+      btnRun.UseVisualStyleBackColor = true;
+      btnRun.Click += btnRun_Click;
+      // 
       // btnFileOpen
-      //
-      this.btnFileOpen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnFileOpen.Location = new System.Drawing.Point(362, 3);
-      this.btnFileOpen.Name = "btnFileOpen";
-      this.btnFileOpen.Size = new System.Drawing.Size(65, 23);
-      this.btnFileOpen.TabIndex = 6;
-      this.btnFileOpen.Text = "Load ...";
-      this.toolTip.SetToolTip(this.btnFileOpen, "Load a source sample...");
-      this.btnFileOpen.UseVisualStyleBackColor = true;
-      this.btnFileOpen.Click += new System.EventHandler(this.btnFileOpen_Click);
-      //
+      // 
+      btnFileOpen.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+      btnFileOpen.Location = new System.Drawing.Point(732, 7);
+      btnFileOpen.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      btnFileOpen.Name = "btnFileOpen";
+      btnFileOpen.Size = new System.Drawing.Size(130, 53);
+      btnFileOpen.TabIndex = 6;
+      btnFileOpen.Text = "Load ...";
+      toolTip.SetToolTip(btnFileOpen, "Load a source sample...");
+      btnFileOpen.UseVisualStyleBackColor = true;
+      btnFileOpen.Click += btnFileOpen_Click;
+      // 
       // btnParse
-      //
-      this.btnParse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnParse.Location = new System.Drawing.Point(433, 3);
-      this.btnParse.Name = "btnParse";
-      this.btnParse.Size = new System.Drawing.Size(67, 23);
-      this.btnParse.TabIndex = 1;
-      this.btnParse.Text = "Parse";
-      this.toolTip.SetToolTip(this.btnParse, "Parse source sample");
-      this.btnParse.UseVisualStyleBackColor = true;
-      this.btnParse.Click += new System.EventHandler(this.btnParse_Click);
-      //
+      // 
+      btnParse.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+      btnParse.Location = new System.Drawing.Point(874, 7);
+      btnParse.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      btnParse.Name = "btnParse";
+      btnParse.Size = new System.Drawing.Size(134, 53);
+      btnParse.TabIndex = 1;
+      btnParse.Text = "Parse";
+      toolTip.SetToolTip(btnParse, "Parse source sample");
+      btnParse.UseVisualStyleBackColor = true;
+      btnParse.Click += btnParse_Click;
+      // 
       // splitRight
-      //
-      this.splitRight.Dock = System.Windows.Forms.DockStyle.Right;
-      this.splitRight.Location = new System.Drawing.Point(655, 3);
-      this.splitRight.Name = "splitRight";
-      this.splitRight.Size = new System.Drawing.Size(6, 349);
-      this.splitRight.TabIndex = 14;
-      this.splitRight.TabStop = false;
-      //
+      // 
+      splitRight.Dock = System.Windows.Forms.DockStyle.Right;
+      splitRight.Location = new System.Drawing.Point(1318, 7);
+      splitRight.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      splitRight.Name = "splitRight";
+      splitRight.Size = new System.Drawing.Size(12, 822);
+      splitRight.TabIndex = 14;
+      splitRight.TabStop = false;
+      // 
       // tabOutput
-      //
-      this.tabOutput.Controls.Add(this.pageSyntaxTree);
-      this.tabOutput.Controls.Add(this.pageAst);
-      this.tabOutput.Dock = System.Windows.Forms.DockStyle.Right;
-      this.tabOutput.Location = new System.Drawing.Point(661, 3);
-      this.tabOutput.Name = "tabOutput";
-      this.tabOutput.SelectedIndex = 0;
-      this.tabOutput.Size = new System.Drawing.Size(350, 349);
-      this.tabOutput.TabIndex = 13;
-      //
+      // 
+      tabOutput.Controls.Add(pageSyntaxTree);
+      tabOutput.Controls.Add(pageAst);
+      tabOutput.Dock = System.Windows.Forms.DockStyle.Right;
+      tabOutput.Location = new System.Drawing.Point(1330, 7);
+      tabOutput.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      tabOutput.Name = "tabOutput";
+      tabOutput.SelectedIndex = 0;
+      tabOutput.Size = new System.Drawing.Size(700, 822);
+      tabOutput.TabIndex = 13;
+      // 
       // pageSyntaxTree
-      //
-      this.pageSyntaxTree.Controls.Add(this.tvParseTree);
-      this.pageSyntaxTree.ForeColor = System.Drawing.SystemColors.ControlText;
-      this.pageSyntaxTree.Location = new System.Drawing.Point(4, 22);
-      this.pageSyntaxTree.Name = "pageSyntaxTree";
-      this.pageSyntaxTree.Padding = new System.Windows.Forms.Padding(3);
-      this.pageSyntaxTree.Size = new System.Drawing.Size(342, 323);
-      this.pageSyntaxTree.TabIndex = 1;
-      this.pageSyntaxTree.Text = "Parse Tree";
-      this.pageSyntaxTree.UseVisualStyleBackColor = true;
-      //
+      // 
+      pageSyntaxTree.Controls.Add(tvParseTree);
+      pageSyntaxTree.ForeColor = System.Drawing.SystemColors.ControlText;
+      pageSyntaxTree.Location = new System.Drawing.Point(4, 39);
+      pageSyntaxTree.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageSyntaxTree.Name = "pageSyntaxTree";
+      pageSyntaxTree.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageSyntaxTree.Size = new System.Drawing.Size(692, 779);
+      pageSyntaxTree.TabIndex = 1;
+      pageSyntaxTree.Text = "Parse Tree";
+      pageSyntaxTree.UseVisualStyleBackColor = true;
+      // 
       // tvParseTree
-      //
-      this.tvParseTree.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.tvParseTree.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.tvParseTree.HideSelection = false;
-      this.tvParseTree.Indent = 16;
-      this.tvParseTree.Location = new System.Drawing.Point(3, 3);
-      this.tvParseTree.Name = "tvParseTree";
-      this.tvParseTree.Size = new System.Drawing.Size(336, 317);
-      this.tvParseTree.TabIndex = 0;
-      this.tvParseTree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tvParseTree_AfterSelect);
-      //
+      // 
+      tvParseTree.Dock = System.Windows.Forms.DockStyle.Fill;
+      tvParseTree.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+      tvParseTree.HideSelection = false;
+      tvParseTree.Indent = 16;
+      tvParseTree.Location = new System.Drawing.Point(6, 7);
+      tvParseTree.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      tvParseTree.Name = "tvParseTree";
+      tvParseTree.Size = new System.Drawing.Size(680, 765);
+      tvParseTree.TabIndex = 0;
+      tvParseTree.AfterSelect += tvParseTree_AfterSelect;
+      // 
       // pageAst
-      //
-      this.pageAst.Controls.Add(this.tvAst);
-      this.pageAst.Location = new System.Drawing.Point(4, 22);
-      this.pageAst.Name = "pageAst";
-      this.pageAst.Padding = new System.Windows.Forms.Padding(3);
-      this.pageAst.Size = new System.Drawing.Size(342, 323);
-      this.pageAst.TabIndex = 0;
-      this.pageAst.Text = "AST";
-      this.pageAst.UseVisualStyleBackColor = true;
-      //
+      // 
+      pageAst.Controls.Add(tvAst);
+      pageAst.Location = new System.Drawing.Point(4, 39);
+      pageAst.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageAst.Name = "pageAst";
+      pageAst.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageAst.Size = new System.Drawing.Size(692, 779);
+      pageAst.TabIndex = 0;
+      pageAst.Text = "AST";
+      pageAst.UseVisualStyleBackColor = true;
+      // 
       // tvAst
-      //
-      this.tvAst.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.tvAst.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.tvAst.HideSelection = false;
-      this.tvAst.Indent = 16;
-      this.tvAst.Location = new System.Drawing.Point(3, 3);
-      this.tvAst.Name = "tvAst";
-      this.tvAst.Size = new System.Drawing.Size(336, 317);
-      this.tvAst.TabIndex = 1;
-      this.tvAst.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tvAst_AfterSelect);
-      //
+      // 
+      tvAst.Dock = System.Windows.Forms.DockStyle.Fill;
+      tvAst.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+      tvAst.HideSelection = false;
+      tvAst.Indent = 16;
+      tvAst.Location = new System.Drawing.Point(6, 7);
+      tvAst.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      tvAst.Name = "tvAst";
+      tvAst.Size = new System.Drawing.Size(680, 765);
+      tvAst.TabIndex = 1;
+      tvAst.AfterSelect += tvAst_AfterSelect;
+      // 
       // chkParserTrace
-      //
-      this.chkParserTrace.AutoSize = true;
-      this.chkParserTrace.Location = new System.Drawing.Point(3, 3);
-      this.chkParserTrace.Name = "chkParserTrace";
-      this.chkParserTrace.Size = new System.Drawing.Size(90, 17);
-      this.chkParserTrace.TabIndex = 0;
-      this.chkParserTrace.Text = "Enable Trace";
-      this.chkParserTrace.UseVisualStyleBackColor = true;
-      //
+      // 
+      chkParserTrace.AutoSize = true;
+      chkParserTrace.Location = new System.Drawing.Point(6, 7);
+      chkParserTrace.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      chkParserTrace.Name = "chkParserTrace";
+      chkParserTrace.Size = new System.Drawing.Size(155, 34);
+      chkParserTrace.TabIndex = 0;
+      chkParserTrace.Text = "Enable Trace";
+      chkParserTrace.UseVisualStyleBackColor = true;
+      // 
       // pnlLang
-      //
-      this.pnlLang.Controls.Add(this.chkAutoRefresh);
-      this.pnlLang.Controls.Add(this.btnManageGrammars);
-      this.pnlLang.Controls.Add(this.lblSearchError);
-      this.pnlLang.Controls.Add(this.btnSearch);
-      this.pnlLang.Controls.Add(this.txtSearch);
-      this.pnlLang.Controls.Add(this.label2);
-      this.pnlLang.Controls.Add(this.cboGrammars);
-      this.pnlLang.Dock = System.Windows.Forms.DockStyle.Top;
-      this.pnlLang.Location = new System.Drawing.Point(0, 0);
-      this.pnlLang.Name = "pnlLang";
-      this.pnlLang.Size = new System.Drawing.Size(1022, 29);
-      this.pnlLang.TabIndex = 13;
-      //
+      // 
+      pnlLang.Controls.Add(chkAutoRefresh);
+      pnlLang.Controls.Add(btnManageGrammars);
+      pnlLang.Controls.Add(lblSearchError);
+      pnlLang.Controls.Add(btnSearch);
+      pnlLang.Controls.Add(txtSearch);
+      pnlLang.Controls.Add(label2);
+      pnlLang.Controls.Add(cboGrammars);
+      pnlLang.Dock = System.Windows.Forms.DockStyle.Top;
+      pnlLang.Location = new System.Drawing.Point(0, 0);
+      pnlLang.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pnlLang.Name = "pnlLang";
+      pnlLang.Size = new System.Drawing.Size(2044, 67);
+      pnlLang.TabIndex = 13;
+      // 
       // chkAutoRefresh
-      //
-      this.chkAutoRefresh.AutoSize = true;
-      this.chkAutoRefresh.Checked = true;
-      this.chkAutoRefresh.CheckState = System.Windows.Forms.CheckState.Checked;
-      this.chkAutoRefresh.Location = new System.Drawing.Point(339, 7);
-      this.chkAutoRefresh.Name = "chkAutoRefresh";
-      this.chkAutoRefresh.Size = new System.Drawing.Size(83, 17);
-      this.chkAutoRefresh.TabIndex = 13;
-      this.chkAutoRefresh.Text = "Auto-refresh";
-      this.toolTip.SetToolTip(this.chkAutoRefresh, resources.GetString("chkAutoRefresh.ToolTip"));
-      this.chkAutoRefresh.UseVisualStyleBackColor = true;
-      //
+      // 
+      chkAutoRefresh.AutoSize = true;
+      chkAutoRefresh.Checked = true;
+      chkAutoRefresh.CheckState = System.Windows.Forms.CheckState.Checked;
+      chkAutoRefresh.Location = new System.Drawing.Point(678, 16);
+      chkAutoRefresh.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      chkAutoRefresh.Name = "chkAutoRefresh";
+      chkAutoRefresh.Size = new System.Drawing.Size(156, 34);
+      chkAutoRefresh.TabIndex = 13;
+      chkAutoRefresh.Text = "Auto-refresh";
+      toolTip.SetToolTip(chkAutoRefresh, resources.GetString("chkAutoRefresh.ToolTip"));
+      chkAutoRefresh.UseVisualStyleBackColor = true;
+      // 
       // btnManageGrammars
-      //
-      this.btnManageGrammars.Location = new System.Drawing.Point(306, 2);
-      this.btnManageGrammars.Margin = new System.Windows.Forms.Padding(2);
-      this.btnManageGrammars.Name = "btnManageGrammars";
-      this.btnManageGrammars.Size = new System.Drawing.Size(28, 24);
-      this.btnManageGrammars.TabIndex = 12;
-      this.btnManageGrammars.Text = "...";
-      this.btnManageGrammars.UseVisualStyleBackColor = true;
-      this.btnManageGrammars.Click += new System.EventHandler(this.btnManageGrammars_Click);
-      //
+      // 
+      btnManageGrammars.Location = new System.Drawing.Point(612, 5);
+      btnManageGrammars.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+      btnManageGrammars.Name = "btnManageGrammars";
+      btnManageGrammars.Size = new System.Drawing.Size(56, 55);
+      btnManageGrammars.TabIndex = 12;
+      btnManageGrammars.Text = "...";
+      btnManageGrammars.UseVisualStyleBackColor = true;
+      btnManageGrammars.Click += btnManageGrammars_Click;
+      // 
       // lblSearchError
-      //
-      this.lblSearchError.AutoSize = true;
-      this.lblSearchError.ForeColor = System.Drawing.Color.Red;
-      this.lblSearchError.Location = new System.Drawing.Point(731, 9);
-      this.lblSearchError.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-      this.lblSearchError.Name = "lblSearchError";
-      this.lblSearchError.Size = new System.Drawing.Size(54, 13);
-      this.lblSearchError.TabIndex = 11;
-      this.lblSearchError.Text = "Not found";
-      this.lblSearchError.Visible = false;
-      //
+      // 
+      lblSearchError.AutoSize = true;
+      lblSearchError.ForeColor = System.Drawing.Color.Red;
+      lblSearchError.Location = new System.Drawing.Point(1462, 21);
+      lblSearchError.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+      lblSearchError.Name = "lblSearchError";
+      lblSearchError.Size = new System.Drawing.Size(109, 30);
+      lblSearchError.TabIndex = 11;
+      lblSearchError.Text = "Not found";
+      lblSearchError.Visible = false;
+      // 
       // btnSearch
-      //
-      this.btnSearch.Location = new System.Drawing.Point(672, 2);
-      this.btnSearch.Margin = new System.Windows.Forms.Padding(2);
-      this.btnSearch.Name = "btnSearch";
-      this.btnSearch.Size = new System.Drawing.Size(55, 24);
-      this.btnSearch.TabIndex = 10;
-      this.btnSearch.Text = "Find";
-      this.btnSearch.UseVisualStyleBackColor = true;
-      this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
-      //
+      // 
+      btnSearch.Location = new System.Drawing.Point(1344, 5);
+      btnSearch.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+      btnSearch.Name = "btnSearch";
+      btnSearch.Size = new System.Drawing.Size(110, 55);
+      btnSearch.TabIndex = 10;
+      btnSearch.Text = "Find";
+      btnSearch.UseVisualStyleBackColor = true;
+      btnSearch.Click += btnSearch_Click;
+      // 
       // txtSearch
-      //
-      this.txtSearch.AcceptsReturn = true;
-      this.txtSearch.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::Irony.GrammarExplorer.Properties.Settings.Default, "SearchPattern", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-      this.txtSearch.Location = new System.Drawing.Point(545, 4);
-      this.txtSearch.Margin = new System.Windows.Forms.Padding(2);
-      this.txtSearch.Name = "txtSearch";
-      this.txtSearch.Size = new System.Drawing.Size(123, 20);
-      this.txtSearch.TabIndex = 8;
-      this.txtSearch.Text = global::Irony.GrammarExplorer.Properties.Settings.Default.SearchPattern;
-      this.txtSearch.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtSearch_KeyPress);
-      //
+      // 
+      txtSearch.AcceptsReturn = true;
+      settings1.AutoRefresh = true;
+      settings1.DisableHili = false;
+      settings1.EnableTrace = false;
+      settings1.Grammars = "";
+      settings1.LanguageIndex = 0;
+      settings1.SearchPattern = "";
+      settings1.SettingsKey = "";
+      settings1.SourceSample = "";
+      txtSearch.DataBindings.Add(new System.Windows.Forms.Binding("Text", settings1, "SearchPattern", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+      txtSearch.Location = new System.Drawing.Point(1090, 9);
+      txtSearch.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+      txtSearch.Name = "txtSearch";
+      txtSearch.Size = new System.Drawing.Size(242, 35);
+      txtSearch.TabIndex = 8;
+      txtSearch.KeyPress += txtSearch_KeyPress;
+      // 
       // label2
-      //
-      this.label2.AutoSize = true;
-      this.label2.Location = new System.Drawing.Point(10, 6);
-      this.label2.Name = "label2";
-      this.label2.Size = new System.Drawing.Size(52, 13);
-      this.label2.TabIndex = 4;
-      this.label2.Text = "Grammar:";
-      //
+      // 
+      label2.AutoSize = true;
+      label2.Location = new System.Drawing.Point(20, 14);
+      label2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      label2.Name = "label2";
+      label2.Size = new System.Drawing.Size(104, 30);
+      label2.TabIndex = 4;
+      label2.Text = "Grammar:";
+      // 
       // cboGrammars
-      //
-      this.cboGrammars.ContextMenuStrip = this.menuGrammars;
-      this.cboGrammars.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-      this.cboGrammars.FormattingEnabled = true;
-      this.cboGrammars.Location = new System.Drawing.Point(67, 3);
-      this.cboGrammars.Name = "cboGrammars";
-      this.cboGrammars.Size = new System.Drawing.Size(234, 21);
-      this.cboGrammars.TabIndex = 3;
-      this.cboGrammars.SelectedIndexChanged += new System.EventHandler(this.cboGrammars_SelectedIndexChanged);
-      //
+      // 
+      cboGrammars.ContextMenuStrip = menuGrammars;
+      cboGrammars.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      cboGrammars.FormattingEnabled = true;
+      cboGrammars.Location = new System.Drawing.Point(134, 7);
+      cboGrammars.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      cboGrammars.Name = "cboGrammars";
+      cboGrammars.Size = new System.Drawing.Size(464, 38);
+      cboGrammars.TabIndex = 3;
+      cboGrammars.SelectedIndexChanged += cboGrammars_SelectedIndexChanged;
+      // 
       // menuGrammars
-      //
-      this.menuGrammars.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.miAdd,
-            this.miRefresh,
-            this.miSeparator,
-            this.miRemove,
-            this.miRemoveAll});
-      this.menuGrammars.Name = "menuGrammars";
-      this.menuGrammars.Size = new System.Drawing.Size(164, 98);
-      this.menuGrammars.Opening += new System.ComponentModel.CancelEventHandler(this.menuGrammars_Opening);
-      //
+      // 
+      menuGrammars.ImageScalingSize = new System.Drawing.Size(28, 28);
+      menuGrammars.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { miAdd, miRefresh, miSeparator, miRemove, miRemoveAll });
+      menuGrammars.Name = "menuGrammars";
+      menuGrammars.Size = new System.Drawing.Size(243, 154);
+      menuGrammars.Opening += menuGrammars_Opening;
+      // 
       // miAdd
-      //
-      this.miAdd.Name = "miAdd";
-      this.miAdd.Size = new System.Drawing.Size(163, 22);
-      this.miAdd.Text = "Add grammar...";
-      this.miAdd.Click += new System.EventHandler(this.miAdd_Click);
-      //
+      // 
+      miAdd.Name = "miAdd";
+      miAdd.Size = new System.Drawing.Size(242, 36);
+      miAdd.Text = "Add grammar...";
+      miAdd.Click += miAdd_Click;
+      // 
       // miRefresh
-      //
-      this.miRefresh.Name = "miRefresh";
-      this.miRefresh.Size = new System.Drawing.Size(163, 22);
-      this.miRefresh.Text = "Refresh selected";
-      this.miRefresh.ToolTipText = "Reload grammar assembly and refresh the current grammar.\r\nUse Auto-refresh checkb" +
-    "ox to do this automatically\r\nevery time the target assembly file is updated (rec" +
-    "ompiled).";
-      this.miRefresh.Click += new System.EventHandler(this.miRefresh_Click);
-      //
+      // 
+      miRefresh.Name = "miRefresh";
+      miRefresh.Size = new System.Drawing.Size(242, 36);
+      miRefresh.Text = "Refresh selected";
+      miRefresh.ToolTipText = "Reload grammar assembly and refresh the current grammar.\r\nUse Auto-refresh checkbox to do this automatically\r\nevery time the target assembly file is updated (recompiled).";
+      miRefresh.Click += miRefresh_Click;
+      // 
       // miSeparator
-      //
-      this.miSeparator.Name = "miSeparator";
-      this.miSeparator.Size = new System.Drawing.Size(160, 6);
-      //
+      // 
+      miSeparator.Name = "miSeparator";
+      miSeparator.Size = new System.Drawing.Size(239, 6);
+      // 
       // miRemove
-      //
-      this.miRemove.Name = "miRemove";
-      this.miRemove.Size = new System.Drawing.Size(163, 22);
-      this.miRemove.Text = "Remove selected";
-      this.miRemove.Click += new System.EventHandler(this.miRemove_Click);
-      //
+      // 
+      miRemove.Name = "miRemove";
+      miRemove.Size = new System.Drawing.Size(242, 36);
+      miRemove.Text = "Remove selected";
+      miRemove.Click += miRemove_Click;
+      // 
       // miRemoveAll
-      //
-      this.miRemoveAll.Name = "miRemoveAll";
-      this.miRemoveAll.Size = new System.Drawing.Size(163, 22);
-      this.miRemoveAll.Text = "Remove all";
-      this.miRemoveAll.Click += new System.EventHandler(this.miRemoveAll_Click);
-      //
+      // 
+      miRemoveAll.Name = "miRemoveAll";
+      miRemoveAll.Size = new System.Drawing.Size(242, 36);
+      miRemoveAll.Text = "Remove all";
+      miRemoveAll.Click += miRemoveAll_Click;
+      // 
       // dlgSelectAssembly
-      //
-      this.dlgSelectAssembly.DefaultExt = "dll";
-      this.dlgSelectAssembly.Filter = "DLL files|*.dll";
-      this.dlgSelectAssembly.Title = "Select Grammar Assembly ";
-      //
+      // 
+      dlgSelectAssembly.DefaultExt = "dll";
+      dlgSelectAssembly.Filter = "DLL files|*.dll";
+      dlgSelectAssembly.Title = "Select Grammar Assembly ";
+      // 
       // splitBottom
-      //
-      this.splitBottom.BackColor = System.Drawing.SystemColors.Control;
-      this.splitBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
-      this.splitBottom.Location = new System.Drawing.Point(0, 410);
-      this.splitBottom.Name = "splitBottom";
-      this.splitBottom.Size = new System.Drawing.Size(1022, 6);
-      this.splitBottom.TabIndex = 22;
-      this.splitBottom.TabStop = false;
-      //
+      // 
+      splitBottom.BackColor = System.Drawing.SystemColors.Control;
+      splitBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
+      splitBottom.Location = new System.Drawing.Point(0, 946);
+      splitBottom.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      splitBottom.Name = "splitBottom";
+      splitBottom.Size = new System.Drawing.Size(2044, 14);
+      splitBottom.TabIndex = 22;
+      splitBottom.TabStop = false;
+      // 
       // tabBottom
-      //
-      this.tabBottom.Controls.Add(this.pageLanguage);
-      this.tabBottom.Controls.Add(this.pageGrammarErrors);
-      this.tabBottom.Controls.Add(this.pageParserOutput);
-      this.tabBottom.Controls.Add(this.pageParserTrace);
-      this.tabBottom.Controls.Add(this.pageOutput);
-      this.tabBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
-      this.tabBottom.Location = new System.Drawing.Point(0, 416);
-      this.tabBottom.Name = "tabBottom";
-      this.tabBottom.SelectedIndex = 0;
-      this.tabBottom.Size = new System.Drawing.Size(1022, 187);
-      this.tabBottom.TabIndex = 0;
-      //
+      // 
+      tabBottom.Controls.Add(pageLanguage);
+      tabBottom.Controls.Add(pageGrammarErrors);
+      tabBottom.Controls.Add(pageParserOutput);
+      tabBottom.Controls.Add(pageParserTrace);
+      tabBottom.Controls.Add(pageOutput);
+      tabBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
+      tabBottom.Location = new System.Drawing.Point(0, 960);
+      tabBottom.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      tabBottom.Name = "tabBottom";
+      tabBottom.SelectedIndex = 0;
+      tabBottom.Size = new System.Drawing.Size(2044, 432);
+      tabBottom.TabIndex = 0;
+      // 
       // pageLanguage
-      //
-      this.pageLanguage.Controls.Add(this.grpLanguageInfo);
-      this.pageLanguage.Location = new System.Drawing.Point(4, 22);
-      this.pageLanguage.Name = "pageLanguage";
-      this.pageLanguage.Padding = new System.Windows.Forms.Padding(3);
-      this.pageLanguage.Size = new System.Drawing.Size(1014, 161);
-      this.pageLanguage.TabIndex = 1;
-      this.pageLanguage.Text = "Grammar Info";
-      this.pageLanguage.UseVisualStyleBackColor = true;
-      //
+      // 
+      pageLanguage.Controls.Add(grpLanguageInfo);
+      pageLanguage.Location = new System.Drawing.Point(4, 39);
+      pageLanguage.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageLanguage.Name = "pageLanguage";
+      pageLanguage.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageLanguage.Size = new System.Drawing.Size(2036, 389);
+      pageLanguage.TabIndex = 1;
+      pageLanguage.Text = "Grammar Info";
+      pageLanguage.UseVisualStyleBackColor = true;
+      // 
       // grpLanguageInfo
-      //
-      this.grpLanguageInfo.Controls.Add(this.label8);
-      this.grpLanguageInfo.Controls.Add(this.lblParserStateCount);
-      this.grpLanguageInfo.Controls.Add(this.lblLanguageDescr);
-      this.grpLanguageInfo.Controls.Add(this.txtGrammarComments);
-      this.grpLanguageInfo.Controls.Add(this.label11);
-      this.grpLanguageInfo.Controls.Add(this.label9);
-      this.grpLanguageInfo.Controls.Add(this.lblLanguageVersion);
-      this.grpLanguageInfo.Controls.Add(this.label10);
-      this.grpLanguageInfo.Controls.Add(this.lblLanguage);
-      this.grpLanguageInfo.Controls.Add(this.label4);
-      this.grpLanguageInfo.Controls.Add(this.label6);
-      this.grpLanguageInfo.Controls.Add(this.lblParserConstrTime);
-      this.grpLanguageInfo.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.grpLanguageInfo.Location = new System.Drawing.Point(3, 3);
-      this.grpLanguageInfo.Name = "grpLanguageInfo";
-      this.grpLanguageInfo.Size = new System.Drawing.Size(1008, 155);
-      this.grpLanguageInfo.TabIndex = 3;
-      this.grpLanguageInfo.TabStop = false;
-      //
+      // 
+      grpLanguageInfo.Controls.Add(label8);
+      grpLanguageInfo.Controls.Add(lblParserStateCount);
+      grpLanguageInfo.Controls.Add(lblLanguageDescr);
+      grpLanguageInfo.Controls.Add(txtGrammarComments);
+      grpLanguageInfo.Controls.Add(label11);
+      grpLanguageInfo.Controls.Add(label9);
+      grpLanguageInfo.Controls.Add(lblLanguageVersion);
+      grpLanguageInfo.Controls.Add(label10);
+      grpLanguageInfo.Controls.Add(lblLanguage);
+      grpLanguageInfo.Controls.Add(label4);
+      grpLanguageInfo.Controls.Add(label6);
+      grpLanguageInfo.Controls.Add(lblParserConstrTime);
+      grpLanguageInfo.Dock = System.Windows.Forms.DockStyle.Fill;
+      grpLanguageInfo.Location = new System.Drawing.Point(6, 7);
+      grpLanguageInfo.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      grpLanguageInfo.Name = "grpLanguageInfo";
+      grpLanguageInfo.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      grpLanguageInfo.Size = new System.Drawing.Size(2024, 375);
+      grpLanguageInfo.TabIndex = 3;
+      grpLanguageInfo.TabStop = false;
+      // 
       // label8
-      //
-      this.label8.AutoSize = true;
-      this.label8.Location = new System.Drawing.Point(6, 113);
-      this.label8.Name = "label8";
-      this.label8.Size = new System.Drawing.Size(96, 13);
-      this.label8.TabIndex = 26;
-      this.label8.Text = "Parser state count:";
-      //
+      // 
+      label8.AutoSize = true;
+      label8.Location = new System.Drawing.Point(12, 261);
+      label8.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      label8.Name = "label8";
+      label8.Size = new System.Drawing.Size(184, 30);
+      label8.TabIndex = 26;
+      label8.Text = "Parser state count:";
+      // 
       // lblParserStateCount
-      //
-      this.lblParserStateCount.AutoSize = true;
-      this.lblParserStateCount.Location = new System.Drawing.Point(167, 113);
-      this.lblParserStateCount.Name = "lblParserStateCount";
-      this.lblParserStateCount.Size = new System.Drawing.Size(13, 13);
-      this.lblParserStateCount.TabIndex = 25;
-      this.lblParserStateCount.Text = "0";
-      //
+      // 
+      lblParserStateCount.AutoSize = true;
+      lblParserStateCount.Location = new System.Drawing.Point(334, 261);
+      lblParserStateCount.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      lblParserStateCount.Name = "lblParserStateCount";
+      lblParserStateCount.Size = new System.Drawing.Size(24, 30);
+      lblParserStateCount.TabIndex = 25;
+      lblParserStateCount.Text = "0";
+      // 
       // lblLanguageDescr
-      //
-      this.lblLanguageDescr.Location = new System.Drawing.Point(107, 38);
-      this.lblLanguageDescr.Name = "lblLanguageDescr";
-      this.lblLanguageDescr.Size = new System.Drawing.Size(613, 22);
-      this.lblLanguageDescr.TabIndex = 24;
-      this.lblLanguageDescr.Text = "(description)";
-      //
+      // 
+      lblLanguageDescr.Location = new System.Drawing.Point(214, 88);
+      lblLanguageDescr.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      lblLanguageDescr.Name = "lblLanguageDescr";
+      lblLanguageDescr.Size = new System.Drawing.Size(1226, 51);
+      lblLanguageDescr.TabIndex = 24;
+      lblLanguageDescr.Text = "(description)";
+      // 
       // txtGrammarComments
-      //
-      this.txtGrammarComments.BackColor = System.Drawing.SystemColors.Window;
-      this.txtGrammarComments.BorderStyle = System.Windows.Forms.BorderStyle.None;
-      this.txtGrammarComments.Location = new System.Drawing.Point(111, 63);
-      this.txtGrammarComments.Multiline = true;
-      this.txtGrammarComments.Name = "txtGrammarComments";
-      this.txtGrammarComments.ReadOnly = true;
-      this.txtGrammarComments.Size = new System.Drawing.Size(609, 47);
-      this.txtGrammarComments.TabIndex = 23;
-      //
+      // 
+      txtGrammarComments.BackColor = System.Drawing.SystemColors.Window;
+      txtGrammarComments.BorderStyle = System.Windows.Forms.BorderStyle.None;
+      txtGrammarComments.Location = new System.Drawing.Point(222, 145);
+      txtGrammarComments.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      txtGrammarComments.Multiline = true;
+      txtGrammarComments.Name = "txtGrammarComments";
+      txtGrammarComments.ReadOnly = true;
+      txtGrammarComments.Size = new System.Drawing.Size(1218, 108);
+      txtGrammarComments.TabIndex = 23;
+      // 
       // label11
-      //
-      this.label11.AutoSize = true;
-      this.label11.Location = new System.Drawing.Point(6, 61);
-      this.label11.Name = "label11";
-      this.label11.Size = new System.Drawing.Size(99, 13);
-      this.label11.TabIndex = 22;
-      this.label11.Text = "Grammar Comment:";
-      //
+      // 
+      label11.AutoSize = true;
+      label11.Location = new System.Drawing.Point(12, 141);
+      label11.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      label11.Name = "label11";
+      label11.Size = new System.Drawing.Size(201, 30);
+      label11.TabIndex = 22;
+      label11.Text = "Grammar Comment:";
+      // 
       // label9
-      //
-      this.label9.AutoSize = true;
-      this.label9.Location = new System.Drawing.Point(6, 38);
-      this.label9.Name = "label9";
-      this.label9.Size = new System.Drawing.Size(63, 13);
-      this.label9.TabIndex = 20;
-      this.label9.Text = "Description:";
-      //
+      // 
+      label9.AutoSize = true;
+      label9.Location = new System.Drawing.Point(12, 88);
+      label9.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      label9.Name = "label9";
+      label9.Size = new System.Drawing.Size(123, 30);
+      label9.TabIndex = 20;
+      label9.Text = "Description:";
+      // 
       // lblLanguageVersion
-      //
-      this.lblLanguageVersion.Location = new System.Drawing.Point(278, 16);
-      this.lblLanguageVersion.Name = "lblLanguageVersion";
-      this.lblLanguageVersion.Size = new System.Drawing.Size(80, 17);
-      this.lblLanguageVersion.TabIndex = 19;
-      this.lblLanguageVersion.Text = "(Version)";
-      //
+      // 
+      lblLanguageVersion.Location = new System.Drawing.Point(556, 37);
+      lblLanguageVersion.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      lblLanguageVersion.Name = "lblLanguageVersion";
+      lblLanguageVersion.Size = new System.Drawing.Size(160, 39);
+      lblLanguageVersion.TabIndex = 19;
+      lblLanguageVersion.Text = "(Version)";
+      // 
       // label10
-      //
-      this.label10.AutoSize = true;
-      this.label10.Location = new System.Drawing.Point(227, 16);
-      this.label10.Name = "label10";
-      this.label10.Size = new System.Drawing.Size(45, 13);
-      this.label10.TabIndex = 18;
-      this.label10.Text = "Version:";
-      //
+      // 
+      label10.AutoSize = true;
+      label10.Location = new System.Drawing.Point(454, 37);
+      label10.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      label10.Name = "label10";
+      label10.Size = new System.Drawing.Size(86, 30);
+      label10.TabIndex = 18;
+      label10.Text = "Version:";
+      // 
       // lblLanguage
-      //
-      this.lblLanguage.Location = new System.Drawing.Point(107, 16);
-      this.lblLanguage.Name = "lblLanguage";
-      this.lblLanguage.Size = new System.Drawing.Size(230, 17);
-      this.lblLanguage.TabIndex = 17;
-      this.lblLanguage.Text = "(Language name)";
-      //
+      // 
+      lblLanguage.Location = new System.Drawing.Point(214, 37);
+      lblLanguage.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      lblLanguage.Name = "lblLanguage";
+      lblLanguage.Size = new System.Drawing.Size(460, 39);
+      lblLanguage.TabIndex = 17;
+      lblLanguage.Text = "(Language name)";
+      // 
       // label4
-      //
-      this.label4.AutoSize = true;
-      this.label4.Location = new System.Drawing.Point(6, 16);
-      this.label4.Name = "label4";
-      this.label4.Size = new System.Drawing.Size(58, 13);
-      this.label4.TabIndex = 16;
-      this.label4.Text = "Language:";
-      //
+      // 
+      label4.AutoSize = true;
+      label4.Location = new System.Drawing.Point(12, 37);
+      label4.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      label4.Name = "label4";
+      label4.Size = new System.Drawing.Size(109, 30);
+      label4.TabIndex = 16;
+      label4.Text = "Language:";
+      // 
       // label6
-      //
-      this.label6.AutoSize = true;
-      this.label6.Location = new System.Drawing.Point(6, 132);
-      this.label6.Name = "label6";
-      this.label6.Size = new System.Drawing.Size(142, 13);
-      this.label6.TabIndex = 15;
-      this.label6.Text = "Parser construction time, ms:";
-      //
+      // 
+      label6.AutoSize = true;
+      label6.Location = new System.Drawing.Point(12, 305);
+      label6.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      label6.Name = "label6";
+      label6.Size = new System.Drawing.Size(280, 30);
+      label6.TabIndex = 15;
+      label6.Text = "Parser construction time, ms:";
+      // 
       // lblParserConstrTime
-      //
-      this.lblParserConstrTime.AutoSize = true;
-      this.lblParserConstrTime.Location = new System.Drawing.Point(167, 132);
-      this.lblParserConstrTime.Name = "lblParserConstrTime";
-      this.lblParserConstrTime.Size = new System.Drawing.Size(13, 13);
-      this.lblParserConstrTime.TabIndex = 14;
-      this.lblParserConstrTime.Text = "0";
-      //
+      // 
+      lblParserConstrTime.AutoSize = true;
+      lblParserConstrTime.Location = new System.Drawing.Point(334, 305);
+      lblParserConstrTime.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      lblParserConstrTime.Name = "lblParserConstrTime";
+      lblParserConstrTime.Size = new System.Drawing.Size(24, 30);
+      lblParserConstrTime.TabIndex = 14;
+      lblParserConstrTime.Text = "0";
+      // 
       // pageGrammarErrors
-      //
-      this.pageGrammarErrors.Controls.Add(this.gridGrammarErrors);
-      this.pageGrammarErrors.Location = new System.Drawing.Point(4, 22);
-      this.pageGrammarErrors.Name = "pageGrammarErrors";
-      this.pageGrammarErrors.Padding = new System.Windows.Forms.Padding(3);
-      this.pageGrammarErrors.Size = new System.Drawing.Size(1014, 161);
-      this.pageGrammarErrors.TabIndex = 4;
-      this.pageGrammarErrors.Text = "Grammar Errors";
-      this.pageGrammarErrors.UseVisualStyleBackColor = true;
-      //
+      // 
+      pageGrammarErrors.Controls.Add(gridGrammarErrors);
+      pageGrammarErrors.Location = new System.Drawing.Point(4, 39);
+      pageGrammarErrors.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageGrammarErrors.Name = "pageGrammarErrors";
+      pageGrammarErrors.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageGrammarErrors.Size = new System.Drawing.Size(2036, 389);
+      pageGrammarErrors.TabIndex = 4;
+      pageGrammarErrors.Text = "Grammar Errors";
+      pageGrammarErrors.UseVisualStyleBackColor = true;
+      // 
       // gridGrammarErrors
-      //
-      this.gridGrammarErrors.AllowUserToAddRows = false;
-      this.gridGrammarErrors.AllowUserToDeleteRows = false;
-      this.gridGrammarErrors.ColumnHeadersHeight = 24;
-      this.gridGrammarErrors.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-      this.gridGrammarErrors.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dataGridViewTextBoxColumn2,
-            this.dataGridViewTextBoxColumn5,
-            this.dataGridViewTextBoxColumn6});
-      this.gridGrammarErrors.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.gridGrammarErrors.Location = new System.Drawing.Point(3, 3);
-      this.gridGrammarErrors.MultiSelect = false;
-      this.gridGrammarErrors.Name = "gridGrammarErrors";
-      this.gridGrammarErrors.ReadOnly = true;
-      this.gridGrammarErrors.RowHeadersVisible = false;
-      this.gridGrammarErrors.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-      this.gridGrammarErrors.Size = new System.Drawing.Size(1008, 155);
-      this.gridGrammarErrors.TabIndex = 3;
-      this.gridGrammarErrors.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridGrammarErrors_CellDoubleClick);
-      //
+      // 
+      gridGrammarErrors.AllowUserToAddRows = false;
+      gridGrammarErrors.AllowUserToDeleteRows = false;
+      gridGrammarErrors.ColumnHeadersHeight = 24;
+      gridGrammarErrors.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+      gridGrammarErrors.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] { dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn5, dataGridViewTextBoxColumn6 });
+      gridGrammarErrors.Dock = System.Windows.Forms.DockStyle.Fill;
+      gridGrammarErrors.Location = new System.Drawing.Point(6, 7);
+      gridGrammarErrors.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      gridGrammarErrors.MultiSelect = false;
+      gridGrammarErrors.Name = "gridGrammarErrors";
+      gridGrammarErrors.ReadOnly = true;
+      gridGrammarErrors.RowHeadersVisible = false;
+      gridGrammarErrors.RowHeadersWidth = 72;
+      gridGrammarErrors.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
+      gridGrammarErrors.Size = new System.Drawing.Size(2024, 375);
+      gridGrammarErrors.TabIndex = 3;
+      gridGrammarErrors.CellDoubleClick += gridGrammarErrors_CellDoubleClick;
+      // 
       // dataGridViewTextBoxColumn2
-      //
+      // 
       dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn2.DefaultCellStyle = dataGridViewCellStyle1;
-      this.dataGridViewTextBoxColumn2.HeaderText = "Error Level";
-      this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
-      this.dataGridViewTextBoxColumn2.ReadOnly = true;
-      this.dataGridViewTextBoxColumn2.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.dataGridViewTextBoxColumn2.ToolTipText = "Double-click grid cell to locate in source code";
-      //
+      dataGridViewTextBoxColumn2.DefaultCellStyle = dataGridViewCellStyle1;
+      dataGridViewTextBoxColumn2.HeaderText = "Error Level";
+      dataGridViewTextBoxColumn2.MinimumWidth = 9;
+      dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+      dataGridViewTextBoxColumn2.ReadOnly = true;
+      dataGridViewTextBoxColumn2.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      dataGridViewTextBoxColumn2.ToolTipText = "Double-click grid cell to locate in source code";
+      dataGridViewTextBoxColumn2.Width = 175;
+      // 
       // dataGridViewTextBoxColumn5
-      //
+      // 
       dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-      this.dataGridViewTextBoxColumn5.DefaultCellStyle = dataGridViewCellStyle2;
-      this.dataGridViewTextBoxColumn5.HeaderText = "Description";
-      this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
-      this.dataGridViewTextBoxColumn5.ReadOnly = true;
-      this.dataGridViewTextBoxColumn5.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.dataGridViewTextBoxColumn5.Width = 800;
-      //
+      dataGridViewTextBoxColumn5.DefaultCellStyle = dataGridViewCellStyle2;
+      dataGridViewTextBoxColumn5.HeaderText = "Description";
+      dataGridViewTextBoxColumn5.MinimumWidth = 9;
+      dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
+      dataGridViewTextBoxColumn5.ReadOnly = true;
+      dataGridViewTextBoxColumn5.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      dataGridViewTextBoxColumn5.Width = 800;
+      // 
       // dataGridViewTextBoxColumn6
-      //
-      this.dataGridViewTextBoxColumn6.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-      this.dataGridViewTextBoxColumn6.DataPropertyName = "State";
+      // 
+      dataGridViewTextBoxColumn6.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+      dataGridViewTextBoxColumn6.DataPropertyName = "State";
       dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn6.DefaultCellStyle = dataGridViewCellStyle3;
-      this.dataGridViewTextBoxColumn6.HeaderText = "Parser State";
-      this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
-      this.dataGridViewTextBoxColumn6.ReadOnly = true;
-      this.dataGridViewTextBoxColumn6.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-      this.dataGridViewTextBoxColumn6.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.dataGridViewTextBoxColumn6.ToolTipText = "Double-click grid cell to navigate to state details";
-      this.dataGridViewTextBoxColumn6.Width = 71;
-      //
+      dataGridViewTextBoxColumn6.DefaultCellStyle = dataGridViewCellStyle3;
+      dataGridViewTextBoxColumn6.HeaderText = "Parser State";
+      dataGridViewTextBoxColumn6.MinimumWidth = 9;
+      dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
+      dataGridViewTextBoxColumn6.ReadOnly = true;
+      dataGridViewTextBoxColumn6.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+      dataGridViewTextBoxColumn6.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      dataGridViewTextBoxColumn6.ToolTipText = "Double-click grid cell to navigate to state details";
+      dataGridViewTextBoxColumn6.Width = 127;
+      // 
       // pageParserOutput
-      //
-      this.pageParserOutput.Controls.Add(this.groupBox1);
-      this.pageParserOutput.Controls.Add(this.grpCompileInfo);
-      this.pageParserOutput.Location = new System.Drawing.Point(4, 22);
-      this.pageParserOutput.Name = "pageParserOutput";
-      this.pageParserOutput.Padding = new System.Windows.Forms.Padding(3);
-      this.pageParserOutput.Size = new System.Drawing.Size(1014, 161);
-      this.pageParserOutput.TabIndex = 2;
-      this.pageParserOutput.Text = "Parser Output";
-      this.pageParserOutput.UseVisualStyleBackColor = true;
-      //
+      // 
+      pageParserOutput.Controls.Add(groupBox1);
+      pageParserOutput.Controls.Add(grpCompileInfo);
+      pageParserOutput.Location = new System.Drawing.Point(4, 39);
+      pageParserOutput.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageParserOutput.Name = "pageParserOutput";
+      pageParserOutput.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageParserOutput.Size = new System.Drawing.Size(2036, 389);
+      pageParserOutput.TabIndex = 2;
+      pageParserOutput.Text = "Parser Output";
+      pageParserOutput.UseVisualStyleBackColor = true;
+      // 
       // groupBox1
-      //
-      this.groupBox1.Controls.Add(this.gridCompileErrors);
-      this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.groupBox1.Location = new System.Drawing.Point(158, 3);
-      this.groupBox1.Name = "groupBox1";
-      this.groupBox1.Size = new System.Drawing.Size(853, 155);
-      this.groupBox1.TabIndex = 3;
-      this.groupBox1.TabStop = false;
-      this.groupBox1.Text = "Compile Errors";
-      //
+      // 
+      groupBox1.Controls.Add(gridCompileErrors);
+      groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+      groupBox1.Location = new System.Drawing.Point(316, 7);
+      groupBox1.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      groupBox1.Name = "groupBox1";
+      groupBox1.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      groupBox1.Size = new System.Drawing.Size(1714, 375);
+      groupBox1.TabIndex = 3;
+      groupBox1.TabStop = false;
+      groupBox1.Text = "Compile Errors";
+      // 
       // gridCompileErrors
-      //
-      this.gridCompileErrors.AllowUserToAddRows = false;
-      this.gridCompileErrors.AllowUserToDeleteRows = false;
-      this.gridCompileErrors.ColumnHeadersHeight = 24;
-      this.gridCompileErrors.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-      this.gridCompileErrors.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dataGridViewTextBoxColumn3,
-            this.dataGridViewTextBoxColumn4,
-            this.dataGridViewTextBoxColumn1});
-      this.gridCompileErrors.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.gridCompileErrors.Location = new System.Drawing.Point(3, 16);
-      this.gridCompileErrors.MultiSelect = false;
-      this.gridCompileErrors.Name = "gridCompileErrors";
-      this.gridCompileErrors.ReadOnly = true;
-      this.gridCompileErrors.RowHeadersVisible = false;
-      this.gridCompileErrors.RowTemplate.Height = 24;
-      this.gridCompileErrors.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-      this.gridCompileErrors.Size = new System.Drawing.Size(847, 136);
-      this.gridCompileErrors.TabIndex = 2;
-      this.gridCompileErrors.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridCompileErrors_CellDoubleClick);
-      //
+      // 
+      gridCompileErrors.AllowUserToAddRows = false;
+      gridCompileErrors.AllowUserToDeleteRows = false;
+      gridCompileErrors.ColumnHeadersHeight = 24;
+      gridCompileErrors.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+      gridCompileErrors.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] { dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4, dataGridViewTextBoxColumn1 });
+      gridCompileErrors.Dock = System.Windows.Forms.DockStyle.Fill;
+      gridCompileErrors.Location = new System.Drawing.Point(6, 35);
+      gridCompileErrors.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      gridCompileErrors.MultiSelect = false;
+      gridCompileErrors.Name = "gridCompileErrors";
+      gridCompileErrors.ReadOnly = true;
+      gridCompileErrors.RowHeadersVisible = false;
+      gridCompileErrors.RowHeadersWidth = 72;
+      gridCompileErrors.RowTemplate.Height = 24;
+      gridCompileErrors.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
+      gridCompileErrors.Size = new System.Drawing.Size(1702, 333);
+      gridCompileErrors.TabIndex = 2;
+      gridCompileErrors.CellDoubleClick += gridCompileErrors_CellDoubleClick;
+      // 
       // dataGridViewTextBoxColumn3
-      //
+      // 
       dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn3.DefaultCellStyle = dataGridViewCellStyle4;
-      this.dataGridViewTextBoxColumn3.HeaderText = "L, C";
-      this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
-      this.dataGridViewTextBoxColumn3.ReadOnly = true;
-      this.dataGridViewTextBoxColumn3.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.dataGridViewTextBoxColumn3.ToolTipText = "Double-click grid cell to locate in source code";
-      this.dataGridViewTextBoxColumn3.Width = 50;
-      //
+      dataGridViewTextBoxColumn3.DefaultCellStyle = dataGridViewCellStyle4;
+      dataGridViewTextBoxColumn3.HeaderText = "L, C";
+      dataGridViewTextBoxColumn3.MinimumWidth = 9;
+      dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
+      dataGridViewTextBoxColumn3.ReadOnly = true;
+      dataGridViewTextBoxColumn3.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      dataGridViewTextBoxColumn3.ToolTipText = "Double-click grid cell to locate in source code";
+      dataGridViewTextBoxColumn3.Width = 50;
+      // 
       // dataGridViewTextBoxColumn4
-      //
+      // 
       dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-      this.dataGridViewTextBoxColumn4.DefaultCellStyle = dataGridViewCellStyle5;
-      this.dataGridViewTextBoxColumn4.HeaderText = "Error Message";
-      this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
-      this.dataGridViewTextBoxColumn4.ReadOnly = true;
-      this.dataGridViewTextBoxColumn4.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.dataGridViewTextBoxColumn4.Width = 1000;
-      //
+      dataGridViewTextBoxColumn4.DefaultCellStyle = dataGridViewCellStyle5;
+      dataGridViewTextBoxColumn4.HeaderText = "Error Message";
+      dataGridViewTextBoxColumn4.MinimumWidth = 9;
+      dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
+      dataGridViewTextBoxColumn4.ReadOnly = true;
+      dataGridViewTextBoxColumn4.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      dataGridViewTextBoxColumn4.Width = 1000;
+      // 
       // dataGridViewTextBoxColumn1
-      //
-      this.dataGridViewTextBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-      this.dataGridViewTextBoxColumn1.DataPropertyName = "State";
+      // 
+      dataGridViewTextBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+      dataGridViewTextBoxColumn1.DataPropertyName = "State";
       dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle6;
-      this.dataGridViewTextBoxColumn1.HeaderText = "Parser State";
-      this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-      this.dataGridViewTextBoxColumn1.ReadOnly = true;
-      this.dataGridViewTextBoxColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-      this.dataGridViewTextBoxColumn1.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.dataGridViewTextBoxColumn1.ToolTipText = "Double-click grid cell to navigate to state details";
-      this.dataGridViewTextBoxColumn1.Width = 71;
-      //
+      dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle6;
+      dataGridViewTextBoxColumn1.HeaderText = "Parser State";
+      dataGridViewTextBoxColumn1.MinimumWidth = 9;
+      dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+      dataGridViewTextBoxColumn1.ReadOnly = true;
+      dataGridViewTextBoxColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+      dataGridViewTextBoxColumn1.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      dataGridViewTextBoxColumn1.ToolTipText = "Double-click grid cell to navigate to state details";
+      dataGridViewTextBoxColumn1.Width = 127;
+      // 
       // grpCompileInfo
-      //
-      this.grpCompileInfo.Controls.Add(this.label12);
-      this.grpCompileInfo.Controls.Add(this.lblParseErrorCount);
-      this.grpCompileInfo.Controls.Add(this.label1);
-      this.grpCompileInfo.Controls.Add(this.lblParseTime);
-      this.grpCompileInfo.Controls.Add(this.label7);
-      this.grpCompileInfo.Controls.Add(this.lblSrcLineCount);
-      this.grpCompileInfo.Controls.Add(this.label3);
-      this.grpCompileInfo.Controls.Add(this.lblSrcTokenCount);
-      this.grpCompileInfo.Dock = System.Windows.Forms.DockStyle.Left;
-      this.grpCompileInfo.Location = new System.Drawing.Point(3, 3);
-      this.grpCompileInfo.Name = "grpCompileInfo";
-      this.grpCompileInfo.Size = new System.Drawing.Size(155, 155);
-      this.grpCompileInfo.TabIndex = 5;
-      this.grpCompileInfo.TabStop = false;
-      this.grpCompileInfo.Text = "Statistics";
-      //
+      // 
+      grpCompileInfo.Controls.Add(label12);
+      grpCompileInfo.Controls.Add(lblParseErrorCount);
+      grpCompileInfo.Controls.Add(label1);
+      grpCompileInfo.Controls.Add(lblParseTime);
+      grpCompileInfo.Controls.Add(label7);
+      grpCompileInfo.Controls.Add(lblSrcLineCount);
+      grpCompileInfo.Controls.Add(label3);
+      grpCompileInfo.Controls.Add(lblSrcTokenCount);
+      grpCompileInfo.Dock = System.Windows.Forms.DockStyle.Left;
+      grpCompileInfo.Location = new System.Drawing.Point(6, 7);
+      grpCompileInfo.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      grpCompileInfo.Name = "grpCompileInfo";
+      grpCompileInfo.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      grpCompileInfo.Size = new System.Drawing.Size(310, 375);
+      grpCompileInfo.TabIndex = 5;
+      grpCompileInfo.TabStop = false;
+      grpCompileInfo.Text = "Statistics";
+      // 
       // label12
-      //
-      this.label12.AutoSize = true;
-      this.label12.Location = new System.Drawing.Point(12, 81);
-      this.label12.Name = "label12";
-      this.label12.Size = new System.Drawing.Size(37, 13);
-      this.label12.TabIndex = 19;
-      this.label12.Text = "Errors:";
-      //
+      // 
+      label12.AutoSize = true;
+      label12.Location = new System.Drawing.Point(24, 187);
+      label12.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      label12.Name = "label12";
+      label12.Size = new System.Drawing.Size(71, 30);
+      label12.TabIndex = 19;
+      label12.Text = "Errors:";
+      // 
       // lblParseErrorCount
-      //
-      this.lblParseErrorCount.AutoSize = true;
-      this.lblParseErrorCount.Location = new System.Drawing.Point(108, 81);
-      this.lblParseErrorCount.Name = "lblParseErrorCount";
-      this.lblParseErrorCount.Size = new System.Drawing.Size(13, 13);
-      this.lblParseErrorCount.TabIndex = 18;
-      this.lblParseErrorCount.Text = "0";
-      //
+      // 
+      lblParseErrorCount.AutoSize = true;
+      lblParseErrorCount.Location = new System.Drawing.Point(216, 187);
+      lblParseErrorCount.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      lblParseErrorCount.Name = "lblParseErrorCount";
+      lblParseErrorCount.Size = new System.Drawing.Size(24, 30);
+      lblParseErrorCount.TabIndex = 18;
+      lblParseErrorCount.Text = "0";
+      // 
       // label1
-      //
-      this.label1.AutoSize = true;
-      this.label1.Location = new System.Drawing.Point(12, 59);
-      this.label1.Name = "label1";
-      this.label1.Size = new System.Drawing.Size(82, 13);
-      this.label1.TabIndex = 17;
-      this.label1.Text = "Parse Time, ms:";
-      //
+      // 
+      label1.AutoSize = true;
+      label1.Location = new System.Drawing.Point(24, 136);
+      label1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      label1.Name = "label1";
+      label1.Size = new System.Drawing.Size(156, 30);
+      label1.TabIndex = 17;
+      label1.Text = "Parse Time, ms:";
+      // 
       // lblParseTime
-      //
-      this.lblParseTime.AutoSize = true;
-      this.lblParseTime.Location = new System.Drawing.Point(108, 59);
-      this.lblParseTime.Name = "lblParseTime";
-      this.lblParseTime.Size = new System.Drawing.Size(13, 13);
-      this.lblParseTime.TabIndex = 16;
-      this.lblParseTime.Text = "0";
-      //
+      // 
+      lblParseTime.AutoSize = true;
+      lblParseTime.Location = new System.Drawing.Point(216, 136);
+      lblParseTime.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      lblParseTime.Name = "lblParseTime";
+      lblParseTime.Size = new System.Drawing.Size(24, 30);
+      lblParseTime.TabIndex = 16;
+      lblParseTime.Text = "0";
+      // 
       // label7
-      //
-      this.label7.AutoSize = true;
-      this.label7.Location = new System.Drawing.Point(12, 16);
-      this.label7.Name = "label7";
-      this.label7.Size = new System.Drawing.Size(35, 13);
-      this.label7.TabIndex = 15;
-      this.label7.Text = "Lines:";
-      //
+      // 
+      label7.AutoSize = true;
+      label7.Location = new System.Drawing.Point(24, 37);
+      label7.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      label7.Name = "label7";
+      label7.Size = new System.Drawing.Size(65, 30);
+      label7.TabIndex = 15;
+      label7.Text = "Lines:";
+      // 
       // lblSrcLineCount
-      //
-      this.lblSrcLineCount.AutoSize = true;
-      this.lblSrcLineCount.Location = new System.Drawing.Point(108, 16);
-      this.lblSrcLineCount.Name = "lblSrcLineCount";
-      this.lblSrcLineCount.Size = new System.Drawing.Size(13, 13);
-      this.lblSrcLineCount.TabIndex = 14;
-      this.lblSrcLineCount.Text = "0";
-      //
+      // 
+      lblSrcLineCount.AutoSize = true;
+      lblSrcLineCount.Location = new System.Drawing.Point(216, 37);
+      lblSrcLineCount.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      lblSrcLineCount.Name = "lblSrcLineCount";
+      lblSrcLineCount.Size = new System.Drawing.Size(24, 30);
+      lblSrcLineCount.TabIndex = 14;
+      lblSrcLineCount.Text = "0";
+      // 
       // label3
-      //
-      this.label3.AutoSize = true;
-      this.label3.Location = new System.Drawing.Point(12, 37);
-      this.label3.Name = "label3";
-      this.label3.Size = new System.Drawing.Size(46, 13);
-      this.label3.TabIndex = 13;
-      this.label3.Text = "Tokens:";
-      //
+      // 
+      label3.AutoSize = true;
+      label3.Location = new System.Drawing.Point(24, 85);
+      label3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      label3.Name = "label3";
+      label3.Size = new System.Drawing.Size(81, 30);
+      label3.TabIndex = 13;
+      label3.Text = "Tokens:";
+      // 
       // lblSrcTokenCount
-      //
-      this.lblSrcTokenCount.AutoSize = true;
-      this.lblSrcTokenCount.Location = new System.Drawing.Point(108, 37);
-      this.lblSrcTokenCount.Name = "lblSrcTokenCount";
-      this.lblSrcTokenCount.Size = new System.Drawing.Size(13, 13);
-      this.lblSrcTokenCount.TabIndex = 12;
-      this.lblSrcTokenCount.Text = "0";
-      //
+      // 
+      lblSrcTokenCount.AutoSize = true;
+      lblSrcTokenCount.Location = new System.Drawing.Point(216, 85);
+      lblSrcTokenCount.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      lblSrcTokenCount.Name = "lblSrcTokenCount";
+      lblSrcTokenCount.Size = new System.Drawing.Size(24, 30);
+      lblSrcTokenCount.TabIndex = 12;
+      lblSrcTokenCount.Text = "0";
+      // 
       // pageParserTrace
-      //
-      this.pageParserTrace.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-      this.pageParserTrace.Controls.Add(this.grpParserActions);
-      this.pageParserTrace.Controls.Add(this.splitter1);
-      this.pageParserTrace.Controls.Add(this.grpTokens);
-      this.pageParserTrace.Controls.Add(this.pnlParserTraceTop);
-      this.pageParserTrace.Location = new System.Drawing.Point(4, 22);
-      this.pageParserTrace.Name = "pageParserTrace";
-      this.pageParserTrace.Padding = new System.Windows.Forms.Padding(3);
-      this.pageParserTrace.Size = new System.Drawing.Size(1014, 161);
-      this.pageParserTrace.TabIndex = 3;
-      this.pageParserTrace.Text = "Parser Trace";
-      this.pageParserTrace.UseVisualStyleBackColor = true;
-      //
+      // 
+      pageParserTrace.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+      pageParserTrace.Controls.Add(grpParserActions);
+      pageParserTrace.Controls.Add(splitter1);
+      pageParserTrace.Controls.Add(grpTokens);
+      pageParserTrace.Controls.Add(pnlParserTraceTop);
+      pageParserTrace.Location = new System.Drawing.Point(4, 39);
+      pageParserTrace.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageParserTrace.Name = "pageParserTrace";
+      pageParserTrace.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageParserTrace.Size = new System.Drawing.Size(2036, 389);
+      pageParserTrace.TabIndex = 3;
+      pageParserTrace.Text = "Parser Trace";
+      pageParserTrace.UseVisualStyleBackColor = true;
+      // 
       // grpParserActions
-      //
-      this.grpParserActions.Controls.Add(this.gridParserTrace);
-      this.grpParserActions.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.grpParserActions.Location = new System.Drawing.Point(3, 28);
-      this.grpParserActions.Name = "grpParserActions";
-      this.grpParserActions.Size = new System.Drawing.Size(741, 128);
-      this.grpParserActions.TabIndex = 4;
-      this.grpParserActions.TabStop = false;
-      //
+      // 
+      grpParserActions.Controls.Add(gridParserTrace);
+      grpParserActions.Dock = System.Windows.Forms.DockStyle.Fill;
+      grpParserActions.Location = new System.Drawing.Point(6, 62);
+      grpParserActions.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      grpParserActions.Name = "grpParserActions";
+      grpParserActions.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      grpParserActions.Size = new System.Drawing.Size(1492, 318);
+      grpParserActions.TabIndex = 4;
+      grpParserActions.TabStop = false;
+      // 
       // gridParserTrace
-      //
-      this.gridParserTrace.AllowUserToAddRows = false;
-      this.gridParserTrace.AllowUserToDeleteRows = false;
-      this.gridParserTrace.AllowUserToResizeRows = false;
-      this.gridParserTrace.ColumnHeadersHeight = 24;
-      this.gridParserTrace.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-      this.gridParserTrace.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.State,
-            this.Stack,
-            this.Input,
-            this.Action});
-      this.gridParserTrace.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.gridParserTrace.Location = new System.Drawing.Point(3, 16);
-      this.gridParserTrace.MultiSelect = false;
-      this.gridParserTrace.Name = "gridParserTrace";
-      this.gridParserTrace.ReadOnly = true;
-      this.gridParserTrace.RowHeadersVisible = false;
-      this.gridParserTrace.RowTemplate.Height = 24;
-      this.gridParserTrace.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-      this.gridParserTrace.Size = new System.Drawing.Size(735, 109);
-      this.gridParserTrace.TabIndex = 0;
-      this.gridParserTrace.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridParserTrace_CellDoubleClick);
-      //
+      // 
+      gridParserTrace.AllowUserToAddRows = false;
+      gridParserTrace.AllowUserToDeleteRows = false;
+      gridParserTrace.AllowUserToResizeRows = false;
+      gridParserTrace.ColumnHeadersHeight = 24;
+      gridParserTrace.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+      gridParserTrace.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] { State, Stack, Input, Action });
+      gridParserTrace.Dock = System.Windows.Forms.DockStyle.Fill;
+      gridParserTrace.Location = new System.Drawing.Point(6, 35);
+      gridParserTrace.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      gridParserTrace.MultiSelect = false;
+      gridParserTrace.Name = "gridParserTrace";
+      gridParserTrace.ReadOnly = true;
+      gridParserTrace.RowHeadersVisible = false;
+      gridParserTrace.RowHeadersWidth = 72;
+      gridParserTrace.RowTemplate.Height = 24;
+      gridParserTrace.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
+      gridParserTrace.Size = new System.Drawing.Size(1480, 276);
+      gridParserTrace.TabIndex = 0;
+      gridParserTrace.CellDoubleClick += gridParserTrace_CellDoubleClick;
+      // 
       // State
-      //
-      this.State.DataPropertyName = "State";
+      // 
+      State.DataPropertyName = "State";
       dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-      this.State.DefaultCellStyle = dataGridViewCellStyle7;
-      this.State.HeaderText = "State";
-      this.State.Name = "State";
-      this.State.ReadOnly = true;
-      this.State.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-      this.State.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.State.ToolTipText = "Double-click grid cell to navigate to state details";
-      this.State.Width = 60;
-      //
+      State.DefaultCellStyle = dataGridViewCellStyle7;
+      State.HeaderText = "State";
+      State.MinimumWidth = 9;
+      State.Name = "State";
+      State.ReadOnly = true;
+      State.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+      State.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      State.ToolTipText = "Double-click grid cell to navigate to state details";
+      State.Width = 60;
+      // 
       // Stack
-      //
-      this.Stack.DataPropertyName = "StackTop";
+      // 
+      Stack.DataPropertyName = "StackTop";
       dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-      this.Stack.DefaultCellStyle = dataGridViewCellStyle8;
-      this.Stack.HeaderText = "Stack Top";
-      this.Stack.Name = "Stack";
-      this.Stack.ReadOnly = true;
-      this.Stack.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-      this.Stack.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.Stack.ToolTipText = "Double-click grid cell to locate node in source code";
-      this.Stack.Width = 200;
-      //
+      Stack.DefaultCellStyle = dataGridViewCellStyle8;
+      Stack.HeaderText = "Stack Top";
+      Stack.MinimumWidth = 9;
+      Stack.Name = "Stack";
+      Stack.ReadOnly = true;
+      Stack.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+      Stack.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      Stack.ToolTipText = "Double-click grid cell to locate node in source code";
+      Stack.Width = 200;
+      // 
       // Input
-      //
-      this.Input.DataPropertyName = "Input";
-      this.Input.HeaderText = "Input";
-      this.Input.Name = "Input";
-      this.Input.ReadOnly = true;
-      this.Input.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.Input.ToolTipText = "Double-click grid cell to locate in source code";
-      this.Input.Width = 200;
-      //
+      // 
+      Input.DataPropertyName = "Input";
+      Input.HeaderText = "Input";
+      Input.MinimumWidth = 9;
+      Input.Name = "Input";
+      Input.ReadOnly = true;
+      Input.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      Input.ToolTipText = "Double-click grid cell to locate in source code";
+      Input.Width = 200;
+      // 
       // Action
-      //
-      this.Action.DataPropertyName = "Action";
-      this.Action.HeaderText = "Action";
-      this.Action.Name = "Action";
-      this.Action.ReadOnly = true;
-      this.Action.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-      this.Action.Width = 600;
-      //
+      // 
+      Action.DataPropertyName = "Action";
+      Action.HeaderText = "Action";
+      Action.MinimumWidth = 9;
+      Action.Name = "Action";
+      Action.ReadOnly = true;
+      Action.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+      Action.Width = 600;
+      // 
       // splitter1
-      //
-      this.splitter1.BackColor = System.Drawing.SystemColors.Control;
-      this.splitter1.Dock = System.Windows.Forms.DockStyle.Right;
-      this.splitter1.Location = new System.Drawing.Point(744, 28);
-      this.splitter1.Name = "splitter1";
-      this.splitter1.Size = new System.Drawing.Size(6, 128);
-      this.splitter1.TabIndex = 15;
-      this.splitter1.TabStop = false;
-      //
+      // 
+      splitter1.BackColor = System.Drawing.SystemColors.Control;
+      splitter1.Dock = System.Windows.Forms.DockStyle.Right;
+      splitter1.Location = new System.Drawing.Point(1498, 62);
+      splitter1.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      splitter1.Name = "splitter1";
+      splitter1.Size = new System.Drawing.Size(12, 318);
+      splitter1.TabIndex = 15;
+      splitter1.TabStop = false;
+      // 
       // grpTokens
-      //
-      this.grpTokens.Controls.Add(this.lstTokens);
-      this.grpTokens.Dock = System.Windows.Forms.DockStyle.Right;
-      this.grpTokens.Location = new System.Drawing.Point(750, 28);
-      this.grpTokens.Name = "grpTokens";
-      this.grpTokens.Size = new System.Drawing.Size(259, 128);
-      this.grpTokens.TabIndex = 3;
-      this.grpTokens.TabStop = false;
-      this.grpTokens.Text = "Tokens";
-      //
+      // 
+      grpTokens.Controls.Add(lstTokens);
+      grpTokens.Dock = System.Windows.Forms.DockStyle.Right;
+      grpTokens.Location = new System.Drawing.Point(1510, 62);
+      grpTokens.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      grpTokens.Name = "grpTokens";
+      grpTokens.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      grpTokens.Size = new System.Drawing.Size(518, 318);
+      grpTokens.TabIndex = 3;
+      grpTokens.TabStop = false;
+      grpTokens.Text = "Tokens";
+      // 
       // lstTokens
-      //
-      this.lstTokens.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.lstTokens.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.lstTokens.FormattingEnabled = true;
-      this.lstTokens.ItemHeight = 14;
-      this.lstTokens.Location = new System.Drawing.Point(3, 16);
-      this.lstTokens.Name = "lstTokens";
-      this.lstTokens.Size = new System.Drawing.Size(253, 109);
-      this.lstTokens.TabIndex = 2;
-      this.lstTokens.Click += new System.EventHandler(this.lstTokens_Click);
-      //
+      // 
+      lstTokens.Dock = System.Windows.Forms.DockStyle.Fill;
+      lstTokens.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+      lstTokens.FormattingEnabled = true;
+      lstTokens.ItemHeight = 21;
+      lstTokens.Location = new System.Drawing.Point(6, 35);
+      lstTokens.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      lstTokens.Name = "lstTokens";
+      lstTokens.Size = new System.Drawing.Size(506, 276);
+      lstTokens.TabIndex = 2;
+      lstTokens.Click += lstTokens_Click;
+      // 
       // pnlParserTraceTop
-      //
-      this.pnlParserTraceTop.BackColor = System.Drawing.SystemColors.Control;
-      this.pnlParserTraceTop.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-      this.pnlParserTraceTop.Controls.Add(this.chkExcludeComments);
-      this.pnlParserTraceTop.Controls.Add(this.lblTraceComment);
-      this.pnlParserTraceTop.Controls.Add(this.chkParserTrace);
-      this.pnlParserTraceTop.Dock = System.Windows.Forms.DockStyle.Top;
-      this.pnlParserTraceTop.Location = new System.Drawing.Point(3, 3);
-      this.pnlParserTraceTop.Name = "pnlParserTraceTop";
-      this.pnlParserTraceTop.Size = new System.Drawing.Size(1006, 25);
-      this.pnlParserTraceTop.TabIndex = 1;
-      //
+      // 
+      pnlParserTraceTop.BackColor = System.Drawing.SystemColors.Control;
+      pnlParserTraceTop.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+      pnlParserTraceTop.Controls.Add(chkExcludeComments);
+      pnlParserTraceTop.Controls.Add(lblTraceComment);
+      pnlParserTraceTop.Controls.Add(chkParserTrace);
+      pnlParserTraceTop.Dock = System.Windows.Forms.DockStyle.Top;
+      pnlParserTraceTop.Location = new System.Drawing.Point(6, 7);
+      pnlParserTraceTop.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pnlParserTraceTop.Name = "pnlParserTraceTop";
+      pnlParserTraceTop.Size = new System.Drawing.Size(2022, 55);
+      pnlParserTraceTop.TabIndex = 1;
+      // 
       // chkExcludeComments
-      //
-      this.chkExcludeComments.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.chkExcludeComments.AutoSize = true;
-      this.chkExcludeComments.Checked = true;
-      this.chkExcludeComments.CheckState = System.Windows.Forms.CheckState.Checked;
-      this.chkExcludeComments.Location = new System.Drawing.Point(847, 3);
-      this.chkExcludeComments.Name = "chkExcludeComments";
-      this.chkExcludeComments.Size = new System.Drawing.Size(145, 17);
-      this.chkExcludeComments.TabIndex = 2;
-      this.chkExcludeComments.Text = "Exclude comment tokens";
-      this.chkExcludeComments.UseVisualStyleBackColor = true;
-      //
+      // 
+      chkExcludeComments.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+      chkExcludeComments.AutoSize = true;
+      chkExcludeComments.Checked = true;
+      chkExcludeComments.CheckState = System.Windows.Forms.CheckState.Checked;
+      chkExcludeComments.Location = new System.Drawing.Point(1725, 7);
+      chkExcludeComments.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      chkExcludeComments.Name = "chkExcludeComments";
+      chkExcludeComments.Size = new System.Drawing.Size(271, 34);
+      chkExcludeComments.TabIndex = 2;
+      chkExcludeComments.Text = "Exclude comment tokens";
+      chkExcludeComments.UseVisualStyleBackColor = true;
+      // 
       // lblTraceComment
-      //
-      this.lblTraceComment.AutoSize = true;
-      this.lblTraceComment.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.lblTraceComment.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
-      this.lblTraceComment.Location = new System.Drawing.Point(128, 3);
-      this.lblTraceComment.Name = "lblTraceComment";
-      this.lblTraceComment.Size = new System.Drawing.Size(350, 13);
-      this.lblTraceComment.TabIndex = 1;
-      this.lblTraceComment.Text = "(Double-click grid cell to navigate to parser state or source code position)";
-      //
+      // 
+      lblTraceComment.AutoSize = true;
+      lblTraceComment.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, 0);
+      lblTraceComment.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
+      lblTraceComment.Location = new System.Drawing.Point(256, 7);
+      lblTraceComment.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      lblTraceComment.Name = "lblTraceComment";
+      lblTraceComment.Size = new System.Drawing.Size(638, 25);
+      lblTraceComment.TabIndex = 1;
+      lblTraceComment.Text = "(Double-click grid cell to navigate to parser state or source code position)";
+      // 
       // pageOutput
-      //
-      this.pageOutput.Controls.Add(this.txtOutput);
-      this.pageOutput.Controls.Add(this.pnlRuntimeInfo);
-      this.pageOutput.Location = new System.Drawing.Point(4, 22);
-      this.pageOutput.Name = "pageOutput";
-      this.pageOutput.Padding = new System.Windows.Forms.Padding(3);
-      this.pageOutput.Size = new System.Drawing.Size(1014, 161);
-      this.pageOutput.TabIndex = 0;
-      this.pageOutput.Text = "Runtime Output";
-      this.pageOutput.UseVisualStyleBackColor = true;
-      //
+      // 
+      pageOutput.Controls.Add(txtOutput);
+      pageOutput.Controls.Add(pnlRuntimeInfo);
+      pageOutput.Location = new System.Drawing.Point(4, 39);
+      pageOutput.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageOutput.Name = "pageOutput";
+      pageOutput.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pageOutput.Size = new System.Drawing.Size(2036, 389);
+      pageOutput.TabIndex = 0;
+      pageOutput.Text = "Runtime Output";
+      pageOutput.UseVisualStyleBackColor = true;
+      // 
       // txtOutput
-      //
-      this.txtOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.txtOutput.Location = new System.Drawing.Point(3, 3);
-      this.txtOutput.Name = "txtOutput";
-      this.txtOutput.Size = new System.Drawing.Size(857, 155);
-      this.txtOutput.TabIndex = 1;
-      //
+      // 
+      txtOutput.Dock = System.Windows.Forms.DockStyle.Fill;
+      txtOutput.Location = new System.Drawing.Point(6, 7);
+      txtOutput.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      txtOutput.Multiline = true;
+      txtOutput.Name = "txtOutput";
+      txtOutput.Size = new System.Drawing.Size(1722, 375);
+      txtOutput.TabIndex = 1;
+      txtOutput.Text = "(runtime output is broken)";
+      // 
       // pnlRuntimeInfo
-      //
-      this.pnlRuntimeInfo.Controls.Add(this.label14);
-      this.pnlRuntimeInfo.Controls.Add(this.lblGCCount);
-      this.pnlRuntimeInfo.Controls.Add(this.label13);
-      this.pnlRuntimeInfo.Controls.Add(this.lnkShowErrStack);
-      this.pnlRuntimeInfo.Controls.Add(this.lnkShowErrLocation);
-      this.pnlRuntimeInfo.Controls.Add(this.label5);
-      this.pnlRuntimeInfo.Controls.Add(this.lblRunTime);
-      this.pnlRuntimeInfo.Dock = System.Windows.Forms.DockStyle.Right;
-      this.pnlRuntimeInfo.Location = new System.Drawing.Point(860, 3);
-      this.pnlRuntimeInfo.Name = "pnlRuntimeInfo";
-      this.pnlRuntimeInfo.Size = new System.Drawing.Size(151, 155);
-      this.pnlRuntimeInfo.TabIndex = 2;
-      //
+      // 
+      pnlRuntimeInfo.Controls.Add(label14);
+      pnlRuntimeInfo.Controls.Add(lblGCCount);
+      pnlRuntimeInfo.Controls.Add(label13);
+      pnlRuntimeInfo.Controls.Add(lnkShowErrStack);
+      pnlRuntimeInfo.Controls.Add(lnkShowErrLocation);
+      pnlRuntimeInfo.Controls.Add(label5);
+      pnlRuntimeInfo.Controls.Add(lblRunTime);
+      pnlRuntimeInfo.Dock = System.Windows.Forms.DockStyle.Right;
+      pnlRuntimeInfo.Location = new System.Drawing.Point(1728, 7);
+      pnlRuntimeInfo.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      pnlRuntimeInfo.Name = "pnlRuntimeInfo";
+      pnlRuntimeInfo.Size = new System.Drawing.Size(302, 375);
+      pnlRuntimeInfo.TabIndex = 2;
+      // 
       // label14
-      //
-      this.label14.AutoSize = true;
-      this.label14.Location = new System.Drawing.Point(6, 23);
-      this.label14.Name = "label14";
-      this.label14.Size = new System.Drawing.Size(105, 13);
-      this.label14.TabIndex = 24;
-      this.label14.Text = "GC Collection Count:";
-      //
+      // 
+      label14.AutoSize = true;
+      label14.Location = new System.Drawing.Point(12, 53);
+      label14.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      label14.Name = "label14";
+      label14.Size = new System.Drawing.Size(205, 30);
+      label14.TabIndex = 24;
+      label14.Text = "GC Collection Count:";
+      // 
       // lblGCCount
-      //
-      this.lblGCCount.AutoSize = true;
-      this.lblGCCount.Location = new System.Drawing.Point(124, 23);
-      this.lblGCCount.Name = "lblGCCount";
-      this.lblGCCount.Size = new System.Drawing.Size(13, 13);
-      this.lblGCCount.TabIndex = 23;
-      this.lblGCCount.Text = "0";
-      //
+      // 
+      lblGCCount.AutoSize = true;
+      lblGCCount.Location = new System.Drawing.Point(248, 53);
+      lblGCCount.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      lblGCCount.Name = "lblGCCount";
+      lblGCCount.Size = new System.Drawing.Size(24, 30);
+      lblGCCount.TabIndex = 23;
+      lblGCCount.Text = "0";
+      // 
       // label13
-      //
-      this.label13.AutoSize = true;
-      this.label13.Location = new System.Drawing.Point(5, 41);
-      this.label13.Name = "label13";
-      this.label13.Size = new System.Drawing.Size(73, 13);
-      this.label13.TabIndex = 22;
-      this.label13.Text = "Runtime error:";
-      //
+      // 
+      label13.AutoSize = true;
+      label13.Location = new System.Drawing.Point(10, 95);
+      label13.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      label13.Name = "label13";
+      label13.Size = new System.Drawing.Size(146, 30);
+      label13.TabIndex = 22;
+      label13.Text = "Runtime error:";
+      // 
       // lnkShowErrStack
-      //
-      this.lnkShowErrStack.AutoSize = true;
-      this.lnkShowErrStack.Enabled = false;
-      this.lnkShowErrStack.Location = new System.Drawing.Point(23, 86);
-      this.lnkShowErrStack.Name = "lnkShowErrStack";
-      this.lnkShowErrStack.Size = new System.Drawing.Size(79, 13);
-      this.lnkShowErrStack.TabIndex = 21;
-      this.lnkShowErrStack.TabStop = true;
-      this.lnkShowErrStack.Text = "Show full stack";
-      this.lnkShowErrStack.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkShowErrStack_LinkClicked);
-      //
+      // 
+      lnkShowErrStack.AutoSize = true;
+      lnkShowErrStack.Enabled = false;
+      lnkShowErrStack.Location = new System.Drawing.Point(46, 198);
+      lnkShowErrStack.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      lnkShowErrStack.Name = "lnkShowErrStack";
+      lnkShowErrStack.Size = new System.Drawing.Size(151, 30);
+      lnkShowErrStack.TabIndex = 21;
+      lnkShowErrStack.TabStop = true;
+      lnkShowErrStack.Text = "Show full stack";
+      lnkShowErrStack.LinkClicked += lnkShowErrStack_LinkClicked;
+      // 
       // lnkShowErrLocation
-      //
-      this.lnkShowErrLocation.AutoSize = true;
-      this.lnkShowErrLocation.Enabled = false;
-      this.lnkShowErrLocation.Location = new System.Drawing.Point(23, 62);
-      this.lnkShowErrLocation.Name = "lnkShowErrLocation";
-      this.lnkShowErrLocation.Size = new System.Drawing.Size(98, 13);
-      this.lnkShowErrLocation.TabIndex = 20;
-      this.lnkShowErrLocation.TabStop = true;
-      this.lnkShowErrLocation.Text = "Show error location";
-      this.lnkShowErrLocation.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkShowErrLocation_LinkClicked);
-      //
+      // 
+      lnkShowErrLocation.AutoSize = true;
+      lnkShowErrLocation.Enabled = false;
+      lnkShowErrLocation.Location = new System.Drawing.Point(46, 143);
+      lnkShowErrLocation.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      lnkShowErrLocation.Name = "lnkShowErrLocation";
+      lnkShowErrLocation.Size = new System.Drawing.Size(193, 30);
+      lnkShowErrLocation.TabIndex = 20;
+      lnkShowErrLocation.TabStop = true;
+      lnkShowErrLocation.Text = "Show error location";
+      lnkShowErrLocation.LinkClicked += lnkShowErrLocation_LinkClicked;
+      // 
       // label5
-      //
-      this.label5.AutoSize = true;
-      this.label5.Location = new System.Drawing.Point(5, 3);
-      this.label5.Name = "label5";
-      this.label5.Size = new System.Drawing.Size(98, 13);
-      this.label5.TabIndex = 19;
-      this.label5.Text = "Execution time, ms:";
-      //
+      // 
+      label5.AutoSize = true;
+      label5.Location = new System.Drawing.Point(10, 7);
+      label5.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      label5.Name = "label5";
+      label5.Size = new System.Drawing.Size(193, 30);
+      label5.TabIndex = 19;
+      label5.Text = "Execution time, ms:";
+      // 
       // lblRunTime
-      //
-      this.lblRunTime.AutoSize = true;
-      this.lblRunTime.Location = new System.Drawing.Point(123, 3);
-      this.lblRunTime.Name = "lblRunTime";
-      this.lblRunTime.Size = new System.Drawing.Size(13, 13);
-      this.lblRunTime.TabIndex = 18;
-      this.lblRunTime.Text = "0";
-      //
+      // 
+      lblRunTime.AutoSize = true;
+      lblRunTime.Location = new System.Drawing.Point(246, 7);
+      lblRunTime.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+      lblRunTime.Name = "lblRunTime";
+      lblRunTime.Size = new System.Drawing.Size(24, 30);
+      lblRunTime.TabIndex = 18;
+      lblRunTime.Text = "0";
+      // 
       // fmGrammarExplorer
-      //
-      this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-      this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(1022, 603);
-      this.Controls.Add(this.tabGrammar);
-      this.Controls.Add(this.splitBottom);
-      this.Controls.Add(this.pnlLang);
-      this.Controls.Add(this.tabBottom);
-      this.Name = "fmGrammarExplorer";
-      this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-      this.Text = "Irony Grammar Explorer";
-      this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.fmExploreGrammar_FormClosing);
-      this.Load += new System.EventHandler(this.fmExploreGrammar_Load);
-      this.tabGrammar.ResumeLayout(false);
-      this.pageTerminals.ResumeLayout(false);
-      this.pageTerminals.PerformLayout();
-      this.pageNonTerms.ResumeLayout(false);
-      this.pageNonTerms.PerformLayout();
-      this.pageParserStates.ResumeLayout(false);
-      this.pageParserStates.PerformLayout();
-      this.pageTest.ResumeLayout(false);
-      this.panel1.ResumeLayout(false);
-      this.panel1.PerformLayout();
-      this.tabOutput.ResumeLayout(false);
-      this.pageSyntaxTree.ResumeLayout(false);
-      this.pageAst.ResumeLayout(false);
-      this.pnlLang.ResumeLayout(false);
-      this.pnlLang.PerformLayout();
-      this.menuGrammars.ResumeLayout(false);
-      this.tabBottom.ResumeLayout(false);
-      this.pageLanguage.ResumeLayout(false);
-      this.grpLanguageInfo.ResumeLayout(false);
-      this.grpLanguageInfo.PerformLayout();
-      this.pageGrammarErrors.ResumeLayout(false);
-      ((System.ComponentModel.ISupportInitialize)(this.gridGrammarErrors)).EndInit();
-      this.pageParserOutput.ResumeLayout(false);
-      this.groupBox1.ResumeLayout(false);
-      ((System.ComponentModel.ISupportInitialize)(this.gridCompileErrors)).EndInit();
-      this.grpCompileInfo.ResumeLayout(false);
-      this.grpCompileInfo.PerformLayout();
-      this.pageParserTrace.ResumeLayout(false);
-      this.grpParserActions.ResumeLayout(false);
-      ((System.ComponentModel.ISupportInitialize)(this.gridParserTrace)).EndInit();
-      this.grpTokens.ResumeLayout(false);
-      this.pnlParserTraceTop.ResumeLayout(false);
-      this.pnlParserTraceTop.PerformLayout();
-      this.pageOutput.ResumeLayout(false);
-      this.pnlRuntimeInfo.ResumeLayout(false);
-      this.pnlRuntimeInfo.PerformLayout();
-      this.ResumeLayout(false);
-
+      // 
+      AutoScaleDimensions = new System.Drawing.SizeF(12F, 30F);
+      AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      ClientSize = new System.Drawing.Size(2044, 1392);
+      Controls.Add(tabGrammar);
+      Controls.Add(splitBottom);
+      Controls.Add(pnlLang);
+      Controls.Add(tabBottom);
+      Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
+      Name = "fmGrammarExplorer";
+      StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+      Text = "Irony Grammar Explorer";
+      FormClosing += fmExploreGrammar_FormClosing;
+      Load += fmExploreGrammar_Load;
+      tabGrammar.ResumeLayout(false);
+      pageTerminals.ResumeLayout(false);
+      pageTerminals.PerformLayout();
+      pageNonTerms.ResumeLayout(false);
+      pageNonTerms.PerformLayout();
+      pageParserStates.ResumeLayout(false);
+      pageParserStates.PerformLayout();
+      pageTest.ResumeLayout(false);
+      pageTest.PerformLayout();
+      panel1.ResumeLayout(false);
+      tabOutput.ResumeLayout(false);
+      pageSyntaxTree.ResumeLayout(false);
+      pageAst.ResumeLayout(false);
+      pnlLang.ResumeLayout(false);
+      pnlLang.PerformLayout();
+      menuGrammars.ResumeLayout(false);
+      tabBottom.ResumeLayout(false);
+      pageLanguage.ResumeLayout(false);
+      grpLanguageInfo.ResumeLayout(false);
+      grpLanguageInfo.PerformLayout();
+      pageGrammarErrors.ResumeLayout(false);
+      ((System.ComponentModel.ISupportInitialize)gridGrammarErrors).EndInit();
+      pageParserOutput.ResumeLayout(false);
+      groupBox1.ResumeLayout(false);
+      ((System.ComponentModel.ISupportInitialize)gridCompileErrors).EndInit();
+      grpCompileInfo.ResumeLayout(false);
+      grpCompileInfo.PerformLayout();
+      pageParserTrace.ResumeLayout(false);
+      grpParserActions.ResumeLayout(false);
+      ((System.ComponentModel.ISupportInitialize)gridParserTrace).EndInit();
+      grpTokens.ResumeLayout(false);
+      pnlParserTraceTop.ResumeLayout(false);
+      pnlParserTraceTop.PerformLayout();
+      pageOutput.ResumeLayout(false);
+      pageOutput.PerformLayout();
+      pnlRuntimeInfo.ResumeLayout(false);
+      pnlRuntimeInfo.PerformLayout();
+      ResumeLayout(false);
     }
 
     #endregion
@@ -1324,7 +1401,7 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.ToolStripMenuItem miRemoveAll;
     private System.Windows.Forms.TabControl tabBottom;
     private System.Windows.Forms.TabPage pageOutput;
-    private Irony.WinForms.ConsoleTextBox txtOutput;
+    private ConsoleTextBox txtOutput;
     private System.Windows.Forms.TabPage pageLanguage;
     private System.Windows.Forms.Splitter splitBottom;
     private System.Windows.Forms.GroupBox grpLanguageInfo;
@@ -1366,7 +1443,6 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.Label lblParseErrorCount;
     private System.Windows.Forms.Label lblLanguageDescr;
     private System.Windows.Forms.LinkLabel lnkShowErrLocation;
-    private System.Windows.Forms.CheckBox chkDisableHili;
     private System.Windows.Forms.LinkLabel lnkShowErrStack;
     private System.Windows.Forms.Label label13;
     private System.Windows.Forms.Label label8;
@@ -1386,7 +1462,7 @@ namespace Irony.GrammarExplorer {
     private System.Windows.Forms.DataGridViewTextBoxColumn Input;
     private System.Windows.Forms.DataGridViewTextBoxColumn Action;
     private System.Windows.Forms.Button btnLocate;
-    private Irony.WinForms.IronyTextBox txtSource;
+    private System.Windows.Forms.TextBox txtSource;
     private System.Windows.Forms.ToolStripMenuItem miRefresh;
     private System.Windows.Forms.ToolStripSeparator miSeparator;
 

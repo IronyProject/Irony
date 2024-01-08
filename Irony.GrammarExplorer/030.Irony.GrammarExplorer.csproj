@@ -18,10 +18,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Irony.WinForms\035.Irony.WinForms.csproj" />
 		<ProjectReference Include="..\Irony\010.Irony.csproj" />
 		<ProjectReference Include="..\Irony.Interpreter\015.Irony.Interpreter.csproj" />
 		<ProjectReference Include="..\Irony.Samples\020.Irony.Samples.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="ConsoleTextBox.cs">
+	    <SubType>UserControl</SubType>
+	  </Compile>
+	  <Compile Update="fmShowException.cs">
+	    <SubType>Form</SubType>
+	  </Compile>
 	</ItemGroup>
 
 </Project>

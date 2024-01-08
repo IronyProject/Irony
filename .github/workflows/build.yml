@@ -1,0 +1,23 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    env:
+        DOTNET_NOLOGO: true
+        DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v3
+
+    - name: Test
+      run: dotnet test ./040.Irony.Tests.VsTest.csproj -c release

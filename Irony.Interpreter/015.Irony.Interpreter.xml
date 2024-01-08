@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Irony.Interpreter</name>
+    </assembly>
+    <members>
+        <member name="M:Irony.Interpreter.Ast.AstNode.SetIsTail">
+            <summary>
+            Sets a flag indicating that the node is in tail position. The value is propagated from parent to children. 
+            Should propagate this call to appropriate children.
+            </summary>
+        </member>
+        <member name="P:Irony.Interpreter.Ast.AstNode.DependentScopeInfo">
+            <summary>
+            Dependent scope is a scope produced by the node. For ex, FunctionDefNode defines a scope
+            </summary>
+        </member>
+        <member name="T:Irony.Interpreter.InterpretedLanguageGrammar">
+            <summary> Base class for languages that use Irony Interpreter to execute scripts. </summary>
+        </member>
+        <member name="M:Irony.Interpreter.LanguageRuntime.GetCommonTypeForOperator(System.Linq.Expressions.ExpressionType,System.Type,System.Type)">
+            <summary>
+            Returns the type to which arguments should be converted to perform the operation
+            for a given operator and arguments types.
+            </summary>
+            <param name="op">Operator.</param>
+            <param name="argType1">The type of the first argument.</param>
+            <param name="argType2">The type of the second argument</param>
+            <returns>A common type for operation.</returns>
+        </member>
+        <member name="M:Irony.Interpreter.LanguageRuntime.GetUpType(System.Type)">
+            <summary>
+            Returns the "up-type" to use in operation instead of the type that caused overflow.
+            </summary>
+            <param name="type">The base type for operation that caused overflow.</param>
+            <returns>The type to use for operation.</returns>
+            <remarks>
+            Can be overwritten in language implementation to implement different type-conversion policy.
+            </remarks>
+        </member>
+        <member name="T:Irony.Interpreter.OperatorDispatchKey">
+            <summary>
+            The struct is used as a key for the dictionary of operator implementations. 
+            Contains types of arguments for a method or operator implementation.
+            </summary>
+        </member>
+        <member name="T:Irony.Interpreter.OperatorImplementation">
+            <summary>
+            The OperatorImplementation class represents an implementation of an operator for specific argument types.
+            </summary>
+            <remarks>
+             The OperatorImplementation is used for holding implementation for binary operators, unary operators, 
+             and type converters (special case of unary operators)
+             it holds 4 method references for binary operators:
+             converters for both arguments, implementation method and converter for the result.
+             For unary operators (and type converters) the implementation is in Arg1Converter
+             operator (arg1 is used); the converter method is stored in Arg1Converter; the target type is in CommonType
+            </remarks>
+        </member>
+        <member name="T:Irony.Interpreter.AppDataMap">
+            <summary> Represents a set of all of static scopes/modules in the application.  </summary>
+        </member>
+        <member name="T:Irony.Interpreter.ScopeInfo">
+            <summary>Describes all variables (locals and parameters) defined in a scope of a function or module. </summary>
+            <remarks>ScopeInfo is metadata, it does not contain variable values. The Scope object (described by ScopeInfo) is a container for values.</remarks>
+        </member>
+        <member name="T:Irony.Interpreter.ScopeValuesDictionary">
+            <summary>
+            A wrapper around Scope exposing it as a string-object dictionary. Used to expose Globals dictionary from Main scope
+            </summary>
+        </member>
+        <member name="T:Irony.Interpreter.SlotInfo">
+            <summary> Describes a variable. </summary>
+        </member>
+        <member name="T:Irony.Interpreter.ScriptApp">
+            <summary> Represents a running instance of a script application.  </summary>
+        </member>
+        <member name="T:Irony.Interpreter.ScriptThread">
+            <summary> Represents a running thread in script application.  </summary>
+        </member>
+    </members>
+</doc>

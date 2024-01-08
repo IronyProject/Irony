@@ -3,6 +3,7 @@
 *.bak
 *.orig
 *.nupkg
+*.snupkg
 /**/bin
 /**/obj
 /.vs

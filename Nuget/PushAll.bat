@@ -1,6 +1,6 @@
-SET pver=1.2.0
+SET pver=1.5.0
 Echo Version: "%pver%"
-dir Nupkg\*.nupkg
+dir ..\packages\*.nupkg
 @echo off
 setlocal
 :PROMPT
@@ -10,8 +10,8 @@ IF /I "%AREYOUSURE%" NEQ "Y" GOTO END
 
 echo Publishing....
 :: When we push bin package, the symbols package is pushed automatically by the nuget util
-nuget push Nupkg\Irony.%pver%.nupkg -source https://api.nuget.org/v3/index.json 
-nuget push Nupkg\Irony.Interpreter.%pver%.nupkg -source https://api.nuget.org/v3/index.json 
+nuget push ..\packages\Irony.%pver%.nupkg -source https://api.nuget.org/v3/index.json 
+nuget push ..\packages\Irony.Interpreter.%pver%.nupkg -source https://api.nuget.org/v3/index.json 
 pause
 
 :END

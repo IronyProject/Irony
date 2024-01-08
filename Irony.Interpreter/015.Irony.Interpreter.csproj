@@ -1,15 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="..\Common.proj" />
+    <Import Project="..\Packages.proj" />
 
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <RootNamespace>Irony.Interpreter</RootNamespace>
-    <AssemblyName>Irony.Interpreter</AssemblyName>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>irony.snk</AssemblyOriginatorKeyFile>
-	<AssemblyVersion>1.2.0</AssemblyVersion>
-	<Version>1.2.0</Version>
-  </PropertyGroup>
+	<PropertyGroup>
+        <TargetFrameworks>netstandard2.0</TargetFrameworks>
+		<AssemblyName>Irony.Interpreter</AssemblyName>
+		<RootNamespace>Irony.Interpreter</RootNamespace>
+		<Title>Irony Interpreter</Title>
+	</PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Irony\010.Irony.csproj" />

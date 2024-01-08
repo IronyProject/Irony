@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net8</TargetFramework>
     <RootNamespace>Irony.Samples.Console</RootNamespace>
     <AssemblyName>Irony.Samples.Console</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>

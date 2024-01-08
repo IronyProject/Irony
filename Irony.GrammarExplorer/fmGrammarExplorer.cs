@@ -20,8 +20,8 @@ using System.Windows.Forms;
 using Irony.Ast;
 using Irony.GrammarExplorer.Properties;
 using Irony.Parsing;
-using Irony.WinForms;
-using Irony.WinForms.Exceptions;
+//using Irony.WinForms;
+//using Irony.WinForms.Exceptions;
 
 namespace Irony.GrammarExplorer {
   using ScriptException = Irony.Interpreter.ScriptException; //that's the only place we use stuff from Irony.Interpreter
@@ -51,7 +51,6 @@ namespace Irony.GrammarExplorer {
         GrammarItemList grammars = GrammarItemList.FromXml(Settings.Default.Grammars);
         grammars.ShowIn(cboGrammars);
         chkParserTrace.Checked = Settings.Default.EnableTrace;
-        chkDisableHili.Checked = Settings.Default.DisableHili;
         chkAutoRefresh.Checked = Settings.Default.AutoRefresh;
         cboGrammars.SelectedIndex = Settings.Default.LanguageIndex; //this will build parser and start colorizer
         if (Application.RenderWithVisualStyles)
@@ -65,7 +64,6 @@ namespace Irony.GrammarExplorer {
       Settings.Default.LanguageIndex = cboGrammars.SelectedIndex;
       Settings.Default.SearchPattern = txtSearch.Text;
       Settings.Default.EnableTrace = chkParserTrace.Checked;
-      Settings.Default.DisableHili = chkDisableHili.Checked;
       Settings.Default.AutoRefresh = chkAutoRefresh.Checked;
       var grammars = GrammarItemList.FromCombo(cboGrammars);
       Settings.Default.Grammars = grammars.ToXml();
@@ -229,7 +227,7 @@ namespace Irony.GrammarExplorer {
       //first scroll to the bottom, so that scrolling to needed position brings it to top
       txtParserStates.SelectionStart = txtParserStates.Text.Length - 1;
       txtParserStates.ScrollToCaret();
-      DoSearch(txtParserStates.AsITextBox(), "State " + state.Name, 0);
+      DoSearch(txtParserStates, "State " + state.Name, 0);
     }
 
     private void ShowRuntimeError(ScriptException error){
@@ -243,7 +241,7 @@ namespace Irony.GrammarExplorer {
       } else {
         //the exception was not caught by interpreter/AST node. Show full exception info
         WriteOutput("Error: " + error.Message);
-        fmShowException.ShowException(error);
+        //fmShowException.ShowException(error);
 
       }
       tabBottom.SelectedTab = pageOutput;
@@ -318,7 +316,6 @@ namespace Irony.GrammarExplorer {
     }
 
     private void CreateParser() {
-      StopHighlighter();
       btnRun.Enabled = false;
       txtOutput.Text = string.Empty;
       _parseTree = null;
@@ -327,7 +324,6 @@ namespace Irony.GrammarExplorer {
       _language = new LanguageData(_grammar);
       _parser = new Parser (_language);
       ShowParserConstructionResults();
-      StartHighlighter();
     }
 
     private void ParseSample() {
@@ -373,7 +369,7 @@ namespace Irony.GrammarExplorer {
 
         sw.Start();
         var iRunner = _grammar as ICanRunSample;
-        var args = new RunSampleArgs(_language, txtSource.Text, _parseTree, txtOutput);
+        var args = new RunSampleArgs(_language, txtSource.Text, _parseTree); //, txtOutput);
         string output = iRunner.RunSample(args);
         sw.Stop();
         lblRunTime.Text = sw.ElapsedMilliseconds.ToString();
@@ -411,20 +407,6 @@ namespace Irony.GrammarExplorer {
       }
     }
 
-    //Source highlighting
-    private void StartHighlighter() {
-      if (chkDisableHili.Checked) return;
-      txtSource.Language = _language;
-    }
-    private void StopHighlighter() {
-      txtSource.HighlightingEnabled = false;
-    }
-    private void EnableHighlighter(bool enable) {
-      if (enable)
-        txtSource.Language = _language;
-      txtSource.HighlightingEnabled = enable;
-    }
-
     //The following methods are contributed by Andrew Bradnan; pasted here with minor changes
     private void DoSearch() {
       lblSearchError.Visible = false;
@@ -437,7 +419,7 @@ namespace Irony.GrammarExplorer {
       }
     }//method
 
-    private bool DoSearch(ITextBox textBox, string fragment, int start) {
+    private bool DoSearch(TextBox textBox, string fragment, int start) {
       textBox.SelectionLength = 0;
       // Compile the regular expression.
       Regex r = new Regex(fragment, RegexOptions.IgnoreCase);
@@ -457,14 +439,14 @@ namespace Irony.GrammarExplorer {
       return false;
     }//method
 
-    public ITextBox GetSearchContentBox() {
+    public TextBox GetSearchContentBox() {
       switch (tabGrammar.SelectedIndex) {
         case 0:
-          return txtTerms.AsITextBox();
+          return txtTerms;
         case 1:
-          return txtNonTerms.AsITextBox();
+          return txtNonTerms;
         case 2:
-          return txtParserStates.AsITextBox();
+          return txtParserStates;
         case 3:
           return txtSource;
         default:
@@ -654,11 +636,6 @@ namespace Irony.GrammarExplorer {
       if (current != null && current.Nodes.Count > 0)
         current = LocateTreeNode(current.Nodes, position, positionFunction) ?? current;
       return current;
-    }
-
-    private void chkDisableHili_CheckedChanged(object sender, EventArgs e) {
-      if (!_loaded) return;
-      EnableHighlighter(!chkDisableHili.Checked);
     }
 
     #endregion

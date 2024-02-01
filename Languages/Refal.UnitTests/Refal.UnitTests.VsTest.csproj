@@ -12,8 +12,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Irony.Interpreter\015.Irony.Interpreter.csproj" />
-		<ProjectReference Include="..\Irony\010.Irony.csproj" />
+		<ProjectReference Include="..\..\Irony.Interpreter\015.Irony.Interpreter.csproj" />
+		<ProjectReference Include="..\..\Irony\010.Irony.csproj" />
+		<ProjectReference Include="..\Refal\Refal.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

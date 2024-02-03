@@ -1,9 +1,8 @@
 # Irony — .NET Language Implementation Kit
 https://github.com/IronyProject/Irony
 
-[![appveyor](https://ci.appveyor.com/api/projects/status/github/ironyproject/irony?svg=true)](https://ci.appveyor.com/project/yallie/irony)
-[![tests](https://img.shields.io/appveyor/tests/yallie/irony.svg)](https://ci.appveyor.com/project/yallie/irony/build/tests)
-[![nuget](https://img.shields.io/nuget/v/Irony.svg)](https://www.nuget.org/packages/Irony)
+[![Github Actions](https://github.com/IronyProject/Irony/actions/workflows/build.yml/badge.svg)](https://github.com/IronyProject/Irony/actions)
+[![Nuget](https://img.shields.io/nuget/v/Irony.svg)](https://www.nuget.org/packages/Irony)
 
 ### Prerequisites
   

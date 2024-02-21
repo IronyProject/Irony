@@ -124,7 +124,7 @@ z -= y             # = 3
       script = @"print(format('{0} * {1} = {2}', 3, 4, 3 * 4))";
       eval.Evaluate(script);
       result = eval.GetOutput(); 
-      Assert.AreEqual("3 * 4 = 12" + Environment.NewLine, result, "Unexpected computation result");
+      Assert.AreEqual("3 * 4 = 12", result, "Unexpected computation result");
 
       //Add custom built-in method SayHello and test it
       eval.Runtime.BuiltIns.AddMethod(SayHello, "SayHello", 1, 1, "name"); 

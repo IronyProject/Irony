@@ -1,7 +1,7 @@
 # Irony — .NET Language Implementation Kit
 https://github.com/IronyProject/Irony
 
-[![Github Actions](https://github.com/IronyProject/Irony/actions/workflows/build.yml/badge.svg)](https://github.com/IronyProject/Irony/actions)
+[![Github Actions](https://github.com/IronyProject/Irony/actions/workflows/build.yml/badge.svg)](https://github.com/IronyProject/Irony/actions/workflows/build.yml)
 [![Nuget](https://img.shields.io/nuget/v/Irony.svg)](https://www.nuget.org/packages/Irony)
 
 ### Prerequisites

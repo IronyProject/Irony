@@ -1,7 +1,7 @@
 <Project>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<PackageVersion>1.5.0</PackageVersion>
+		<PackageVersion>1.5.1</PackageVersion>
 
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>irony.snk</AssemblyOriginatorKeyFile>

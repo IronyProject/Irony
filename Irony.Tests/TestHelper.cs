@@ -11,10 +11,11 @@ namespace Irony.Tests {
     using TestClass = NUnit.Framework.TestFixtureAttribute;
     using TestMethod = NUnit.Framework.TestAttribute;
     using TestInitialize = NUnit.Framework.SetUpAttribute;
+  using Assert = NUnit.Framework.Legacy.ClassicAssert;
 #else
   using Microsoft.VisualStudio.TestTools.UnitTesting;
 #endif
-  
+
   public static class TestHelper {
     //A skeleton for a grammar with a single terminal, followed by optional terminator
     class TerminalTestGrammar : Grammar {

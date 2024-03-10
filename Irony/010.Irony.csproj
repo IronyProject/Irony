@@ -6,6 +6,7 @@
         <TargetFramework>netstandard2.0</TargetFramework>
 		<AssemblyName>Irony</AssemblyName>
 		<RootNamespace>Irony</RootNamespace>
+		<Features>peverify-compat</Features>
 
 		<Title>Irony Parsing Framework</Title>
     </PropertyGroup>

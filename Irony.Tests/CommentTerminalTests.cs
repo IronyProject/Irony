@@ -9,6 +9,7 @@ namespace Irony.Tests {
     using TestClass = NUnit.Framework.TestFixtureAttribute;
     using TestMethod = NUnit.Framework.TestAttribute;
     using TestInitialize = NUnit.Framework.SetUpAttribute;
+    using Assert = NUnit.Framework.Legacy.ClassicAssert;
 #else
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 #endif
@@ -21,7 +22,7 @@ namespace Irony.Tests {
       Parser parser; Token token; 
 
       parser = TestHelper.CreateParser(new CommentTerminal("Comment", "/*", "*/"));
-      token = parser.ParseInput("/* abc  */");
+      token = parser.ParseInput("/* abc  */"); 
       Assert.IsTrue(token.Category == TokenCategory.Comment, "Failed to read comment");
 
       parser = TestHelper.CreateParser(new CommentTerminal("Comment", "//", "\n"));

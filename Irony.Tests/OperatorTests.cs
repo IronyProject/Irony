@@ -6,10 +6,11 @@ using Irony.Parsing;
 
 namespace Irony.Tests {
 #if USE_NUNIT
-    using NUnit.Framework;
+    using  NUnit.Framework;
     using TestClass = NUnit.Framework.TestFixtureAttribute;
     using TestMethod = NUnit.Framework.TestAttribute;
     using TestInitialize = NUnit.Framework.SetUpAttribute;
+  using Assert = NUnit.Framework.Legacy.ClassicAssert;
 #else
   using Microsoft.VisualStudio.TestTools.UnitTesting;
 #endif

@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net8</TargetFrameworks>
-		<RootNamespace>Refal.UnitTests.VsTest</RootNamespace>
+		<RootNamespace>Refal.UnitTests</RootNamespace>
 		<AssemblyName>Refal.UnitTests.VsTest</AssemblyName>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<SignAssembly>false</SignAssembly>
@@ -10,6 +10,78 @@
 		<Version>1.2.0</Version>
 
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="Sources\99-bottles-v1.ref" />
+	  <None Remove="Sources\99-bottles-v1.txt" />
+	  <None Remove="Sources\99-bottles-v2.ref" />
+	  <None Remove="Sources\99-bottles-v2.txt" />
+	  <None Remove="Sources\arith.ref" />
+	  <None Remove="Sources\arith.txt" />
+	  <None Remove="Sources\binary.ref" />
+	  <None Remove="Sources\binary.txt" />
+	  <None Remove="Sources\brainfuck.ref" />
+	  <None Remove="Sources\brainfuck.txt" />
+	  <None Remove="Sources\change-v1.ref" />
+	  <None Remove="Sources\change-v2.ref" />
+	  <None Remove="Sources\change.txt" />
+	  <None Remove="Sources\factorial.ref" />
+	  <None Remove="Sources\factorial.txt" />
+	  <None Remove="Sources\hello.ref" />
+	  <None Remove="Sources\hello.txt" />
+	  <None Remove="Sources\italian.ref" />
+	  <None Remove="Sources\italian.txt" />
+	  <None Remove="Sources\order-v1.ref" />
+	  <None Remove="Sources\order-v2.ref" />
+	  <None Remove="Sources\order.txt" />
+	  <None Remove="Sources\palyndrome.ref" />
+	  <None Remove="Sources\palyndrome.txt" />
+	  <None Remove="Sources\pretty.ref" />
+	  <None Remove="Sources\pretty.txt" />
+	  <None Remove="Sources\quine-plain.ref" />
+	  <None Remove="Sources\quine-simple.ref" />
+	  <None Remove="Sources\quine-xplained.ref" />
+	  <None Remove="Sources\xtras-bigint.ref" />
+	  <None Remove="Sources\xtras-bigint.txt" />
+	  <None Remove="Sources\xtras-factorial.ref" />
+	  <None Remove="Sources\xtras-factorial.txt" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Sources\99-bottles-v1.ref" />
+	  <EmbeddedResource Include="Sources\99-bottles-v1.txt" />
+	  <EmbeddedResource Include="Sources\99-bottles-v2.ref" />
+	  <EmbeddedResource Include="Sources\99-bottles-v2.txt" />
+	  <EmbeddedResource Include="Sources\arith.ref" />
+	  <EmbeddedResource Include="Sources\arith.txt" />
+	  <EmbeddedResource Include="Sources\binary.ref" />
+	  <EmbeddedResource Include="Sources\binary.txt" />
+	  <EmbeddedResource Include="Sources\brainfuck.ref" />
+	  <EmbeddedResource Include="Sources\brainfuck.txt" />
+	  <EmbeddedResource Include="Sources\change-v1.ref" />
+	  <EmbeddedResource Include="Sources\change-v2.ref" />
+	  <EmbeddedResource Include="Sources\change.txt" />
+	  <EmbeddedResource Include="Sources\factorial.ref" />
+	  <EmbeddedResource Include="Sources\factorial.txt" />
+	  <EmbeddedResource Include="Sources\hello.ref" />
+	  <EmbeddedResource Include="Sources\hello.txt" />
+	  <EmbeddedResource Include="Sources\italian.ref" />
+	  <EmbeddedResource Include="Sources\italian.txt" />
+	  <EmbeddedResource Include="Sources\order-v1.ref" />
+	  <EmbeddedResource Include="Sources\order-v2.ref" />
+	  <EmbeddedResource Include="Sources\order.txt" />
+	  <EmbeddedResource Include="Sources\palyndrome.ref" />
+	  <EmbeddedResource Include="Sources\palyndrome.txt" />
+	  <EmbeddedResource Include="Sources\pretty.ref" />
+	  <EmbeddedResource Include="Sources\pretty.txt" />
+	  <EmbeddedResource Include="Sources\quine-plain.ref" />
+	  <EmbeddedResource Include="Sources\quine-simple.ref" />
+	  <EmbeddedResource Include="Sources\quine-xplained.ref" />
+	  <EmbeddedResource Include="Sources\xtras-bigint.ref" />
+	  <EmbeddedResource Include="Sources\xtras-bigint.txt" />
+	  <EmbeddedResource Include="Sources\xtras-factorial.ref" />
+	  <EmbeddedResource Include="Sources\xtras-factorial.txt" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\Irony.Interpreter\015.Irony.Interpreter.csproj" />

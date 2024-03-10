@@ -24,8 +24,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "030.Irony.GrammarExplorer",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "040.Irony.Tests.VsTest", "Irony.Tests\040.Irony.Tests.VsTest.csproj", "{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "050.Irony.Tests.NUnit", "Irony.Tests\050.Irony.Tests.NUnit.csproj", "{1A98BEDA-DF53-49B7-A366-2ED7606036BD}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Languages", "Languages", "{0850FA53-413E-4AF9-B918-8FF524FFA5D7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Refal", "Refal", "{FEE137AB-6C8B-4576-81BE-119DA16DCF78}"
@@ -55,7 +53,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{44A7
 		Languages\Refal\UnitTests\Sources\xtras-factorial.ref = Languages\Refal\UnitTests\Sources\xtras-factorial.ref
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refal.UnitTests.VsTest", "Languages\Refal.UnitTests\Refal.UnitTests.VsTest.csproj", "{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Refal.UnitTests.VsTest", "Languages\Refal.UnitTests\Refal.UnitTests.VsTest.csproj", "{94409071-FF65-4C3C-97EB-BD4FDEF90B4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -139,16 +137,6 @@ Global
 		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.Silverlight Release|Any CPU.Build.0 = Release|Any CPU
 		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.SpecSharp|Any CPU.ActiveCfg = Release|Any CPU
 		{0CFA8CEE-0110-49C1-93E5-CB7BE3A5716B}.SpecSharp|Any CPU.Build.0 = Release|Any CPU
-		{1A98BEDA-DF53-49B7-A366-2ED7606036BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1A98BEDA-DF53-49B7-A366-2ED7606036BD}.FxCop|Any CPU.ActiveCfg = Release|Any CPU
-		{1A98BEDA-DF53-49B7-A366-2ED7606036BD}.FxCop|Any CPU.Build.0 = Release|Any CPU
-		{1A98BEDA-DF53-49B7-A366-2ED7606036BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1A98BEDA-DF53-49B7-A366-2ED7606036BD}.Silverlight Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1A98BEDA-DF53-49B7-A366-2ED7606036BD}.Silverlight Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1A98BEDA-DF53-49B7-A366-2ED7606036BD}.Silverlight Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1A98BEDA-DF53-49B7-A366-2ED7606036BD}.Silverlight Release|Any CPU.Build.0 = Release|Any CPU
-		{1A98BEDA-DF53-49B7-A366-2ED7606036BD}.SpecSharp|Any CPU.ActiveCfg = Release|Any CPU
-		{1A98BEDA-DF53-49B7-A366-2ED7606036BD}.SpecSharp|Any CPU.Build.0 = Release|Any CPU
 		{19A86418-BA99-41F4-80A5-A7F3A6383123}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{19A86418-BA99-41F4-80A5-A7F3A6383123}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19A86418-BA99-41F4-80A5-A7F3A6383123}.FxCop|Any CPU.ActiveCfg = Release|Any CPU

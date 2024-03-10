@@ -9,6 +9,7 @@ namespace Irony.Tests {
     using TestClass = NUnit.Framework.TestFixtureAttribute;
     using TestMethod = NUnit.Framework.TestAttribute;
     using TestInitialize = NUnit.Framework.SetUpAttribute;
+  using Assert = NUnit.Framework.Legacy.ClassicAssert;
 #else
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 #endif

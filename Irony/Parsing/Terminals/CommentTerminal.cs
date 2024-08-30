@@ -86,7 +86,7 @@ namespace Irony.Parsing {
       while (!source.EOF()) {
         int firstCharPos;
         if (EndSymbols.Count == 1)
-          firstCharPos = source.Text.IndexOf(EndSymbols[0], source.PreviewPosition);
+          firstCharPos = source.Text.IndexOf(EndSymbols[0], source.PreviewPosition, StringComparison.Ordinal);
         else 
           firstCharPos = source.Text.IndexOfAny(_endSymbolsFirsts, source.PreviewPosition);
         if (firstCharPos < 0) {

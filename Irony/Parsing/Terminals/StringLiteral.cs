@@ -185,7 +185,7 @@ namespace Irony.Parsing {
       int nlPos = lineBreakAllowed ? -1 : source.Text.IndexOf('\n', source.PreviewPosition);
       //fix by ashmind for EOF right after opening symbol
       while (true) {
-        int endPos = source.Text.IndexOf(endQuoteSymbol, source.PreviewPosition);
+        int endPos = source.Text.IndexOf(endQuoteSymbol, source.PreviewPosition, StringComparison.Ordinal);
         //Check for partial token in line-scanning mode
         if (endPos < 0 && details.PartialOk && lineBreakAllowed) {
           ProcessPartialBody(source, details); 
@@ -324,7 +324,7 @@ namespace Irony.Parsing {
 
       //Check for doubled end symbol
       string endSymbol = details.EndSymbol;
-      if (details.IsSet((short)StringOptions.AllowsDoubledQuote) && value.IndexOf(endSymbol) >= 0)
+      if (details.IsSet((short)StringOptions.AllowsDoubledQuote) && value.IndexOf(endSymbol, StringComparison.Ordinal) >= 0)
         value = value.Replace(endSymbol + endSymbol, endSymbol);
 
       if (details.IsSet((short)StringOptions.IsChar)) {

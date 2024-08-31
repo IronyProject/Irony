@@ -10,6 +10,9 @@
  * **********************************************************************************/
 //with contributions by Andrew Bradnan and Alexey Yakovlev
 #endregion
+using Irony.Ast;
+using Irony.GrammarExplorer.Properties;
+using Irony.Parsing;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -17,13 +20,9 @@ using System.Drawing;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using Irony.Ast;
-using Irony.GrammarExplorer.Properties;
-using Irony.Parsing;
-//using Irony.WinForms;
-//using Irony.WinForms.Exceptions;
 
-namespace Irony.GrammarExplorer {
+namespace Irony.GrammarExplorer
+{
   using ScriptException = Irony.Interpreter.ScriptException; //that's the only place we use stuff from Irony.Interpreter
 
   public partial class fmGrammarExplorer : Form {
